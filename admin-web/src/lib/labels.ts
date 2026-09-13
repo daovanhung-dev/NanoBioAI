@@ -25,6 +25,7 @@ const statusLabels: Array<[string, string]> = [
   ['succeeded', 'Hoàn tất'],
   ['approved', 'Đã duyệt'],
   ['active', 'Đang hoạt động'],
+  ['expired', 'Đã hết hạn'],
   ['inactive', 'Không hoạt động'],
   ['suspended', 'Tạm dừng'],
   ['closed', 'Đã đóng'],
@@ -66,6 +67,7 @@ const actionLabels: Record<string, string> = {
   cancel_redemption: 'Hủy lượt dùng',
   create_account: 'Tạo tài khoản',
   grant_membership: 'Cấp gói thành viên',
+  adjust_membership_period: 'Chỉnh thời hạn gói',
   view_health: 'Xem thông tin sức khỏe',
   update_user_profile: 'Sửa thông tin người dùng',
   reset_user_password: 'Đổi mật khẩu người dùng',
@@ -74,6 +76,8 @@ const actionLabels: Record<string, string> = {
 
 const auditActions: Record<string, string> = {
   admin_update_user_status: 'Cập nhật trạng thái người dùng',
+  admin_grant_membership: 'Cấp gói thành viên',
+  admin_adjust_membership_period: 'Chỉnh thời hạn gói',
   admin_review_payment: 'Xử lý thanh toán',
   admin_refund_or_cancel_payment: 'Hoàn hoặc hủy thanh toán',
   admin_review_sale_profile: 'Xử lý hồ sơ cộng tác viên',
@@ -146,6 +150,47 @@ export function formatDate(value?: string): string {
     timeStyle: 'short',
     timeZone: 'Asia/Ho_Chi_Minh',
   }).format(date);
+}
+
+export function formatMembershipPeriod(startsAt?: string, endsAt?: string): string {
+  if (!startsAt && !endsAt) return '—';
+  if (!endsAt) return 'Không thời hạn';
+  if (!startsAt) return `Hết hạn ${formatDate(endsAt)}`;
+  return `${formatDate(startsAt)} – ${formatDate(endsAt)}`;
+}
+
+export function toDateTimeLocal(value?: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date).reduce<Record<string, string>>((result, part) => {
+    result[part.type] = part.value;
+    return result;
+  }, {});
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
+export function dateTimeLocalToIso(value: string): string | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return undefined;
+  const [, yearText, monthText, dayText, hourText, minuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) return undefined;
+  const timestamp = Date.UTC(year, month - 1, day, hour, minute) - 7 * 60 * 60 * 1000;
+  const date = new Date(timestamp);
+  return toDateTimeLocal(date.toISOString()) === value ? date.toISOString() : undefined;
 }
 
 export function formatMoney(cents?: number, currency = 'VND'): string {

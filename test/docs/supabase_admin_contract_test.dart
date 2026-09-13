@@ -59,6 +59,7 @@ void main() {
         "app_access_mode in ('user', 'both')",
         'get_admin_dashboard_summary',
         'admin_search_users',
+        'admin_adjust_membership_period',
         'admin_update_user_status',
         'admin_list_payments',
         'admin_review_payment',
@@ -173,6 +174,22 @@ void main() {
         expect(dashboard, contains(token), reason: token);
       }
       expect(_hasUnqualifiedDashboardStatusFilter(dashboard), isFalse);
+
+      final users = _functionBlock(build, 'admin_search_users');
+      expect(
+        build,
+        contains('drop function if exists public.admin_search_users(text, integer);'),
+      );
+      for (final token in [
+        'membership_id text',
+        'membership_starts_at timestamptz',
+        'membership_ends_at timestamptz',
+        'public.current_plan_for_user(u.id)',
+        'ms.source',
+        "ms.ends_at is null or ms.ends_at > now()",
+      ]) {
+        expect(users, contains(token), reason: token);
+      }
 
       for (final token in [
         'admin_list_report_catalog',
@@ -317,6 +334,67 @@ void main() {
         }
       }
       expect(violations, isEmpty);
+    });
+  });
+
+  group('Admin membership period adjustment contract', () {
+    late String build;
+
+    setUpAll(() {
+      build = File(_buildPath).readAsStringSync();
+    });
+
+    test('keeps manual period adjustment transactional and audited', () {
+      final block = _functionBlock(build, 'admin_adjust_membership_period');
+      for (final token in [
+        'p_expected_ends_at timestamptz',
+        'p_idempotency_key text',
+        "v_subscription.source <> 'manual'",
+        "v_subscription.status not in ('trialing', 'active')",
+        'for update',
+        'MEMBERSHIP_PERIOD_STALE',
+        'MEMBERSHIP_ADJUSTMENT_PERMANENT_REQUIRES_END_DATE',
+        "when 'add_days' then",
+        "when 'subtract_days' then",
+        "p_operation not in ('add_days', 'subtract_days', 'set_end_at')",
+        "when v_target_ends_at <= v_now then 'expired'",
+        'current_period_end = v_target_ends_at',
+        "'admin_adjust_membership_period'",
+        "'membership_subscription'",
+        "'previous_ends_at'",
+        'idempotency_key',
+      ]) {
+        expect(block, contains(token), reason: token);
+      }
+      expect(
+        build,
+        contains(
+          'grant execute on function public.admin_adjust_membership_period',
+        ),
+      );
+      expect(
+        build,
+        contains(
+          'revoke all on function public.admin_adjust_membership_period',
+        ),
+      );
+      final manifestStart = build.indexOf('foreach v_function_name in array array[');
+      final manifestEnd = build.indexOf('  ] loop', manifestStart);
+      expect(manifestStart, greaterThanOrEqualTo(0));
+      expect(manifestEnd, greaterThan(manifestStart));
+      expect(
+        build.substring(manifestStart, manifestEnd),
+        isNot(contains("'admin_adjust_membership_period'")),
+      );
+      expect(
+        build,
+        contains(
+          'admin_adjust_membership_period\n'
+          '  uuid,\n'
+          '  uuid,\n'
+          '  uuid,',
+        ),
+      );
     });
   });
 }

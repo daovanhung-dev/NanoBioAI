@@ -890,3 +890,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: nhiều parts, JSON string, response rỗng và partial MAX_TOKENS.
 - docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: ## Rủi ro và ghi chú
 - docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: partial response; safety timeout vẫn giới hạn thời gian chờ.
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Yêu cầu gốc: hiển thị start/end; Super Admin chỉnh manual subscription bằng
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: active, manual/current-only, user/subscription ownership, `FOR UPDATE`,
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: FAIL baseline - thiếu `docs/audit/source_truth_manifest.json` và còn stale
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Flutter/Dart contract tests: SKIPPED - môi trường không có executable
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Supabase SQL apply, Edge deploy và browser-smoke: SKIPPED - chưa có sandbox
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Chưa fix: validator Codex vẫn fail do baseline manifest/stale path; cần xử lý
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Cần kiểm tra tiếp: apply canonical SQL trên sandbox; deploy function; smoke
+- docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: handler tests, Deno check/format và diff check PASS; Codex validator fail

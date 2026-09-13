@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 162
+- Total worklogs: 163
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -171,3 +171,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-09-13 | unknown | docs-context | unknown | [Worklog - Batch tạo tài khoản và cấp Plus 30 ngày an toàn](../../docs/worklog/2026-09-13/006-worklog-admin-grant-plus-safe-preserve.md) |
 | 2026-09-13 | unknown | docs-context | unknown | [Worklog - Tạo nhanh nhiều tài khoản và cấp gói](../../docs/worklog/2026-09-13/007-worklog-admin-bulk-provision-accounts.md) |
 | 2026-09-13 | unknown | docs-context | unknown | [Worklog - Bỏ cap token và hoàn thiện giao tiếp AI](../../docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md) |
+| 2026-09-13 | Implement feature trên Admin Web và trusted Supabase backend. | supabase-schema | M16 ADMIN_OPS, membership administration. | [Worklog - Admin Web membership period](../../docs/worklog/2026-09-13/009-worklog-admin-membership-period.md) |

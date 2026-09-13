@@ -76,12 +76,22 @@ export type AdminWorkItem = {
   section: string;
   createdAt?: string;
   metadata: Record<string, unknown>;
+  membership?: AdminMembershipSummary;
   paymentReconciliation?: PaymentReconciliation;
 };
 
 export const ADMIN_PLAN_CODES = ['guest', 'free', 'plus', 'family_plus'] as const;
 
 export type AdminPlanCode = (typeof ADMIN_PLAN_CODES)[number];
+
+export type AdminMembershipSummary = {
+  subscriptionId: string;
+  planCode: AdminPlanCode;
+  status: string;
+  source?: string;
+  startsAt?: string;
+  endsAt?: string;
+};
 
 export type AdminAuditEvent = {
   id: string;
@@ -122,6 +132,30 @@ export type MembershipGrantInput = {
   endsAt: string;
   reason: string;
   idempotencyKey: string;
+};
+
+export type MembershipPeriodAdjustmentOperation = 'add_days' | 'subtract_days' | 'set_end_at';
+
+export type MembershipPeriodAdjustmentInput = {
+  userId: string;
+  subscriptionId: string;
+  operation: MembershipPeriodAdjustmentOperation;
+  days: number | null;
+  endsAt: string | null;
+  expectedEndsAt: string | null;
+  reason: string;
+  idempotencyKey: string;
+};
+
+export type MembershipPeriodAdjustmentResult = {
+  subscriptionId: string;
+  planCode: AdminPlanCode;
+  status: string;
+  startsAt: string;
+  previousEndsAt: string | null;
+  endsAt: string | null;
+  operation: MembershipPeriodAdjustmentOperation;
+  deltaDays: number | null;
 };
 
 export type BulkProvisionPlanCode = 'plus' | 'family_plus';
@@ -187,6 +221,7 @@ export type AdminUserDetails = {
     surveyAnswers: Array<Record<string, unknown>>;
   };
   membership: {
+    subscriptionId?: string;
     planCode: AdminPlanCode;
     status: string;
     source?: string;
@@ -327,6 +362,10 @@ export function canGrantMembership(session: AdminSession): boolean {
   return session.active && session.roles.includes('super_admin');
 }
 
+export function canAdjustMembership(session: AdminSession): boolean {
+  return session.active && session.roles.includes('super_admin');
+}
+
 export function canBulkProvisionAccounts(session: AdminSession): boolean {
   return session.active && session.roles.includes('super_admin');
 }
@@ -377,8 +416,25 @@ export function toUserWorkItems(value: unknown): AdminWorkItem[] {
       parseUserPlanCode(item.subtitle),
     );
 
-    return planCode
-      ? { ...item, metadata: { ...metadata, plan_code: planCode } }
+    const membershipId = optionalString(row.membership_id);
+    const membershipPlan = normalizePlanCode(row.plan_code) ?? planCode;
+    const membership = membershipId && membershipPlan
+      ? {
+          subscriptionId: membershipId,
+          planCode: membershipPlan,
+          status: String(row.membership_status ?? 'active'),
+          source: optionalString(row.membership_source),
+          startsAt: optionalString(row.membership_starts_at),
+          endsAt: optionalString(row.membership_ends_at),
+        } satisfies AdminMembershipSummary
+      : undefined;
+
+    return planCode || membership
+      ? {
+          ...item,
+          metadata: planCode ? { ...metadata, plan_code: planCode } : metadata,
+          ...(membership ? { membership } : {}),
+        }
       : item;
   });
 }

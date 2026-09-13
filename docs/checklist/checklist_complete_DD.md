@@ -9,7 +9,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-08-24 |
+| Ngay cap nhat | 2026-09-13 |
 | Lifecycle | Current |
 | Source-truth baseline | `25018e8` |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
@@ -38,7 +38,7 @@ phải đọc ở cột verification.
 | M13 `PAYMENT_MEMBERSHIP` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | VietQR/manual-review source is reachable; bank UAT is unverified. |
 | M14 `SALE_POINTS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Wallet/conversion/Admin adjustment source is reachable. |
 | M15 `ADMIN_DASHBOARD` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin dashboard and permissioned drill-down are reachable. |
-| M16 `ADMIN_OPS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Permissioned operations and RPC mappings are reachable. |
+| M16 `ADMIN_OPS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Permissioned operations, Admin Web membership-period display/adjustment, and RPC mappings are reachable; Supabase sandbox/deploy evidence remains pending. |
 | M17 `RECONCILIATION` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Manual run/status exists; limited discrepancy generation and no scheduled runner. |
 | M18 `REPORTING` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Catalog/export request exists; no artifact producer/download path. |
 | M19 `AUDIT_SECURITY` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Access/RLS/audit surface exists; full support/retention/response scope is absent. |
@@ -195,7 +195,7 @@ không đồng nghĩa production acceptance.
 | M08 `HEALTH_SCORE_HABITS` | DD delta tách Điểm sức khỏe, Điểm chăm sóc và Điểm Sale; local completion/proof/health projection transaction và legacy history non-redeemable có source contract. Full config rebuild và local reward/RLS/direct-ledger smoke PASS. | Sandbox thật chứng minh ledger/snapshot tách biệt, legacy không vào redeem balance và FamilyPlus/owner visibility. |
 | M09 `SCHEDULE_NOTIFICATIONS` | Copy `Mở để chụp ảnh`, payload/owner validation, navigation coordinator và exact-item deep-link dùng M03 proof use case; notification bundle nằm trong 59 test pass. | Android/iOS foreground/background/terminated real-device smoke và Supabase cross-device reconcile. |
 | M15 `ADMIN_DASHBOARD` | Admin section/route `Điểm chăm sóc`, `wellness_rewards.read/write`, safe Vietnamese permission/action/audit mapping và reward Admin tests có source; reward bundle 38/38 + targeted analyze pass; Supabase contract/rebuild/local RLS smoke PASS. | Sandbox thật cho role matrix, privacy-limited response, inventory aggregate và denied-route/API evidence. |
-| M16 `ADMIN_OPS` | Catalog upsert, bulk code import, inventory/redemption list, cancel/refund UI/RPC contract, reason/idempotency/audit và append-only/revoke DML SQL source đã có. Supabase 40 contract tests, full config rebuild và local redeem/cancel/RLS smoke PASS. | Apply migration 16 trong sandbox thật; chạy row-lock/concurrency, duplicate/invalid import, cancel/refund exactly-once, audit row và direct DML rejection. |
+| M16 `ADMIN_OPS` | Catalog upsert, bulk code import, inventory/redemption list, cancel/refund UI/RPC contract, reason/idempotency/audit và append-only/revoke DML SQL source đã có. Bổ sung Admin Web hiển thị start/end, custom grant end date, manual add/subtract/set-end RPC, service-role Edge Function và targeted tests. Supabase 40 contract tests, full config rebuild và local redeem/cancel/RLS smoke PASS; luồng mới chưa có sandbox/deploy evidence. | Apply migration 16 và RPC mới trong sandbox thật; chạy row-lock/concurrency, manual-only/provider guard, permanent package, expiry-now, stale-period, retry idempotency, audit row và direct DML rejection. |
 | Cross-cutting localization | `vi_VN` app roots, l10n/ARB, preference migration, permission copy, Vietnamese mapper/scanner source; 96 targeted + 54 localization/settings/image tests, targeted analyze và contract scan pass. | Full repo validation và visual/accessibility/device review; OS-owned permission buttons remain device-language dependent. |
 
 Rollout gate: `wellness_rewards_rollout.enabled` phải giữ `false` cho đến khi

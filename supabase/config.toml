@@ -7,6 +7,9 @@ verify_jwt = true
 [functions.admin-grant-membership]
 verify_jwt = true
 
+[functions.admin-adjust-membership-period]
+verify_jwt = true
+
 [functions.admin-grant-membership-bulk]
 verify_jwt = true
 

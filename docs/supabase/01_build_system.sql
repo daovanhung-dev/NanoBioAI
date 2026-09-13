@@ -4392,6 +4392,8 @@ begin
     'reconciliation';
 end;
 $$;
+plus
+drop function if exists public.admin_search_users(text, integer);
 
 create or replace function public.admin_search_users(
   p_query text default '',
@@ -4403,7 +4405,13 @@ returns table (
   subtitle text,
   status text,
   section text,
-  created_at timestamptz
+  created_at timestamptz,
+  plan_code text,
+  membership_id text,
+  membership_status text,
+  membership_source text,
+  membership_starts_at timestamptz,
+  membership_ends_at timestamptz
 )
 language plpgsql
 stable
@@ -4417,11 +4425,45 @@ begin
   select
     u.id::text,
     coalesce(nullif(u.full_name, ''), nullif(u.email, ''), u.id::text),
-    concat_ws(' - ', u.email, u.product_access_status::text, u.sale_status::text),
+    concat_ws(' - ', u.email, access.plan_code, u.sale_status::text),
     u.admin_status,
     'users',
-    u.created_at
+    u.created_at,
+    access.plan_code,
+    paid_membership.id::text,
+    paid_membership.status,
+    paid_membership.source,
+    paid_membership.starts_at,
+    paid_membership.ends_at
   from public.users u
+  cross join lateral (
+    select case
+      when u.is_anonymous and u.product_access_status = 'guest' then 'guest'
+      else public.current_plan_for_user(u.id)::text
+    end as plan_code
+  ) access
+  left join lateral (
+    select
+      ms.id,
+      ms.status,
+      ms.source,
+      ms.starts_at,
+      ms.ends_at
+    from public.membership_subscriptions ms
+    where ms.user_id = u.id
+      and ms.plan_code in ('plus', 'family_plus')
+      and ms.status in ('trialing', 'active')
+      and ms.starts_at <= now()
+      and (ms.ends_at is null or ms.ends_at > now())
+    order by
+      case ms.plan_code
+        when 'family_plus' then 3
+        when 'plus' then 2
+        else 1
+      end desc,
+      ms.starts_at desc
+    limit 1
+  ) paid_membership on true
   where coalesce(p_query, '') = ''
      or u.email ilike '%' || p_query || '%'
      or u.full_name ilike '%' || p_query || '%'
@@ -4430,6 +4472,234 @@ begin
   limit greatest(1, least(coalesce(p_limit, 50), 100));
 end;
 $$;
+
+drop function if exists public.admin_adjust_membership_period(
+  uuid,
+  uuid,
+  uuid,
+  text,
+  integer,
+  timestamptz,
+  timestamptz,
+  text,
+  text
+);
+
+create or replace function public.admin_adjust_membership_period(
+  p_actor_id uuid,
+  p_user_id uuid,
+  p_subscription_id uuid,
+  p_operation text,
+  p_days integer,
+  p_ends_at timestamptz,
+  p_expected_ends_at timestamptz,
+  p_reason text,
+  p_idempotency_key text
+)
+returns table (
+  subscription_id uuid,
+  plan_code public.nb_membership_plan,
+  status text,
+  starts_at timestamptz,
+  previous_ends_at timestamptz,
+  ends_at timestamptz,
+  operation text,
+  delta_days integer
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_subscription public.membership_subscriptions%rowtype;
+  v_existing_audit public.admin_audit_events%rowtype;
+  v_now timestamptz := now();
+  v_target_ends_at timestamptz;
+  v_status text;
+  v_metadata jsonb;
+begin
+  if p_actor_id is null or p_user_id is null or p_subscription_id is null then
+    raise exception 'MEMBERSHIP_ADJUSTMENT_TARGET_REQUIRED' using errcode = '22023';
+  end if;
+
+  if nullif(btrim(coalesce(p_reason, '')), '') is null then
+    raise exception 'MEMBERSHIP_ADJUSTMENT_REASON_REQUIRED' using errcode = '22023';
+  end if;
+
+  if nullif(btrim(coalesce(p_idempotency_key, '')), '') is null then
+    raise exception 'IDEMPOTENCY_KEY_REQUIRED' using errcode = '22023';
+  end if;
+
+  if not exists (
+    select 1
+    from public.users u
+    join public.admin_user_roles aur
+      on aur.user_id = u.id
+     and aur.role_code = 'super_admin'
+     and aur.is_active = true
+     and aur.revoked_at is null
+    join public.admin_roles ar
+      on ar.code = aur.role_code
+     and ar.is_active = true
+    where u.id = p_actor_id
+      and u.admin_status = 'active'
+  ) then
+    raise exception 'ADMIN_PERMISSION_REQUIRED' using errcode = '42501';
+  end if;
+
+  select *
+  into v_subscription
+  from public.membership_subscriptions ms
+  where ms.id = p_subscription_id
+    and ms.user_id = p_user_id
+  for update;
+
+  if not found then
+    raise exception 'MEMBERSHIP_NOT_FOUND' using errcode = 'P0002';
+  end if;
+
+  select *
+  into v_existing_audit
+  from public.admin_audit_events aae
+  where aae.action = 'admin_adjust_membership_period'
+    and aae.idempotency_key = btrim(p_idempotency_key)
+  limit 1;
+
+  if found then
+    if v_existing_audit.target_id <> p_subscription_id::text then
+      raise exception 'IDEMPOTENCY_KEY_REUSED' using errcode = '23505';
+    end if;
+
+    return query select
+      p_subscription_id,
+      (v_existing_audit.metadata ->> 'plan_code')::public.nb_membership_plan,
+      v_existing_audit.metadata ->> 'status',
+      nullif(v_existing_audit.metadata ->> 'starts_at', '')::timestamptz,
+      nullif(v_existing_audit.metadata ->> 'previous_ends_at', '')::timestamptz,
+      nullif(v_existing_audit.metadata ->> 'ends_at', '')::timestamptz,
+      v_existing_audit.metadata ->> 'operation',
+      nullif(v_existing_audit.metadata ->> 'delta_days', '')::integer;
+    return;
+  end if;
+
+  if v_subscription.source <> 'manual'
+    or v_subscription.status not in ('trialing', 'active')
+    or v_subscription.starts_at > v_now
+    or (v_subscription.ends_at is not null and v_subscription.ends_at <= v_now) then
+    raise exception 'MEMBERSHIP_ADJUSTMENT_NOT_MANUAL_CURRENT' using errcode = '22023';
+  end if;
+
+  if v_subscription.ends_at is distinct from p_expected_ends_at then
+    raise exception 'MEMBERSHIP_PERIOD_STALE' using errcode = '40001';
+  end if;
+
+  if p_operation not in ('add_days', 'subtract_days', 'set_end_at') then
+    raise exception 'MEMBERSHIP_ADJUSTMENT_OPERATION_INVALID' using errcode = '22023';
+  end if;
+
+  if p_operation in ('add_days', 'subtract_days') then
+    if p_days is null or p_days <= 0 or p_ends_at is not null then
+      raise exception 'MEMBERSHIP_ADJUSTMENT_DAYS_INVALID' using errcode = '22023';
+    end if;
+    if v_subscription.ends_at is null then
+      raise exception 'MEMBERSHIP_ADJUSTMENT_PERMANENT_REQUIRES_END_DATE'
+        using errcode = '22023';
+    end if;
+
+    v_target_ends_at := case p_operation
+      when 'add_days' then v_subscription.ends_at + make_interval(days => p_days)
+      else v_subscription.ends_at - make_interval(days => p_days)
+    end;
+  else
+    if p_ends_at is null or p_days is not null then
+      raise exception 'MEMBERSHIP_ADJUSTMENT_END_DATE_INVALID' using errcode = '22023';
+    end if;
+    v_target_ends_at := p_ends_at;
+  end if;
+
+  if v_target_ends_at <= v_subscription.starts_at then
+    raise exception 'MEMBERSHIP_ADJUSTMENT_PERIOD_INVALID' using errcode = '22023';
+  end if;
+
+  v_status := case
+    when v_target_ends_at <= v_now then 'expired'
+    else v_subscription.status
+  end;
+
+  update public.membership_subscriptions
+  set
+    status = v_status,
+    ends_at = v_target_ends_at,
+    current_period_end = v_target_ends_at,
+    updated_at = now()
+  where id = v_subscription.id;
+
+  v_metadata := jsonb_build_object(
+    'subscription_id', v_subscription.id,
+    'plan_code', v_subscription.plan_code,
+    'status', v_status,
+    'starts_at', v_subscription.starts_at,
+    'previous_ends_at', v_subscription.ends_at,
+    'ends_at', v_target_ends_at,
+    'operation', p_operation,
+    'delta_days', p_days,
+    'source', v_subscription.source
+  );
+
+  insert into public.admin_audit_events (
+    actor_id,
+    action,
+    target_type,
+    target_id,
+    reason,
+    idempotency_key,
+    metadata
+  )
+  values (
+    p_actor_id,
+    'admin_adjust_membership_period',
+    'membership_subscription',
+    v_subscription.id::text,
+    btrim(p_reason),
+    btrim(p_idempotency_key),
+    v_metadata
+  );
+
+  return query select
+    v_subscription.id,
+    v_subscription.plan_code,
+    v_status,
+    v_subscription.starts_at,
+    v_subscription.ends_at,
+    v_target_ends_at,
+    p_operation,
+    p_days;
+end;
+$$;
+
+revoke all on function public.admin_adjust_membership_period(
+  uuid,
+  uuid,
+  uuid,
+  text,
+  integer,
+  timestamptz,
+  timestamptz,
+  text,
+  text
+) from public, anon, authenticated;
+
+grant execute on function public.admin_adjust_membership_period(
+  uuid,
+  uuid,
+  uuid,
+  text,
+  integer,
+  timestamptz,
+  timestamptz,
+  text,
+  text
+) to service_role;
 
 create or replace function public.admin_update_user_status(
   p_user_id uuid,
@@ -5772,6 +6042,19 @@ execute on function public.admin_get_payment_review_alert () to authenticated;
 
 grant
 execute on function public.admin_search_users (text, integer) to authenticated;
+
+grant
+execute on function public.admin_adjust_membership_period (
+    uuid,
+    uuid,
+    uuid,
+    text,
+    integer,
+    timestamptz,
+    timestamptz,
+    text,
+    text
+) to service_role;
 
 grant
 execute on function public.admin_update_user_status (uuid, text, text, text) to authenticated;

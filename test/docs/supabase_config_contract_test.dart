@@ -73,6 +73,7 @@ void main() {
         'revoke update (app_access_mode)',
         'get_admin_dashboard_summary',
         'admin_search_users',
+        'admin_adjust_membership_period',
         'admin_get_payment_review_alert',
         'admin_review_payment',
         'admin_refund_or_cancel_payment',

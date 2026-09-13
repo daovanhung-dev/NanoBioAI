@@ -28,6 +28,36 @@ function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unkn
 }
 
 describe('AdminApi mutation contract', () => {
+  it('sends a membership period adjustment through the protected Edge Function', async () => {
+    const functionCalls: FunctionCall[] = [];
+    const api = new AdminApi(() => fakeClient([], [], functionCalls));
+    const result = await api.adjustMembershipPeriod({
+      userId: 'user-1',
+      subscriptionId: 'subscription-1',
+      operation: 'add_days',
+      days: 7,
+      endsAt: null,
+      expectedEndsAt: '2026-10-13T00:00:00.000Z',
+      reason: 'Gia hạn theo phê duyệt.',
+      idempotencyKey: 'adjust-1',
+    });
+
+    expect(result.planCode).toBe('free');
+    expect(functionCalls[0]).toEqual({
+      name: 'admin-adjust-membership-period',
+      body: {
+        user_id: 'user-1',
+        subscription_id: 'subscription-1',
+        operation: 'add_days',
+        days: 7,
+        ends_at: null,
+        expected_ends_at: '2026-10-13T00:00:00.000Z',
+        reason: 'Gia hạn theo phê duyệt.',
+        idempotency_key: 'adjust-1',
+      },
+    });
+  });
+
   it('sends payment review reason, idempotency and transfer verification', async () => {
     const calls: RpcCall[] = [];
     const api = new AdminApi(() => fakeClient(calls));

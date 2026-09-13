@@ -17,6 +17,12 @@ void main() {
     final bulkGrantHandler = File(
       'supabase/functions/admin-grant-membership-bulk/handler.ts',
     ).readAsStringSync();
+    final adjustIndex = File(
+      'supabase/functions/admin-adjust-membership-period/index.ts',
+    ).readAsStringSync();
+    final adjustHandler = File(
+      'supabase/functions/admin-adjust-membership-period/handler.ts',
+    ).readAsStringSync();
     final datasource = File(
       'lib/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart',
     ).readAsStringSync();
@@ -25,10 +31,11 @@ void main() {
       'admin-create-account',
       'admin-grant-membership',
       'admin-grant-membership-bulk',
+      'admin-adjust-membership-period',
     ]) {
       expect(config, contains('[functions.$functionName]'));
     }
-    expect(RegExp(r'verify_jwt = true').allMatches(config).length, greaterThanOrEqualTo(3));
+    expect(RegExp(r'verify_jwt = true').allMatches(config).length, greaterThanOrEqualTo(4));
 
     expect(createIndex, contains('SUPABASE_SERVICE_ROLE_KEY'));
     expect(createIndex, contains('auth.admin.createUser'));
@@ -48,6 +55,23 @@ void main() {
     expect(bulkGrantHandler, contains('all_registered'));
     expect(bulkGrantHandler, contains('endsAt: null'));
     expect(bulkGrantHandler, contains('idempotency_key'));
+
+    expect(adjustIndex, contains('SUPABASE_SERVICE_ROLE_KEY'));
+    expect(adjustIndex, contains('admin_adjust_membership_period'));
+    expect(adjustIndex, contains('hasActiveAdminRole'));
+    expect(adjustIndex, contains('role_code'));
+    expect(adjustIndex, contains("admin_status === \"active\""));
+    for (final token in [
+      'expected_ends_at',
+      'idempotency_key',
+      'add_days',
+      'subtract_days',
+      'set_end_at',
+      'Chỉ Super Admin',
+      'requestError',
+    ]) {
+      expect(adjustHandler, contains(token), reason: token);
+    }
 
     expect(datasource, contains("functions.invoke('admin-create-account'"));
     expect(datasource, contains("functions.invoke('admin-grant-membership'"));

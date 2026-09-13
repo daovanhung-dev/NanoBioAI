@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-08-24 |
+| Ngay cap nhat | 2026-09-13 |
 | Lifecycle | Current |
 | Source-truth baseline | `25018e8` |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
@@ -37,6 +37,9 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
   decision; do not promote the current `Partial` status by percentage.
 - [ ] M01-M19: record real device/provider/Supabase evidence independently;
   static source does not authorize a production-ready claim.
+- [ ] M16: apply the Admin Web membership-period RPC and deploy the protected
+  Edge Function in sandbox; verify manual-only, row-lock/stale-period,
+  expiry-now, permanent-package, audit and idempotency cases before rollout.
 - [ ] M20-M29: keep the reachable shell data-free until each module has an
   approved DD and safety/privacy/data contracts.
 
@@ -183,6 +186,13 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 | 5 | M13/M14 Payment/Sale | Apply/test VietQR manual payment in Supabase sandbox: customer ownership/idempotency, pending_review alert, payments.write review/audit, approval entitlement, rejection and bank-app QR scan/VCB reconciliation; retain M14 conversion checks. | Runtime/SQL/tests da 100%; no bank API/webhook/balance integration; sandbox/provider/UAT evidence van thieu. |
 
 ## Notes tu phien coding gan nhat
+
+- 2026-09-13: M16/Admin Web bổ sung cột thời hạn và drawer membership đầy đủ;
+  form cấp gói hỗ trợ ngày kết thúc tùy chỉnh; Super Admin điều chỉnh manual
+  subscription bằng cộng/trừ ngày hoặc set end date qua RPC transactional và
+  Edge Function JWT/service-role. Admin Web 27/27 tests, typecheck/build, Deno
+  handler 5/5, Deno format và diff check PASS. Chưa apply SQL/deploy hoặc
+  browser-smoke Supabase sandbox; vẫn giữ Runtime/Sandbox-unverified.
 
 - 2026-08-23: M07 Voice thêm tùy chọn endpointing 0,2/0,5/1/2 giây
   sau speech result, mặc định 1 giây; selection RAM giữ qua Stop/Start

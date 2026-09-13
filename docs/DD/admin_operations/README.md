@@ -12,7 +12,7 @@
 | Source evidence | Admin user/payment/Sale/plan/config sections, controller and mutation RPC mapping are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-07-13 |
+| Last Updated | 2026-09-13 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 11.3..11.7, 16.3 AC-20..AC-24, Appendix A UC-21 |
 | Approved Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (BD-BIOAI-WELLNESS-REWARDS-001) |
 
@@ -65,4 +65,16 @@ Quản trị người dùng, gói, Sale, payment, conversion, nội dung, cấu 
 ## Validation Notes
 - DD docs complete: all product questions are answered and documented as implementation policy.
 - Runtime, sandbox/RLS/API smoke, and production acceptance evidence are tracked in the Implementation Evidence Backlog, not as DD blockers.
-- Runtime code, SQL, Supabase config, and tests were not changed in this DD docs 100 percent pass.
+- The original DD docs 100 percent pass did not change runtime code, SQL,
+  Supabase config, or tests; later implementation updates are recorded below.
+
+## Implementation Update — 2026-09-13
+
+- Admin Web đã bổ sung hiển thị thời hạn subscription và form chỉnh hạn cho
+  Super Admin; phạm vi không bao gồm Flutter Admin cũ, bulk provisioning hoặc
+  payment provider/Google Play.
+- SQL/RPC và Edge Function giữ service-role boundary, manual-only guard,
+  `expected_ends_at`, row lock, trạng thái expired, audit và idempotency.
+- Bằng chứng local gồm Admin Web test/typecheck/build, Deno handler test và
+  static contract source. Supabase sandbox, deploy và browser-smoke vẫn là
+  evidence backlog, chưa được suy diễn là production acceptance.

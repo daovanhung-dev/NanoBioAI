@@ -16,6 +16,8 @@ import {
   type BulkProvisionResult,
   type DashboardMetric,
   type MembershipGrantInput,
+  type MembershipPeriodAdjustmentInput,
+  type MembershipPeriodAdjustmentResult,
   type MutationResult,
   type RewardOfferInput,
   normalizeArray,
@@ -231,6 +233,24 @@ export class AdminApi {
       idempotency_key: input.idempotencyKey,
     });
     return toMutationResult(data);
+  }
+
+  async adjustMembershipPeriod(input: MembershipPeriodAdjustmentInput): Promise<MembershipPeriodAdjustmentResult> {
+    assertWriteContext(input.reason, input.idempotencyKey);
+    if (!input.userId.trim() || !input.subscriptionId.trim()) {
+      throw new AdminApiError('Chưa chọn gói cần điều chỉnh.');
+    }
+    const data = await this.invoke<unknown>('admin-adjust-membership-period', {
+      user_id: input.userId,
+      subscription_id: input.subscriptionId,
+      operation: input.operation,
+      days: input.days,
+      ends_at: input.endsAt,
+      expected_ends_at: input.expectedEndsAt,
+      reason: input.reason.trim(),
+      idempotency_key: input.idempotencyKey,
+    });
+    return toMembershipPeriodAdjustmentResult(data);
   }
 
   async getUserDetails(userId: string, reason: string): Promise<AdminUserDetails> {
@@ -464,6 +484,7 @@ function toAdminUserDetails(value: unknown): AdminUserDetails {
       surveyAnswers: recordArray(health.survey_answers),
     },
     membership: {
+      subscriptionId: optionalString(membership.subscription_id),
       planCode: normalizePlanCode(membership.plan_code) ?? 'free',
       status: String(membership.status ?? 'none'),
       source: optionalString(membership.source),
@@ -501,6 +522,23 @@ function toMutationResult(value: unknown): MutationResult {
   return {
     success: row.success !== false,
     message: String(row.message ?? 'Thao tác đã được ghi nhận.'),
+  };
+}
+
+function toMembershipPeriodAdjustmentResult(value: unknown): MembershipPeriodAdjustmentResult {
+  const row = normalizeMap(value);
+  const operation = row.operation === 'subtract_days' || row.operation === 'set_end_at'
+    ? row.operation
+    : 'add_days';
+  return {
+    subscriptionId: String(row.subscription_id ?? ''),
+    planCode: normalizePlanCode(row.plan_code) ?? 'free',
+    status: String(row.status ?? 'active'),
+    startsAt: String(row.starts_at ?? ''),
+    previousEndsAt: typeof row.previous_ends_at === 'string' ? row.previous_ends_at : null,
+    endsAt: typeof row.ends_at === 'string' ? row.ends_at : null,
+    operation,
+    deltaDays: typeof row.delta_days === 'number' ? row.delta_days : null,
   };
 }
 

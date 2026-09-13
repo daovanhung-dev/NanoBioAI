@@ -99,6 +99,12 @@ Admin, gọi RPC transactional bằng service role và ghi audit/idempotency cho
 từng tài khoản. Không gọi function này từ client thường hoặc chạy SQL ghi trực
 tiếp từ Flutter.
 
+`admin-adjust-membership-period` là thao tác đặc quyền dành riêng cho Super
+Admin để cộng/trừ số ngày hoặc đặt ngày kết thúc tuyệt đối cho subscription
+manual đang hiệu lực. Function kiểm tra `expected_ends_at`, khóa bản ghi, gọi
+RPC transactional bằng service role và ghi audit/idempotency; provider-managed,
+gói đã hết hạn và request không có reason đều bị từ chối.
+
 `admin-provision-accounts-bulk` dành riêng cho Super Admin để preview rồi tạo
 tối đa 100 tài khoản Gmail và cấp Plus/FamilyPlus theo thời hạn tháng. Function
 tính lại fingerprint, xử lý tuần tự, bảo toàn gói trả phí còn hạn và chỉ dùng
@@ -119,6 +125,7 @@ supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-create-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-grant-membership --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-grant-membership-bulk --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy admin-adjust-membership-period --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-provision-accounts-bulk --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy google-play-verify-purchase --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"

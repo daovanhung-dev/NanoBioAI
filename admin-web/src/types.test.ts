@@ -4,6 +4,7 @@ import {
   canAdjustPoints,
   canCreateAccount,
   canBulkProvisionAccounts,
+  canAdjustMembership,
   canGrantMembership,
   canManageUserDetails,
   canReviewPayments,
@@ -14,7 +15,7 @@ import {
   toWellnessWorkItems,
   type AdminSession,
 } from './types';
-import { planLabel } from './lib/labels';
+import { dateTimeLocalToIso, formatMembershipPeriod, planLabel, toDateTimeLocal } from './lib/labels';
 import { bulkConfirmationText, parseBulkAccountLines } from './lib/bulk-accounts';
 
 function session(roles: AdminSession['roles'], permissions: string[]): AdminSession {
@@ -29,6 +30,7 @@ describe('NanoBio Admin permission matrix', () => {
     expect(canAccessSection(value, 'wellness-rewards')).toBe(true);
     expect(canCreateAccount(value)).toBe(true);
     expect(canGrantMembership(value)).toBe(true);
+    expect(canAdjustMembership(value)).toBe(true);
     expect(canBulkProvisionAccounts(value)).toBe(true);
     expect(canAdjustPoints(value)).toBe(true);
     expect(canManageUserDetails(value)).toBe(true);
@@ -40,6 +42,7 @@ describe('NanoBio Admin permission matrix', () => {
     expect(canAccessSection(value, 'payments')).toBe(true);
     expect(canAccessSection(value, 'users')).toBe(false);
     expect(canGrantMembership(value)).toBe(false);
+    expect(canAdjustMembership(value)).toBe(false);
   });
 
   it('maps Support, Content and Operations Admin to their scoped work', () => {
@@ -87,7 +90,7 @@ describe('Supabase response normalization', () => {
 
   it('maps the canonical user subtitle plan into structured metadata', () => {
     const [plus, familyPlus, free, guest, malformed] = toUserWorkItems([
-      { id: 'plus', subtitle: 'plus@example.com - plus - none' },
+      { id: 'plus', plan_code: 'plus', membership_id: 'subscription-1', membership_status: 'active', membership_source: 'manual', membership_starts_at: '2026-09-13T00:00:00.000Z', membership_ends_at: '2026-10-13T00:00:00.000Z', subtitle: 'plus@example.com - plus - none' },
       { id: 'family', subtitle: 'family@example.com - family_plus - none' },
       { id: 'free', subtitle: 'free@example.com - free - none' },
       { id: 'guest', subtitle: 'guest@example.com - guest - none' },
@@ -95,6 +98,7 @@ describe('Supabase response normalization', () => {
     ]);
 
     expect(plus.metadata.plan_code).toBe('plus');
+    expect(plus.membership).toEqual({ subscriptionId: 'subscription-1', planCode: 'plus', status: 'active', source: 'manual', startsAt: '2026-09-13T00:00:00.000Z', endsAt: '2026-10-13T00:00:00.000Z' });
     expect(familyPlus.metadata.plan_code).toBe('family_plus');
     expect(free.metadata.plan_code).toBe('free');
     expect(guest.metadata.plan_code).toBe('guest');
@@ -142,6 +146,15 @@ describe('Supabase response normalization', () => {
     expect(planLabel('family_plus')).toBe('FamilyPlus');
     expect(planLabel('guest')).toBe('Khách');
     expect(planLabel(undefined)).toBe('Chưa xác định');
+  });
+
+  it('round-trips Vietnam datetime-local values and renders membership periods', () => {
+    const iso = dateTimeLocalToIso('2026-09-13T15:30');
+    expect(iso).toBe('2026-09-13T08:30:00.000Z');
+    expect(toDateTimeLocal(iso)).toBe('2026-09-13T15:30');
+    expect(dateTimeLocalToIso('2026-02-30T15:30')).toBeUndefined();
+    expect(formatMembershipPeriod('2026-09-13T00:00:00.000Z', '2026-10-13T00:00:00.000Z')).toContain('–');
+    expect(formatMembershipPeriod('2026-09-13T00:00:00.000Z')).toContain('Không thời hạn');
   });
 });
 

@@ -184,6 +184,7 @@ async function readCurrentMembership(
     .from("membership_subscriptions")
     .select("id,plan_code,status,source,starts_at,ends_at")
     .eq("user_id", userId)
+    .in("plan_code", ["plus", "family_plus"])
     .in("status", ["trialing", "active"]);
   if (error) throw error;
 
@@ -207,6 +208,7 @@ async function readCurrentMembership(
 
   if (current) {
     return {
+      subscription_id: current.id,
       plan_code: normalizePlanCode(current.plan_code),
       status: String(current.status),
       source: current.source,

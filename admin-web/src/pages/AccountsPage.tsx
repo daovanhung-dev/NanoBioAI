@@ -3,12 +3,14 @@ import { CalendarClock, Copy, Eye, KeyRound, Pencil, Plus, RefreshCw, ShieldChec
 import { useSearchParams } from 'react-router-dom';
 import { useAdminAuth } from '../auth/AuthProvider';
 import { Drawer, EmptyState, ErrorState, LoadingState, Modal, ReasonDialog, StatusBadge, Toast } from '../components/Ui';
-import { formatDate, planLabel, safeDisplay } from '../lib/labels';
-import { canBulkProvisionAccounts, canCreateAccount, canGrantMembership, canManageUserDetails, makeIdempotencyKey, type AdminPasswordResetResult, type AdminSession, type AdminUserDetails, type AdminWorkItem, type BulkProvisionInput, type BulkProvisionPreview, type BulkProvisionResult } from '../types';
+import { dateTimeLocalToIso, formatDate, formatMembershipPeriod, planLabel, safeDisplay, toDateTimeLocal } from '../lib/labels';
+import { buildMembershipAdjustmentInput, previewMembershipEnd } from '../lib/membership-period';
+import { canAdjustMembership, canBulkProvisionAccounts, canCreateAccount, canGrantMembership, canManageUserDetails, makeIdempotencyKey, type AdminMembershipSummary, type AdminPasswordResetResult, type AdminSession, type AdminUserDetails, type AdminWorkItem, type BulkProvisionInput, type BulkProvisionPreview, type BulkProvisionResult, type MembershipPeriodAdjustmentInput, type MembershipPeriodAdjustmentOperation } from '../types';
 import { bulkConfirmationText, parseBulkAccountLines, type BulkAccountLineIssue } from '../lib/bulk-accounts';
 
 type AccountAction = { item: AdminWorkItem; action: 'active' | 'suspended' };
 type UserProfileFormInput = { fullName: string; phone: string; gender: string; birthYear?: number };
+type MembershipAdjustmentTarget = { user: AdminWorkItem; membership: AdminMembershipSummary };
 
 export function AccountsPage() {
   const { api, session } = useAdminAuth();
@@ -22,6 +24,7 @@ export function AccountsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [membershipUser, setMembershipUser] = useState<AdminWorkItem | null>(null);
+  const [membershipAdjustmentUser, setMembershipAdjustmentUser] = useState<MembershipAdjustmentTarget | null>(null);
   const [detailReasonUser, setDetailReasonUser] = useState<AdminWorkItem | null>(null);
   const [detailUser, setDetailUser] = useState<AdminWorkItem | null>(null);
   const [userDetails, setUserDetails] = useState<AdminUserDetails | null>(null);
@@ -33,6 +36,7 @@ export function AccountsPage() {
   const [passwordResult, setPasswordResult] = useState<AdminPasswordResetResult | null>(null);
   const [createPending, setCreatePending] = useState<{ fullName: string; email: string; password: string; phone: string; reason: string; idempotencyKey: string } | null>(null);
   const [membershipPending, setMembershipPending] = useState<{ userId: string; planCode: 'plus' | 'family_plus'; startsAt: string; endsAt: string; reason: string; idempotencyKey: string } | null>(null);
+  const [membershipAdjustmentPending, setMembershipAdjustmentPending] = useState<(Omit<MembershipPeriodAdjustmentInput, 'idempotencyKey' | 'reason'> & { reason: string; idempotencyKey: string }) | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
 
@@ -68,6 +72,7 @@ export function AccountsPage() {
 
   const canWrite = Boolean(session && canCreateAccount(session));
   const canUpgrade = Boolean(session && canGrantMembership(session));
+  const canAdjust = Boolean(session && canAdjustMembership(session));
   const canBulkProvision = Boolean(session && canBulkProvisionAccounts(session));
   const canManageDetails = Boolean(session && canManageUserDetails(session));
   const activeCount = useMemo(() => items.filter((item) => {
@@ -90,15 +95,17 @@ export function AccountsPage() {
       <div className="filter-bar"><div className="search-field"><KeyRound size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void load(); }} placeholder="Tìm theo tên, email hoặc mã tài khoản…" aria-label="Tìm kiếm tài khoản" /></div><button className="button secondary" onClick={() => void load()}>Tìm kiếm</button></div>
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       {error && <ErrorState message={error} onRetry={() => void load()} />}
-      {loading && items.length === 0 ? <LoadingState /> : items.length === 0 ? <EmptyState title={query ? 'Không tìm thấy tài khoản' : 'Chưa có tài khoản'} message="Thử một từ khóa khác hoặc tải lại dữ liệu." /> : <AccountTable items={items} canUpgrade={canUpgrade} canWrite={canWrite} canManageDetails={canManageDetails} onStatus={setSelected} onMembership={setMembershipUser} onDetails={setDetailReasonUser} />}
+      {loading && items.length === 0 ? <LoadingState /> : items.length === 0 ? <EmptyState title={query ? 'Không tìm thấy tài khoản' : 'Chưa có tài khoản'} message="Thử một từ khóa khác hoặc tải lại dữ liệu." /> : <AccountTable items={items} canUpgrade={canUpgrade} canAdjust={canAdjust} canWrite={canWrite} canManageDetails={canManageDetails} onStatus={setSelected} onMembership={setMembershipUser} onAdjust={(item) => { if (item.membership) setMembershipAdjustmentUser({ user: item, membership: item.membership }); }} onDetails={setDetailReasonUser} />}
       {selected && <ReasonDialog action={selected.action} subject={selected.item.title} onCancel={() => setSelected(null)} onConfirm={(reason) => void updateStatus(selected, reason)} busy={busy} />}
       {detailReasonUser && <ReasonDialog action="view_health" subject={detailReasonUser.title} onCancel={() => setDetailReasonUser(null)} onConfirm={(reason) => void openDetails(detailReasonUser, reason)} busy={detailLoading} />}
       {createOpen && <CreateAccountModal busy={busy} onClose={() => setCreateOpen(false)} onSubmit={(input) => { setCreateOpen(false); setCreatePending({ ...input, idempotencyKey: makeIdempotencyKey('create-account', input.email) }); }} />}
       {bulkOpen && <BulkProvisionModal api={api} onClose={() => setBulkOpen(false)} onComplete={async (result) => { setBulkOpen(false); setToast(`Đã xử lý ${result.processedCount} tài khoản: ${result.createdCount} tạo mới, ${result.grantedCount} cấp gói, ${result.skippedCount} giữ nguyên.`); await load(); }} />}
       {membershipUser && <GrantMembershipModal user={membershipUser} busy={busy} onClose={() => setMembershipUser(null)} onSubmit={(input) => { setMembershipUser(null); setMembershipPending({ ...input, idempotencyKey: makeIdempotencyKey('grant-membership', input.userId) }); }} />}
+      {membershipAdjustmentUser && <AdjustMembershipPeriodModal target={membershipAdjustmentUser} busy={busy} onClose={() => setMembershipAdjustmentUser(null)} onSubmit={(input) => { setMembershipAdjustmentUser(null); setMembershipAdjustmentPending({ ...input, reason: input.reason, idempotencyKey: makeIdempotencyKey('adjust-membership-period', input.subscriptionId) }); }} />}
       {createPending && <ReasonDialog action="create_account" subject={createPending.email} initialReason={createPending.reason} onCancel={() => setCreatePending(null)} onConfirm={(reason) => void createAccount({ ...createPending, reason })} busy={busy} />}
       {membershipPending && <ReasonDialog action="grant_membership" subject={membershipPending.userId} initialReason={membershipPending.reason} onCancel={() => setMembershipPending(null)} onConfirm={(reason) => void grantMembership({ ...membershipPending, reason })} busy={busy} />}
-      {detailUser && <UserDetailsDrawer details={userDetails} loading={detailLoading} error={detailError} busy={detailBusy} passwordResult={passwordResult} onClose={closeDetails} onEdit={(input) => setProfilePending({ ...input, userId: detailUser.id })} onReset={() => setPasswordPending({ userId: detailUser.id, subject: detailUser.title, idempotencyKey: makeIdempotencyKey('reset-user-password', detailUser.id) })} />}
+      {membershipAdjustmentPending && <ReasonDialog action="adjust_membership_period" subject={membershipAdjustmentPending.subscriptionId} initialReason={membershipAdjustmentPending.reason} onCancel={() => setMembershipAdjustmentPending(null)} onConfirm={(reason) => void adjustMembershipPeriod({ ...membershipAdjustmentPending, reason })} busy={busy} />}
+      {detailUser && <UserDetailsDrawer details={userDetails} loading={detailLoading} error={detailError} busy={detailBusy} canAdjust={canAdjust} passwordResult={passwordResult} onClose={closeDetails} onAdjust={() => { if (detailUser && userDetails && isAdjustableMembership(userDetails.membership)) setMembershipAdjustmentUser({ user: detailUser, membership: toMembershipSummary(userDetails.membership) }); }} onEdit={(input) => setProfilePending({ ...input, userId: detailUser.id })} onReset={() => setPasswordPending({ userId: detailUser.id, subject: detailUser.title, idempotencyKey: makeIdempotencyKey('reset-user-password', detailUser.id) })} />}
       {profilePending && <ReasonDialog action="update_user_profile" subject={profilePending.userId} onCancel={() => setProfilePending(null)} onConfirm={(reason) => void updateProfile(profilePending, reason)} busy={detailBusy} />}
       {passwordPending && <ReasonDialog action="reset_user_password" subject={passwordPending.subject} onCancel={() => setPasswordPending(null)} onConfirm={(reason) => void resetPassword(passwordPending, reason)} busy={detailBusy} />}
     </div>
@@ -134,6 +141,30 @@ export function AccountsPage() {
       setMembershipPending(null); setToast(result.message || 'Đã cập nhật gói thành viên.'); await load();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Chưa cập nhật được gói thành viên.');
+    } finally { busyRef.current = false; setBusy(false); }
+  }
+
+  async function adjustMembershipPeriod(input: MembershipPeriodAdjustmentInput) {
+    if (busyRef.current) return;
+    busyRef.current = true; setBusy(true); setError(null);
+    try {
+      const result = await api.adjustMembershipPeriod(input);
+      setMembershipAdjustmentPending(null);
+      setUserDetails((current) => current ? {
+        ...current,
+        membership: {
+          ...current.membership,
+          subscriptionId: result.subscriptionId,
+          planCode: result.planCode,
+          status: result.status,
+          startsAt: result.startsAt,
+          endsAt: result.endsAt ?? undefined,
+        },
+      } : current);
+      setToast('Đã cập nhật thời hạn gói.');
+      await load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Chưa cập nhật được thời hạn gói.');
     } finally { busyRef.current = false; setBusy(false); }
   }
 
@@ -209,16 +240,17 @@ export function AccountsPage() {
   }
 }
 
-function AccountTable({ items, canWrite, canUpgrade, canManageDetails, onStatus, onMembership, onDetails }: { items: AdminWorkItem[]; canWrite: boolean; canUpgrade: boolean; canManageDetails: boolean; onStatus: (value: AccountAction) => void; onMembership: (item: AdminWorkItem) => void; onDetails: (item: AdminWorkItem) => void }) {
-  return <div className="table-card"><div className="table-scroll"><table><thead><tr><th>Tài khoản</th><th>Trạng thái</th><th>Gói hiện tại</th><th>Hoạt động gần nhất</th><th className="action-column">Thao tác</th></tr></thead><tbody>{items.map((item) => {
+function AccountTable({ items, canWrite, canUpgrade, canAdjust, canManageDetails, onStatus, onMembership, onAdjust, onDetails }: { items: AdminWorkItem[]; canWrite: boolean; canUpgrade: boolean; canAdjust: boolean; canManageDetails: boolean; onStatus: (value: AccountAction) => void; onMembership: (item: AdminWorkItem) => void; onAdjust: (item: AdminWorkItem) => void; onDetails: (item: AdminWorkItem) => void }) {
+  return <div className="table-card"><div className="table-scroll"><table><thead><tr><th>Tài khoản</th><th>Trạng thái</th><th>Gói hiện tại</th><th>Thời hạn</th><th>Hoạt động gần nhất</th><th className="action-column">Thao tác</th></tr></thead><tbody>{items.map((item) => {
     const normalized = item.status.toLowerCase();
     const has = (token: string) => normalized === token || new RegExp(`(^|[_-])${token}($|[_-])`).test(normalized);
     const nextStatus: AccountAction['action'] | null = has('active') ? 'suspended' : has('suspended') ? 'active' : null;
-    return <tr key={item.id}><td><div className="item-title">{safeDisplay(item.title)}</div><div className="item-subtitle">{safeDisplay(item.subtitle || item.id)}</div></td><td><StatusBadge value={item.status} /></td><td>{planLabel(item.metadata.plan_code ?? item.metadata.plan_name)}</td><td className="nowrap">{formatDate(item.createdAt)}</td><td className="action-cell"><div className="action-list">{canManageDetails && <button className="text-action" onClick={() => onDetails(item)}><Eye size={13} /> Chi tiết</button>}{canWrite && nextStatus && <button className={`text-action ${nextStatus === 'suspended' ? 'danger-text' : ''}`} onClick={() => onStatus({ item, action: nextStatus })}>{nextStatus === 'suspended' ? 'Tạm khóa' : 'Mở lại'}</button>}{canUpgrade && <button className="text-action" onClick={() => onMembership(item)}>Cấp gói</button>}{!canManageDetails && !canWrite && !canUpgrade && <span className="muted">Chỉ xem</span>}</div></td></tr>;
+    const canAdjustItem = canAdjust && item.membership !== undefined && isAdjustableMembership(item.membership);
+    return <tr key={item.id}><td><div className="item-title">{safeDisplay(item.title)}</div><div className="item-subtitle">{safeDisplay(item.subtitle || item.id)}</div></td><td><StatusBadge value={item.status} /></td><td>{planLabel(item.metadata.plan_code ?? item.metadata.plan_name)}</td><td className="membership-period">{formatMembershipPeriod(item.membership?.startsAt, item.membership?.endsAt)}</td><td className="nowrap">{formatDate(item.createdAt)}</td><td className="action-cell"><div className="action-list">{canManageDetails && <button className="text-action" onClick={() => onDetails(item)}><Eye size={13} /> Chi tiết</button>}{canAdjustItem && <button className="text-action" onClick={() => onAdjust(item)}><CalendarClock size={13} /> Chỉnh hạn</button>}{canWrite && nextStatus && <button className={`text-action ${nextStatus === 'suspended' ? 'danger-text' : ''}`} onClick={() => onStatus({ item, action: nextStatus })}>{nextStatus === 'suspended' ? 'Tạm khóa' : 'Mở lại'}</button>}{canUpgrade && <button className="text-action" onClick={() => onMembership(item)}>Cấp gói</button>}{!canManageDetails && !canWrite && !canUpgrade && !canAdjustItem && <span className="muted">Chỉ xem</span>}</div></td></tr>;
   })}</tbody></table></div></div>;
 }
 
-function UserDetailsDrawer({ details, loading, error, busy, passwordResult, onClose, onEdit, onReset }: { details: AdminUserDetails | null; loading: boolean; error: string | null; busy: boolean; passwordResult: AdminPasswordResetResult | null; onClose: () => void; onEdit: (input: UserProfileFormInput) => void; onReset: () => void }) {
+function UserDetailsDrawer({ details, loading, error, busy, canAdjust, passwordResult, onClose, onAdjust, onEdit, onReset }: { details: AdminUserDetails | null; loading: boolean; error: string | null; busy: boolean; canAdjust: boolean; passwordResult: AdminPasswordResetResult | null; onClose: () => void; onAdjust: () => void; onEdit: (input: UserProfileFormInput) => void; onReset: () => void }) {
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -291,7 +323,8 @@ function UserDetailsDrawer({ details, loading, error, busy, passwordResult, onCl
 
         <section className="drawer-section">
           <div className="drawer-section-heading"><h3>Gói hiện tại</h3><StatusBadge value={details.membership.status} /></div>
-          <DetailGrid record={{ plan_code: planLabel(details.membership.planCode), source: details.membership.source, starts_at: details.membership.startsAt, ends_at: details.membership.endsAt }} />
+          <DetailGrid record={{ plan_code: planLabel(details.membership.planCode), source: details.membership.source, starts_at: details.membership.startsAt, ends_at: details.membership.subscriptionId ? (details.membership.endsAt ?? 'Không thời hạn') : undefined }} />
+          {canAdjust && isAdjustableMembership(details.membership) && <div className="drawer-actions compact"><button className="button secondary" onClick={onAdjust} disabled={busy}><CalendarClock size={15} /> Chỉnh thời hạn</button></div>}
         </section>
 
         <section className="drawer-section">
@@ -339,6 +372,7 @@ function DetailGrid({ record }: { record: Record<string, unknown> }) {
 function formatDetailValue(key: string, value: unknown): string {
   if (typeof value === 'boolean') return value ? 'Có' : 'Không';
   if (typeof value === 'object') return safeDisplay(JSON.stringify(value));
+  if (key === 'ends_at' && value === 'Không thời hạn') return 'Không thời hạn';
   if (key.endsWith('_at') && typeof value === 'string') return formatDate(value);
   return safeDisplay(value);
 }
@@ -350,9 +384,89 @@ function CreateAccountModal({ busy, onClose, onSubmit }: { busy: boolean; onClos
 }
 
 function GrantMembershipModal({ user, busy, onClose, onSubmit }: { user: AdminWorkItem; busy: boolean; onClose: () => void; onSubmit: (input: { userId: string; planCode: 'plus' | 'family_plus'; startsAt: string; endsAt: string; reason: string }) => void }) {
-  const [planCode, setPlanCode] = useState<'plus' | 'family_plus'>('plus'); const [months, setMonths] = useState('1'); const [reason, setReason] = useState(''); const [error, setError] = useState<string | null>(null);
-  function submit(event: FormEvent) { event.preventDefault(); if (!reason.trim()) { setError('Cần nhập lý do cấp gói.'); return; } const starts = new Date(); const ends = new Date(starts); ends.setMonth(ends.getMonth() + Number(months)); onSubmit({ userId: user.id, planCode, startsAt: starts.toISOString(), endsAt: ends.toISOString(), reason }); }
-  return <Modal title="Cấp gói thành viên" onClose={onClose}><form onSubmit={submit}><div className="modal-body">{error && <div className="inline-alert danger">{error}</div>}<div className="selected-account"><span className="avatar small">{(user.title[0] ?? 'U').toUpperCase()}</span><span><strong>{safeDisplay(user.title)}</strong><small>{safeDisplay(user.subtitle || user.id)}</small></span></div><label className="field-label">Gói dịch vụ<select className="input" value={planCode} onChange={(event) => setPlanCode(event.target.value as 'plus' | 'family_plus')}><option value="plus">Plus</option><option value="family_plus">FamilyPlus</option></select></label><label className="field-label">Thời hạn<select className="input" value={months} onChange={(event) => setMonths(event.target.value)}><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12">12 tháng</option></select></label><label className="field-label">Lý do bắt buộc<textarea className="textarea" rows={3} value={reason} onChange={(event) => setReason(event.target.value)} /></label><p className="form-note"><CalendarClock size={15} /> Gói đang hoạt động trước đó sẽ được backend xử lý theo chính sách hiện hành.</p></div><div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Hủy</button><button className="button primary" disabled={busy}><CalendarClock size={16} /> {busy ? 'Đang cập nhật…' : 'Xác nhận cấp gói'}</button></div></form></Modal>;
+  const [planCode, setPlanCode] = useState<'plus' | 'family_plus'>('plus');
+  const [duration, setDuration] = useState<'1' | '3' | '6' | '12' | 'custom'>('1');
+  const [startsAt] = useState(() => new Date().toISOString());
+  const [customEndsAt, setCustomEndsAt] = useState(() => {
+    const end = new Date(startsAt);
+    end.setMonth(end.getMonth() + 1);
+    return toDateTimeLocal(end.toISOString());
+  });
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const start = new Date(startsAt);
+    const end = new Date(start);
+    if (duration === 'custom') {
+      const customEnd = dateTimeLocalToIso(customEndsAt);
+      if (!customEnd) {
+        setError('Ngày kết thúc chưa hợp lệ.');
+        return;
+      }
+      end.setTime(new Date(customEnd).getTime());
+    } else {
+      end.setMonth(end.getMonth() + Number(duration));
+    }
+    if (end <= start) {
+      setError('Ngày kết thúc phải sau thời điểm bắt đầu.');
+      return;
+    }
+    if (!reason.trim()) {
+      setError('Cần nhập lý do cấp gói.');
+      return;
+    }
+    onSubmit({ userId: user.id, planCode, startsAt, endsAt: end.toISOString(), reason });
+  }
+
+  return <Modal title="Cấp gói thành viên" onClose={onClose}><form onSubmit={submit}><div className="modal-body">{error && <div className="inline-alert danger">{error}</div>}<div className="selected-account"><span className="avatar small">{(user.title[0] ?? 'U').toUpperCase()}</span><span><strong>{safeDisplay(user.title)}</strong><small>{safeDisplay(user.subtitle || user.id)}</small></span></div><div className="form-grid two"><label className="field-label">Gói dịch vụ<select className="input" value={planCode} onChange={(event) => setPlanCode(event.target.value as 'plus' | 'family_plus')}><option value="plus">Plus</option><option value="family_plus">FamilyPlus</option></select></label><label className="field-label">Thời hạn<select className="input" value={duration} onChange={(event) => setDuration(event.target.value as '1' | '3' | '6' | '12' | 'custom')}><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12">12 tháng</option><option value="custom">Tùy chỉnh</option></select></label></div>{duration === 'custom' && <label className="field-label">Ngày kết thúc <span className="muted">(giờ Việt Nam)</span><input className="input" type="datetime-local" value={customEndsAt} min={toDateTimeLocal(startsAt)} onChange={(event) => setCustomEndsAt(event.target.value)} /></label>}<label className="field-label">Lý do bắt buộc<textarea className="textarea" rows={3} value={reason} onChange={(event) => setReason(event.target.value)} /></label><p className="form-note"><CalendarClock size={15} /> Bắt đầu từ {formatDate(startsAt)}. Gói đang hoạt động trước đó sẽ được backend xử lý theo chính sách hiện hành.</p></div><div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Hủy</button><button className="button primary" disabled={busy}><CalendarClock size={16} /> {busy ? 'Đang cập nhật…' : 'Xác nhận cấp gói'}</button></div></form></Modal>;
+}
+
+function AdjustMembershipPeriodModal({ target, busy, onClose, onSubmit }: { target: MembershipAdjustmentTarget; busy: boolean; onClose: () => void; onSubmit: (input: Omit<MembershipPeriodAdjustmentInput, 'idempotencyKey'>) => void }) {
+  const { user, membership } = target;
+  const [operation, setOperation] = useState<MembershipPeriodAdjustmentOperation>(membership.endsAt ? 'add_days' : 'set_end_at');
+  const [days, setDays] = useState('');
+  const [customEndsAt, setCustomEndsAt] = useState(toDateTimeLocal(membership.endsAt));
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const previewEndsAt = previewMembershipEnd(membership, operation, days, customEndsAt);
+  const isExpiredPreview = previewEndsAt ? new Date(previewEndsAt).getTime() <= Date.now() : false;
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const input = buildMembershipAdjustmentInput(user.id, membership, operation, days, customEndsAt, reason);
+    if ('error' in input) {
+      setError(input.error);
+      return;
+    }
+    onSubmit(input);
+  }
+
+  return <Modal title="Chỉnh thời hạn gói" onClose={onClose}><form onSubmit={submit}><div className="modal-body">{error && <div className="inline-alert danger">{error}</div>}<div className="selected-account"><span className="avatar small">{(user.title[0] ?? 'U').toUpperCase()}</span><span><strong>{safeDisplay(user.title)}</strong><small>{planLabel(membership.planCode)}</small></span></div><div className="period-preview"><div><small>Hiện tại</small><strong>{formatMembershipPeriod(membership.startsAt, membership.endsAt)}</strong></div><div><small>Sau khi lưu</small><strong>{previewEndsAt ? formatDate(previewEndsAt) : 'Nhập thông tin để xem'}</strong></div></div>{isExpiredPreview && <div className="inline-alert info">Gói sẽ hết hạn ngay sau khi lưu.</div>}<label className="field-label">Cách điều chỉnh<select className="input" value={operation} onChange={(event) => setOperation(event.target.value as MembershipPeriodAdjustmentOperation)}><option value="add_days" disabled={!membership.endsAt}>Thêm số ngày</option><option value="subtract_days" disabled={!membership.endsAt}>Giảm số ngày</option><option value="set_end_at">Chọn ngày kết thúc</option></select></label>{operation === 'set_end_at' ? <label className="field-label">Ngày kết thúc mới <span className="muted">(giờ Việt Nam)</span><input className="input" type="datetime-local" value={customEndsAt} min={toDateTimeLocal(membership.startsAt)} onChange={(event) => setCustomEndsAt(event.target.value)} /></label> : <label className="field-label">Số ngày<input className="input" type="number" min="1" step="1" value={days} onChange={(event) => setDays(event.target.value)} placeholder="Ví dụ: 7" /></label>}<label className="field-label">Lý do bắt buộc<textarea className="textarea" rows={3} value={reason} onChange={(event) => setReason(event.target.value)} /></label><p className="form-note"><CalendarClock size={15} /> Chỉ subscription thủ công được điều chỉnh. Nếu thời điểm mới đã qua, quyền gói sẽ được thu hồi sau khi lưu.</p></div><div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Hủy</button><button className="button primary" disabled={busy}><CalendarClock size={16} /> {busy ? 'Đang cập nhật…' : 'Xác nhận chỉnh hạn'}</button></div></form></Modal>;
+}
+
+function toMembershipSummary(membership: AdminUserDetails['membership']): AdminMembershipSummary {
+  return {
+    subscriptionId: membership.subscriptionId ?? '',
+    planCode: membership.planCode,
+    status: membership.status,
+    source: membership.source,
+    startsAt: membership.startsAt,
+    endsAt: membership.endsAt,
+  };
+}
+
+function isPaidPlan(planCode: AdminUserDetails['membership']['planCode']): boolean {
+  return planCode === 'plus' || planCode === 'family_plus';
+}
+
+function isAdjustableMembership(membership: AdminUserDetails['membership'] | AdminMembershipSummary): boolean {
+  if (!membership.subscriptionId || membership.source !== 'manual' || !isPaidPlan(membership.planCode)) return false;
+  if (membership.status !== 'active' && membership.status !== 'trialing') return false;
+  const startsAt = membership.startsAt ? Date.parse(membership.startsAt) : Number.NaN;
+  const endsAt = membership.endsAt ? Date.parse(membership.endsAt) : Number.POSITIVE_INFINITY;
+  return Number.isFinite(startsAt) && startsAt <= Date.now() && (endsAt === Number.POSITIVE_INFINITY || endsAt > Date.now());
 }
 
 function BulkProvisionModal({ api, onClose, onComplete }: { api: import('../lib/admin-api').AdminApi; onClose: () => void; onComplete: (result: BulkProvisionResult) => Promise<void> }) {

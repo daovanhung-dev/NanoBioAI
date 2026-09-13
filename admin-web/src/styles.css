@@ -121,13 +121,18 @@ a { color: inherit; }
 .search-field input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 12px; }
 .table-card { overflow: hidden; }
 .table-scroll { width: 100%; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 720px; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
 th { padding: 12px 18px; color: #71839a; font-size: 10px; font-weight: 800; letter-spacing: .09em; text-align: left; text-transform: uppercase; background: #f8fafc; }
 td { padding: 15px 18px; border-top: 1px solid #edf2f7; color: #364b62; font-size: 12px; vertical-align: middle; }
 tr:hover td { background: #fbfdff; }
 .item-title { color: var(--navy); font-size: 12px; font-weight: 800; }
 .item-subtitle { max-width: 480px; margin-top: 4px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.action-column { width: 190px; }
+.membership-period { min-width: 190px; color: #405f7d; font-size: 11px; line-height: 1.45; }
+.period-preview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 4px 0 15px; }
+.period-preview > div { display: flex; flex-direction: column; gap: 4px; padding: 10px; border: 1px solid #dce8f3; border-radius: 8px; background: #f8fbff; }
+.period-preview small { color: #71839a; font-size: 10px; font-weight: 800; }
+.period-preview strong { color: var(--navy); font-size: 11px; line-height: 1.4; }
+.action-column { width: 270px; }
 .action-cell { text-align: right; }
 .action-list { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .text-action { display: inline-flex; align-items: center; gap: 4px; padding: 3px 0; border: 0; color: var(--blue); background: transparent; font-size: 11px; font-weight: 800; }
@@ -217,6 +222,7 @@ tr:hover td { background: #fbfdff; }
 .detail-card + .detail-card { margin-top: 8px; }
 .detail-card .detail-grid { gap: 8px 14px; }
 .drawer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.drawer-actions.compact { margin-top: 12px; }
 .drawer-actions .button { flex: 1; min-width: 150px; }
 .password-result { display: flex; align-items: center; gap: 9px; padding: 12px; border: 1px solid #b7e0cd; border-radius: 8px; color: var(--green); background: #f4fffa; }
 .password-result code { flex: 1; overflow-wrap: anywhere; color: #155d43; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
