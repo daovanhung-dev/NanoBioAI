@@ -28,7 +28,9 @@ Commit đề xuất: feat(admin-web): tạo workspace vận hành NanoBio trên 
 - Tạo confirmation/reason/idempotency flow cho write action, payment transfer
   verification, reward external revocation confirmation và double-submit guard.
 - Tạo `.github/workflows/deploy-admin-web.yml` với `npm ci`, typecheck, test,
-  build và Pages artifact/deploy.
+  preflight cấu hình, build và Pages artifact/deploy. Preflight dừng job nếu
+  thiếu `NANOBIO_SUPABASE_URL`, `NANOBIO_SUPABASE_ANON_KEY` hoặc URL không hợp lệ
+  mà không in giá trị secret.
 - Tạo feature note và README hướng dẫn local/GitHub Variables/Secrets.
 - Giữ nguyên các thay đổi chưa commit có sẵn trong worktree; không thay đổi
   schema Supabase trong task này.

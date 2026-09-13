@@ -41,3 +41,6 @@ definer ở Supabase mới là lớp bảo vệ dữ liệu cuối cùng. Chỉ 
 Workflow không chạy các thao tác schema, không quản lý secret Supabase và không
 được xem là bằng chứng backend production-ready. Contract test Supabase vẫn
 cần chạy trong môi trường có Dart/Supabase runtime phù hợp.
+
+Workflow có bước preflight không in giá trị cấu hình: nếu thiếu URL, anon key
+hoặc URL không phải HTTP(S), job sẽ dừng trước khi tạo artifact Pages.
