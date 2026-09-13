@@ -100,6 +100,17 @@ export function actionLabel(value: string): string {
   return actionLabels[value] ?? 'Thực hiện';
 }
 
+export function planLabel(value: unknown, fallback = 'Chưa xác định'): string {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return ({
+    guest: 'Khách',
+    free: 'Miễn phí',
+    plus: 'Plus',
+    family_plus: 'FamilyPlus',
+    familyplus: 'FamilyPlus',
+  } as Record<string, string>)[normalized] ?? fallback;
+}
+
 export function auditActionLabel(value: string): string {
   return auditActions[value] ?? 'Thao tác quản trị';
 }

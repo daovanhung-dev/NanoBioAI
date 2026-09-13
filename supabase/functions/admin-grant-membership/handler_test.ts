@@ -122,6 +122,60 @@ Deno.test("admin-grant-membership forwards trusted normalized input", async () =
   assertEquals(received[0].actorId, "admin-user");
   assertEquals(received[0].planCode, "plus");
   assertEquals(received[0].idempotencyKey, "grant-membership-1");
+  assertEquals(received[0].preserveExistingPaidPlan, false);
+});
+
+Deno.test("admin-grant-membership forwards the paid-plan preservation guard", async () => {
+  const received: Array<Record<string, unknown>> = [];
+  const handler = createAdminGrantMembershipHandler(deps({
+    grant: (input) => {
+      received.push(input);
+      return Promise.resolve(grantResult());
+    },
+  }));
+
+  const response = await handler(request({
+    body: validBody({ preserve_existing_paid_plan: true }),
+  }));
+  assertEquals(response.status, 200);
+  assertEquals(received[0].preserveExistingPaidPlan, true);
+});
+
+Deno.test("admin-grant-membership reports a preserved paid plan without writing a new one", async () => {
+  let grants = 0;
+  const handler = createAdminGrantMembershipHandler(deps({
+    grant: () => {
+      grants++;
+      return Promise.resolve({ ...grantResult(), skipped: true });
+    },
+  }));
+
+  const response = await handler(request({
+    body: validBody({ preserve_existing_paid_plan: true }),
+  }));
+  const body = await response.json();
+  assertEquals(response.status, 200);
+  assertEquals(body.success, true);
+  assertEquals(body.skipped, true);
+  assertEquals(body.message, "Đã giữ nguyên gói đang hoạt động, không thay thế bằng Plus.");
+  assertEquals(grants, 1);
+});
+
+Deno.test("admin-grant-membership replays a preserved paid plan idempotently", async () => {
+  let grants = 0;
+  const handler = createAdminGrantMembershipHandler(deps({
+    findIdempotentResult: () => Promise.resolve({ ...grantResult(), skipped: true }),
+    grant: () => {
+      grants++;
+      return Promise.resolve(grantResult());
+    },
+  }));
+
+  const response = await handler(request());
+  const body = await response.json();
+  assertEquals(response.status, 200);
+  assertEquals(body.skipped, true);
+  assertEquals(grants, 0);
 });
 
 Deno.test("admin-grant-membership keeps backend failures private", async () => {

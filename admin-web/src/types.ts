@@ -79,6 +79,10 @@ export type AdminWorkItem = {
   paymentReconciliation?: PaymentReconciliation;
 };
 
+export const ADMIN_PLAN_CODES = ['guest', 'free', 'plus', 'family_plus'] as const;
+
+export type AdminPlanCode = (typeof ADMIN_PLAN_CODES)[number];
+
 export type AdminAuditEvent = {
   id: string;
   action: string;
@@ -260,7 +264,58 @@ export function toAdminSession(value: unknown): AdminSession {
 }
 
 export function toWorkItems(value: unknown): AdminWorkItem[] {
-  return normalizeArray<Record<string, unknown>>(value).map((row) => ({
+  return normalizeArray<Record<string, unknown>>(value).map(toWorkItem);
+}
+
+export function toUserWorkItems(value: unknown): AdminWorkItem[] {
+  return normalizeArray<Record<string, unknown>>(value).map((row) => {
+    const item = toWorkItem(row);
+    const metadata = normalizeMap(row.metadata);
+    const planCode = firstPlanCode(
+      metadata.plan_code,
+      row.plan_code,
+      row.product_access_status,
+      row.subscription_tier,
+      metadata.plan_name,
+      parseUserPlanCode(item.subtitle),
+    );
+
+    return planCode
+      ? { ...item, metadata: { ...metadata, plan_code: planCode } }
+      : item;
+  });
+}
+
+export function parseUserPlanCode(subtitle: string): AdminPlanCode | undefined {
+  const match = subtitle.match(/(?:^| - )(guest|free|plus|family_plus) - [^-]+$/i);
+  return match ? normalizePlanCode(match[1]) : undefined;
+}
+
+export function normalizePlanCode(value: unknown): AdminPlanCode | undefined {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return ADMIN_PLAN_CODES.includes(normalized as AdminPlanCode)
+    ? normalized as AdminPlanCode
+    : undefined;
+}
+
+function firstPlanCode(...values: unknown[]): AdminPlanCode | undefined {
+  for (const value of values) {
+    const planCode = planCodeFromValue(value);
+    if (planCode) return planCode;
+  }
+  return undefined;
+}
+
+function planCodeFromValue(value: unknown): AdminPlanCode | undefined {
+  const code = normalizePlanCode(value);
+  if (code) return code;
+  return String(value ?? '').trim().toLowerCase() === 'familyplus'
+    ? 'family_plus'
+    : undefined;
+}
+
+function toWorkItem(row: Record<string, unknown>): AdminWorkItem {
+  return {
     id: String(row.id ?? ''),
     title: String(row.title ?? 'Bản ghi'),
     subtitle: String(row.subtitle ?? ''),
@@ -269,7 +324,7 @@ export function toWorkItems(value: unknown): AdminWorkItem[] {
     createdAt: row.created_at ? String(row.created_at) : undefined,
     metadata: normalizeMap(row.metadata),
     paymentReconciliation: toPaymentReconciliation(row),
-  }));
+  };
 }
 
 export function toWellnessWorkItems(value: unknown): AdminWorkItem[] {

@@ -6,10 +6,13 @@ import {
   canGrantMembership,
   canReviewPayments,
   normalizeMap,
+  parseUserPlanCode,
   toAdminSession,
+  toUserWorkItems,
   toWellnessWorkItems,
   type AdminSession,
 } from './types';
+import { planLabel } from './lib/labels';
 
 function session(roles: AdminSession['roles'], permissions: string[]): AdminSession {
   return { userId: 'admin-1', roles, permissions, active: true, canUseUserApp: false };
@@ -73,5 +76,64 @@ describe('Supabase response normalization', () => {
     expect(redemption.id).toBe('redemption-1');
     expect(redemption.metadata.masked_code).toBe('••••••');
     expect(redemption.metadata.raw_code).toBeUndefined();
+  });
+
+  it('maps the canonical user subtitle plan into structured metadata', () => {
+    const [plus, familyPlus, free, guest, malformed] = toUserWorkItems([
+      { id: 'plus', subtitle: 'plus@example.com - plus - none' },
+      { id: 'family', subtitle: 'family@example.com - family_plus - none' },
+      { id: 'free', subtitle: 'free@example.com - free - none' },
+      { id: 'guest', subtitle: 'guest@example.com - guest - none' },
+      { id: 'bad', subtitle: 'plus customer account' },
+    ]);
+
+    expect(plus.metadata.plan_code).toBe('plus');
+    expect(familyPlus.metadata.plan_code).toBe('family_plus');
+    expect(free.metadata.plan_code).toBe('free');
+    expect(guest.metadata.plan_code).toBe('guest');
+    expect(malformed.metadata.plan_code).toBeUndefined();
+  });
+
+  it('prefers a valid structured plan over the subtitle fallback', () => {
+    const [item] = toUserWorkItems([{
+      id: 'structured',
+      plan_code: 'family_plus',
+      subtitle: 'user@example.com - plus - none',
+      metadata: { plan_code: 'free' },
+    }]);
+
+    expect(item.metadata.plan_code).toBe('free');
+  });
+
+  it('normalizes the legacy FamilyPlus display name from structured metadata', () => {
+    const [item] = toUserWorkItems([{
+      id: 'legacy-name',
+      metadata: { plan_name: 'FamilyPlus' },
+      subtitle: 'user@example.com - free - none',
+    }]);
+
+    expect(item.metadata.plan_code).toBe('family_plus');
+    expect(planLabel('FamilyPlus')).toBe('FamilyPlus');
+  });
+
+  it('uses current product access before a stale subscription tier', () => {
+    const [item] = toUserWorkItems([{
+      id: 'current-access',
+      product_access_status: 'plus',
+      subscription_tier: 'free',
+      subtitle: 'user@example.com - free - none',
+    }]);
+
+    expect(item.metadata.plan_code).toBe('plus');
+  });
+
+  it('rejects unsupported plan text and labels only known plan codes', () => {
+    expect(parseUserPlanCode('user@example.com - premium_plus - none')).toBeUndefined();
+    expect(parseUserPlanCode('plus customer account')).toBeUndefined();
+    expect(planLabel('free')).toBe('Miễn phí');
+    expect(planLabel('plus')).toBe('Plus');
+    expect(planLabel('family_plus')).toBe('FamilyPlus');
+    expect(planLabel('guest')).toBe('Khách');
+    expect(planLabel(undefined)).toBe('Chưa xác định');
   });
 });

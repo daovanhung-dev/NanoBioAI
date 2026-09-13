@@ -3,7 +3,7 @@ import { CalendarClock, KeyRound, Plus, RefreshCw, UserRoundPlus } from 'lucide-
 import { useSearchParams } from 'react-router-dom';
 import { useAdminAuth } from '../auth/AuthProvider';
 import { EmptyState, ErrorState, LoadingState, Modal, ReasonDialog, StatusBadge, Toast } from '../components/Ui';
-import { formatDate, safeDisplay } from '../lib/labels';
+import { formatDate, planLabel, safeDisplay } from '../lib/labels';
 import { canCreateAccount, canGrantMembership, makeIdempotencyKey, type AdminSession, type AdminWorkItem } from '../types';
 
 type AccountAction = { item: AdminWorkItem; action: 'active' | 'suspended' };
@@ -123,7 +123,7 @@ function AccountTable({ items, canWrite, canUpgrade, onStatus, onMembership }: {
     const normalized = item.status.toLowerCase();
     const has = (token: string) => normalized === token || new RegExp(`(^|[_-])${token}($|[_-])`).test(normalized);
     const nextStatus: AccountAction['action'] | null = has('active') ? 'suspended' : has('suspended') ? 'active' : null;
-    return <tr key={item.id}><td><div className="item-title">{safeDisplay(item.title)}</div><div className="item-subtitle">{safeDisplay(item.subtitle || item.id)}</div></td><td><StatusBadge value={item.status} /></td><td>{safeDisplay(item.metadata.plan_code ?? item.metadata.plan_name, 'Miễn phí')}</td><td className="nowrap">{formatDate(item.createdAt)}</td><td className="action-cell"><div className="action-list">{canWrite && nextStatus && <button className={`text-action ${nextStatus === 'suspended' ? 'danger-text' : ''}`} onClick={() => onStatus({ item, action: nextStatus })}>{nextStatus === 'suspended' ? 'Tạm khóa' : 'Mở lại'}</button>}{canUpgrade && <button className="text-action" onClick={() => onMembership(item)}>Cấp gói</button>}{!canWrite && !canUpgrade && <span className="muted">Chỉ xem</span>}</div></td></tr>;
+    return <tr key={item.id}><td><div className="item-title">{safeDisplay(item.title)}</div><div className="item-subtitle">{safeDisplay(item.subtitle || item.id)}</div></td><td><StatusBadge value={item.status} /></td><td>{planLabel(item.metadata.plan_code ?? item.metadata.plan_name)}</td><td className="nowrap">{formatDate(item.createdAt)}</td><td className="action-cell"><div className="action-list">{canWrite && nextStatus && <button className={`text-action ${nextStatus === 'suspended' ? 'danger-text' : ''}`} onClick={() => onStatus({ item, action: nextStatus })}>{nextStatus === 'suspended' ? 'Tạm khóa' : 'Mở lại'}</button>}{canUpgrade && <button className="text-action" onClick={() => onMembership(item)}>Cấp gói</button>}{!canWrite && !canUpgrade && <span className="muted">Chỉ xem</span>}</div></td></tr>;
   })}</tbody></table></div></div>;
 }
 

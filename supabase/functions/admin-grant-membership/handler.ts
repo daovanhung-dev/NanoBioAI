@@ -2,7 +2,8 @@ export type MembershipGrant = {
   subscriptionId: string;
   planCode: string;
   startsAt: string;
-  endsAt: string;
+  endsAt: string | null;
+  skipped?: boolean;
 };
 
 const corsHeaders = {
@@ -24,6 +25,7 @@ export type AdminGrantMembershipDeps = {
     endsAt: string;
     reason: string;
     idempotencyKey: string;
+    preserveExistingPaidPlan: boolean;
   }) => Promise<MembershipGrant>;
 };
 
@@ -52,6 +54,7 @@ export function createAdminGrantMembershipHandler(deps: AdminGrantMembershipDeps
     const endsAt = text(body.ends_at);
     const reason = text(body.reason);
     const idempotencyKey = text(body.idempotency_key);
+    const preserveExistingPaidPlan = body.preserve_existing_paid_plan === true;
 
     if (!userId) return json(400, { success: false, message: "Chưa chọn tài khoản." });
     if (planCode !== "plus" && planCode !== "family_plus") {
@@ -66,7 +69,14 @@ export function createAdminGrantMembershipHandler(deps: AdminGrantMembershipDeps
     if (!idempotencyKey) return json(400, { success: false, message: "Thiếu mã chống gửi trùng." });
 
     const existing = await deps.findIdempotentResult(idempotencyKey);
-    if (existing) return success(existing, "Gói đã được cấp ở lần gửi trước.");
+    if (existing) {
+      return success(
+        existing,
+        existing.skipped
+          ? "Đã giữ nguyên gói đang hoạt động ở lần gửi trước."
+          : "Gói đã được cấp ở lần gửi trước.",
+      );
+    }
     if (!await deps.userExists(userId)) {
       return json(404, { success: false, message: "Không tìm thấy tài khoản cần nâng cấp." });
     }
@@ -80,8 +90,14 @@ export function createAdminGrantMembershipHandler(deps: AdminGrantMembershipDeps
         endsAt: new Date(end).toISOString(),
         reason,
         idempotencyKey,
+        preserveExistingPaidPlan,
       });
-      return success(grant, "Đã cập nhật gói thành viên.");
+      return success(
+        grant,
+        grant.skipped
+          ? "Đã giữ nguyên gói đang hoạt động, không thay thế bằng Plus."
+          : "Đã cập nhật gói thành viên.",
+      );
     } catch {
       return json(500, { success: false, message: "Chưa thể cập nhật gói thành viên lúc này." });
     }
@@ -95,6 +111,7 @@ function success(grant: MembershipGrant, message: string) {
     plan_code: grant.planCode,
     starts_at: grant.startsAt,
     ends_at: grant.endsAt,
+    skipped: grant.skipped === true,
   });
 }
 

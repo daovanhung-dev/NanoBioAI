@@ -14,6 +14,7 @@ import {
   normalizeArray,
   normalizeMap,
   toAdminSession,
+  toUserWorkItems,
   toWellnessWorkItems,
   toWorkItems,
 } from '../types';
@@ -97,6 +98,7 @@ export class AdminApi {
     };
     if (section === 'audit') return this.listAudit(query).then((events) => events.map(auditAsWorkItem));
     const data = await this.rpc<unknown>(rpcBySection[section], { p_query: query.trim(), p_limit: 100 });
+    if (section === 'users') return toUserWorkItems(data);
     return section === 'wellness-rewards' ? toWellnessWorkItems(data) : toWorkItems(data);
   }
 

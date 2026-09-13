@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 import { createAdminGrantMembershipHandler } from "./handler.ts";
+import { chooseCurrentPaidSubscription } from "./membership-guard.ts";
 
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const supabaseAnonKey = requiredEnvironment("SUPABASE_ANON_KEY");
@@ -21,6 +22,31 @@ Deno.serve(createAdminGrantMembershipHandler({
   },
   isAllowedAdmin: (actorId) => hasActiveAdminRole(actorId, ["super_admin"]),
   findIdempotentResult: async (idempotencyKey) => {
+    const { data: audit, error: auditError } = await admin
+      .from("admin_audit_events")
+      .select("id,target_id,metadata")
+      .eq("action", "admin_grant_membership")
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (auditError) return null;
+
+    const auditMetadata = record(audit?.metadata);
+    if (audit?.id && auditMetadata?.skipped === true) {
+      const targetId = text(audit.target_id);
+      const planCode = text(auditMetadata.plan_code);
+      const startsAt = text(auditMetadata.starts_at);
+      const subscriptionId = text(auditMetadata.existing_subscription_id);
+      if (targetId && planCode && startsAt && subscriptionId) {
+        return {
+          subscriptionId,
+          planCode,
+          startsAt,
+          endsAt: nullableText(auditMetadata.ends_at),
+          skipped: true,
+        };
+      }
+    }
+
     const { data: subscription, error: subscriptionError } = await admin
       .from("membership_subscriptions")
       .select("id,plan_code,starts_at,ends_at")
@@ -38,12 +64,6 @@ Deno.serve(createAdminGrantMembershipHandler({
     // A request is considered fully completed only after its audit row exists.
     // If a previous run stopped after subscription creation, `grant` below
     // resumes cleanup/audit instead of hiding that partial state as success.
-    const { data: audit, error: auditError } = await admin
-      .from("admin_audit_events")
-      .select("id")
-      .eq("action", "admin_grant_membership")
-      .eq("idempotency_key", idempotencyKey)
-      .maybeSingle();
     if (auditError || !audit?.id) return null;
 
     return {
@@ -69,6 +89,7 @@ Deno.serve(createAdminGrantMembershipHandler({
     endsAt,
     reason,
     idempotencyKey,
+    preserveExistingPaidPlan,
   }) => {
     const { data: previous, error: previousError } = await admin
       .from("membership_subscriptions")
@@ -84,6 +105,45 @@ Deno.serve(createAdminGrantMembershipHandler({
       .eq("provider_subscription_id", idempotencyKey)
       .maybeSingle();
     if (priorCreatedError) throw priorCreatedError;
+
+    // A prior subscription with this idempotency key is a partial/completed
+    // grant that must finish its normal cleanup and audit path before we
+    // consider preserving another paid subscription.
+    if (preserveExistingPaidPlan && !priorCreated) {
+      const existingPaid = chooseCurrentPaidSubscription(previous ?? []);
+      if (existingPaid) {
+        const { error: auditError } = await admin
+          .from("admin_audit_events")
+          .upsert({
+            actor_id: actorId,
+            action: "admin_grant_membership",
+            target_type: "user",
+            target_id: userId,
+            reason,
+            idempotency_key: idempotencyKey,
+            metadata: {
+              skipped: true,
+              preserve_existing_paid_plan: true,
+              plan_code: existingPaid.plan_code,
+              starts_at: existingPaid.starts_at,
+              ends_at: existingPaid.ends_at,
+              existing_subscription_id: existingPaid.id,
+            },
+          }, {
+            onConflict: "action,idempotency_key",
+            ignoreDuplicates: true,
+          });
+        if (auditError) throw auditError;
+
+        return {
+          subscriptionId: existingPaid.id,
+          planCode: existingPaid.plan_code,
+          startsAt: existingPaid.starts_at,
+          endsAt: existingPaid.ends_at,
+          skipped: true,
+        };
+      }
+    }
 
     let created = priorCreated;
     let createdNow = false;
@@ -222,4 +282,20 @@ function requiredEnvironment(name: string): string {
   const value = Deno.env.get(name)?.trim();
   if (!value) throw new Error(`Missing required Edge Function secret: ${name}`);
   return value;
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function text(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const result = value.trim();
+  return result.length > 0 ? result : null;
+}
+
+function nullableText(value: unknown): string | null {
+  return value === null ? null : text(value);
 }
