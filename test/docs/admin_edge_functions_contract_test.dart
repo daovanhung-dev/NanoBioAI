@@ -11,6 +11,12 @@ void main() {
     final grantIndex = File(
       'supabase/functions/admin-grant-membership/index.ts',
     ).readAsStringSync();
+    final bulkGrantIndex = File(
+      'supabase/functions/admin-grant-membership-bulk/index.ts',
+    ).readAsStringSync();
+    final bulkGrantHandler = File(
+      'supabase/functions/admin-grant-membership-bulk/handler.ts',
+    ).readAsStringSync();
     final datasource = File(
       'lib/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart',
     ).readAsStringSync();
@@ -18,6 +24,7 @@ void main() {
     for (final functionName in [
       'admin-create-account',
       'admin-grant-membership',
+      'admin-grant-membership-bulk',
     ]) {
       expect(config, contains('[functions.$functionName]'));
     }
@@ -34,6 +41,13 @@ void main() {
     expect(grantIndex, contains('source: "manual"'));
     expect(grantIndex, contains('provider: "admin_manual"'));
     expect(grantIndex, contains('admin_grant_membership'));
+
+    expect(bulkGrantIndex, contains('SUPABASE_SERVICE_ROLE_KEY'));
+    expect(bulkGrantIndex, contains('hasActiveAdminRole(actorId, ["super_admin"])'));
+    expect(bulkGrantIndex, contains('admin_grant_membership_bulk'));
+    expect(bulkGrantHandler, contains('all_registered'));
+    expect(bulkGrantHandler, contains('endsAt: null'));
+    expect(bulkGrantHandler, contains('idempotency_key'));
 
     expect(datasource, contains("functions.invoke('admin-create-account'"));
     expect(datasource, contains("functions.invoke('admin-grant-membership'"));

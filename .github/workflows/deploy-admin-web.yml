@@ -1,0 +1,66 @@
+name: Deploy NanoBio Admin Web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'admin-web/**'
+      - '.github/workflows/deploy-admin-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: admin-web
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: admin-web
+        run: npm run typecheck
+
+      - name: Test
+        working-directory: admin-web
+        run: npm test
+
+      - name: Build
+        working-directory: admin-web
+        env:
+          VITE_SUPABASE_URL: ${{ vars.NANOBIO_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.NANOBIO_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: admin-web/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

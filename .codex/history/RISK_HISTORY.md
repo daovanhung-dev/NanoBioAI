@@ -874,3 +874,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: ## Loi/Rui ro
 - docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - Chua fix: chua co inbox de xac nhan email va test tiep dang nhap/onboarding sau confirmation.
 - docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md :: - Can kiem tra tiep: baseline ListTile assertion va auth-stream timeout neu muon dong bo full test suite rieng.
+- docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: - `flutter test`/Dart Supabase contract tests: SKIPPED - môi trường không có
+- docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: - `validate_codex_integrity.ps1`: FAIL baseline - thiếu
+- docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: ## Rủi ro và giới hạn

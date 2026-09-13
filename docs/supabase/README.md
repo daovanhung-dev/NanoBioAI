@@ -93,6 +93,12 @@ service role ở server và không trả dữ liệu tài khoản.
 `admin-create-account` và `admin-grant-membership` là các thao tác đặc quyền
 được xác thực ở server; không đưa service-role key hoặc mật khẩu vào Flutter.
 
+`admin-grant-membership-bulk` là thao tác đặc quyền dành riêng cho chiến dịch
+cấp Plus vĩnh viễn theo phạm vi đã định nghĩa. Function chỉ nhận JWT của Super
+Admin, gọi RPC transactional bằng service role và ghi audit/idempotency cho
+từng tài khoản. Không gọi function này từ client thường hoặc chạy SQL ghi trực
+tiếp từ Flutter.
+
 Khi xóa `public.users`, trigger `anonymize_deleted_user_records` bỏ liên kết
 user khỏi purchase ledger để giữ reconciliation tối thiểu, đồng thời xóa
 snapshot/note/installation khỏi báo cáo AI. Đây là retention policy có chủ đích,
@@ -106,6 +112,7 @@ tra/rate-limit ở handler. Deploy sau khi cấu hình secret runtime:
 supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-create-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-grant-membership --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy admin-grant-membership-bulk --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy google-play-verify-purchase --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy food-scan-analyze --project-ref "$SUPABASE_PROJECT_REF"

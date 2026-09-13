@@ -78,6 +78,7 @@ void main() {
         'admin_refund_or_cancel_payment',
         'admin_review_sale_profile',
         'admin_adjust_sale_points',
+        'admin_grant_membership_bulk',
         'admin_list_report_catalog',
         'admin_list_reconciliation_discrepancies',
         'admin_update_reconciliation_discrepancy_status',
@@ -311,6 +312,40 @@ void main() {
       ]) {
         expect(sql, contains(token), reason: token);
       }
+    });
+
+    test('keeps bulk Plus grant server-only and permanent', () {
+      final functionStart =
+          'create or replace function public.admin_grant_membership_bulk';
+      final functionIndex = sql.indexOf(functionStart);
+      expect(functionIndex, greaterThanOrEqualTo(0));
+      final function = sql.substring(functionIndex);
+
+      for (final token in [
+        'p_scope text',
+        'p_plan_code public.nb_membership_plan',
+        'p_ends_at timestamptz',
+        "p_scope <> 'all_registered'",
+        "p_plan_code <> 'plus'::public.nb_membership_plan",
+        'p_ends_at is not null',
+        "u.is_anonymous = false",
+        "'admin_bulk_manual'",
+        "'admin_grant_membership_bulk'",
+        'pg_advisory_xact_lock',
+        "target_type = 'membership_batch'",
+        "'permanent', true",
+        'grant execute on function public.admin_grant_membership_bulk',
+        'to service_role',
+        'from public, anon, authenticated',
+      ]) {
+        expect(function, contains(token), reason: token);
+      }
+
+      expect(
+        function,
+        contains("'family_plus'::public.nb_membership_plan"),
+        reason: 'Bulk Plus grant must detect and preserve FamilyPlus access.',
+      );
     });
 
     test('qualifies Admin dashboard summary filters in rebuild file', () {
