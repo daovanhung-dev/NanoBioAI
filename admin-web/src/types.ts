@@ -124,6 +124,95 @@ export type MembershipGrantInput = {
   idempotencyKey: string;
 };
 
+export type BulkProvisionPlanCode = 'plus' | 'family_plus';
+
+export type BulkProvisionAccount = {
+  email: string;
+  fullName: string;
+};
+
+export type BulkProvisionPreviewRow = {
+  index: number;
+  status: 'new' | 'existing' | 'paid_preserved';
+  currentPlan?: string;
+};
+
+export type BulkProvisionPreview = {
+  fingerprint: string;
+  candidateCount: number;
+  rows: BulkProvisionPreviewRow[];
+};
+
+export type BulkProvisionInput = {
+  accounts: BulkProvisionAccount[];
+  password: string;
+  planCode: BulkProvisionPlanCode;
+  durationMonths: 1 | 3 | 6 | 12;
+  reason: string;
+  idempotencyKey: string;
+};
+
+export type BulkProvisionResult = {
+  success: boolean;
+  message: string;
+  batchId: string;
+  processedCount: number;
+  createdCount: number;
+  grantedCount: number;
+  skippedCount: number;
+  failedIndex?: number;
+};
+
+export type AdminUserDetails = {
+  user: {
+    id: string;
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    gender?: string;
+    birthYear?: number;
+    avatarUrl?: string;
+    adminStatus?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+  health: {
+    subject?: Record<string, unknown>;
+    profile?: Record<string, unknown>;
+    lifestyle?: Record<string, unknown>;
+    goals: Array<Record<string, unknown>>;
+    conditions: Array<Record<string, unknown>>;
+    allergies: Array<Record<string, unknown>>;
+    treatments: Array<Record<string, unknown>>;
+    surveyAnswers: Array<Record<string, unknown>>;
+  };
+  membership: {
+    planCode: AdminPlanCode;
+    status: string;
+    source?: string;
+    startsAt?: string;
+    endsAt?: string;
+  };
+};
+
+export type AdminUserProfileUpdateInput = {
+  userId: string;
+  fullName: string;
+  phone: string;
+  gender: string;
+  birthYear?: number;
+  reason: string;
+  idempotencyKey: string;
+};
+
+export type AdminPasswordResetResult = {
+  success: boolean;
+  message: string;
+  status: 'password_reset' | 'already_processed';
+  temporaryPassword?: string;
+  passwordVisibleOnce: boolean;
+};
+
 export type RewardOfferInput = {
   offerId?: string;
   title: string;
@@ -235,6 +324,14 @@ export function canCreateAccount(session: AdminSession): boolean {
 }
 
 export function canGrantMembership(session: AdminSession): boolean {
+  return session.active && session.roles.includes('super_admin');
+}
+
+export function canBulkProvisionAccounts(session: AdminSession): boolean {
+  return session.active && session.roles.includes('super_admin');
+}
+
+export function canManageUserDetails(session: AdminSession): boolean {
   return session.active && session.roles.includes('super_admin');
 }
 

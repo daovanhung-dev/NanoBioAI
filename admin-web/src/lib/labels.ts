@@ -66,6 +66,9 @@ const actionLabels: Record<string, string> = {
   cancel_redemption: 'Hủy lượt dùng',
   create_account: 'Tạo tài khoản',
   grant_membership: 'Cấp gói thành viên',
+  view_health: 'Xem thông tin sức khỏe',
+  update_user_profile: 'Sửa thông tin người dùng',
+  reset_user_password: 'Đổi mật khẩu người dùng',
   import_codes: 'Nhập mã ưu đãi',
 };
 
@@ -83,6 +86,9 @@ const auditActions: Record<string, string> = {
   admin_upsert_reward_offer: 'Cập nhật ưu đãi Điểm chăm sóc',
   admin_import_reward_codes: 'Bổ sung mã ưu đãi',
   admin_cancel_reward_redemption: 'Hủy lượt dùng ưu đãi',
+  admin_view_user_health: 'Xem thông tin sức khỏe người dùng',
+  admin_update_user_profile: 'Sửa thông tin người dùng',
+  admin_reset_user_password: 'Đổi mật khẩu người dùng',
 };
 
 export function metricLabel(key: string, fallback = 'Chỉ số vận hành'): string {

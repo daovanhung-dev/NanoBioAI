@@ -64,6 +64,20 @@ export function Modal({ title, children, onClose }: { title: string; children: R
   );
 }
 
+export function Drawer({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <aside className="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+        <div className="drawer-header">
+          <h2 id="drawer-title">{title}</h2>
+          <button className="icon-button" aria-label="Đóng" onClick={onClose}><X size={20} /></button>
+        </div>
+        {children}
+      </aside>
+    </div>
+  );
+}
+
 export function ReasonDialog({
   action,
   subject,

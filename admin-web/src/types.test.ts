@@ -3,7 +3,9 @@ import {
   canAccessSection,
   canAdjustPoints,
   canCreateAccount,
+  canBulkProvisionAccounts,
   canGrantMembership,
+  canManageUserDetails,
   canReviewPayments,
   normalizeMap,
   parseUserPlanCode,
@@ -13,6 +15,7 @@ import {
   type AdminSession,
 } from './types';
 import { planLabel } from './lib/labels';
+import { bulkConfirmationText, parseBulkAccountLines } from './lib/bulk-accounts';
 
 function session(roles: AdminSession['roles'], permissions: string[]): AdminSession {
   return { userId: 'admin-1', roles, permissions, active: true, canUseUserApp: false };
@@ -26,7 +29,9 @@ describe('NanoBio Admin permission matrix', () => {
     expect(canAccessSection(value, 'wellness-rewards')).toBe(true);
     expect(canCreateAccount(value)).toBe(true);
     expect(canGrantMembership(value)).toBe(true);
+    expect(canBulkProvisionAccounts(value)).toBe(true);
     expect(canAdjustPoints(value)).toBe(true);
+    expect(canManageUserDetails(value)).toBe(true);
   });
 
   it('limits Finance Admin to payment review when payment permission is present', () => {
@@ -42,6 +47,8 @@ describe('NanoBio Admin permission matrix', () => {
     const content = session(['content_admin'], ['dashboard.read', 'wellness_rewards.read', 'wellness_rewards.write']);
     const operations = session(['operations_admin'], ['dashboard.read', 'reconciliation.write', 'plans.write']);
     expect(canCreateAccount(support)).toBe(true);
+    expect(canBulkProvisionAccounts(support)).toBe(false);
+    expect(canManageUserDetails(support)).toBe(false);
     expect(canAccessSection(support, 'users')).toBe(true);
     expect(canAccessSection(support, 'wellness-rewards')).toBe(false);
     expect(canAccessSection(content, 'wellness-rewards')).toBe(true);
@@ -135,5 +142,42 @@ describe('Supabase response normalization', () => {
     expect(planLabel('family_plus')).toBe('FamilyPlus');
     expect(planLabel('guest')).toBe('Khách');
     expect(planLabel(undefined)).toBe('Chưa xác định');
+  });
+});
+
+describe('bulk account input', () => {
+  it('accepts strict Gmail rows and normalizes email casing', () => {
+    const result = parseBulkAccountLines('  User.Name@GMAIL.COM | Nguyễn Văn A  ');
+    expect(result.issues).toEqual([]);
+    expect(result.accounts).toEqual([{ email: 'user.name@gmail.com', fullName: 'Nguyễn Văn A' }]);
+  });
+
+  it('rejects malformed, non-Gmail and duplicate rows', () => {
+    const result = parseBulkAccountLines([
+      'user@example.com | User',
+      'missing-name@gmail.com',
+      'USER@gmail.com | User One',
+      'user@gmail.com | User Two',
+    ].join('\n'));
+    expect(result.accounts).toEqual([{ email: 'user@gmail.com', fullName: 'User One' }]);
+    expect(result.issues.map((issue) => issue.message)).toEqual([
+      'Chỉ chấp nhận địa chỉ kết thúc bằng @gmail.com.',
+      'Cần nhập theo dạng email | họ tên.',
+      'Email bị trùng trong danh sách.',
+    ]);
+  });
+
+  it('rejects rows containing more than one separator', () => {
+    const result = parseBulkAccountLines('user@gmail.com | User | Extra');
+    expect(result.accounts).toEqual([]);
+    expect(result.issues[0]?.message).toBe('Cần nhập theo dạng email | họ tên.');
+  });
+
+  it('enforces the 100-account limit and deterministic confirmation text', () => {
+    const lines = Array.from({ length: 101 }, (_, index) => `user${index}@gmail.com | User ${index}`).join('\n');
+    const result = parseBulkAccountLines(lines);
+    expect(result.accounts).toHaveLength(101);
+    expect(result.issues.at(-1)?.message).toBe('Mỗi lần chỉ được xử lý tối đa 100 tài khoản.');
+    expect(bulkConfirmationText(3)).toBe('TAO TAI KHOAN 3');
   });
 });

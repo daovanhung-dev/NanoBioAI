@@ -4,15 +4,23 @@ import {
   type AccountCreateInput,
   type AdminAuditEvent,
   type AdminMutation,
+  type AdminPasswordResetResult,
   type AdminSection,
   type AdminSession,
+  type AdminUserDetails,
+  type AdminUserProfileUpdateInput,
   type AdminWorkItem,
+  type BulkProvisionInput,
+  type BulkProvisionPreview,
+  type BulkProvisionPreviewRow,
+  type BulkProvisionResult,
   type DashboardMetric,
   type MembershipGrantInput,
   type MutationResult,
   type RewardOfferInput,
   normalizeArray,
   normalizeMap,
+  normalizePlanCode,
   toAdminSession,
   toUserWorkItems,
   toWellnessWorkItems,
@@ -225,6 +233,80 @@ export class AdminApi {
     return toMutationResult(data);
   }
 
+  async getUserDetails(userId: string, reason: string): Promise<AdminUserDetails> {
+    if (!userId.trim()) throw new AdminApiError('Chưa chọn tài khoản cần xem.');
+    if (!reason.trim()) throw new AdminApiError('Vui lòng nhập lý do xem thông tin sức khỏe.');
+    const data = await this.invoke<unknown>('admin-user-management', {
+      operation: 'detail',
+      user_id: userId,
+      reason: reason.trim(),
+    });
+    return toAdminUserDetails(data);
+  }
+
+  async updateUserProfile(input: AdminUserProfileUpdateInput): Promise<MutationResult> {
+    assertWriteContext(input.reason, input.idempotencyKey);
+    const data = await this.invoke<unknown>('admin-user-management', {
+      operation: 'update_profile',
+      user_id: input.userId,
+      full_name: input.fullName.trim(),
+      phone: input.phone.trim() || null,
+      gender: input.gender.trim() || null,
+      birth_year: input.birthYear ?? null,
+      reason: input.reason.trim(),
+      idempotency_key: input.idempotencyKey,
+    });
+    return toMutationResult(data);
+  }
+
+  async resetUserPassword(userId: string, reason: string, idempotencyKey: string): Promise<AdminPasswordResetResult> {
+    assertWriteContext(reason, idempotencyKey);
+    const data = await this.invoke<unknown>('admin-user-management', {
+      operation: 'reset_password',
+      user_id: userId,
+      reason: reason.trim(),
+      idempotency_key: idempotencyKey,
+    });
+    const map = normalizeMap(data);
+    const status = map.status === 'already_processed' ? 'already_processed' : 'password_reset';
+    return {
+      success: map.success === true,
+      message: String(map.message ?? 'Đã xử lý đổi mật khẩu.'),
+      status,
+      temporaryPassword: typeof map.temporary_password === 'string' ? map.temporary_password : undefined,
+      passwordVisibleOnce: map.password_visible_once === true,
+    };
+  }
+
+  async previewBulkProvision(input: Omit<BulkProvisionInput, 'password'>): Promise<BulkProvisionPreview> {
+    assertWriteContext(input.reason, input.idempotencyKey);
+    const data = await this.invoke<unknown>('admin-provision-accounts-bulk', {
+      mode: 'preview',
+      accounts: input.accounts,
+      plan_code: input.planCode,
+      duration_months: input.durationMonths,
+      reason: input.reason.trim(),
+      idempotency_key: input.idempotencyKey,
+    });
+    return toBulkPreview(data);
+  }
+
+  async executeBulkProvision(input: BulkProvisionInput, fingerprint: string): Promise<BulkProvisionResult> {
+    assertWriteContext(input.reason, input.idempotencyKey);
+    const data = await this.invoke<unknown>('admin-provision-accounts-bulk', {
+      mode: 'execute',
+      accounts: input.accounts,
+      password: input.password,
+      plan_code: input.planCode,
+      duration_months: input.durationMonths,
+      reason: input.reason.trim(),
+      idempotency_key: input.idempotencyKey,
+      preview_fingerprint: fingerprint,
+      confirmation: `TAO TAI KHOAN ${input.accounts.length}`,
+    });
+    return toBulkProvisionResult(data);
+  }
+
   async upsertRewardOffer(input: RewardOfferInput): Promise<MutationResult> {
     assertWriteContext(input.reason, input.idempotencyKey);
     const data = await this.rpc<unknown>('admin_upsert_reward_offer', {
@@ -299,7 +381,19 @@ export class AdminApi {
 
   private async invoke<T>(name: string, body: Record<string, unknown>): Promise<T> {
     const { data, error } = await this.getClient().functions.invoke(name, { body });
-    if (error) throw new AdminApiError('Thao tác chưa hoàn tất. Bạn thử lại sau nhé.', true);
+    if (error) {
+      const context = (error as { context?: unknown }).context;
+      if (context instanceof Response) {
+        try {
+          const payload = await context.clone().json() as Record<string, unknown>;
+          const message = typeof payload.message === 'string' ? payload.message.trim() : '';
+          if (message && message.length <= 240) throw new AdminApiError(message, false);
+        } catch (nextError) {
+          if (nextError instanceof AdminApiError) throw nextError;
+        }
+      }
+      throw new AdminApiError('Thao tác chưa hoàn tất. Bạn thử lại sau nhé.', true);
+    }
     return data as T;
   }
 }
@@ -334,11 +428,113 @@ function sectionFromTarget(value: unknown): AdminSection | undefined {
   return map[result];
 }
 
+function toAdminUserDetails(value: unknown): AdminUserDetails {
+  const map = normalizeMap(value);
+  const user = normalizeMap(map.user);
+  const health = normalizeMap(map.health);
+  const membership = normalizeMap(map.membership);
+  return {
+    user: {
+      id: String(user.id ?? ''),
+      email: optionalString(user.email),
+      fullName: optionalString(user.full_name),
+      phone: optionalString(user.phone),
+      gender: optionalString(user.gender),
+      birthYear: optionalNumber(user.birth_year),
+      avatarUrl: optionalString(user.avatar_url),
+      adminStatus: optionalString(user.admin_status),
+      createdAt: optionalString(user.created_at),
+      updatedAt: optionalString(user.updated_at),
+    },
+    health: {
+      subject: optionalRecord(health.subject),
+      profile: optionalRecord(health.profile),
+      lifestyle: optionalRecord(health.lifestyle),
+      goals: recordArray(health.goals),
+      conditions: recordArray(health.conditions),
+      allergies: recordArray(health.allergies),
+      treatments: recordArray(health.treatments),
+      surveyAnswers: recordArray(health.survey_answers),
+    },
+    membership: {
+      planCode: normalizePlanCode(membership.plan_code) ?? 'free',
+      status: String(membership.status ?? 'none'),
+      source: optionalString(membership.source),
+      startsAt: optionalString(membership.starts_at),
+      endsAt: optionalString(membership.ends_at),
+    },
+  };
+}
+
+function optionalRecord(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined;
+}
+
+function recordArray(value: unknown): Array<Record<string, unknown>> {
+  return normalizeArray<unknown>(value)
+    .map(optionalRecord)
+    .filter((row): row is Record<string, unknown> => row !== undefined);
+}
+
+function optionalString(value: unknown): string | undefined {
+  const result = String(value ?? '').trim();
+  return result.length > 0 ? result : undefined;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function toMutationResult(value: unknown): MutationResult {
   const row = normalizeMap(Array.isArray(value) ? value[0] : value);
   return {
     success: row.success !== false,
     message: String(row.message ?? 'Thao tác đã được ghi nhận.'),
+  };
+}
+
+function toBulkPreview(value: unknown): BulkProvisionPreview {
+  const row = normalizeMap(value);
+  const rows: BulkProvisionPreviewRow[] = normalizeArray<Record<string, unknown>>(row.rows).map((item) => {
+    const status: BulkProvisionPreviewRow['status'] = item.status === 'paid_preserved' || item.status === 'existing'
+      ? item.status
+      : 'new';
+    return {
+      index: numberValue(item.index),
+      status,
+      ...(typeof item.current_plan === 'string' ? { currentPlan: item.current_plan } : {}),
+    };
+  });
+  const fingerprint = typeof row.fingerprint === 'string' ? row.fingerprint : '';
+  if (!fingerprint || rows.length === 0) {
+    throw new AdminApiError('Bản xem trước chưa hợp lệ. Vui lòng thử lại.', true);
+  }
+  return {
+    fingerprint,
+    candidateCount: numberValue(row.candidate_count),
+    rows,
+  };
+}
+
+function toBulkProvisionResult(value: unknown): BulkProvisionResult {
+  const row = normalizeMap(value);
+  const batchId = typeof row.batch_id === 'string' ? row.batch_id : '';
+  if (!batchId) {
+    throw new AdminApiError('Batch chưa hoàn tất. Vui lòng giữ nguyên mã thao tác khi thử lại.', true);
+  }
+  return {
+    success: row.success !== false,
+    message: String(row.message ?? 'Batch đã được ghi nhận.'),
+    batchId,
+    processedCount: numberValue(row.processed_count),
+    createdCount: numberValue(row.created_count),
+    grantedCount: numberValue(row.granted_count),
+    skippedCount: numberValue(row.skipped_count),
+    ...(Number.isFinite(Number(row.failed_index)) ? { failedIndex: numberValue(row.failed_index) } : {}),
   };
 }
 
