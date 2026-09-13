@@ -877,3 +877,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: - `flutter test`/Dart Supabase contract tests: SKIPPED - môi trường không có
 - docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: - `validate_codex_integrity.ps1`: FAIL baseline - thiếu
 - docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md :: ## Rủi ro và giới hạn
+- docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: - Chưa fix: Function production cần được deploy lại để nhận code mới.
+- docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: - Cần kiểm tra tiếp: sau deploy, xác nhận `OPTIONS` là `200`; nếu `POST` còn

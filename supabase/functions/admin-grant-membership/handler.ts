@@ -5,6 +5,12 @@ export type MembershipGrant = {
   endsAt: string;
 };
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 export type AdminGrantMembershipDeps = {
   authenticate: (authorization: string | null) => Promise<string | null>;
   isAllowedAdmin: (actorId: string) => Promise<boolean>;
@@ -23,6 +29,9 @@ export type AdminGrantMembershipDeps = {
 
 export function createAdminGrantMembershipHandler(deps: AdminGrantMembershipDeps) {
   return async (request: Request): Promise<Response> => {
+    if (request.method === "OPTIONS") {
+      return new Response("ok", { status: 200, headers: corsHeaders });
+    }
     if (request.method !== "POST") return json(405, { success: false, message: "Phương thức không được hỗ trợ." });
     const actorId = await deps.authenticate(request.headers.get("Authorization"));
     if (!actorId) return json(401, { success: false, message: "Phiên đăng nhập không hợp lệ." });
@@ -98,6 +107,9 @@ function text(value: unknown): string | null {
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      ...corsHeaders,
+    },
   });
 }

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 155
+- Total worklogs: 156
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -164,3 +164,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-09-01 | fix-issues / release-hardening. | fix-issues | unknown | [Worklog - Google Play final pass](../../docs/worklog/2026-09-01/001-worklog-google-play-final-pass.md) |
 | 2026-09-11 | bugfix va runtime acceptance | supabase-schema | Auth V2, Supabase signup atomic, Android device run | [Worklog - Debug va sua signup Auth V2 tren Android that](../../docs/worklog/2026-09-11/001-worklog-auth-signup-real-device.md) |
 | 2026-09-13 | coding / web / test / docs / deployment workflow | supabase-schema | Admin workspace, Supabase adapter, GitHub Pages | [Worklog - NanoBio Admin Web trên GitHub Pages](../../docs/worklog/2026-09-13/001-worklog-admin-web-github-pages.md) |
+| 2026-09-13 | bugfix / Supabase Edge Function / Admin Web | supabase-schema | admin-grant-membership | [Worklog - Fix cấp gói Plus từ NanoBio Admin Web](../../docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md) |

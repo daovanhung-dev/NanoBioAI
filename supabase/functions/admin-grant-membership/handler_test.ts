@@ -8,6 +8,25 @@ import {
   type AdminGrantMembershipDeps,
 } from "./handler.ts";
 
+Deno.test("admin-grant-membership answers browser CORS preflight", async () => {
+  const handler = createAdminGrantMembershipHandler(deps());
+  const response = await handler(new Request("https://example.test/admin-grant-membership", {
+    method: "OPTIONS",
+    headers: {
+      "Access-Control-Request-Method": "POST",
+      "Access-Control-Request-Headers": "authorization, x-client-info, apikey, content-type",
+    },
+  }));
+
+  assertEquals(response.status, 200);
+  assertEquals(response.headers.get("Access-Control-Allow-Origin"), "*");
+  assertEquals(response.headers.get("Access-Control-Allow-Methods"), "POST, OPTIONS");
+  assertEquals(
+    response.headers.get("Access-Control-Allow-Headers"),
+    "authorization, x-client-info, apikey, content-type",
+  );
+});
+
 Deno.test("admin-grant-membership rejects missing JWT before privileged work", async () => {
   let grants = 0;
   const handler = createAdminGrantMembershipHandler(deps({
