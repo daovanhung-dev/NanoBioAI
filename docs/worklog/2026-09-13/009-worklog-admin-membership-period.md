@@ -6,7 +6,7 @@ Commit đề xuất: feat(admin-web): hiển thị và điều chỉnh thời h�
 
 - Ngày: 2026-09-13
 - Bắt đầu: 20:00
-- Kết thúc: đang hoàn thiện validation
+- Kết thúc: 20:28
 - Timezone: Asia/Ho_Chi_Minh (UTC+07:00)
 
 ## Phạm vi
