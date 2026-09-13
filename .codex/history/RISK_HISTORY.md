@@ -899,3 +899,15 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Chưa fix: validator Codex vẫn fail do baseline manifest/stale path; cần xử lý
 - docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: - Cần kiểm tra tiếp: apply canonical SQL trên sandbox; deploy function; smoke
 - docs/worklog/2026-09-13/009-worklog-admin-membership-period.md :: handler tests, Deno check/format và diff check PASS; Codex validator fail
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Bat buoc extension `pg_cron`; canonical rebuild fail-fast neu scheduler khong co.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Dang ky job `nanobio-expire-memberships` moi 5 phut, unschedule moi job cung ten truoc khi tao lai, va fail-fast assertion cho extension/function/quyen/job active.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - `dart test test/docs/supabase_membership_expiration_contract_test.dart`: SKIPPED - executable `dart` khong co trong moi truong.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - `flutter test test/docs/supabase_membership_expiration_contract_test.dart`: SKIPPED - executable `flutter` khong co trong moi truong.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - `pg_isready` PASS nhung `psql` read-only probe SKIPPED - local PostgreSQL tu choi peer auth cho `postgres` va role mac dinh `daovanhung` khong ton tai; chua xac dinh duoc database disposable co `pg_cron`.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Apply canonical SQL va runtime smoke: SKIPPED - khong co Supabase local/container disposable; khong chay rebuild tren staging/production.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - `pwsh ... validate_codex_integrity.ps1`: FAIL baseline - thieu `docs/audit/source_truth_manifest.json` va stale paths trong history/task-skill; khong phat sinh tu feature nay.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: ## Loi/Rui ro
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Da fix: cron rebuild idempotent theo ten; scheduler va privilege boundary duoc fail-fast assertion; smoke fixture rollback-only de khong de lai du lieu test.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Chua fix: chua co runtime evidence tren sandbox co `pg_cron`; open risk `NB-RISK-001` van con hieu luc.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Can kiem tra tiep: apply `01_build_system.sql` voi `psql -v ON_ERROR_STOP=1`, chay smoke fixture, kiem tra `cron.job`, va chay Dart contract test khi toolchain/sandbox san sang.
+- docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Bang chung kiem chung: `git diff --check` va targeted static contract checks PASS; Dart/Flutter va Supabase runtime SKIPPED do thieu toolchain/database disposable.

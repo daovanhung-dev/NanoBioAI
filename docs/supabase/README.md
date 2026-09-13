@@ -37,6 +37,33 @@ Chỉ ghi nhận `PASS` khi cả hai lệnh thực sự chạy thành công trê
 sandbox. Đọc SQL hoặc chạy contract test tĩnh không thay thế được runtime
 evidence.
 
+## Tự động hết hạn membership
+
+`01_build_system.sql` yêu cầu extension `pg_cron` và đăng ký job
+`nanobio-expire-memberships` chạy mỗi 5 phút. Job gọi function nội bộ
+`public.expire_membership_subscriptions()`, đánh dấu các subscription
+`trialing`/`active`/`past_due` có `ends_at <= now()` thành `expired`. Trigger
+membership hiện có sẽ đồng bộ người dùng về `free` khi không còn subscription
+hiệu lực; gói có `ends_at IS NULL` và dữ liệu `canceled` được giữ nguyên.
+
+Function này chỉ dành cho owner/cron và `service_role`; client
+`anon`/`authenticated` không được gọi trực tiếp. Khi rebuild local/sandbox,
+script sẽ unschedule các job cũ cùng tên trước khi đăng ký lại để tránh trùng.
+Nếu project chưa bật hoặc không hỗ trợ `pg_cron`, rebuild phải dừng rõ ràng;
+không được coi là đã sẵn sàng khi thiếu scheduler.
+
+Sau khi rebuild, kiểm tra job bằng SQL tương đương:
+
+```sql
+select jobname, schedule, command, active
+from cron.job
+where jobname = 'nanobio-expire-memberships';
+```
+
+Smoke rollback-only cho transition hết hạn nằm tại
+`test/docs/fixtures/supabase_membership_expiration_smoke.sql` và chạy sau
+`01_build_system.sql` trên sandbox disposable.
+
 Nếu cần xác minh AI database sau rebuild, chạy thêm preflight tùy chọn này:
 
 ```bash

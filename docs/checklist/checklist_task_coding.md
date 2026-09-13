@@ -40,6 +40,10 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 - [ ] M16: apply the Admin Web membership-period RPC and deploy the protected
   Edge Function in sandbox; verify manual-only, row-lock/stale-period,
   expiry-now, permanent-package, audit and idempotency cases before rollout.
+- [ ] M06/M13: enable `pg_cron` in the sandbox, apply the scheduled membership
+  expiry reconciliation, and verify expired subscriptions sync users to Free,
+  preserve permanent/canceled records, retain another active plan, and restore
+  access after a new grant.
 - [ ] M20-M29: keep the reachable shell data-free until each module has an
   approved DD and safety/privacy/data contracts.
 

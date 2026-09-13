@@ -14,6 +14,25 @@
 -- BEGIN CORE SCHEMA
 -- =============================================================================
 
+-- pg_cron must be available before the destructive public-schema rebuild. The
+-- preflight also removes stale copies before any public object is dropped, so
+-- an older scheduler invocation cannot race the rebuild.
+create extension if not exists pg_cron;
+
+do $cron$
+declare
+  v_job_id bigint;
+begin
+  for v_job_id in
+    select jobid
+    from cron.job
+    where jobname = 'nanobio-expire-memberships'
+  loop
+    perform cron.unschedule(v_job_id);
+  end loop;
+end
+$cron$;
+
 begin;
 
 drop schema if exists public cascade;
@@ -1352,6 +1371,38 @@ drop trigger if exists trg_membership_subscriptions_sync_user on public.membersh
 create trigger trg_membership_subscriptions_sync_user
   after insert or update or delete on public.membership_subscriptions
   for each row execute function public.sync_user_subscription_tier();
+
+-- Wall-clock expiry does not fire a row trigger by itself. This trusted,
+-- idempotent job transition makes the stored subscription state converge to
+-- the same Free result already returned by current_plan_for_user().
+create or replace function public.expire_membership_subscriptions()
+returns integer
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_now timestamptz := now();
+  v_expired_count integer;
+begin
+  update public.membership_subscriptions
+  set
+    status = 'expired',
+    updated_at = v_now
+  where status in ('trialing', 'active', 'past_due')
+    and ends_at is not null
+    and ends_at <= v_now;
+
+  get diagnostics v_expired_count = row_count;
+  return v_expired_count;
+end;
+$$;
+
+revoke all on function public.expire_membership_subscriptions()
+from public, anon, authenticated;
+
+grant execute on function public.expire_membership_subscriptions()
+to service_role;
 
 create or replace function public.finalize_google_play_purchase(
   p_user_id uuid,
@@ -4392,7 +4443,6 @@ begin
     'reconciliation';
 end;
 $$;
-plus
 drop function if exists public.admin_search_users(text, integer);
 
 create or replace function public.admin_search_users(
@@ -13619,6 +13669,19 @@ from public, anon;
 grant
 execute on function public.sync_my_mobile_snapshot (jsonb) to authenticated;
 
+-- pg_cron jobs live outside public and survive the destructive schema reset.
+-- The preflight above removed every stale copy before the rebuild; create one
+-- active five-minute membership expiry runner after the schema is complete.
+do $cron$
+begin
+  perform cron.schedule(
+    'nanobio-expire-memberships',
+    '*/5 * * * *',
+    'select public.expire_membership_subscriptions();'
+  );
+end
+$cron$;
+
 commit;
 
 -- =============================================================================
@@ -15330,6 +15393,54 @@ begin
   end if;
 
   raise notice 'PASS Daily Health Hub system contract';
+end
+$$;
+
+-- Membership expiry scheduler contract. Effective access is already dynamic;
+-- this assertion protects the persisted state reconciliation path and its
+-- service-role-only boundary.
+do $$
+begin
+  if to_regclass('cron.job') is null then
+    raise exception 'MEMBERSHIP_EXPIRY_CRON_EXTENSION_MISSING';
+  end if;
+
+  if to_regprocedure('public.expire_membership_subscriptions()') is null then
+    raise exception 'MEMBERSHIP_EXPIRY_RPC_MISSING';
+  end if;
+
+  if not has_function_privilege(
+    'service_role',
+    'public.expire_membership_subscriptions()'::regprocedure,
+    'EXECUTE'
+  ) then
+    raise exception 'MEMBERSHIP_EXPIRY_SERVICE_ROLE_GRANT_MISSING';
+  end if;
+
+  if has_function_privilege(
+    'anon',
+    'public.expire_membership_subscriptions()'::regprocedure,
+    'EXECUTE'
+  ) or has_function_privilege(
+    'authenticated',
+    'public.expire_membership_subscriptions()'::regprocedure,
+    'EXECUTE'
+  ) then
+    raise exception 'MEMBERSHIP_EXPIRY_CLIENT_GRANT_INVALID';
+  end if;
+
+  if not exists (
+    select 1
+    from cron.job
+    where jobname = 'nanobio-expire-memberships'
+      and schedule = '*/5 * * * *'
+      and command = 'select public.expire_membership_subscriptions();'
+      and active
+  ) then
+    raise exception 'MEMBERSHIP_EXPIRY_CRON_JOB_INVALID';
+  end if;
+
+  raise notice 'PASS membership expiry scheduler contract';
 end
 $$;
 
