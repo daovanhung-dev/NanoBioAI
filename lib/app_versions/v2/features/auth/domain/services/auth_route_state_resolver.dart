@@ -31,6 +31,14 @@ class AuthRouteStateResolver {
       );
     }
 
+    if (session.mustChangePassword) {
+      return AuthRouteState.passwordChangeRequired(
+        userId: session.userId,
+        email: session.email,
+        subscriptionTier: subscriptionTier,
+      );
+    }
+
     switch (profile.onboardingStatus) {
       case 'completed':
         return AuthRouteState.authenticatedReady(

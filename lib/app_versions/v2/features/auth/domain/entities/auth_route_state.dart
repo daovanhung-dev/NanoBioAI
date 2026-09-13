@@ -2,6 +2,7 @@ enum AuthRouteStatus {
   initializing,
   unauthenticated,
   emailVerificationRequired,
+  passwordChangeRequired,
   onboardingRequired,
   authenticatedReady,
   profileBootstrapUnavailable,
@@ -34,6 +35,17 @@ class AuthRouteState {
     String subscriptionTier = 'free',
   }) : this._(
          status: AuthRouteStatus.emailVerificationRequired,
+         email: email,
+         subscriptionTier: subscriptionTier,
+       );
+
+  const AuthRouteState.passwordChangeRequired({
+    required String userId,
+    String? email,
+    String subscriptionTier = 'free',
+  }) : this._(
+         status: AuthRouteStatus.passwordChangeRequired,
+         userId: userId,
          email: email,
          subscriptionTier: subscriptionTier,
        );

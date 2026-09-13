@@ -99,6 +99,12 @@ Admin, gọi RPC transactional bằng service role và ghi audit/idempotency cho
 từng tài khoản. Không gọi function này từ client thường hoặc chạy SQL ghi trực
 tiếp từ Flutter.
 
+`admin-provision-accounts-bulk` dành riêng cho Super Admin để preview rồi tạo
+tối đa 100 tài khoản Gmail và cấp Plus/FamilyPlus theo thời hạn tháng. Function
+tính lại fingerprint, xử lý tuần tự, bảo toàn gói trả phí còn hạn và chỉ dùng
+password tạm cho tài khoản mới. Chỉ deploy sau khi bản app có bắt đổi mật khẩu
+lần đăng nhập đầu đã được phát hành.
+
 Khi xóa `public.users`, trigger `anonymize_deleted_user_records` bỏ liên kết
 user khỏi purchase ledger để giữ reconciliation tối thiểu, đồng thời xóa
 snapshot/note/installation khỏi báo cáo AI. Đây là retention policy có chủ đích,
@@ -113,6 +119,7 @@ supabase functions deploy delete-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-create-account --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-grant-membership --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy admin-grant-membership-bulk --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy admin-provision-accounts-bulk --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy google-play-verify-purchase --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy food-scan-analyze --project-ref "$SUPABASE_PROJECT_REF"

@@ -191,6 +191,8 @@ class _AuthGatePageState extends ConsumerState<AuthGatePage> {
       case AuthRouteStatus.emailVerificationRequired:
         final email = Uri.encodeComponent(state.email ?? '');
         return '${V2RoutePaths.verifyEmail}?email=$email';
+      case AuthRouteStatus.passwordChangeRequired:
+        return V2RoutePaths.resetPassword;
       case AuthRouteStatus.onboardingRequired:
         return V1RoutePaths.onboarding;
       case AuthRouteStatus.authenticatedReady:

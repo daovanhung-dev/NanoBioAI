@@ -53,6 +53,27 @@ void main() {
     expect(state.email, 'Nabi@example.com');
   });
 
+  test('routes accounts marked for first-login password change to reset password', () {
+    final state = resolver.resolve(
+      session: const AuthSessionSnapshot(
+        userId: 'user-1',
+        email: 'Nabi@example.com',
+        emailConfirmed: true,
+        mustChangePassword: true,
+      ),
+      profile: const AuthProfile(
+        id: 'user-1',
+        onboardingStatus: 'completed',
+        subscriptionTier: 'plus',
+      ),
+      requiresEmailConfirmation: true,
+    );
+
+    expect(state.status, AuthRouteStatus.passwordChangeRequired);
+    expect(state.userId, 'user-1');
+    expect(state.subscriptionTier, 'plus');
+  });
+
   test('maps pending onboarding statuses to onboarding required', () {
     for (final status in ['not_started', 'in_progress']) {
       final state = resolver.resolve(

@@ -37,6 +37,7 @@ class SupabaseAuthRemoteDatasource {
       userId: user.id,
       email: user.email,
       emailConfirmed: user.emailConfirmedAt != null,
+      mustChangePassword: user.userMetadata?['must_change_password'] == true,
     );
   }
 
@@ -97,7 +98,14 @@ class SupabaseAuthRemoteDatasource {
   }
 
   Future<void> updatePassword(UpdatePasswordCommand command) async {
-    await client.auth.updateUser(UserAttributes(password: command.newPassword));
+    final metadata = <String, dynamic>{
+      ...?client.auth.currentUser?.userMetadata,
+      'must_change_password': false,
+    };
+    await client.auth.updateUser(UserAttributes(
+      password: command.newPassword,
+      data: metadata,
+    ));
   }
 
   Future<AuthCallbackResult> recoverSessionFromUri(Uri uri) async {

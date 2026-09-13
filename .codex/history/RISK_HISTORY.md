@@ -880,6 +880,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: - Chưa fix: Function production cần được deploy lại để nhận code mới.
 - docs/worklog/2026-09-13/002-worklog-admin-grant-membership-cors.md :: - Cần kiểm tra tiếp: sau deploy, xác nhận `OPTIONS` là `200`; nếu `POST` còn
+- docs/worklog/2026-09-13/003-worklog-admin-purge-gmail.md :: `Deno.serve`, khiến request timeout dù Function báo `ACTIVE`.
 - docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md :: - Chưa fix: bundle live chưa được publish trong phiên này.
 - docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md :: - Cần kiểm tra tiếp: browser smoke test trên Admin Web sau khi GitHub Pages

@@ -2,11 +2,13 @@ class AuthSessionSnapshot {
   final String userId;
   final String? email;
   final bool emailConfirmed;
+  final bool mustChangePassword;
 
   const AuthSessionSnapshot({
     required this.userId,
     required this.email,
     required this.emailConfirmed,
+    this.mustChangePassword = false,
   });
 }
 
