@@ -77,7 +77,7 @@ describe('AdminApi mutation contract', () => {
       name: 'admin-provision-accounts-bulk',
       body: {
         mode: 'preview',
-        accounts,
+        accounts: [{ email: 'user@gmail.com', full_name: 'User One' }],
         plan_code: 'plus',
         duration_months: 1,
         reason: 'Được phê duyệt.',

@@ -282,7 +282,7 @@ export class AdminApi {
     assertWriteContext(input.reason, input.idempotencyKey);
     const data = await this.invoke<unknown>('admin-provision-accounts-bulk', {
       mode: 'preview',
-      accounts: input.accounts,
+      accounts: toBulkFunctionAccounts(input.accounts),
       plan_code: input.planCode,
       duration_months: input.durationMonths,
       reason: input.reason.trim(),
@@ -295,7 +295,7 @@ export class AdminApi {
     assertWriteContext(input.reason, input.idempotencyKey);
     const data = await this.invoke<unknown>('admin-provision-accounts-bulk', {
       mode: 'execute',
-      accounts: input.accounts,
+      accounts: toBulkFunctionAccounts(input.accounts),
       password: input.password,
       plan_code: input.planCode,
       duration_months: input.durationMonths,
@@ -411,6 +411,13 @@ function numberValue(value: unknown): number {
 function assertWriteContext(reason: string, idempotencyKey: string): void {
   if (!reason.trim()) throw new AdminApiError('Vui lòng nhập lý do cho thao tác này.');
   if (!idempotencyKey.trim()) throw new AdminApiError('Thao tác chưa có mã chống gửi trùng.');
+}
+
+function toBulkFunctionAccounts(accounts: BulkProvisionInput['accounts']): Array<{ email: string; full_name: string }> {
+  return accounts.map((account) => ({
+    email: account.email,
+    full_name: account.fullName,
+  }));
 }
 
 function sectionFromTarget(value: unknown): AdminSection | undefined {
