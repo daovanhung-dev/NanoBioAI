@@ -73,7 +73,6 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
               systemInstruction:
                   'Bạn là Nabi, trợ lý wellness. Chỉ dùng dữ liệu được cung cấp; không chẩn đoán, không kê thuốc, không đổi điều trị, không phát minh số.',
               generationConfig: const GeminiGenerationConfig(
-                maxOutputTokens: 1000,
                 temperature: 0.2,
                 topP: 0.85,
                 responseMimeType: 'application/json',

@@ -22,7 +22,7 @@ function request(
 const validBody = {
   model: "gemini-2.5-flash",
   contents: [{ role: "user", parts: [{ text: "Xin chào" }] }],
-  generation_config: { maxOutputTokens: 128, temperature: 0.2 },
+  generation_config: { temperature: 0.2 },
   system_instruction: "Trả lời an toàn.",
 };
 
@@ -220,6 +220,7 @@ Deno.test("normalizes provider status classes without exposing provider details"
     const body = await response.json();
     if (
       body.success !== false ||
+      body.code !== "AI_UNAVAILABLE" ||
       body.message !== "Dịch vụ AI tạm thời chưa sẵn sàng."
     ) {
       throw new Error(`${providerCode} leaked or changed the safe error body`);
@@ -227,6 +228,25 @@ Deno.test("normalizes provider status classes without exposing provider details"
     if (response.headers.get("x-ai-trace-id") !== `trace-${providerCode}`) {
       throw new Error(`${providerCode} lost trace correlation`);
     }
+  }
+});
+
+Deno.test("rejects provider output truncated by MAX_TOKENS with a typed code", async () => {
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      throw new Error("provider_max_tokens");
+    },
+  });
+  const response = await handler(request(validBody));
+  const body = await response.json();
+  if (
+    response.status !== 502 ||
+    body.success !== false ||
+    body.code !== "OUTPUT_TRUNCATED"
+  ) {
+    throw new Error("MAX_TOKENS was not mapped to OUTPUT_TRUNCATED");
   }
 });
 

@@ -25,7 +25,6 @@ class AITraceLogger {
     'hasSystemInstruction',
     'itemCount',
     'lastErrorType',
-    'maxOutputTokens',
     'mealCount',
     'messageLength',
     'model',

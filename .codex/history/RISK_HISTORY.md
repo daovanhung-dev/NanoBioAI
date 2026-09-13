@@ -885,3 +885,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md :: - Chưa fix: bundle live chưa được publish trong phiên này.
 - docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md :: - Cần kiểm tra tiếp: browser smoke test trên Admin Web sau khi GitHub Pages
 - docs/worklog/2026-09-13/006-worklog-admin-grant-plus-safe-preserve.md :: - Cập nhật handler để nhận và trả trạng thái preservation/skipped.
+- docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: Commit de xuat: fix(ai): bo app-owned token cap va chan partial response
+- docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: - Giữ các safety bound về kích thước, timeout, rate limit, history và image.
+- docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: nhiều parts, JSON string, response rỗng và partial MAX_TOKENS.
+- docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: ## Rủi ro và ghi chú
+- docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md :: partial response; safety timeout vẫn giới hạn thời gian chờ.

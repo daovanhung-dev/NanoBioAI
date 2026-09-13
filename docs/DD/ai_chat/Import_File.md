@@ -44,7 +44,7 @@
 |---|---|---|---|---|---|
 | AI_CHAT-API01 | `openAiChatWithEntitlement` command / `rpc_ai_chat_open_ai_chat_with_entitlement` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | AI_CHAT-FN01 |
 | AI_CHAT-API02 | `sendAiChatQuestion` command / `rpc_ai_chat_send_ai_chat_question` trusted RPC when server-owned state is written | Use-case command handler; RPC only for financial, entitlement, quota, family, Sale, Admin, audit, or sensitive writes | actor_context, command DTO, correlation_id, idempotency_key for writes | Result/Error DTO, safe_user_message, domain_error_code, audit_ref for sensitive writes | AI_CHAT-FN02 |
-| AI_CHAT-API03 | `GeminiRestClient.generateText` | Direct Flutter REST call | Bounded `contents` từ message/history + Nabi `systemInstruction` + `maxOutputTokens: 256` | Trimmed non-empty text; typed invalid/temporary/unavailable failure | AI_CHAT-FN03 |
+| AI_CHAT-API03 | `AiTextClient.generateText` | Trusted Supabase Edge Function / test seam | Bounded `contents` từ message/history + Nabi `systemInstruction`, không có `maxOutputTokens` mặc định | Sanitized non-empty text; `MAX_TOKENS` không trả partial; typed invalid/temporary/unavailable failure | AI_CHAT-FN03 |
 | AI_CHAT-API-AUDIT | Audit/event integration | Event after successful sensitive write | correlation_id, actor_id, action, entity_ref, reason, idempotency_key | audit_id, recorded_at, immutable action summary | Functions with side effects |
 
 ## 4. Entity / Model Dependencies

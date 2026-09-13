@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_sanitizer.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import '../../domain/entities/voice_chat_message.dart';
@@ -43,12 +44,12 @@ class GeminiVoiceChatTurnDatasource implements VoiceChatTurnDatasource {
   static const maxHistoryMessageCharacters = 6000;
   static const maxResponseCharacters = 2000;
   static const maxHistoryMessages = 12;
-  static const maxOutputTokens = 256;
   static const defaultRequestTimeout = Duration(seconds: 30);
 
   static const systemInstruction = '''
 Bạn là Nabi, trợ lý sức khỏe AI thân thiện của NanoBio.
 Luôn trả lời bằng tiếng Việt, ngắn gọn, rõ ràng và phù hợp để đọc thành tiếng.
+- Không dùng markdown hoặc ký tự trang trí đặc biệt.
 Không chẩn đoán, kê đơn hoặc tự nhận thay thế bác sĩ.
 Nếu người dùng mô tả dấu hiệu nguy hiểm tức thời hoặc tình huống cấp cứu,
 hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu gần nhất.
@@ -92,12 +93,11 @@ hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu 
             ],
             generationConfig: const GeminiGenerationConfig(
               candidateCount: null,
-              maxOutputTokens: maxOutputTokens,
             ),
             systemInstruction: systemInstruction,
           )
           .timeout(requestTimeout);
-      final normalizedResponse = response.trim();
+      final normalizedResponse = AITextSanitizer.sanitize(response);
       if (!_isBoundedText(normalizedResponse, maxResponseCharacters)) {
         throw const VoiceChatException(VoiceChatFailure.invalidResponse);
       }
@@ -217,26 +217,7 @@ class _VoiceHttpOverrideClient implements AiTextClient {
         message: 'Voice AI request failed.',
       );
     }
-    final data = response.data;
-    if (data is Map) {
-      final candidates = data['candidates'];
-      if (candidates is List) {
-        for (final candidate in candidates) {
-          if (candidate is! Map) continue;
-          final content = candidate['content'];
-          if (content is! Map || content['parts'] is! List) continue;
-          for (final part in content['parts'] as List) {
-            if (part is Map && part['text'] is String) {
-              return part['text'] as String;
-            }
-          }
-        }
-      }
-    }
-    throw const GeminiApiException(
-      status: 'invalid_response',
-      message: 'Voice AI returned an invalid response.',
-    );
+    return extractGeminiResponseText(response.data);
   }
 
   @override

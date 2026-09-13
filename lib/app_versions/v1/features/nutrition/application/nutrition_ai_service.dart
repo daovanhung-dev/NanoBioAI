@@ -138,7 +138,6 @@ Trả duy nhất JSON đúng schema:
               systemInstruction:
                   'Bạn là Nabi, trợ lý wellness dinh dưỡng. Chỉ dùng dữ liệu app cung cấp; không chẩn đoán, không kê thuốc, không phát minh số.',
               generationConfig: const GeminiGenerationConfig(
-                maxOutputTokens: 1600,
                 temperature: 0.15,
                 topP: 0.85,
                 responseMimeType: 'application/json',

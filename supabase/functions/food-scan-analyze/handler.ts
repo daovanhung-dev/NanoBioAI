@@ -2,6 +2,7 @@ import {
   isRecord,
   resolveGeminiProviderRequest,
 } from "../_shared/gemini_provider.ts";
+import { extractGeminiResponse } from "../_shared/gemini_response.ts";
 
 export type FoodScanOperation = "vision" | "health";
 
@@ -32,7 +33,7 @@ const MAX_RESPONSE = 40_000;
 const MAX_TRACE_ID = 100;
 const TRACE_ID_PATTERN = /^[A-Za-z0-9._:-]+$/;
 const SAFE_PROVIDER_ERROR_PATTERN =
-  /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response)$/;
+  /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response|max_tokens)$/;
 
 export function createFoodScanAnalyzeHandler(deps: FoodScanAnalyzeDeps) {
   return async (request: Request): Promise<Response> => {
@@ -243,7 +244,9 @@ export function createFoodScanAnalyzeHandler(deps: FoodScanAnalyzeDeps) {
         return failure(
           502,
           "Dịch vụ AI tạm thời chưa sẵn sàng.",
-          "PROVIDER_FAILURE",
+          errorCode === "provider_max_tokens"
+            ? "OUTPUT_TRUNCATED"
+            : "PROVIDER_FAILURE",
           traceId,
           startedAt,
         );
@@ -479,21 +482,23 @@ export function createGeminiFoodScanProvider(
       throw new Error(errorCode);
     }
 
-    const candidates = isRecord(payload) && Array.isArray(payload.candidates)
-      ? payload.candidates
-      : [];
-    const fragments: string[] = [];
-    for (const candidate of candidates) {
-      if (!isRecord(candidate) || !isRecord(candidate.content)) continue;
-      const parts = candidate.content.parts;
-      if (!Array.isArray(parts)) continue;
-      for (const part of parts) {
-        if (!isRecord(part) || part.thought === true) continue;
-        if (typeof part.text === "string") fragments.push(part.text);
-      }
+    const extracted = extractGeminiResponse(payload);
+    if (extracted.finishReason?.toUpperCase() === "MAX_TOKENS") {
+      console.error(JSON.stringify({
+        component: "food-scan-gemini-provider",
+        event: "PROVIDER_OUTPUT_TRUNCATED",
+        traceId: input.traceId,
+        operation: input.operation,
+        model,
+        modelFallback,
+        statusCode: response.status,
+        errorCode: "provider_max_tokens",
+        durationMs: Date.now() - startedAt,
+      }));
+      throw new Error("provider_max_tokens");
     }
 
-    const generated = fragments.join("").trim();
+    const generated = extracted.text;
     if (!generated) {
       console.error(JSON.stringify({
         component: "food-scan-gemini-provider",

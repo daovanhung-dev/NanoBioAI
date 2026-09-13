@@ -75,7 +75,6 @@ ${jsonEncode(payload)}
               systemInstruction: systemInstruction,
               generationConfig: const GeminiGenerationConfig(
                 candidateCount: 1,
-                maxOutputTokens: 2800,
                 temperature: 0.15,
                 topP: 0.8,
                 responseMimeType: 'application/json',

@@ -14,13 +14,4 @@ Không có nút quay về, không có nút vào thông báo
 **Đăng nhập, đăng ký:**
 
 1. Loại bỏ việc xác thực gmail
-2. Tự động thoát tài khoản và bắt đăng nhập lại
-
-**Tạo Web admin:**
-
-1. Tạo tài khoản, cấp phát các gói.
-2. Nâng gói plus, gia hạn gói người dùng
-3. Duyệt gói cho người dùng
-4. Quản lý người dùng 
-
-**Chức năng theo dõi người dùng:**
+2. Lỗi Tự động thoát tài khoản và bắt đăng nhập lại(bug)

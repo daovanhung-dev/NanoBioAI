@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 
@@ -160,6 +162,83 @@ void main() {
       );
 
       expect(result, 'Câu trả lời dành cho người dùng.');
+    });
+
+    test('omits maxOutputTokens when no app-owned cap is provided', () {
+      const config = GeminiGenerationConfig(
+        candidateCount: null,
+        temperature: 0.2,
+      );
+
+      expect(config.toJson(), {'temperature': 0.2});
+    });
+
+    test('rejects a response with text followed by MAX_TOKENS', () async {
+      final client = GeminiRestClient(
+        apiKey: 'test-api-key-with-safe-length',
+        post: ({required url, required headers, required body}) async {
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Phần trả lời bị cắt.'},
+                    ],
+                  },
+                  'finishReason': 'MAX_TOKENS',
+                },
+              ],
+            },
+          );
+        },
+      );
+
+      await expectLater(
+        client.generateText(
+          model: 'gemini-3.5-flash',
+          contents: const [GeminiContent.user('Xin chào')],
+          generationConfig: const GeminiGenerationConfig(),
+        ),
+        throwsA(
+          isA<GeminiApiException>()
+              .having((error) => error.isOutputTruncated, 'truncated', isTrue)
+              .having((error) => error.isTransient, 'transient', isFalse),
+        ),
+      );
+    });
+
+    test('accepts a JSON string response and preserves all text parts', () async {
+      final client = GeminiRestClient(
+        apiKey: 'test-api-key-with-safe-length',
+        post: ({required url, required headers, required body}) async {
+          return GeminiHttpResponse(
+            statusCode: 200,
+            data: jsonEncode({
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Phần đầu.'},
+                      {'text': 'Phần cuối.'},
+                    ],
+                  },
+                },
+              ],
+            }),
+          );
+        },
+      );
+
+      expect(
+        await client.generateText(
+          model: 'gemini-3.5-flash',
+          contents: const [GeminiContent.user('Xin chào')],
+          generationConfig: const GeminiGenerationConfig(),
+        ),
+        'Phần đầu.\nPhần cuối.',
+      );
     });
   });
 }

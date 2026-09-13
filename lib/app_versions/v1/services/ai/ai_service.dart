@@ -1012,7 +1012,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       contents: [GeminiContent.user(prompt)],
       generationConfig: const GeminiGenerationConfig(
         candidateCount: 1,
-        maxOutputTokens: 8192,
         temperature: 0.2,
         topP: 0.8,
         responseMimeType: 'application/json',

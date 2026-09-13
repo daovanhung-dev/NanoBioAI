@@ -63,7 +63,6 @@ $body = @{
     )
     generation_config = @{
         candidateCount = 1
-        maxOutputTokens = 80
         temperature = 0.2
         topP = 0.8
     }

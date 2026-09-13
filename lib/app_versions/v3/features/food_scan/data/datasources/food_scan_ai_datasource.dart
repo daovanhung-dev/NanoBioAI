@@ -61,7 +61,6 @@ class FoodScanAiDatasource {
         ],
         generationConfig: const GeminiGenerationConfig(
           candidateCount: 1,
-          maxOutputTokens: 8192,
           temperature: 0.15,
           topP: 0.8,
           responseMimeType: 'application/json',
@@ -111,7 +110,6 @@ class FoodScanAiDatasource {
         ],
         generationConfig: const GeminiGenerationConfig(
           candidateCount: 1,
-          maxOutputTokens: 8192,
           temperature: 0.1,
           topP: 0.75,
           responseMimeType: 'application/json',

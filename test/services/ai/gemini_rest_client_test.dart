@@ -133,6 +133,79 @@ void main() {
       expect(exception.isTransient, isTrue);
       expect(exception.toString(), isNot(contains('AQ.fake-key')));
     });
+
+    test('omits maxOutputTokens from the provider request by default', () async {
+      Map<String, Object?>? capturedBody;
+      final client = GeminiRestClient(
+        apiKey: 'AQ.fake-key',
+        post: ({required url, required headers, required body}) async {
+          capturedBody = body;
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Đã nhận.'},
+                    ],
+                  },
+                },
+              ],
+            },
+          );
+        },
+      );
+
+      await client.generateText(
+        model: 'gemini-test',
+        contents: const [GeminiContent.user('Kiểm tra')],
+        generationConfig: const GeminiGenerationConfig(candidateCount: null),
+      );
+
+      expect(
+        (capturedBody?['generationConfig'] as Map)['maxOutputTokens'],
+        isNull,
+      );
+    });
+
+    test('rejects partial MAX_TOKENS output', () async {
+      final client = GeminiRestClient(
+        apiKey: 'AQ.fake-key',
+        post: ({required url, required headers, required body}) async {
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Phần đầu'},
+                    ],
+                  },
+                  'finishReason': 'MAX_TOKENS',
+                },
+              ],
+            },
+          );
+        },
+      );
+
+      await expectLater(
+        client.generateText(
+          model: 'gemini-test',
+          contents: const [GeminiContent.user('Kiểm tra')],
+          generationConfig: const GeminiGenerationConfig(),
+        ),
+        throwsA(
+          isA<GeminiApiException>().having(
+            (error) => error.isOutputTruncated,
+            'truncated',
+            isTrue,
+          ),
+        ),
+      );
+    });
   });
 
   group('AI service REST integration', () {

@@ -118,5 +118,80 @@ void main() {
       expect(contentLengths.last, 17);
       expect(contentLengths.every((length) => length <= 17), isTrue);
     });
+
+    test('sanitizes AI display text without changing the original question', () async {
+      String? receivedMessage;
+      final service = AIChatService(
+        modelNames: const ['gemini-3.5-flash'],
+        textGenerator: ({required modelName, required message}) async {
+          receivedMessage = message;
+          return 'Xin chào *bạn* & ^ 😊.';
+        },
+      );
+
+      final response = await service.sendMessage('Giữ nguyên *câu hỏi* & ^');
+
+      expect(receivedMessage, 'Giữ nguyên *câu hỏi* & ^');
+      expect(response, 'Xin chào bạn.');
+    });
+
+    test('does not retain or expose partial MAX_TOKENS output', () async {
+      var requestCount = 0;
+      final requestBodies = <Map<String, Object?>>[];
+      final client = GeminiRestClient(
+        apiKey: 'test-api-key-with-safe-length',
+        post: ({required url, required headers, required body}) async {
+          requestCount++;
+          requestBodies.add(body);
+          if (requestCount == 1) {
+            return const GeminiHttpResponse(
+              statusCode: 200,
+              data: {
+                'candidates': [
+                  {
+                    'content': {
+                      'parts': [
+                        {'text': 'Phần trả lời chưa hoàn tất'},
+                      ],
+                    },
+                    'finishReason': 'MAX_TOKENS',
+                  },
+                ],
+              },
+            );
+          }
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Câu trả lời hoàn chỉnh.'},
+                    ],
+                  },
+                },
+              ],
+            },
+          );
+        },
+      );
+      final service = AIChatService(
+        modelNames: const ['gemini-test'],
+        geminiClient: client,
+        delay: (_) async {},
+      );
+
+      await expectLater(
+        service.sendMessage('Câu hỏi đầu tiên'),
+        throwsA(isA<AIResponseInvalidException>()),
+      );
+      final response = await service.sendMessage('Câu hỏi thứ hai');
+
+      expect(response, 'Câu trả lời hoàn chỉnh.');
+      expect(requestCount, 2);
+      expect(requestBodies.first['contents'], hasLength(1));
+      expect(requestBodies.last['contents'], hasLength(1));
+    });
   });
 }

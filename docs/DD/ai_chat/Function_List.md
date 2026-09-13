@@ -218,7 +218,7 @@ View / Presentation
 2. Đọc `GEMINI_API_KEY` từ `AppEnv`; resolve model theo
    `GEMINI_CHAT_MODEL -> GEMINI_MODEL -> gemini-3.5-flash`.
 3. Lắp `systemInstruction`, bounded contents và `generationConfig` với
-   `maxOutputTokens: 256`; gọi Gemini REST bằng `GeminiRestClient`.
+   không truyền `maxOutputTokens`; gọi Gemini qua transport dùng chung.
 4. Timeout turn sau 30 giây. 408/429/network/5xx thành lỗi tạm thời; key/auth/
    model/config thành unavailable; response rỗng hoặc quá 2.000 ký tự thành
    invalid response.

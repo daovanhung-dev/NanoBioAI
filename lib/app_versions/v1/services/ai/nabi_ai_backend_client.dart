@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'ai_trace_logger.dart';
@@ -59,7 +61,6 @@ class NabiAiBackendClient implements AiTextClient {
       if (operation != null) 'operation': operation,
       'model': model,
       'contentsCount': contents.length,
-      'maxOutputTokens': generationConfig.maxOutputTokens,
       'hasSystemInstruction':
           systemInstruction != null && systemInstruction.trim().isNotEmpty,
       'streaming': streaming,
@@ -114,27 +115,38 @@ class NabiAiBackendClient implements AiTextClient {
             'system_instruction': systemInstruction,
         },
       );
-      final data = response.data;
-      if (data is Map && data['text'] is String) {
-        final text = (data['text'] as String).trim();
-        if (text.isNotEmpty) {
-          stopwatch.stop();
-          AITraceLogger.success(
-            _tag,
-            traceId,
-            method,
-            'SUCCESS',
-            'AI backend request completed.',
-            data: {
-              ...baseMetadata,
-              'durationMs': stopwatch.elapsedMilliseconds,
-              'statusCode': response.status,
-              'responseLength': text.length,
-            },
-            location: StackTrace.current,
-          );
-          return text;
-        }
+      final data = _decodeResponseData(response.data);
+      final dataMap = _asBackendMap(data);
+      final backendCode = _backendCode(dataMap);
+      if (backendCode == 'OUTPUT_TRUNCATED') {
+        throw GeminiApiException(
+          statusCode: response.status,
+          status: 'MAX_TOKENS',
+          message: 'AI did not complete the response.',
+        );
+      }
+      final text = dataMap?['text'] is String
+          ? (dataMap?['text'] as String).trim()
+          : data is String
+          ? data.trim()
+          : '';
+      if (text.isNotEmpty) {
+        stopwatch.stop();
+        AITraceLogger.success(
+          _tag,
+          traceId,
+          method,
+          'SUCCESS',
+          'AI backend request completed.',
+          data: {
+            ...baseMetadata,
+            'durationMs': stopwatch.elapsedMilliseconds,
+            'statusCode': response.status,
+            'responseLength': text.length,
+          },
+          location: StackTrace.current,
+        );
+        return text;
       }
 
       stopwatch.stop();
@@ -163,10 +175,15 @@ class NabiAiBackendClient implements AiTextClient {
       throw exception;
     } on FunctionException catch (error, stackTrace) {
       stopwatch.stop();
+      final backendCode = _backendCode(_asBackendMap(error.details));
       final exception = GeminiApiException(
         statusCode: error.status,
-        status: 'backend_function_error',
-        message: 'AI backend request failed.',
+        status: backendCode == 'OUTPUT_TRUNCATED'
+            ? 'MAX_TOKENS'
+            : 'backend_function_error',
+        message: backendCode == 'OUTPUT_TRUNCATED'
+            ? 'AI did not complete the response.'
+            : 'AI backend request failed.',
       );
       AITraceLogger.error(
         _tag,
@@ -181,7 +198,9 @@ class NabiAiBackendClient implements AiTextClient {
           'durationMs': stopwatch.elapsedMilliseconds,
           'statusCode': error.status,
           'status': exception.status,
-          'errorCode': 'backend_function_error',
+          'errorCode': backendCode == 'OUTPUT_TRUNCATED'
+              ? 'output_truncated'
+              : 'backend_function_error',
         },
         location: StackTrace.current,
       );
@@ -253,5 +272,29 @@ class NabiAiBackendClient implements AiTextClient {
       systemInstruction: systemInstruction,
       streaming: true,
     );
+  }
+
+  static Object? _decodeResponseData(Object? value) {
+    if (value is! String) return value;
+    try {
+      return jsonDecode(value);
+    } on FormatException {
+      return value;
+    }
+  }
+
+  static Map<String, Object?>? _asBackendMap(Object? value) {
+    final decoded = _decodeResponseData(value);
+    if (decoded is! Map) return null;
+    return Map<String, Object?>.fromEntries(
+      decoded.entries.map(
+        (entry) => MapEntry(entry.key.toString(), entry.value),
+      ),
+    );
+  }
+
+  static String? _backendCode(Map<String, Object?>? value) {
+    final code = value?['code']?.toString().trim();
+    return code == null || code.isEmpty ? null : code;
   }
 }

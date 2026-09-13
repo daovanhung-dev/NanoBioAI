@@ -47,7 +47,6 @@ class SleepAnalysisAIService {
             model: _model,
             contents: [GeminiContent.user(jsonEncode(payload))],
             generationConfig: const GeminiGenerationConfig(
-              maxOutputTokens: 2400,
               temperature: 0.2,
               responseMimeType: 'application/json',
             ),

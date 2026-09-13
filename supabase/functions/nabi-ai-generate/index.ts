@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { extractGeminiResponse } from "../_shared/gemini_response.ts";
 
 import {
   createNabiAiGenerateHandler,
@@ -114,20 +115,23 @@ async function generateWithGemini(input: NabiAiGenerateInput): Promise<string> {
   }
 
   const responseSummary = summarizeProviderPayload(payload);
-  const candidates = payload?.candidates;
-  const fragments: string[] = [];
-  if (Array.isArray(candidates)) {
-    for (const candidate of candidates) {
-      const parts = candidate?.content?.parts;
-      if (!Array.isArray(parts)) continue;
-      for (const part of parts) {
-        if (part?.thought === true) continue;
-        if (typeof part?.text === "string") fragments.push(part.text);
-      }
-    }
+  const extracted = extractGeminiResponse(payload);
+  if (extracted.finishReason?.toUpperCase() === "MAX_TOKENS") {
+    console.error(JSON.stringify({
+      component: "gemini-provider",
+      event: "PROVIDER_OUTPUT_TRUNCATED",
+      traceId: input.traceId,
+      model,
+      modelFallback,
+      statusCode: response.status,
+      errorCode: "provider_max_tokens",
+      ...responseSummary,
+      durationMs: Date.now() - startedAt,
+    }));
+    throw new Error("provider_max_tokens");
   }
 
-  const text = fragments.join("").trim();
+  const text = extracted.text;
   if (!text) {
     console.error(JSON.stringify({
       component: "gemini-provider",
@@ -168,8 +172,12 @@ function summarizeProviderPayload(payload: unknown): Record<string, unknown> {
 
   for (const candidate of candidates) {
     if (!isRecord(candidate)) continue;
-    if (finishReason == null) {
-      finishReason = safeProviderLabel(candidate.finishReason);
+    const candidateFinishReason = safeProviderLabel(candidate.finishReason);
+    if (
+      finishReason == null ||
+      candidateFinishReason?.toUpperCase() === "MAX_TOKENS"
+    ) {
+      finishReason = candidateFinishReason;
     }
     const content = candidate.content;
     if (!isRecord(content) || !Array.isArray(content.parts)) continue;

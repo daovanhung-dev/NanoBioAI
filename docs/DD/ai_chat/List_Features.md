@@ -7,7 +7,7 @@
 | Module | AI_CHAT |
 | Overall | [Overall.md](Overall.md) |
 | Version | v1.7 |
-| Last Updated | 2026-08-23 |
+| Last Updated | 2026-09-13 |
 | Source | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
 
 ## 1. Feature Inventory
@@ -237,7 +237,7 @@
 | Request | Repository nhận `message` non-empty tối đa 6.000 ký tự; datasource gửi tối đa 12 history item role `user`/`model`, mỗi item tối đa 6.000 ký tự, cùng current message qua `GeminiRestClient`. |
 | Success | Gemini text non-empty đã trim/kiểm tra và tối đa 2.000 ký tự; chỉ khi đó repository mới append cặp history. |
 | Errors | 408/429/network/5xx → temporarily unavailable; key/auth/model/config → unavailable; response rỗng → invalid response. |
-| Gemini | Nabi tiếng Việt, trả lời ngắn, không chẩn đoán thay bác sĩ, hướng dẫn cấp cứu phù hợp; tối đa 256 output tokens. |
+| Gemini | Nabi tiếng Việt, trả lời ngắn, không chẩn đoán thay bác sĩ, hướng dẫn cấp cứu phù hợp; không truyền app-owned output token cap. |
 | Privacy / risk | Không log transcript/history/key/raw response; không lưu SQLite/Supabase. Key không commit nhưng có thể bị trích xuất khỏi APK; paid gate chỉ ở client. |
 | Reaction speed | 200/500/1.000/2.000 ms sau speech result gần nhất; default 1.000 ms; selection RAM qua Stop/Start cùng page. Không phải Gemini/network latency. |
 | Listen duration | `listenFor = 180.000 ms` là hard cap app/plugin mỗi lượt. Final, endpointing, Stop/lifecycle/error hoặc recognizer OS có thể kết thúc sớm hơn; không bảo đảm raw audio đủ 3 phút trên mọi máy. |

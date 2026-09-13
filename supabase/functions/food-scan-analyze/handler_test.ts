@@ -44,7 +44,6 @@ const visionBody = {
   model: "gemini-2.5-flash",
   contents: visionContents,
   generation_config: {
-    maxOutputTokens: 256,
     responseMimeType: "application/json",
   },
   system_instruction: null,
@@ -226,6 +225,18 @@ Deno.test("does not expose provider failures as a false success", async () => {
     body.message !== "Dịch vụ AI tạm thời chưa sẵn sàng."
   ) {
     throw new Error("provider failure was not normalized safely");
+  }
+});
+
+Deno.test("marks food scan output truncated by MAX_TOKENS", async () => {
+  const response = await testHandler({
+    generate: async () => {
+      throw new Error("provider_max_tokens");
+    },
+  })(request());
+  const body = await responseBody(response);
+  if (response.status !== 502 || body.code !== "OUTPUT_TRUNCATED") {
+    throw new Error("food scan MAX_TOKENS was not normalized");
   }
 });
 

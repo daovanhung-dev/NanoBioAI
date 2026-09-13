@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 161
+- Total worklogs: 162
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -170,3 +170,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-09-13 | bugfix / Admin Web UI adapter | supabase-schema | danh sách người dùng và nhãn membership | [Worklog - Fix hiển thị gói hiện tại trong NanoBio Admin Web](../../docs/worklog/2026-09-13/005-worklog-admin-current-plan-label.md) |
 | 2026-09-13 | unknown | docs-context | unknown | [Worklog - Batch tạo tài khoản và cấp Plus 30 ngày an toàn](../../docs/worklog/2026-09-13/006-worklog-admin-grant-plus-safe-preserve.md) |
 | 2026-09-13 | unknown | docs-context | unknown | [Worklog - Tạo nhanh nhiều tài khoản và cấp gói](../../docs/worklog/2026-09-13/007-worklog-admin-bulk-provision-accounts.md) |
+| 2026-09-13 | unknown | docs-context | unknown | [Worklog - Bỏ cap token và hoàn thiện giao tiếp AI](../../docs/worklog/2026-09-13/008-worklog-ai-response-completeness.md) |

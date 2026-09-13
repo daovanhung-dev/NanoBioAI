@@ -12,7 +12,7 @@
 | Source evidence | Auth-protected `/ai-chat` and `/ai-voice`, REST/STT/TTS controllers and access gate are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-08-23 |
+| Last Updated | 2026-09-13 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
 
 ## Purpose
@@ -23,7 +23,8 @@ Gemini response latency. Mỗi lượt đặt hard cap nghe 3 phút nhưng final
 endpointing hoặc recognizer hệ điều hành có thể dừng sớm hơn. Guest, Free và mọi
 trạng thái quyền không xác định đều bị chặn trước khi khởi tạo micro/controller.
 User/history item Voice tối đa 6.000 ký tự; Gemini response vẫn tối đa 2.000 ký
-tự và 256 output tokens.
+tự nhưng NanoBio không đặt app-owned output token cap. Giới hạn nội tại của
+Gemini và safety bound kích thước response vẫn được giữ.
 
 ## Documents in This Module
 - [Overall](./Overall.md)

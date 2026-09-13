@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/config/app_env.dart';
 
 import 'ai_exceptions.dart';
+import 'ai_text_sanitizer.dart';
 import 'ai_trace_logger.dart';
 import 'ai_vietnamese_text_validator.dart';
 import 'gemini_rest_client.dart';
@@ -238,7 +239,6 @@ class AIChatService {
       final entry = _models[modelIndex];
       if (_activeCooldownUntil(entry.name) != null) continue;
       totalAttempts++;
-      var emitted = false;
       final buffer = StringBuffer();
 
       try {
@@ -253,7 +253,6 @@ class AIChatService {
               contents: entry.contentsWithUserMessage(message),
               generationConfig: const GeminiGenerationConfig(
                 candidateCount: 1,
-                maxOutputTokens: 512,
                 temperature: 0.4,
                 topP: 0.8,
               ),
@@ -263,13 +262,12 @@ class AIChatService {
 
         await for (final delta in source) {
           if (delta.isEmpty) continue;
-          emitted = true;
           buffer.write(delta);
-          yield delta;
         }
 
         final validated = _validatedResponse(buffer.toString());
         pending.complete(entry: entry, modelMessage: validated);
+        yield validated;
         AITraceLogger.success(
           _tag,
           traceId,
@@ -288,9 +286,7 @@ class AIChatService {
         lastError = error;
         lastStackTrace = stackTrace;
 
-        // Once content has been exposed, never switch models because that can
-        // splice two answers into one spoken response.
-        if (emitted) {
+        if (error is GeminiApiException && error.isOutputTruncated) {
           _throwTypedFailure(error, stackTrace);
         }
 
@@ -531,7 +527,6 @@ class AIChatService {
       contents: entry.contentsWithUserMessage(message),
       generationConfig: const GeminiGenerationConfig(
         candidateCount: 1,
-        maxOutputTokens: 512,
         temperature: 0.4,
         topP: 0.8,
       ),
@@ -630,7 +625,7 @@ class AIChatService {
   static String? _env(String key) => AppEnv.maybeString(key);
 
   static String _validatedResponse(String? rawText) {
-    final text = rawText?.trim() ?? '';
+    final text = AITextSanitizer.sanitize(rawText ?? '');
     if (text.isEmpty) throw const AIResponseInvalidException();
     if (!AIVietnameseTextValidator.isValidDisplayText(text)) {
       throw const AIResponseInvalidException();
@@ -651,6 +646,7 @@ Phong cách:
 - Gọi người dùng là "bạn", tự xưng là "mình".
 - Câu trả lời ngắn gọn, dễ hiểu, thường từ 2 đến 4 câu.
 - Ưu tiên câu ngắn để phản hồi giọng nói bắt đầu nhanh.
+- Không dùng markdown hoặc ký tự trang trí đặc biệt trong câu trả lời.
 - Tránh thuật ngữ y khoa phức tạp khi không cần thiết.
 - Có giọng thân thiện, ấm áp và chuyên nghiệp.
 

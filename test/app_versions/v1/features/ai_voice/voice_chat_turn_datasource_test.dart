@@ -66,9 +66,7 @@ void main() {
               ],
             },
           ],
-          'generationConfig': {
-            'maxOutputTokens': 256,
-          },
+          'generationConfig': <String, Object?>{},
           'systemInstruction': {
             'parts': [
               {'text': GeminiVoiceChatTurnDatasource.systemInstruction.trim()},
@@ -274,6 +272,61 @@ void main() {
       );
       await _expectFailure(
         oversizedDatasource.sendTurn(message: 'Xin chào', history: const []),
+        VoiceChatFailure.invalidResponse,
+      );
+    });
+
+    test('joins all visible response parts and sanitizes only the AI reply', () async {
+      final datasource = _datasourceWithPost(
+        ({required url, required headers, required body}) async {
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'thought': true, 'text': 'ẩn'},
+                      {'text': 'Xin chào *bạn* & ^'},
+                      {'text': 'Hẹn gặp lại 😊.'},
+                    ],
+                  },
+                },
+              ],
+            },
+          );
+        },
+      );
+
+      expect(
+        await datasource.sendTurn(message: 'Giữ nguyên *câu hỏi*', history: const []),
+        'Xin chào bạn\nHẹn gặp lại.',
+      );
+    });
+
+    test('does not accept a partial MAX_TOKENS response', () async {
+      final datasource = _datasourceWithPost(
+        ({required url, required headers, required body}) async {
+          return const GeminiHttpResponse(
+            statusCode: 200,
+            data: {
+              'candidates': [
+                {
+                  'content': {
+                    'parts': [
+                      {'text': 'Câu trả lời chưa hoàn tất'},
+                    ],
+                  },
+                  'finishReason': 'MAX_TOKENS',
+                },
+              ],
+            },
+          );
+        },
+      );
+
+      await _expectFailure(
+        datasource.sendTurn(message: 'Xin chào', history: const []),
         VoiceChatFailure.invalidResponse,
       );
     });

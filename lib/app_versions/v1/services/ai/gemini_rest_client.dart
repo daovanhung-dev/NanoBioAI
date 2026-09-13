@@ -93,7 +93,7 @@ class GeminiContent {
 
 class GeminiGenerationConfig {
   final int? candidateCount;
-  final int maxOutputTokens;
+  final int? maxOutputTokens;
   final double? temperature;
   final double? topP;
   final String? responseMimeType;
@@ -101,7 +101,7 @@ class GeminiGenerationConfig {
 
   const GeminiGenerationConfig({
     this.candidateCount = 1,
-    required this.maxOutputTokens,
+    this.maxOutputTokens,
     this.temperature,
     this.topP,
     this.responseMimeType,
@@ -113,7 +113,7 @@ class GeminiGenerationConfig {
     final normalizedThinkingLevel = _cleanText(thinkingLevel);
     return {
       if (candidateCount != null) 'candidateCount': candidateCount,
-      'maxOutputTokens': maxOutputTokens,
+      if (maxOutputTokens != null) 'maxOutputTokens': maxOutputTokens,
       if (temperature != null) 'temperature': temperature,
       if (topP != null) 'topP': topP,
       if (mimeType != null) 'responseMimeType': mimeType,
@@ -157,6 +157,7 @@ class GeminiApiException implements Exception {
   }
 
   bool get isTransient {
+    if (isOutputTruncated) return false;
     final code = statusCode;
     if (code == 408 || code == 429) return true;
     if (code != null && code >= 500) return true;
@@ -167,6 +168,13 @@ class GeminiApiException implements Exception {
         normalizedStatus == 'unavailable' ||
         normalizedStatus == 'deadline_exceeded' ||
         normalizedStatus == 'internal';
+  }
+
+  bool get isOutputTruncated {
+    final normalizedStatus = _cleanText(status)?.toLowerCase();
+    return normalizedStatus == 'max_tokens' ||
+        normalizedStatus == 'provider_max_tokens' ||
+        normalizedStatus == 'output_truncated';
   }
 
   @override
@@ -284,8 +292,16 @@ class GeminiRestClient implements AiTextClient {
       utf8.decoder.bind(response.bytes),
     )) {
       if (line.isEmpty) {
-        final delta = _decodeSseData(dataLines);
+        final event = _decodeSseData(dataLines);
         dataLines.clear();
+        if (event?.isOutputTruncated == true) {
+          throw GeminiApiException(
+            status: event!.finishReason,
+            message:
+                'Gemini stopped before completing the response: ${event.finishReason}.',
+          );
+        }
+        final delta = event?.text;
         if (delta != null && delta.isNotEmpty) yield delta;
         continue;
       }
@@ -295,7 +311,15 @@ class GeminiRestClient implements AiTextClient {
       }
     }
 
-    final delta = _decodeSseData(dataLines);
+    final event = _decodeSseData(dataLines);
+    if (event?.isOutputTruncated == true) {
+      throw GeminiApiException(
+        status: event!.finishReason,
+        message:
+            'Gemini stopped before completing the response: ${event.finishReason}.',
+      );
+    }
+    final delta = event?.text;
     if (delta != null && delta.isNotEmpty) yield delta;
   }
 
@@ -335,7 +359,7 @@ class GeminiRestClient implements AiTextClient {
     return requestBody;
   }
 
-  static String? _decodeSseData(List<String> dataLines) {
+  static _GeminiStreamEvent? _decodeSseData(List<String> dataLines) {
     if (dataLines.isEmpty) return null;
     final raw = dataLines.join('\n').trim();
     if (raw.isEmpty || raw == '[DONE]') return null;
@@ -358,8 +382,16 @@ class GeminiRestClient implements AiTextClient {
     final candidates = rootMap?['candidates'];
     if (candidates is List) {
       final fragments = <String>[];
+      String? finishReason;
       for (final candidate in candidates) {
         final candidateMap = _asObjectMap(candidate);
+        final candidateFinishReason = _cleanText(
+          candidateMap?['finishReason']?.toString(),
+        );
+        finishReason ??= candidateFinishReason;
+        if (_isMaxTokensFinishReason(candidateFinishReason)) {
+          finishReason = candidateFinishReason;
+        }
         final contentMap = _asObjectMap(candidateMap?['content']);
         final parts = contentMap?['parts'];
         if (parts is! List) continue;
@@ -370,7 +402,12 @@ class GeminiRestClient implements AiTextClient {
           if (value is String && value.isNotEmpty) fragments.add(value);
         }
       }
-      if (fragments.isNotEmpty) return fragments.join();
+      if (fragments.isNotEmpty || finishReason != null) {
+        return _GeminiStreamEvent(
+          text: fragments.join(),
+          finishReason: finishReason,
+        );
+      }
     }
 
     final promptFeedback = _asObjectMap(rootMap?['promptFeedback']);
@@ -526,57 +563,25 @@ class GeminiRestClient implements AiTextClient {
     );
   }
 
-  static String _extractText(Object? payload) {
-    final rootMap = _asObjectMap(payload);
-    final candidates = rootMap?['candidates'];
-    if (candidates is List) {
-      final textSegments = <String>[];
-      for (final candidate in candidates) {
-        final candidateMap = _asObjectMap(candidate);
-        final contentMap = _asObjectMap(candidateMap?['content']);
-        final parts = contentMap?['parts'];
-        if (parts is! List) continue;
-        for (final part in parts) {
-          final partMap = _asObjectMap(part);
-          if (partMap?['thought'] == true) continue;
-          final text = _cleanText(partMap?['text']?.toString());
-          if (text != null) textSegments.add(text);
-        }
-      }
-      final result = textSegments.join('\n').trim();
-      if (result.isNotEmpty) return result;
-
-      final finishReason = _extractFinishReason(candidates);
-      if (finishReason != null) {
-        throw GeminiApiException(
-          status: finishReason,
-          message: 'Gemini did not return text. Finish reason: $finishReason.',
-        );
-      }
-    }
-
-    final promptFeedback = _asObjectMap(rootMap?['promptFeedback']);
-    final blockReason = _cleanText(promptFeedback?['blockReason']?.toString());
-    if (blockReason != null) {
-      throw GeminiApiException(
-        status: 'blocked',
-        message: 'Gemini blocked the request: $blockReason.',
-      );
-    }
-    throw const GeminiApiException(
-      message: 'Gemini returned an empty response.',
-    );
-  }
+  static String _extractText(Object? payload) =>
+      extractGeminiResponseText(payload);
 
   static String? _extractFinishReason(List<Object?> candidates) {
+    String? firstFinishReason;
     for (final candidate in candidates) {
       final candidateMap = _asObjectMap(candidate);
       final finishReason = _cleanText(
         candidateMap?['finishReason']?.toString(),
       );
-      if (finishReason != null) return finishReason;
+      if (finishReason == null) continue;
+      firstFinishReason ??= finishReason;
+      if (_isMaxTokensFinishReason(finishReason)) return finishReason;
     }
-    return null;
+    return firstFinishReason;
+  }
+
+  static bool _isMaxTokensFinishReason(String? value) {
+    return value?.trim().toUpperCase() == 'MAX_TOKENS';
   }
 
   static String _safeDioStatus(DioException error) {
@@ -623,7 +628,75 @@ class GeminiRestClient implements AiTextClient {
   }
 }
 
+class _GeminiStreamEvent {
+  final String text;
+  final String? finishReason;
+
+  const _GeminiStreamEvent({required this.text, this.finishReason});
+
+  bool get isOutputTruncated =>
+      finishReason?.trim().toUpperCase() == 'MAX_TOKENS';
+}
+
+/// Extracts all user-visible text parts from a Gemini response in order.
+/// Thought parts and incomplete MAX_TOKENS responses are never returned.
+String extractGeminiResponseText(Object? payload) {
+  final rootMap = _asObjectMap(payload);
+  final candidates = rootMap?['candidates'];
+  if (candidates is List) {
+    final textSegments = <String>[];
+    final finishReason = GeminiRestClient._extractFinishReason(candidates);
+    if (GeminiRestClient._isMaxTokensFinishReason(finishReason)) {
+      throw GeminiApiException(
+        status: finishReason,
+        message:
+            'Gemini stopped before completing the response: $finishReason.',
+      );
+    }
+    for (final candidate in candidates) {
+      final candidateMap = _asObjectMap(candidate);
+      final contentMap = _asObjectMap(candidateMap?['content']);
+      final parts = contentMap?['parts'];
+      if (parts is! List) continue;
+      for (final part in parts) {
+        final partMap = _asObjectMap(part);
+        if (partMap?['thought'] == true) continue;
+        final text = _cleanText(partMap?['text']?.toString());
+        if (text != null) textSegments.add(text);
+      }
+    }
+    final result = textSegments.join('\n').trim();
+    if (result.isNotEmpty) return result;
+
+    if (finishReason != null) {
+      throw GeminiApiException(
+        status: finishReason,
+        message: 'Gemini did not return text. Finish reason: $finishReason.',
+      );
+    }
+  }
+
+  final promptFeedback = _asObjectMap(rootMap?['promptFeedback']);
+  final blockReason = _cleanText(promptFeedback?['blockReason']?.toString());
+  if (blockReason != null) {
+    throw GeminiApiException(
+      status: 'blocked',
+      message: 'Gemini blocked the request: $blockReason.',
+    );
+  }
+  throw const GeminiApiException(
+    message: 'Gemini returned an empty response.',
+  );
+}
+
 Map<String, Object?>? _asObjectMap(Object? value) {
+  if (value is String) {
+    try {
+      value = jsonDecode(value);
+    } on FormatException {
+      return null;
+    }
+  }
   if (value is! Map) return null;
   return Map<String, Object?>.fromEntries(
     value.entries.map((entry) => MapEntry(entry.key.toString(), entry.value)),

@@ -100,7 +100,7 @@ idle -> listening -> thinking -> speaking -> listening
   tục hoặc giữ một lượt đủ đúng 3 phút trên mọi Android/iOS.
 - Để transcript dài không bị chặn bởi bound 60 giây cũ, user message và mỗi
   history item Voice được phép tối đa 6.000 ký tự. Gemini response vẫn phải
-  non-empty, tối đa 2.000 ký tự và giữ `maxOutputTokens = 256`.
+  non-empty, tối đa 2.000 ký tự; NanoBio không truyền `maxOutputTokens`.
 
 ## 4. AI_CHAT-API03 — Gemini client datasource
 
@@ -113,7 +113,7 @@ idle -> listening -> thinking -> speaking -> listening
 - Model resolve theo `GEMINI_CHAT_MODEL -> GEMINI_MODEL -> gemini-3.5-flash`.
 - System instruction giữ Nabi nói tiếng Việt ngắn gọn, không chẩn đoán thay bác
   sĩ và hướng dẫn liên hệ cấp cứu/cơ sở y tế phù hợp khi có dấu hiệu khẩn cấp.
-- `maxOutputTokens = 256`; mỗi lượt timeout sau 30 giây.
+- NanoBio không truyền `maxOutputTokens`; mỗi lượt timeout sau 30 giây.
 - 408/429/network/5xx ánh xạ thành tạm thời không khả dụng; key/model/config sai
   thành Voice không khả dụng; text rỗng thành phản hồi không hợp lệ.
 - Chỉ response hợp lệ mới được append đủ cặp user/model vào history.

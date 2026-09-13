@@ -10,7 +10,7 @@
 | DD decision | Approved |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M07, 16.1 AC-03/AC-04/AC-06, Appendix A UC-07 |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-08-23 |
+| Last Updated | 2026-09-13 |
 | Release Scope | Project DD baseline for M01-M19 |
 
 ## 2. Business Goal
@@ -81,7 +81,7 @@ client-only paid gate là rủi ro được chấp nhận rõ ràng.
 | AI_CHAT-BR08 | Stop/background/dispose phải hủy STT/TTS, vô hiệu hóa response đến muộn và không tự mở micro lại. | Voice controller | Mandatory |
 | AI_CHAT-BR09 | Không log transcript, history, Gemini key hoặc response thô; lỗi phải ánh xạ thành thông báo an toàn. Key không được commit nhưng có thể bị trích xuất khỏi APK. | App | Mandatory |
 | AI_CHAT-BR10 | Reaction speed là endpointing silence sau speech result: 200/500/1.000/2.000 ms, default 1.000 ms. Chỉ arm sau partial non-empty đầu tiên; final result dừng ngay. Đây không phải Gemini/network latency. | Voice state/controller/device gateway | Mandatory |
-| AI_CHAT-BR11 | Mỗi lượt STT đặt `listenFor = 180.000 ms` làm hard cap phía app/plugin. Final result, endpointing, Stop/lifecycle/error hoặc recognizer OS có thể kết thúc sớm hơn; không cam kết raw audio liên tục đủ 3 phút trên mọi máy. User message/history item Voice tối đa 6.000 ký tự; Gemini response tối đa 2.000 ký tự và 256 output tokens. | Voice device gateway / repository / datasource | Mandatory |
+| AI_CHAT-BR11 | Mỗi lượt STT đặt `listenFor = 180.000 ms` làm hard cap phía app/plugin. Final result, endpointing, Stop/lifecycle/error hoặc recognizer OS có thể kết thúc sớm hơn; không cam kết raw audio liên tục đủ 3 phút trên mọi máy. User message/history item Voice tối đa 6.000 ký tự; Gemini response tối đa 2.000 ký tự và không có app-owned output token cap. | Voice device gateway / repository / datasource | Mandatory |
 
 ## 8. Overall Operational Flow
 
@@ -121,7 +121,7 @@ client-only paid gate là rủi ro được chấp nhận rõ ràng.
 | Module-specific dependencies | Internal | MEMBERSHIP_QUOTA: access/quota., AUTH_PROFILE_SYNC: session., AUDIT_SECURITY: safe logging. | Follow dependency owner DD and record conflict as an implementation issue or accepted exception. |
 | `speech_to_text` / `flutter_tts` | Device libraries | Nhận dạng từng câu và phát câu trả lời. | Dừng phiên, hiển thị lỗi an toàn, không tự retry vô hạn. |
 | `AppEnv` / native runtime config | Client config | Cấp Gemini key/model cho Flutter. | Thiếu/sai config dừng Voice; key có thể bị trích xuất khỏi APK. |
-| Gemini `generateContent` | External AI gọi trực tiếp từ Flutter | Sinh câu trả lời Nabi tiếng Việt, tối đa 256 output tokens. | Ánh xạ rate/provider/invalid response về contract an toàn. |
+| Gemini `generateContent` | External AI qua trusted Edge Function | Sinh câu trả lời Nabi tiếng Việt; NanoBio không đặt output token cap, vẫn giữ response-size safety bound. | Gộp text parts; `MAX_TOKENS` là lỗi typed, không trả partial response. |
 
 ## 10. Non-Functional Requirements
 
@@ -151,7 +151,7 @@ client-only paid gate là rủi ro được chấp nhận rõ ràng.
 | AI_CHAT-ADR02 | Keep accepted product decisions as the module business contract. | Q-01..Q-18 are closed by user decision and recorded in the DD registry. | Accepted |
 | AI_CHAT-ADR03 | Dùng half-duplex STT→Flutter Gemini REST→TTS và không có backend Voice. | User xác nhận chỉ có Supabase database và chấp nhận key/APK cùng client-gate risk để giữ triển khai tối giản. | Accepted; supersedes Voice Live và Edge Function Voice |
 | AI_CHAT-ADR04 | Cho chọn endpointing 0,2/0,5/1/2 giây; default 1 giây và chỉ lưu selection trong RAM page/controller. | User muốn kiểm soát khoảng ngắt lời trước khi gửi turn cho Gemini. | Accepted 2026-08-23 |
-| AI_CHAT-ADR05 | Tăng `listenFor` mỗi lượt từ 60 giây lên 3 phút/180.000 ms; endpointing/final vẫn kết thúc sớm hơn. Đồng thời nới user/history item Voice lên 6.000 ký tự nhưng giữ Gemini response ở 2.000 ký tự/256 output tokens. | User muốn có thể nói dài hơn trong một lượt mà không thay đổi half-duplex, tốc độ phản ứng hoặc output safety bound. | Accepted 2026-08-23; source/test/build/install PASS, >60-second continuity pending |
+| AI_CHAT-ADR05 | Tăng `listenFor` mỗi lượt từ 60 giây lên 3 phút/180.000 ms; endpointing/final vẫn kết thúc sớm hơn. Đồng thời nới user/history item Voice lên 6.000 ký tự, giữ Gemini response ở 2.000 ký tự và bỏ app-owned output token cap. | User muốn có thể nói dài hơn trong một lượt mà không thay đổi half-duplex, tốc độ phản ứng hoặc output safety bound. | Accepted 2026-08-23; token-cap delta superseded by 2026-09-13 fixbug |
 
 ## 13. Traceability Matrix
 

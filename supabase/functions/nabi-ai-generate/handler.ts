@@ -58,7 +58,7 @@ const MAX_RESPONSE = 40_000;
 const MAX_TRACE_ID = 100;
 const TRACE_ID_PATTERN = /^[A-Za-z0-9._:-]+$/;
 const SAFE_PROVIDER_ERROR_PATTERN =
-  /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response)$/;
+  /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response|max_tokens)$/;
 
 export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
   return async (request: Request): Promise<Response> => {
@@ -231,7 +231,13 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
         });
         return json(
           502,
-          { success: false, message: "Dịch vụ AI tạm thời chưa sẵn sàng." },
+          {
+            success: false,
+            code: errorCode === "provider_max_tokens"
+              ? "OUTPUT_TRUNCATED"
+              : "AI_UNAVAILABLE",
+            message: "Dịch vụ AI tạm thời chưa sẵn sàng.",
+          },
           traceId,
         );
       }
