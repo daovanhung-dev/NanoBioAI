@@ -416,7 +416,7 @@ export function toUserWorkItems(value: unknown): AdminWorkItem[] {
       parseUserPlanCode(item.subtitle),
     );
 
-    const membershipId = optionalString(row.membership_id);
+    const membershipId = optionalString(row.subscription_id ?? row.membership_id);
     const membershipPlan = normalizePlanCode(row.plan_code) ?? planCode;
     const membership = membershipId && membershipPlan
       ? {

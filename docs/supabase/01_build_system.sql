@@ -4407,7 +4407,7 @@ returns table (
   section text,
   created_at timestamptz,
   plan_code text,
-  membership_id text,
+  subscription_id text,
   membership_status text,
   membership_source text,
   membership_starts_at timestamptz,

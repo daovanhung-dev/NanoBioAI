@@ -90,7 +90,7 @@ describe('Supabase response normalization', () => {
 
   it('maps the canonical user subtitle plan into structured metadata', () => {
     const [plus, familyPlus, free, guest, malformed] = toUserWorkItems([
-      { id: 'plus', plan_code: 'plus', membership_id: 'subscription-1', membership_status: 'active', membership_source: 'manual', membership_starts_at: '2026-09-13T00:00:00.000Z', membership_ends_at: '2026-10-13T00:00:00.000Z', subtitle: 'plus@example.com - plus - none' },
+      { id: 'plus', plan_code: 'plus', subscription_id: 'subscription-1', membership_status: 'active', membership_source: 'manual', membership_starts_at: '2026-09-13T00:00:00.000Z', membership_ends_at: '2026-10-13T00:00:00.000Z', subtitle: 'plus@example.com - plus - none' },
       { id: 'family', subtitle: 'family@example.com - family_plus - none' },
       { id: 'free', subtitle: 'free@example.com - free - none' },
       { id: 'guest', subtitle: 'guest@example.com - guest - none' },

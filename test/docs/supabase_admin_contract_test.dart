@@ -181,7 +181,7 @@ void main() {
         contains('drop function if exists public.admin_search_users(text, integer);'),
       );
       for (final token in [
-        'membership_id text',
+        'subscription_id text',
         'membership_starts_at timestamptz',
         'membership_ends_at timestamptz',
         'public.current_plan_for_user(u.id)',
