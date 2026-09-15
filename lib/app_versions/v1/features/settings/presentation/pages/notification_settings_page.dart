@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/notification_settings_provider.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/domain/notifications/nabi_health_reminder_preferences.dart';
 
@@ -12,7 +14,26 @@ class NotificationSettingsPage extends ConsumerWidget {
     final state = ref.watch(notificationSettingsControllerProvider);
     return MedicalPageScaffold(
       backgroundColor: context.semanticColors.background,
-      appBar: AppBar(title: const Text('Quản lý thông báo')),
+      appBar: AppBar(
+        leading: IconButton(
+          key: const Key('notification_settings_back_button'),
+          tooltip: 'Quay về',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+              return;
+            }
+            context.go(
+              Uri(
+                path: V1RoutePaths.menu,
+                queryParameters: const {'tab': 'settings'},
+              ).toString(),
+            );
+          },
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        title: const Text('Quản lý thông báo'),
+      ),
       body: SafeArea(
         top: false,
         child: state.when(
@@ -25,9 +46,8 @@ class NotificationSettingsPage extends ConsumerWidget {
               label: const Text('Thử lại'),
             ),
           ),
-          data: (preferences) => _NotificationSettingsBody(
-            preferences: preferences,
-          ),
+          data: (preferences) =>
+              _NotificationSettingsBody(preferences: preferences),
         ),
       ),
     );
@@ -41,7 +61,9 @@ class _NotificationSettingsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(notificationSettingsControllerProvider.notifier);
+    final controller = ref.read(
+      notificationSettingsControllerProvider.notifier,
+    );
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pagePadding,
@@ -130,7 +152,8 @@ class _NotificationSettingsBody extends ConsumerWidget {
             _SwitchRow(
               icon: Icons.manage_accounts_outlined,
               title: 'Cập nhật thông tin thay đổi',
-              subtitle: 'Hỏi lại cân nặng, chiều cao, vận động, giấc ngủ và lượng nước.',
+              subtitle:
+                  'Hỏi lại cân nặng, chiều cao, vận động, giấc ngủ và lượng nước.',
               value: preferences.profileReviewEnabled,
               enabled: preferences.masterEnabled,
               onChanged: controller.setProfileReviewEnabled,
@@ -163,9 +186,8 @@ class _NotificationSettingsBody extends ConsumerWidget {
                 label: 'Tần suất uống nước',
                 value: preferences.waterReminderIntervalMinutes,
                 values: const [60, 90, 120, 180],
-                labelOf: (value) => value == 90
-                    ? '1 giờ 30 phút'
-                    : '${value ~/ 60} giờ',
+                labelOf: (value) =>
+                    value == 90 ? '1 giờ 30 phút' : '${value ~/ 60} giờ',
                 onChanged: controller.setWaterReminderInterval,
               ),
               _TimeWindowRow(
@@ -195,7 +217,9 @@ class _NotificationSettingsBody extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.play_circle_outline_rounded),
               title: const Text('Nghe thử giọng nhắc'),
-              subtitle: const Text('Không dùng micro và không gửi nội dung sức khỏe.'),
+              subtitle: const Text(
+                'Không dùng micro và không gửi nội dung sức khỏe.',
+              ),
               onTap: () async {
                 final ok = await controller.previewVoice();
                 if (!context.mounted || ok) return;
@@ -234,8 +258,10 @@ class _NotificationSettingsBody extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lock_outline_rounded,
-                    color: context.semanticColors.primary),
+                Icon(
+                  Icons.lock_outline_rounded,
+                  color: context.semanticColors.primary,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 const Expanded(
                   child: Text(
@@ -274,7 +300,8 @@ class _SectionTitle extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Text(text, style: AppTextStyles.heading3);
+  Widget build(BuildContext context) =>
+      Text(text, style: AppTextStyles.heading3);
 }
 
 class _SwitchRow extends StatelessWidget {
@@ -390,7 +417,9 @@ class _TimeWindowRow extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(label),
-      subtitle: Text('${_formatMinutes(startMinutes)} – ${_formatMinutes(endMinutes)}'),
+      subtitle: Text(
+        '${_formatMinutes(startMinutes)} – ${_formatMinutes(endMinutes)}',
+      ),
       trailing: const Icon(Icons.edit_calendar_outlined),
       onTap: () async {
         final start = await showTimePicker(
@@ -413,9 +442,9 @@ class _TimeWindowRow extends StatelessWidget {
 }
 
 TimeOfDay _timeOfDay(int minutes) => TimeOfDay(
-      hour: minutes.clamp(0, 1439) ~/ 60,
-      minute: minutes.clamp(0, 1439) % 60,
-    );
+  hour: minutes.clamp(0, 1439) ~/ 60,
+  minute: minutes.clamp(0, 1439) % 60,
+);
 
 String _formatMinutes(int minutes) {
   final value = minutes.clamp(0, 1439);

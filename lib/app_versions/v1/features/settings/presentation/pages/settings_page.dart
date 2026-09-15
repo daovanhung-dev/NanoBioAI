@@ -133,6 +133,9 @@ class SettingsView extends ConsumerWidget {
                                     ? 'Đang bật nhắc nhở trên thiết bị'
                                     : 'Đang tắt nhắc nhở trên thiết bị',
                                 trailing: Switch.adaptive(
+                                  key: const Key(
+                                    'settings_notifications_switch',
+                                  ),
                                   value: preferences.pushEnabled,
                                   onChanged: preferencesAsync.isLoading
                                       ? null
@@ -142,6 +145,39 @@ class SettingsView extends ConsumerWidget {
                                                   .notifier,
                                             )
                                             .setPushEnabled(value),
+                                ),
+                              ),
+                              const _DividerLine(),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.cardPadding,
+                                  0,
+                                  AppSpacing.cardPadding,
+                                  AppSpacing.sm,
+                                ),
+                                child: Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: Tooltip(
+                                    message: 'Mở quản lý thông báo',
+                                    child: AppButton(
+                                      key: const Key(
+                                        'settings_manage_notifications',
+                                      ),
+                                      variant: ButtonVariant.outlined,
+                                      semanticLabel: 'Quản lý thông báo',
+                                      onPressed: () => context.push(
+                                        V1RoutePaths.notificationSettings,
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.tune_rounded, size: 20),
+                                          SizedBox(width: AppSpacing.xs),
+                                          Text('Quản lý'),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

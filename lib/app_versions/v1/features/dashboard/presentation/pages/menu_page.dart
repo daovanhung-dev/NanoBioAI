@@ -13,7 +13,9 @@ import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 class MainNavigationPage extends ConsumerStatefulWidget {
-  const MainNavigationPage({super.key});
+  const MainNavigationPage({super.key, this.initialIndex = 0});
+
+  final int initialIndex;
 
   @override
   ConsumerState<MainNavigationPage> createState() => _MainNavigationPageState();
@@ -39,7 +41,8 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _currentIndex = widget.initialIndex.clamp(0, 3).toInt();
+    _pageController = PageController(initialPage: _currentIndex);
     _ambientController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 18),
@@ -49,7 +52,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       duration: const Duration(seconds: 6),
     );
     Future<void>.microtask(() {
-      if (mounted) ref.read(mainNavigationIndexProvider.notifier).state = 0;
+      if (mounted) {
+        ref.read(mainNavigationIndexProvider.notifier).state = _currentIndex;
+      }
     });
   }
 
@@ -104,9 +109,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
       '/health-insights',
       '/settings',
     ];
-    ref.nabi.setRoute(index < contextByTab.length
-        ? contextByTab[index]
-        : V1RoutePaths.menu);
+    ref.nabi.setRoute(
+      index < contextByTab.length ? contextByTab[index] : V1RoutePaths.menu,
+    );
   }
 
   @override
@@ -117,8 +122,9 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             .copyWith(
               statusBarColor: Colors.transparent,
               systemNavigationBarColor: Colors.transparent,
-              systemNavigationBarIconBrightness:
-                  isDark ? Brightness.light : Brightness.dark,
+              systemNavigationBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
             );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -246,14 +252,17 @@ class _MainNavigationPageState extends ConsumerState<MainNavigationPage>
             ],
           ),
           child: Row(
-            children: List.generate(items.length, (index) => Expanded(
-              child: _AnimatedNavItem(
-                item: items[index],
-                isActive: _currentIndex == index,
-                pulseValue: _floatingController.value,
-                onTap: () => _changeTab(index),
+            children: List.generate(
+              items.length,
+              (index) => Expanded(
+                child: _AnimatedNavItem(
+                  item: items[index],
+                  isActive: _currentIndex == index,
+                  pulseValue: _floatingController.value,
+                  onTap: () => _changeTab(index),
+                ),
               ),
-            )),
+            ),
           ),
         ),
       ),
@@ -315,7 +324,9 @@ class _AnimatedNavItem extends StatelessWidget {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: item.baseColor.withValues(alpha: glowOpacity),
+                              color: item.baseColor.withValues(
+                                alpha: glowOpacity,
+                              ),
                               blurRadius: 24,
                               spreadRadius: 1,
                               offset: const Offset(0, 10),
@@ -326,7 +337,9 @@ class _AnimatedNavItem extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final isCompact = constraints.maxWidth < 72;
@@ -335,7 +348,9 @@ class _AnimatedNavItem extends StatelessWidget {
                           children: [
                             Icon(
                               isActive ? item.activeIcon : item.icon,
-                              color: isActive ? colors.textInverse : inactiveColor,
+                              color: isActive
+                                  ? colors.textInverse
+                                  : inactiveColor,
                               size: lerpDouble(23, 28, value)!,
                             ),
                             if (!isCompact) ...[
@@ -452,7 +467,9 @@ class _AmbientOrb extends StatelessWidget {
       top: top == null ? null : top! + lerpDouble(-10, 10, floatingValue)!,
       left: left,
       right: right,
-      bottom: bottom == null ? null : bottom! + lerpDouble(8, -8, floatingValue)!,
+      bottom: bottom == null
+          ? null
+          : bottom! + lerpDouble(8, -8, floatingValue)!,
       child: Transform.rotate(
         angle: animationValue * rotateFactor,
         child: Container(

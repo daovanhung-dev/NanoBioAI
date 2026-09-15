@@ -73,7 +73,9 @@ final v1Routes = <RouteBase>[
   GoRoute(
     path: V1RoutePaths.menu,
     name: V1RoutePaths.menu,
-    builder: (context, state) => const MainNavigationPage(),
+    builder: (context, state) => MainNavigationPage(
+      initialIndex: state.uri.queryParameters['tab'] == 'settings' ? 3 : 0,
+    ),
   ),
   GoRoute(
     path: V1RoutePaths.mealPlan,
@@ -150,9 +152,8 @@ final v1Routes = <RouteBase>[
     path: V1RoutePaths.sleepTracking,
     name: V1RoutePaths.sleepTracking,
     redirect: V1RouteGuards.authGuard,
-    builder: (context, state) => const SleepSafetyAccessGate(
-      child: SleepTrackingPage(),
-    ),
+    builder: (context, state) =>
+        const SleepSafetyAccessGate(child: SleepTrackingPage()),
   ),
   GoRoute(
     path: V1RoutePaths.stressTracking,

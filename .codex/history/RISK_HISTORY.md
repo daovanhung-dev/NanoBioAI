@@ -918,3 +918,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - `UNVERIFIED/BLOCKED`: nghiệm thu feature end-to-end trên máy thật và provider voice/SMS do thiếu credential/OTP và provider secret.
 - docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - Mức độ hoàn thành task: chưa hoàn tất nghiệm thu bắt buộc; implementation/build/device launch hoàn tất, feature acceptance còn blocked.
+- docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: - Android device acceptance: `BLOCKED` sau khi build vì `adb install` báo thiết bị `12b304f9` không còn kết nối; `adb devices -l` vẫn không có thiết bị sau khi restart ADB. APK mới chưa được cài và test UI trên máy thật trong phiên này.
+- docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: - `UNVERIFIED/BLOCKED`: cài đặt và nghiệm thu UI APK mới trên Android thật do thiết bị không còn online.
+- docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: - Mức độ hoàn thành task: implementation hoàn tất; nghiệm thu máy thật còn blocked do ADB disconnect.

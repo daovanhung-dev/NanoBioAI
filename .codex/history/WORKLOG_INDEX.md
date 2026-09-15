@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 165
+- Total worklogs: 166
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -174,3 +174,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-09-13 | Implement feature trên Admin Web và trusted Supabase backend. | supabase-schema | M16 ADMIN_OPS, membership administration. | [Worklog - Admin Web membership period](../../docs/worklog/2026-09-13/009-worklog-admin-membership-period.md) |
 | 2026-09-13 | Implement feature tren canonical Supabase schema va tai lieu van hanh. | supabase-schema | M06/M13 membership, quota va access reconciliation. | [Worklog - Membership expiration reconciliation](../../docs/worklog/2026-09-13/010-worklog-membership-expiration.md) |
 | 2026-09-14 | Sửa bug runtime Flutter/native/Supabase integration và nghiệm thu Android máy thật. | supabase-schema | M31 giám sát giấc ngủ, contact khẩn cấp, verification và emergency dispatch. | [Worklog - M31 contact và dispatch giám sát giấc ngủ](../../docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md) |
+| 2026-09-15 | coding | coding | UI Cài đặt, quản lý notification và điều hướng V1. | [Worklog - Nút quay về và quản lý thông báo](../../docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md) |
