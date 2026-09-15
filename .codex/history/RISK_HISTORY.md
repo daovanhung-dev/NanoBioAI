@@ -922,3 +922,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: - `UNVERIFIED/BLOCKED`: cài đặt và nghiệm thu UI APK mới trên Android thật do thiết bị không còn online.
 - docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md :: - Mức độ hoàn thành task: implementation hoàn tất; nghiệm thu máy thật còn blocked do ADB disconnect.
+- docs/worklog/2026-09-15/002-worklog-google-play-aab.md :: - Android device install sau build: BLOCKED vì serial `12b304f9` đang offline/không xuất hiện trong `adb devices -l`.
+- docs/worklog/2026-09-15/002-worklog-google-play-aab.md :: - Play App Signing, upload, review và rollout: OPEN/MANUAL; chưa claim đã cập nhật Play Store.
+- docs/worklog/2026-09-15/003-worklog-version-1-0-0-3-runtime.md :: - Chạy trên Android thật: `UNVERIFIED/BLOCKED` do thiết bị không kết nối ADB.

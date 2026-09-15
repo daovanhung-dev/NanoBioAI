@@ -43,12 +43,12 @@ open until evidence is attached:
 - Supabase local/sandbox rebuild plus two-session RLS, replay, deletion and
   Edge Function runtime tests.
 
-Latest local artifact check (2026-09-01, run `20260831T210948Z-a1ef0ed`):
+Latest local artifact check (2026-09-15):
 
 - `flutter build appbundle --release` produced
-  `build/app/outputs/bundle/release/app-release.aab` (128.4 MB; 128,427,356 bytes).
-- SHA-256: `dbcf473c27d27ab36fe5dd130170dbba287609538cf4ec32866c41b992eb22ee`.
-- Package is `com.nanobioai.app`, version `1.0.0` (versionCode `1`),
+  `build/app/outputs/bundle/release/app-release.aab` (128.5 MB; 128,499,940 bytes).
+- SHA-256: `f6dc09dca2fd9272db9bfc2e01f57703117284a181d47a3593f98f2f3b9bd501`.
+- Package is `com.nanobioai.app`, version `1.0.0` (versionCode `2`),
   minSdk `24`, compileSdk `36`, and targetSdk `36`.
 - The release variant built with the local signing configuration available;
   the AAB itself is not evidence of Play App Signing. Its native ELF `LOAD`

@@ -8,7 +8,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - bugfix - Direct bugfix: 31 worklog(s)
 - coding - Coding: 30 worklog(s)
 - supabase-schema - Supabase schema and RLS: 27 worklog(s)
-- test - Test and verification: 9 worklog(s)
+- test - Test and verification: 11 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - find-issues - Review and find issues: 3 worklog(s)
 - fix-issues - Fix documented issue: 3 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 42
+- unknown: 43
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2

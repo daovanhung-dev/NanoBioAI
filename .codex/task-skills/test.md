@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 9 worklog(s).
+- Generated from 11 worklog(s).
 
 ## When To Read
 
@@ -13,15 +13,17 @@
 - Historical task type: Bug fix / Android build toolchain (1)
 - Historical task type: coding / asset generation / docs / test (1)
 - Historical task type: docs-context cleanup (1)
+- Historical task type: test / release artifact (1)
+- Historical task type: test / Android runtime build. (1)
 
 ## Common Modules
 
+- unknown: 2
 - M08 HEALTH_SCORE_HABITS.: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 - lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1
 - M02 PERSONAL_SCHEDULE_AI, M07 AI_CHAT: 1
 - M07 AI_CHAT, M05 runtime configuration: 1
-- unknown: 1
 - android/: 1
 - UI / Theme / NabiCopy, Nabi v2 asset bundle: 1
 
@@ -50,3 +52,5 @@
 - [Worklog - Android build toolchain compatibility](../../docs/worklog/2026-08-15/002-worklog-android-build-toolchain-compatibility.md) - android/
 - [Worklog - Nabi Blue va Blue Wellness cutover](../../docs/worklog/2026-08-17/001-worklog-nabi-blue-wellness-cutover.md) - UI / Theme / NabiCopy, Nabi v2 asset bundle
 - [Worklog - Dọn file và dữ liệu dư thừa an toàn](../../docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md) - documentation, historical visual evidence, local build caches
+- [Worklog - Xuất Android App Bundle cho bản vá Google Play](../../docs/worklog/2026-09-15/002-worklog-google-play-aab.md) - Android release build và Google Play handoff.
+- [Worklog - Chạy lại ứng dụng version 1.0.0+3](../../docs/worklog/2026-09-15/003-worklog-version-1-0-0-3-runtime.md) - unknown
