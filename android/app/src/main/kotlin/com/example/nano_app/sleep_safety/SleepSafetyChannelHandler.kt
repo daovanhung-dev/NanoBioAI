@@ -61,6 +61,13 @@ class SleepSafetyChannelHandler(
                         call.argument<String>("response"),
                     )
                 }
+                "dismissAlert" -> safeCommand(result) {
+                    if (!SleepSafetyRuntimeStatus.active) return@safeCommand
+                    context.startService(
+                        serviceIntent(SleepSafetyForegroundService.ACTION_DISMISS_ALERT)
+                            .putExtra("eventId", call.argument<String>("eventId")),
+                    )
+                }
                 "getMonitoringStatus" -> result.success(
                     SleepSafetyRuntimeStatus.snapshot(),
                 )

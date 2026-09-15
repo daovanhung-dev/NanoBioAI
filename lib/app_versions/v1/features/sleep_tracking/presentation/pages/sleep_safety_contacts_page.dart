@@ -17,7 +17,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
       floatingActionButton: state.contacts.length >= 3
           ? null
           : FloatingActionButton.extended(
-              onPressed: () => _edit(context, controller, null),
+              onPressed: () => _edit(context, controller, null, state.contacts),
               icon: const Icon(Icons.person_add_alt_1_rounded),
               label: const Text('Thêm người'),
             ),
@@ -56,7 +56,12 @@ class SleepSafetyContactsPage extends ConsumerWidget {
                       if (value == 'verify') {
                         await _verify(context, controller, contact);
                       } else if (value == 'edit') {
-                        await _edit(context, controller, contact);
+                        await _edit(
+                          context,
+                          controller,
+                          contact,
+                          state.contacts,
+                        );
                       } else if (value == 'delete') {
                         await controller.deleteContact(contact.id);
                       }
@@ -71,10 +76,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
                         value: 'edit',
                         child: Text('Chỉnh sửa'),
                       ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Xóa'),
-                      ),
+                      const PopupMenuItem(value: 'delete', child: Text('Xóa')),
                     ],
                   ),
                 ),
@@ -98,20 +100,19 @@ class SleepSafetyContactsPage extends ConsumerWidget {
     BuildContext context,
     dynamic controller,
     SafetyContact? contact,
+    List<SafetyContact> contacts,
   ) async {
     final name = TextEditingController(text: contact?.name);
     final relation = TextEditingController(text: contact?.relationship);
     final phone = TextEditingController(text: contact?.phoneE164);
-    var priority = contact?.priority ?? 1;
+    var priority = contact?.priority ?? _firstAvailablePriority(contacts);
 
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) => AlertDialog(
           title: Text(
-            contact == null
-                ? 'Thêm người liên hệ'
-                : 'Chỉnh sửa người liên hệ',
+            contact == null ? 'Thêm người liên hệ' : 'Chỉnh sửa người liên hệ',
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -164,6 +165,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
       ),
     );
 
+    var saved = false;
     if (ok == true && context.mounted) {
       try {
         await controller.saveContact(
@@ -173,13 +175,19 @@ class SleepSafetyContactsPage extends ConsumerWidget {
           phoneE164: phone.text,
           priority: priority,
         );
+        saved = true;
       } catch (error) {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(error.toString())));
+          ).showSnackBar(SnackBar(content: Text(_friendlyError(error))));
         }
       }
+    }
+    if (saved && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu người liên hệ an toàn.')),
+      );
     }
 
     name.dispose();
@@ -198,7 +206,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(error.toString())));
+        ).showSnackBar(SnackBar(content: Text(_friendlyError(error))));
       }
       return;
     }
@@ -234,10 +242,26 @@ class SleepSafetyContactsPage extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(error.toString())));
+          ).showSnackBar(SnackBar(content: Text(_friendlyError(error))));
         }
       }
     }
     code.dispose();
+  }
+
+  static int _firstAvailablePriority(List<SafetyContact> contacts) {
+    final used = contacts.map((contact) => contact.priority).toSet();
+    return [
+      1,
+      2,
+      3,
+    ].firstWhere((priority) => !used.contains(priority), orElse: () => 1);
+  }
+
+  static String _friendlyError(Object error) {
+    final message = error.toString();
+    return message
+        .replaceFirst(RegExp(r'^FormatException:\s*'), '')
+        .replaceFirst(RegExp(r'^Bad state:\s*'), '');
   }
 }

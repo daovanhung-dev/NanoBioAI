@@ -48,7 +48,9 @@ class SleepSafetyViewState {
     this.notice,
   });
   factory SleepSafetyViewState.initial() => const SleepSafetyViewState(
-    machine: SleepSafetyMachineState.idle(), contacts: [], history: [],
+    machine: SleepSafetyMachineState.idle(),
+    contacts: [],
+    history: [],
   );
   final SleepSafetyMachineState machine;
   final SleepSafetyPreference? preference;
@@ -64,17 +66,33 @@ class SleepSafetyViewState {
   final String? errorMessage;
   final String? notice;
   bool get monitoringActive => const {
-    SleepSafetyPhase.arming, SleepSafetyPhase.calibrating, SleepSafetyPhase.monitoring,
-    SleepSafetyPhase.awaitingResponse, SleepSafetyPhase.reminder, SleepSafetyPhase.escalating, SleepSafetyPhase.cooldown,
+    SleepSafetyPhase.arming,
+    SleepSafetyPhase.calibrating,
+    SleepSafetyPhase.monitoring,
+    SleepSafetyPhase.awaitingResponse,
+    SleepSafetyPhase.reminder,
+    SleepSafetyPhase.escalating,
+    SleepSafetyPhase.cooldown,
   }.contains(machine.phase);
   SleepSafetyViewState copyWith({
-    SleepSafetyMachineState? machine, SleepSafetyPreference? preference, SleepSafetySession? session,
-    SleepSafetyEvent? currentEvent, bool clearCurrentEvent=false, List<SafetyContact>? contacts,
-    List<SleepSafetyEvent>? history, double? calibrationProgress,
-    SleepSafetyAudioMetrics? audioMetrics, bool clearAudioMetrics=false,
-    String? detectorCandidateType, bool clearDetectorCandidate=false,
-    bool? audioSignalStale, bool? isBusy,
-    String? errorMessage, bool clearError=false, String? notice, bool clearNotice=false,
+    SleepSafetyMachineState? machine,
+    SleepSafetyPreference? preference,
+    SleepSafetySession? session,
+    SleepSafetyEvent? currentEvent,
+    bool clearCurrentEvent = false,
+    List<SafetyContact>? contacts,
+    List<SleepSafetyEvent>? history,
+    double? calibrationProgress,
+    SleepSafetyAudioMetrics? audioMetrics,
+    bool clearAudioMetrics = false,
+    String? detectorCandidateType,
+    bool clearDetectorCandidate = false,
+    bool? audioSignalStale,
+    bool? isBusy,
+    String? errorMessage,
+    bool clearError = false,
+    String? notice,
+    bool clearNotice = false,
   }) => SleepSafetyViewState(
     machine: machine ?? this.machine,
     preference: preference ?? this.preference,
@@ -100,7 +118,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   Timer? _audioMetricsWatchdog;
   final Set<String> _dispatchingEvents = <String>{};
   final Random _random = Random.secure();
-  SleepSafetyRepository get _repository => ref.read(sleepSafetyRepositoryProvider);
+  int _contactsRefreshGeneration = 0;
+  SleepSafetyRepository get _repository =>
+      ref.read(sleepSafetyRepositoryProvider);
 
   @override
   SleepSafetyViewState build() {
@@ -115,6 +135,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   Future<void> _initialize() async {
     final userId = ref.read(currentAuthUserIdProvider);
     if (userId == null) return;
+    final contactsRequest = ++_contactsRefreshGeneration;
     try {
       final preference = await _repository.loadPreference(userId);
       final results = await Future.wait<Object>([
@@ -123,7 +144,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       ]);
       state = state.copyWith(
         preference: preference,
-        contacts: results[0] as List<SafetyContact>,
+        contacts: contactsRequest == _contactsRefreshGeneration
+            ? results[0] as List<SafetyContact>
+            : null,
         history: results[1] as List<SleepSafetyEvent>,
         clearError: true,
       );
@@ -141,7 +164,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         },
       );
     } catch (_) {
-      state = state.copyWith(errorMessage: 'Nabi chưa tải được cài đặt giám sát. Bạn thử lại nhé.');
+      state = state.copyWith(
+        errorMessage: 'Nabi chưa tải được cài đặt giám sát. Bạn thử lại nhé.',
+      );
     }
   }
 
@@ -152,11 +177,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
 
     SleepSafetySession? startingSession;
     var nativeStartRequested = false;
-    state = state.copyWith(
-      isBusy: true,
-      clearError: true,
-      clearNotice: true,
-    );
+    state = state.copyWith(isBusy: true, clearError: true, clearNotice: true);
 
     try {
       if (!ref.read(sleepSafetyRolloutApprovedProvider)) {
@@ -165,8 +186,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       if (!await _repository.ensureMicrophonePermission()) {
         throw StateError('microphone_denied');
       }
-      final notificationsAllowed =
-          await ref.read(sleepSafetyNotificationPermissionProvider)();
+      final notificationsAllowed = await ref.read(
+        sleepSafetyNotificationPermissionProvider,
+      )();
       if (!notificationsAllowed) {
         throw StateError('notification_denied');
       }
@@ -224,10 +246,10 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         errorMessage: code == 'microphone_denied'
             ? 'NanoBio cần quyền micro để giám sát âm thanh khi bạn ngủ.'
             : code == 'notification_denied'
-                ? 'NanoBio cần quyền thông báo để có thể đánh thức và hỏi bạn khi phát hiện âm thanh cần chú ý.'
-                : code == 'rollout_disabled'
-                    ? 'Giám sát giấc ngủ đang tạm dừng từ hệ thống. Bạn có thể kiểm tra lại sau.'
-                    : 'Chưa thể bắt đầu giám sát.',
+            ? 'NanoBio cần quyền thông báo để có thể đánh thức và hỏi bạn khi phát hiện âm thanh cần chú ý.'
+            : code == 'rollout_disabled'
+            ? 'Giám sát giấc ngủ đang tạm dừng từ hệ thống. Bạn có thể kiểm tra lại sau.'
+            : 'Chưa thể bắt đầu giám sát.',
       );
     } catch (_) {
       if (nativeStartRequested && startingSession != null) {
@@ -245,49 +267,184 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   Future<void> stopMonitoring({String reason = 'user'}) async {
     if (!state.monitoringActive || state.isBusy) return;
     state = state.copyWith(isBusy: true);
-    try { await _repository.stopNative(reason); await _finishSession(reason); }
-    catch (_) { state = state.copyWith(errorMessage: 'Chưa thể dừng giám sát ngay. Bạn thử lại nhé.'); }
-    finally { state = state.copyWith(isBusy: false); }
+    try {
+      await _repository.stopNative(reason);
+      await _finishSession(reason);
+    } catch (_) {
+      state = state.copyWith(
+        errorMessage: 'Chưa thể dừng giám sát ngay. Bạn thử lại nhé.',
+      );
+    } finally {
+      state = state.copyWith(isBusy: false);
+    }
   }
 
   Future<void> respondOk() async {
-    final event = state.currentEvent; if (event == null) return;
+    final event = state.currentEvent;
+    if (event == null) return;
     await _repository.respondToAlert(event.id, 'ok');
     await _applyResponse(event.id, 'ok');
   }
+
   Future<void> requestHelp() async {
-    final event = state.currentEvent; if (event == null) return;
-    await _repository.respondToAlert(event.id, 'need_help');
+    final event = state.currentEvent;
+    if (event == null) return;
+    // Native acknowledgement is best-effort. The server dispatch is the
+    // authoritative safety path and must still run if the channel is stale.
+    try {
+      await _repository.respondToAlert(event.id, 'need_help');
+    } catch (_) {}
     await _applyResponse(event.id, 'need_help');
+  }
+
+  Future<void> retryEmergencyDispatch() async {
+    final event = state.currentEvent;
+    if (event == null ||
+        event.escalationStatus != SleepSafetyEscalationStatus.failed) {
+      return;
+    }
+    await _escalate(
+      event.id,
+      noResponse: event.response == SleepSafetyResponse.noResponse,
+    );
   }
 
   Future<void> savePreference(SleepSafetyPreference preference) async {
     final updated = preference.copyWith(updatedAt: DateTime.now());
     await _repository.savePreference(updated);
     await ref.read(sleepSafetyReminderServiceProvider).apply(updated);
-    await _repository.updateNativeConfig({'sensitivity':updated.sensitivity.name,'cooldownSeconds':updated.cooldownSeconds});
-    state = state.copyWith(preference: updated, notice: 'Đã lưu cài đặt giám sát.');
+    await _repository.updateNativeConfig({
+      'sensitivity': updated.sensitivity.name,
+      'cooldownSeconds': updated.cooldownSeconds,
+    });
+    state = state.copyWith(
+      preference: updated,
+      notice: 'Đã lưu cài đặt giám sát.',
+    );
   }
 
   Future<void> recalibrate() async {
-    if (!state.monitoringActive) { state = state.copyWith(errorMessage: 'Hãy bắt đầu giám sát trước khi hiệu chỉnh lại âm thanh phòng.'); return; }
+    if (!state.monitoringActive) {
+      state = state.copyWith(
+        errorMessage:
+            'Hãy bắt đầu giám sát trước khi hiệu chỉnh lại âm thanh phòng.',
+      );
+      return;
+    }
     await ref.read(sleepSafetyNativeGatewayProvider).startCalibration();
-    state = state.copyWith(machine: _machine.calibrate(), calibrationProgress: 0);
+    state = state.copyWith(
+      machine: _machine.calibrate(),
+      calibrationProgress: 0,
+    );
   }
 
-  Future<void> saveContact({String? id, required String name, required String relationship, required String phoneE164, required int priority}) async {
-    state = state.copyWith(isBusy:true,clearError:true);
+  Future<void> saveContact({
+    String? id,
+    required String name,
+    required String relationship,
+    required String phoneE164,
+    required int priority,
+  }) async {
+    state = state.copyWith(isBusy: true, clearError: true);
     try {
-      await _repository.saveContact(id:id,name:name.trim(),relationship:relationship.trim(),phoneE164:_normalizePhone(phoneE164),priority:priority);
-      await refreshContacts();
-    } finally { state = state.copyWith(isBusy:false); }
+      final normalizedName = name.trim();
+      final normalizedRelationship = relationship.trim();
+      if (normalizedName.isEmpty) {
+        throw const FormatException('Bạn hãy nhập tên người liên hệ.');
+      }
+      if (normalizedName.length > 80) {
+        throw const FormatException(
+          'Tên người liên hệ không được dài quá 80 ký tự.',
+        );
+      }
+      if (normalizedRelationship.isEmpty) {
+        throw const FormatException('Bạn hãy nhập mối quan hệ.');
+      }
+      if (normalizedRelationship.length > 60) {
+        throw const FormatException('Mối quan hệ không được dài quá 60 ký tự.');
+      }
+      if (priority < 1 || priority > 3) {
+        throw const FormatException(
+          'Mức ưu tiên cần nằm trong khoảng từ 1 đến 3.',
+        );
+      }
+      final saved = await _repository.saveContact(
+        id: id,
+        name: normalizedName,
+        relationship: normalizedRelationship,
+        phoneE164: _normalizePhone(phoneE164),
+        priority:
+            id == null &&
+                state.contacts.any((contact) => contact.priority == priority)
+            ? _nextAvailablePriority(state.contacts)
+            : priority,
+      );
+
+      // Apply the RPC result immediately. A refresh started before the save
+      // can otherwise finish later and overwrite this newly saved contact.
+      _mergeContact(saved);
+      try {
+        await refreshContacts();
+      } catch (_) {
+        // The RPC response already gives us a valid local view.
+      }
+      try {
+        await _repository.cacheContact(saved);
+      } catch (_) {
+        // State remains correct even when the device cache is unavailable.
+      }
+      _mergeContact(saved);
+      state = state.copyWith(
+        notice: 'Đã lưu người liên hệ an toàn.',
+        clearError: true,
+      );
+    } finally {
+      state = state.copyWith(isBusy: false);
+    }
   }
-  Future<void> deleteContact(String id) async { await _repository.deleteContact(id); await refreshContacts(); }
-  Future<void> requestVerification(String id) => _repository.requestContactVerification(id);
-  Future<void> confirmVerification(String id,String code) async { await _repository.confirmContactVerification(id,code.trim()); await refreshContacts(); }
+
+  Future<void> deleteContact(String id) async {
+    await _repository.deleteContact(id);
+    await refreshContacts();
+  }
+
+  Future<void> requestVerification(String id) =>
+      _repository.requestContactVerification(id);
+  Future<void> confirmVerification(String id, String code) async {
+    final normalizedCode = code.trim();
+    if (!RegExp(r'^\d{6}$').hasMatch(normalizedCode)) {
+      throw const FormatException('Mã xác minh cần gồm 6 chữ số.');
+    }
+    await _repository.confirmContactVerification(id, normalizedCode);
+    await refreshContacts();
+  }
+
   Future<void> refreshContacts() async {
-    final userId=ref.read(currentAuthUserIdProvider); if(userId==null)return;
-    final contacts=await _repository.loadContacts(userId); state=state.copyWith(contacts:contacts);
+    final userId = ref.read(currentAuthUserIdProvider);
+    if (userId == null) return;
+    final request = ++_contactsRefreshGeneration;
+    final contacts = await _repository.loadContacts(userId);
+    if (request != _contactsRefreshGeneration) return;
+    state = state.copyWith(contacts: contacts);
+  }
+
+  void _mergeContact(SafetyContact saved) {
+    final contacts = [
+      ...state.contacts.where((contact) => contact.id != saved.id),
+      saved,
+    ]..sort((a, b) => a.priority.compareTo(b.priority));
+    state = state.copyWith(
+      contacts: List<SafetyContact>.unmodifiable(contacts),
+    );
+  }
+
+  int _nextAvailablePriority(Iterable<SafetyContact> contacts) {
+    final used = contacts.map((contact) => contact.priority).toSet();
+    return [
+      1,
+      2,
+      3,
+    ].firstWhere((priority) => !used.contains(priority), orElse: () => 1);
   }
 
   Future<void> _handleNativeEvent(SleepSafetyNativeEvent event) async {
@@ -315,7 +472,8 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         audioMetrics: SleepSafetyAudioMetrics(
           signalLevel: _unit(event.data['signalLevel']),
           peakLevel: _unit(event.data['peakLevel']),
-          relativeEnergy: (event.data['relativeEnergy'] as num?)?.toDouble() ?? 0,
+          relativeEnergy:
+              (event.data['relativeEnergy'] as num?)?.toDouble() ?? 0,
           baselineLevel: _unit(event.data['baselineLevel']),
           phase: phase,
           updatedAt: now,
@@ -334,8 +492,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     }
     if (event.type == 'calibrationProgress') {
       state = state.copyWith(
-        calibrationProgress:
-            ((event.data['progress'] as num?)?.toDouble() ?? 0).clamp(0, 1).toDouble(),
+        calibrationProgress: ((event.data['progress'] as num?)?.toDouble() ?? 0)
+            .clamp(0, 1)
+            .toDouble(),
       );
       return;
     }
@@ -403,9 +562,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     if (event.type == 'nativeFailure') {
       final code = event.data['code']?.toString() ?? 'native_failure';
       await _finishSession(code, failed: true);
-      state = state.copyWith(
-        errorMessage: _nativeStartErrorMessage(code),
-      );
+      state = state.copyWith(errorMessage: _nativeStartErrorMessage(code));
     }
   }
 
@@ -451,7 +608,8 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     }
 
     final currentEvent = current;
-    final restoredHistory = currentEvent == null ||
+    final restoredHistory =
+        currentEvent == null ||
             state.history.any((item) => item.id == currentEvent.id)
         ? state.history
         : <SleepSafetyEvent>[currentEvent, ...state.history];
@@ -469,7 +627,10 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     if (phase == 'escalating' &&
         current != null &&
         current.escalationStatus != SleepSafetyEscalationStatus.accepted) {
-      await _escalate(current.id, noResponse: current.response != SleepSafetyResponse.needHelp);
+      await _escalate(
+        current.id,
+        noResponse: current.response != SleepSafetyResponse.needHelp,
+      );
     }
   }
 
@@ -482,14 +643,17 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       id: data['eventId']?.toString() ?? _newId('event'),
       sessionId: session.id,
       userId: session.userId,
-      detectedAt: DateTime.tryParse(data['detectedAt']?.toString() ?? '') ?? now,
+      detectedAt:
+          DateTime.tryParse(data['detectedAt']?.toString() ?? '') ?? now,
       eventType: _eventType(data['eventType']?.toString()),
       severity: data['severity']?.toString() ?? 'attention',
       confidence: (data['confidence'] as num?)?.toDouble() ?? 0.7,
       relativeEnergy: (data['relativeEnergy'] as num?)?.toDouble() ?? 0,
       baselineDelta: (data['baselineDelta'] as num?)?.toDouble() ?? 0,
       repetitionCount: (data['repetitionCount'] as num?)?.toInt() ?? 1,
-      state: data['response'] == 'need_help' ? 'escalating' : 'awaiting_response',
+      state: data['response'] == 'need_help'
+          ? 'escalating'
+          : 'awaiting_response',
       response: data['response'] == 'need_help'
           ? SleepSafetyResponse.needHelp
           : SleepSafetyResponse.none,
@@ -502,62 +666,171 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     );
   }
 
-  Future<void> _recordConfirmedEvent(SleepSafetyNativeEvent native,DateTime now) async {
-    final session=state.session; final userId=ref.read(currentAuthUserIdProvider);
+  Future<void> _recordConfirmedEvent(
+    SleepSafetyNativeEvent native,
+    DateTime now,
+  ) async {
+    final session = state.session;
+    final userId = ref.read(currentAuthUserIdProvider);
     if (session == null || userId == null) return;
     if (state.machine.phase != SleepSafetyPhase.monitoring &&
         state.machine.phase != SleepSafetyPhase.calibrating) {
       return;
     }
-    final id=native.data['eventId']?.toString() ?? _newId('event');
-    final event=SleepSafetyEvent(
-      id:id,sessionId:session.id,userId:userId,detectedAt:DateTime.tryParse(native.data['detectedAt']?.toString() ?? '') ?? now,
-      eventType:_eventType(native.data['eventType']?.toString()),severity:native.data['severity']?.toString() ?? 'attention',
-      confidence:(native.data['confidence'] as num?)?.toDouble() ?? 0.7,relativeEnergy:(native.data['relativeEnergy'] as num?)?.toDouble() ?? 0,
-      baselineDelta:(native.data['baselineDelta'] as num?)?.toDouble() ?? 0,repetitionCount:(native.data['repetitionCount'] as num?)?.toInt() ?? 1,
-      state:'awaiting_response',response:SleepSafetyResponse.none,escalationRequired:false,
-      escalationStatus:SleepSafetyEscalationStatus.notRequired,createdAt:now,updatedAt:now,
+    final id = native.data['eventId']?.toString() ?? _newId('event');
+    final event = SleepSafetyEvent(
+      id: id,
+      sessionId: session.id,
+      userId: userId,
+      detectedAt:
+          DateTime.tryParse(native.data['detectedAt']?.toString() ?? '') ?? now,
+      eventType: _eventType(native.data['eventType']?.toString()),
+      severity: native.data['severity']?.toString() ?? 'attention',
+      confidence: (native.data['confidence'] as num?)?.toDouble() ?? 0.7,
+      relativeEnergy: (native.data['relativeEnergy'] as num?)?.toDouble() ?? 0,
+      baselineDelta: (native.data['baselineDelta'] as num?)?.toDouble() ?? 0,
+      repetitionCount: (native.data['repetitionCount'] as num?)?.toInt() ?? 1,
+      state: 'awaiting_response',
+      response: SleepSafetyResponse.none,
+      escalationRequired: false,
+      escalationStatus: SleepSafetyEscalationStatus.notRequired,
+      createdAt: now,
+      updatedAt: now,
     );
     await _repository.saveEvent(event);
-    state=state.copyWith(currentEvent:event,machine:_machine.onConfirmedEvent(state.machine,eventId:id,now:now),history:[event,...state.history]);
+    state = state.copyWith(
+      currentEvent: event,
+      machine: _machine.onConfirmedEvent(state.machine, eventId: id, now: now),
+      history: [event, ...state.history],
+    );
   }
 
-  Future<void> _applyResponse(String eventId,String response) async {
-    final current=state.currentEvent; if(current==null||current.id!=eventId)return;
-    final now=DateTime.now();
-    if(response=='ok'){
-      final updated=_copyEvent(current,response:SleepSafetyResponse.ok,responseAt:now,stateName:'resolved_ok',updatedAt:now);
+  Future<void> _applyResponse(String eventId, String response) async {
+    final current = state.currentEvent;
+    if (current == null || current.id != eventId) return;
+    final now = DateTime.now();
+    if (response == 'ok') {
+      final updated = _copyEvent(
+        current,
+        response: SleepSafetyResponse.ok,
+        responseAt: now,
+        stateName: 'resolved_ok',
+        updatedAt: now,
+      );
       await _repository.saveEvent(updated);
-      state=state.copyWith(currentEvent:updated,machine:_machine.respondOk(state.machine,now:now,cooldown:Duration(seconds:state.preference?.cooldownSeconds ?? 120)));
+      state = state.copyWith(
+        currentEvent: updated,
+        machine: _machine.respondOk(
+          state.machine,
+          now: now,
+          cooldown: Duration(seconds: state.preference?.cooldownSeconds ?? 120),
+        ),
+      );
       return;
     }
-    if(response=='need_help'){
-      final updated=_copyEvent(current,response:SleepSafetyResponse.needHelp,responseAt:now,stateName:'escalating',escalationRequired:true,escalationStatus:SleepSafetyEscalationStatus.pending,updatedAt:now);
-      await _repository.saveEvent(updated); state=state.copyWith(currentEvent:updated,machine:_machine.respondNeedHelp(state.machine)); await _escalate(eventId);
+    if (response == 'need_help') {
+      final updated = _copyEvent(
+        current,
+        response: SleepSafetyResponse.needHelp,
+        responseAt: now,
+        stateName: 'escalating',
+        escalationRequired: true,
+        escalationStatus: SleepSafetyEscalationStatus.pending,
+        updatedAt: now,
+      );
+      await _repository.saveEvent(updated);
+      state = state.copyWith(
+        currentEvent: updated,
+        machine: _machine.respondNeedHelp(state.machine),
+      );
+      await _escalate(eventId);
     }
   }
 
-  Future<void> _escalate(String eventId,{bool noResponse=false}) async {
-    if(_dispatchingEvents.contains(eventId))return;
-    final current=state.currentEvent; if(current==null||current.id!=eventId)return;
+  Future<void> _escalate(String eventId, {bool noResponse = false}) async {
+    if (_dispatchingEvents.contains(eventId)) return;
+    final current = state.currentEvent;
+    if (current == null || current.id != eventId) return;
     _dispatchingEvents.add(eventId);
-    final now=DateTime.now();
-    var updated=_copyEvent(current,response:noResponse?SleepSafetyResponse.noResponse:current.response,responseAt:noResponse?now:current.responseAt,stateName:'dispatching',escalationRequired:true,escalationStatus:SleepSafetyEscalationStatus.dispatching,updatedAt:now);
-    await _repository.saveEvent(updated); state=state.copyWith(currentEvent:updated,machine:SleepSafetyMachineState(phase:SleepSafetyPhase.escalating,eventId:eventId,alertStartedAt:state.machine.alertStartedAt));
+    final now = DateTime.now();
+    var updated = _copyEvent(
+      current,
+      response: noResponse ? SleepSafetyResponse.noResponse : current.response,
+      responseAt: noResponse ? now : current.responseAt,
+      stateName: 'dispatching',
+      escalationRequired: true,
+      escalationStatus: SleepSafetyEscalationStatus.dispatching,
+      updatedAt: now,
+    );
+    await _repository.saveEvent(updated);
+    state = state.copyWith(
+      currentEvent: updated,
+      machine: SleepSafetyMachineState(
+        phase: SleepSafetyPhase.escalating,
+        eventId: eventId,
+        alertStartedAt: state.machine.alertStartedAt,
+      ),
+    );
     try {
-      await _repository.dispatchEmergency(eventId, 'sleep-safety-$eventId');
-      updated=_copyEvent(updated,stateName:'escalated',escalationStatus:SleepSafetyEscalationStatus.accepted,updatedAt:DateTime.now());
-      await _repository.saveEvent(updated); state=state.copyWith(currentEvent:updated,notice:'Nabi đã gửi yêu cầu liên hệ người hỗ trợ đã xác minh.');
+      await _dispatchWithRetry(eventId);
+      updated = _copyEvent(
+        updated,
+        stateName: 'escalated',
+        escalationStatus: SleepSafetyEscalationStatus.accepted,
+        updatedAt: DateTime.now(),
+      );
+      await _repository.saveEvent(updated);
+      try {
+        await _repository.dismissAlert(eventId);
+      } catch (_) {
+        // Cloud acceptance must not be reported as a dispatch failure when a
+        // native notification channel is temporarily unavailable.
+      }
+      state = state.copyWith(
+        currentEvent: updated,
+        machine: _machine.monitor(),
+        notice: 'Nabi đã gửi yêu cầu liên hệ người hỗ trợ đã xác minh.',
+        clearError: true,
+      );
     } catch (_) {
-      updated=_copyEvent(updated,stateName:'dispatch_failed',escalationStatus:SleepSafetyEscalationStatus.failed,updatedAt:DateTime.now());
-      await _repository.saveEvent(updated); state=state.copyWith(currentEvent:updated,errorMessage:'Nabi chưa thể liên hệ người hỗ trợ. Cảnh báo tại điện thoại vẫn tiếp tục.');
-    } finally { _dispatchingEvents.remove(eventId); }
+      updated = _copyEvent(
+        updated,
+        stateName: 'dispatch_failed',
+        escalationStatus: SleepSafetyEscalationStatus.failed,
+        updatedAt: DateTime.now(),
+      );
+      await _repository.saveEvent(updated);
+      state = state.copyWith(
+        currentEvent: updated,
+        errorMessage:
+            'Nabi chưa thể liên hệ người hỗ trợ. Bạn có thể thử gửi lại.',
+      );
+    } finally {
+      _dispatchingEvents.remove(eventId);
+    }
   }
 
-  Future<void> _finishSession(
-    String reason, {
-    bool failed = false,
-  }) async {
+  Future<void> _dispatchWithRetry(String eventId) async {
+    Object? lastError;
+    final idempotencyKey = 'sleep-safety-$eventId';
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        await _repository.dispatchEmergency(eventId, idempotencyKey);
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt == 0) {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    }
+    Error.throwWithStackTrace(
+      lastError ?? StateError('sleep_safety_dispatch_failed'),
+      StackTrace.current,
+    );
+  }
+
+  Future<void> _finishSession(String reason, {bool failed = false}) async {
     final session = state.session;
     if (session == null) {
       state = state.copyWith(
@@ -573,7 +846,8 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     }
 
     final now = DateTime.now();
-    final targetStatus = failed || session.status == SleepSafetySessionStatus.failed
+    final targetStatus =
+        failed || session.status == SleepSafetySessionStatus.failed
         ? SleepSafetySessionStatus.failed
         : SleepSafetySessionStatus.stopped;
     final updated = SleepSafetySession(
@@ -616,7 +890,8 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       }
       final metrics = state.audioMetrics;
       if (metrics == null) return;
-      if (DateTime.now().difference(metrics.updatedAt) > const Duration(seconds: 2)) {
+      if (DateTime.now().difference(metrics.updatedAt) >
+          const Duration(seconds: 2)) {
         state = state.copyWith(
           clearAudioMetrics: true,
           clearDetectorCandidate: true,
@@ -650,14 +925,65 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     };
   }
 
-  SleepSafetyEvent _copyEvent(SleepSafetyEvent v,{SleepSafetyResponse? response,DateTime? responseAt,String? stateName,bool? escalationRequired,SleepSafetyEscalationStatus? escalationStatus,required DateTime updatedAt}) => SleepSafetyEvent(
-    id:v.id,sessionId:v.sessionId,userId:v.userId,detectedAt:v.detectedAt,eventType:v.eventType,severity:v.severity,confidence:v.confidence,
-    relativeEnergy:v.relativeEnergy,baselineDelta:v.baselineDelta,repetitionCount:v.repetitionCount,state:stateName ?? v.state,response:response ?? v.response,
-    responseAt:responseAt ?? v.responseAt,escalationRequired:escalationRequired ?? v.escalationRequired,escalationStatus:escalationStatus ?? v.escalationStatus,
-    createdAt:v.createdAt,updatedAt:updatedAt,
+  SleepSafetyEvent _copyEvent(
+    SleepSafetyEvent v, {
+    SleepSafetyResponse? response,
+    DateTime? responseAt,
+    String? stateName,
+    bool? escalationRequired,
+    SleepSafetyEscalationStatus? escalationStatus,
+    required DateTime updatedAt,
+  }) => SleepSafetyEvent(
+    id: v.id,
+    sessionId: v.sessionId,
+    userId: v.userId,
+    detectedAt: v.detectedAt,
+    eventType: v.eventType,
+    severity: v.severity,
+    confidence: v.confidence,
+    relativeEnergy: v.relativeEnergy,
+    baselineDelta: v.baselineDelta,
+    repetitionCount: v.repetitionCount,
+    state: stateName ?? v.state,
+    response: response ?? v.response,
+    responseAt: responseAt ?? v.responseAt,
+    escalationRequired: escalationRequired ?? v.escalationRequired,
+    escalationStatus: escalationStatus ?? v.escalationStatus,
+    createdAt: v.createdAt,
+    updatedAt: updatedAt,
   );
-  SleepSafetyEventType _eventType(String? raw) => switch(raw){'suddenLoudSound'=>SleepSafetyEventType.suddenLoudSound,'strongImpact'=>SleepSafetyEventType.strongImpact,'abnormalShout'=>SleepSafetyEventType.abnormalShout,'abnormalScream'=>SleepSafetyEventType.abnormalScream,'repeatedSuspiciousPattern'=>SleepSafetyEventType.repeatedSuspiciousPattern,_=>SleepSafetyEventType.unknownHighEnergyEvent};
-  DateTime? _nextScheduleEnd(SleepSafetyPreference p,DateTime now){ if(!p.scheduleEnabled)return null; final h=p.scheduleEndMinutes~/60,m=p.scheduleEndMinutes%60; var end=DateTime(now.year,now.month,now.day,h,m); if(!end.isAfter(now))end=end.add(const Duration(days:1)); return end; }
-  String _normalizePhone(String raw){ var value=raw.replaceAll(RegExp(r'[^0-9+]'),''); if(value.startsWith('0'))value='+84${value.substring(1)}'; if(!value.startsWith('+')||value.length<9)throw const FormatException('Số điện thoại chưa đúng định dạng.'); return value; }
-  String _newId(String prefix){ final stamp=DateTime.now().microsecondsSinceEpoch.toRadixString(36); final salt=_random.nextInt(1<<32).toRadixString(36); return '$prefix-$stamp-$salt'; }
+  SleepSafetyEventType _eventType(String? raw) => switch (raw) {
+    'suddenLoudSound' => SleepSafetyEventType.suddenLoudSound,
+    'strongImpact' => SleepSafetyEventType.strongImpact,
+    'abnormalShout' => SleepSafetyEventType.abnormalShout,
+    'abnormalScream' => SleepSafetyEventType.abnormalScream,
+    'repeatedSuspiciousPattern' =>
+      SleepSafetyEventType.repeatedSuspiciousPattern,
+    _ => SleepSafetyEventType.unknownHighEnergyEvent,
+  };
+  DateTime? _nextScheduleEnd(SleepSafetyPreference p, DateTime now) {
+    if (!p.scheduleEnabled) return null;
+    final h = p.scheduleEndMinutes ~/ 60, m = p.scheduleEndMinutes % 60;
+    var end = DateTime(now.year, now.month, now.day, h, m);
+    if (!end.isAfter(now)) end = end.add(const Duration(days: 1));
+    return end;
+  }
+
+  String _normalizePhone(String raw) {
+    var value = raw.trim().replaceAll(RegExp(r'[\s().-]'), '');
+    if (value.startsWith('00')) value = '+${value.substring(2)}';
+    if (value.startsWith('0')) value = '+84${value.substring(1)}';
+    if (!RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(value)) {
+      throw const FormatException(
+        'Số điện thoại chưa đúng định dạng. Hãy nhập số Việt Nam hoặc số quốc tế hợp lệ.',
+      );
+    }
+    return value;
+  }
+
+  String _newId(String prefix) {
+    final stamp = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+    final salt = _random.nextInt(1 << 32).toRadixString(36);
+    return '$prefix-$stamp-$salt';
+  }
 }

@@ -22,31 +22,43 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
   @override
   Stream<SleepSafetyNativeEvent> get nativeEvents => native.events;
   @override
-  Future<bool> ensureMicrophonePermission() => native.ensureMicrophonePermission();
+  Future<bool> ensureMicrophonePermission() =>
+      native.ensureMicrophonePermission();
   @override
-  Future<void> startNative(Map<String, Object?> config) => native.startMonitoring(config);
+  Future<void> startNative(Map<String, Object?> config) =>
+      native.startMonitoring(config);
   @override
   Future<void> stopNative(String reason) => native.stopMonitoring(reason);
   @override
   Future<void> respondToAlert(String eventId, String response) =>
       native.respondToAlert(eventId: eventId, response: response);
   @override
+  Future<void> dismissAlert(String eventId) =>
+      native.dismissAlert(eventId: eventId);
+  @override
   Future<void> updateNativeConfig(Map<String, Object?> config) =>
       native.updateRuntimeConfig(config);
   @override
-  Future<SleepSafetyPreference> loadPreference(String userId) => local.loadPreference(userId);
+  Future<SleepSafetyPreference> loadPreference(String userId) =>
+      local.loadPreference(userId);
   @override
   Future<void> savePreference(SleepSafetyPreference value) async {
     await local.savePreference(value);
     try {
-      await cloud.syncRow('sleep_safety_preferences', _preferenceCloudMap(value));
+      await cloud.syncRow(
+        'sleep_safety_preferences',
+        _preferenceCloudMap(value),
+      );
     } catch (_) {}
   }
+
   @override
   Future<SleepSafetySession?> getSession(String id) => local.getSession(id);
   @override
-  Future<List<SleepSafetySession>> listSessions(String userId, {int limit = 14}) =>
-      local.listSessions(userId, limit: limit);
+  Future<List<SleepSafetySession>> listSessions(
+    String userId, {
+    int limit = 14,
+  }) => local.listSessions(userId, limit: limit);
   @override
   Future<void> saveSession(SleepSafetySession value) async {
     await local.saveSession(value);
@@ -54,8 +66,10 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
       await cloud.syncRow('sleep_safety_sessions', _sessionCloudMap(value));
     } catch (_) {}
   }
+
   @override
-  Future<void> updateSession(String id, Map<String, Object?> values) => local.updateSession(id, values);
+  Future<void> updateSession(String id, Map<String, Object?> values) =>
+      local.updateSession(id, values);
   @override
   Future<SleepSafetyEvent?> getEvent(String id) => local.getEvent(id);
   @override
@@ -65,18 +79,27 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
       await cloud.syncRow('sleep_safety_events', _eventCloudMap(value));
     } catch (_) {}
   }
+
   @override
-  Future<void> updateEvent(String id, Map<String, Object?> values) => local.updateEvent(id, values);
+  Future<void> updateEvent(String id, Map<String, Object?> values) =>
+      local.updateEvent(id, values);
   @override
-  Future<List<SleepSafetyEvent>> listEvents(String userId) => local.listEvents(userId);
+  Future<List<SleepSafetyEvent>> listEvents(String userId) =>
+      local.listEvents(userId);
   @override
-  Future<List<SleepSafetyEvent>> listEventsForSession(String sessionId) => local.listEventsForSession(sessionId);
+  Future<List<SleepSafetyEvent>> listEventsForSession(String sessionId) =>
+      local.listEventsForSession(sessionId);
   @override
-  Future<SleepNightAnalysis?> getNightAnalysis(String sessionId) => local.getNightAnalysis(sessionId);
+  Future<SleepNightAnalysis?> getNightAnalysis(String sessionId) =>
+      local.getNightAnalysis(sessionId);
   @override
-  Future<void> saveNightAnalysis(SleepNightAnalysis analysis) => local.saveNightAnalysis(analysis);
+  Future<void> saveNightAnalysis(SleepNightAnalysis analysis) =>
+      local.saveNightAnalysis(analysis);
   @override
-  Future<List<SafetyContact>> loadContacts(String userId, {bool refreshCloud = true}) async {
+  Future<List<SafetyContact>> loadContacts(
+    String userId, {
+    bool refreshCloud = true,
+  }) async {
     if (refreshCloud) {
       try {
         final contacts = await cloud.fetchContacts();
@@ -86,6 +109,7 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     }
     return local.listCachedContacts(userId);
   }
+
   @override
   Future<SafetyContact> saveContact({
     String? id,
@@ -93,24 +117,86 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     required String relationship,
     required String phoneE164,
     required int priority,
-  }) => cloud.upsertContact(
-    id: id,
-    name: name,
-    relationship: relationship,
-    phoneE164: phoneE164,
-    priority: priority,
-  );
+  }) async {
+    final saved = await cloud.upsertContact(
+      id: id,
+      name: name,
+      relationship: relationship,
+      phoneE164: phoneE164,
+      priority: priority,
+    );
+    try {
+      await local.cacheContact(saved);
+    } catch (_) {
+      // Supabase is authoritative; the next refresh can rebuild local cache.
+    }
+    return saved;
+  }
+
   @override
-  Future<void> deleteContact(String id) => cloud.deleteContact(id);
+  Future<void> cacheContact(SafetyContact value) => local.cacheContact(value);
+
   @override
-  Future<void> requestContactVerification(String id) => cloud.requestVerification(id);
+  Future<void> deleteContact(String id) async {
+    await cloud.deleteContact(id);
+    try {
+      await local.deleteCachedContact(id);
+    } catch (_) {
+      // Supabase is authoritative; a later refresh can rebuild local cache.
+    }
+  }
+
   @override
-  Future<void> confirmContactVerification(String id, String code) => cloud.confirmVerification(id, code);
+  Future<void> requestContactVerification(String id) =>
+      cloud.requestVerification(id);
   @override
-  Future<Map<String, Object?>> dispatchEmergency(String eventId, String idempotencyKey) =>
-      cloud.dispatchEvent(eventId: eventId, idempotencyKey: idempotencyKey);
+  Future<void> confirmContactVerification(String id, String code) =>
+      cloud.confirmVerification(id, code);
   @override
-  Future<bool> isRolloutEnabled() async => (await cloud.fetchRuntimeConfig()).enabled;
+  Future<Map<String, Object?>> dispatchEmergency(
+    String eventId,
+    String idempotencyKey,
+  ) async {
+    final event = await local.getEvent(eventId);
+    if (event == null) {
+      throw StateError('sleep_safety_event_missing');
+    }
+    final session = await local.getSession(event.sessionId);
+    if (session == null) {
+      throw StateError('sleep_safety_session_missing');
+    }
+
+    // The dispatch Edge Function reads these rows from Supabase. Local writes
+    // are therefore not enough, even when the native alert is still visible.
+    await _syncForDispatch('sleep_safety_sessions', _sessionCloudMap(session));
+    await _syncForDispatch('sleep_safety_events', _eventCloudMap(event));
+    return cloud.dispatchEvent(
+      eventId: eventId,
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
+  Future<void> _syncForDispatch(
+    String table,
+    Map<String, Object?> values,
+  ) async {
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        await cloud.syncRow(table, values);
+        return;
+      } catch (_) {
+        if (attempt == 0) {
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+        }
+      }
+    }
+    // Do not leak provider/PostgREST internals into the presentation layer.
+    throw StateError('sleep_safety_dispatch_sync_failed');
+  }
+
+  @override
+  Future<bool> isRolloutEnabled() async =>
+      (await cloud.fetchRuntimeConfig()).enabled;
 
   Map<String, Object?> _preferenceCloudMap(SleepSafetyPreference value) => {
     'user_id': value.userId,

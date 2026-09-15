@@ -295,11 +295,187 @@ void main() {
       );
     },
   );
+
+  test(
+    'Contact save keeps the RPC result when refresh returns stale cache',
+    () async {
+      const userId = 'user-1';
+      final savedContact = _contact(id: 'contact-new', priority: 2);
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-old', priority: 1)],
+        savedContact: savedContact,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.saveContact(
+        name: '  Mẹ  ',
+        relationship: 'Mẹ',
+        phoneE164: '0901234567',
+        priority: 1,
+      );
+
+      final contacts = container.read(sleepSafetyControllerProvider).contacts;
+      expect(contacts.map((contact) => contact.id), contains('contact-new'));
+      expect(repository.lastSavedPriority, 2);
+      expect(
+        container.read(sleepSafetyControllerProvider).notice,
+        contains('Đã lưu'),
+      );
+    },
+  );
+
+  test(
+    'Native acknowledgement failure does not block cloud dispatch',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        respondToAlertError: true,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'dispatch-native-error',
+            'detectedAt': '2026-08-24T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+      expect(repository.dispatchCount, 1);
+      expect(repository.dismissAlertCount, 1);
+      expect(
+        container
+            .read(sleepSafetyControllerProvider)
+            .currentEvent
+            ?.escalationStatus,
+        SleepSafetyEscalationStatus.accepted,
+      );
+    },
+  );
+
+  test(
+    'Provider failure exposes retry state and retries idempotently',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        dispatchFailuresRemaining: 2,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'dispatch-retry',
+            'detectedAt': '2026-08-24T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+      expect(
+        container
+            .read(sleepSafetyControllerProvider)
+            .currentEvent
+            ?.escalationStatus,
+        SleepSafetyEscalationStatus.failed,
+      );
+      await notifier.retryEmergencyDispatch();
+      expect(repository.dispatchCount, 3);
+      expect(repository.dispatchKeys, [
+        'sleep-safety-dispatch-retry',
+        'sleep-safety-dispatch-retry',
+        'sleep-safety-dispatch-retry',
+      ]);
+      expect(
+        container
+            .read(sleepSafetyControllerProvider)
+            .currentEvent
+            ?.escalationStatus,
+        SleepSafetyEscalationStatus.accepted,
+      );
+    },
+  );
+}
+
+SafetyContact _contact({required String id, required int priority}) {
+  final now = DateTime.utc(2026, 8, 24);
+  return SafetyContact(
+    id: id,
+    userId: 'user-1',
+    name: id,
+    relationship: 'Gia đình',
+    phoneE164: '+84901234567',
+    priority: priority,
+    verificationStatus: SafetyContactVerificationStatus.verified,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  );
 }
 
 Future<void> _waitForPreference(ProviderContainer container) async {
   for (var attempt = 0; attempt < 20; attempt++) {
     if (container.read(sleepSafetyControllerProvider).preference != null) {
+      await Future<void>.delayed(Duration.zero);
       return;
     }
     await Future<void>.delayed(Duration.zero);
@@ -307,19 +483,41 @@ Future<void> _waitForPreference(ProviderContainer container) async {
   fail('SleepSafetyController did not finish initialization.');
 }
 
+Future<void> _waitForCurrentEvent(ProviderContainer container) async {
+  for (var attempt = 0; attempt < 20; attempt++) {
+    if (container.read(sleepSafetyControllerProvider).currentEvent != null) {
+      return;
+    }
+    await Future<void>.delayed(Duration.zero);
+  }
+  fail('SleepSafetyController did not record the native safety event.');
+}
+
 class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   _FakeSleepSafetyRepository(
     this.userId, {
     this.microphoneGranted = true,
     this.nativeStartErrorCode,
+    this.cachedContacts = const [],
+    this.savedContact,
+    this.respondToAlertError = false,
+    this.dispatchFailuresRemaining = 0,
   });
 
   final String userId;
   final bool microphoneGranted;
   final String? nativeStartErrorCode;
+  final List<SafetyContact> cachedContacts;
+  final SafetyContact? savedContact;
+  final bool respondToAlertError;
+  int dispatchFailuresRemaining;
   int rolloutFetchCount = 0;
   int microphonePermissionCount = 0;
   int nativeStartCount = 0;
+  int lastSavedPriority = 0;
+  int dispatchCount = 0;
+  int dismissAlertCount = 0;
+  final List<String> dispatchKeys = [];
   final List<SleepSafetySession> savedSessions = [];
   final StreamController<SleepSafetyNativeEvent> _nativeController =
       StreamController<SleepSafetyNativeEvent>.broadcast(sync: true);
@@ -352,7 +550,7 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<List<SafetyContact>> loadContacts(
     String userId, {
     bool refreshCloud = true,
-  }) async => const [];
+  }) async => cachedContacts;
 
   @override
   Future<List<SleepSafetyEvent>> listEvents(String userId) async => const [];
@@ -375,7 +573,14 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<void> stopNative(String reason) async {}
 
   @override
-  Future<void> respondToAlert(String eventId, String response) async {}
+  Future<void> respondToAlert(String eventId, String response) async {
+    if (respondToAlertError) throw StateError('native_channel_unavailable');
+  }
+
+  @override
+  Future<void> dismissAlert(String eventId) async {
+    dismissAlertCount += 1;
+  }
 
   @override
   Future<void> updateNativeConfig(Map<String, Object?> config) async {}
@@ -426,12 +631,17 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
     required String relationship,
     required String phoneE164,
     required int priority,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    lastSavedPriority = priority;
+    return savedContact ??
+        _contact(id: id ?? 'contact-new', priority: priority);
   }
 
   @override
   Future<void> deleteContact(String id) async {}
+
+  @override
+  Future<void> cacheContact(SafetyContact value) async {}
 
   @override
   Future<void> requestContactVerification(String id) async {}
@@ -443,5 +653,13 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<Map<String, Object?>> dispatchEmergency(
     String eventId,
     String idempotencyKey,
-  ) async => const {};
+  ) async {
+    dispatchCount += 1;
+    dispatchKeys.add(idempotencyKey);
+    if (dispatchFailuresRemaining > 0) {
+      dispatchFailuresRemaining -= 1;
+      throw StateError('provider_unavailable');
+    }
+    return const {'status': 'accepted'};
+  }
 }

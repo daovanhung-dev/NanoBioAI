@@ -911,3 +911,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Chua fix: chua co runtime evidence tren sandbox co `pg_cron`; open risk `NB-RISK-001` van con hieu luc.
 - docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Can kiem tra tiep: apply `01_build_system.sql` voi `psql -v ON_ERROR_STOP=1`, chay smoke fixture, kiem tra `cron.job`, va chay Dart contract test khi toolchain/sandbox san sang.
 - docs/worklog/2026-09-13/010-worklog-membership-expiration.md :: - Bang chung kiem chung: `git diff --check` va targeted static contract checks PASS; Dart/Flutter va Supabase runtime SKIPPED do thieu toolchain/database disposable.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - Native acknowledgement là best-effort; provider dispatch retry hai lần với cùng idempotency key; accepted/failed đều thoát spinner, failed có thể thử lại.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - Bổ sung regression tests cho contact/cache/priority/native failure/retry/idempotency/sync order và native crash contract.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - `supabase status`: BLOCKED vì máy kiểm thử không có Docker/Podman cho local runtime.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - Provider voice/SMS: `UNVERIFIED/BLOCKED`; thiếu `SLEEP_SAFETY_PROVIDER_BASE_URL` và `SLEEP_SAFETY_PROVIDER_TOKEN`, nên không có bằng chứng provider nhận cuộc gọi/SMS thực tế.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - `UNVERIFIED/BLOCKED`: nghiệm thu feature end-to-end trên máy thật và provider voice/SMS do thiếu credential/OTP và provider secret.
+- docs/worklog/2026-09-14/001-worklog-sleep-safety-contact-dispatch.md :: - Mức độ hoàn thành task: chưa hoàn tất nghiệm thu bắt buộc; implementation/build/device launch hoàn tất, feature acceptance còn blocked.

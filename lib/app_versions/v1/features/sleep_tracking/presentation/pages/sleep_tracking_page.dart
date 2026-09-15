@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/sleep_safety_session.dart';
+import '../../domain/entities/sleep_safety_event.dart';
 import '../../domain/services/sleep_safety_state_machine.dart';
 import '../../providers/sleep_night_analysis_providers.dart';
 import '../../providers/sleep_safety_providers.dart';
@@ -31,7 +32,8 @@ class SleepTrackingPage extends ConsumerWidget {
     final controller = ref.read(sleepSafetyControllerProvider.notifier);
     final pref = state.preference;
     final metrics = state.audioMetrics;
-    final recentSessions = ref.watch(recentSleepSessionsProvider).asData?.value ??
+    final recentSessions =
+        ref.watch(recentSleepSessionsProvider).asData?.value ??
         const <SleepSafetySession>[];
     final completedSessions = recentSessions
         .where((session) => session.endedAt != null)
@@ -39,16 +41,24 @@ class SleepTrackingPage extends ConsumerWidget {
     final latestSessionId = completedSessions.isNotEmpty
         ? completedSessions.first.id
         : (!state.monitoringActive && state.session?.endedAt != null
-            ? state.session?.id
-            : null);
+              ? state.session?.id
+              : null);
     final startSource =
         GoRouterState.of(context).uri.queryParameters['source'] ==
-                'scheduled_reminder'
-            ? 'scheduled_reminder'
-            : 'manual';
-    final alert = state.machine.phase == SleepSafetyPhase.awaitingResponse ||
+            'scheduled_reminder'
+        ? 'scheduled_reminder'
+        : 'manual';
+    final dispatchFailed =
+        state.currentEvent?.escalationStatus ==
+        SleepSafetyEscalationStatus.failed;
+    final dispatchAccepted =
+        state.currentEvent?.escalationStatus ==
+        SleepSafetyEscalationStatus.accepted;
+    final alert =
+        state.machine.phase == SleepSafetyPhase.awaitingResponse ||
         state.machine.phase == SleepSafetyPhase.reminder ||
-        state.machine.phase == SleepSafetyPhase.escalating;
+        (state.machine.phase == SleepSafetyPhase.escalating &&
+            !dispatchAccepted);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
@@ -60,8 +70,8 @@ class SleepTrackingPage extends ConsumerWidget {
               Text(
                 'Nabi đồng hành cùng bạn trong đêm',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 6),
               const Text(
@@ -86,8 +96,9 @@ class SleepTrackingPage extends ConsumerWidget {
               SleepSafetyStatusCard(
                 phase: state.machine.phase,
                 sensitivity: _sensitivity(pref?.sensitivity),
-                verifiedContacts:
-                    state.contacts.where((contact) => contact.isVerified).length,
+                verifiedContacts: state.contacts
+                    .where((contact) => contact.isVerified)
+                    .length,
                 busy: state.isBusy,
                 onStart: () => controller.startMonitoring(source: startSource),
                 onStop: controller.stopMonitoring,
@@ -102,9 +113,9 @@ class SleepTrackingPage extends ConsumerWidget {
                   phase: state.detectorCandidateType != null
                       ? 'candidate'
                       : metrics?.phase ??
-                          (state.machine.phase == SleepSafetyPhase.calibrating
-                              ? 'calibrating'
-                              : 'waiting'),
+                            (state.machine.phase == SleepSafetyPhase.calibrating
+                                ? 'calibrating'
+                                : 'waiting'),
                   sensitivity: _sensitivity(pref?.sensitivity),
                   hasSignal: metrics != null,
                   signalStale: state.audioSignalStale,
@@ -152,7 +163,9 @@ class SleepTrackingPage extends ConsumerWidget {
                         leading: const Icon(Icons.schedule_rounded),
                         title: const Text('Lịch giám sát'),
                         subtitle: Text(
-                          pref.scheduleEnabled ? 'Đã bật nhắc theo lịch' : 'Chưa bật',
+                          pref.scheduleEnabled
+                              ? 'Đã bật nhắc theo lịch'
+                              : 'Chưa bật',
                         ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.push(
@@ -201,13 +214,13 @@ class SleepTrackingPage extends ConsumerWidget {
                         onTap: latestSessionId == null
                             ? null
                             : () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => SleepNightAnalysisPage(
-                                      sessionId: latestSessionId,
-                                    ),
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => SleepNightAnalysisPage(
+                                    sessionId: latestSessionId,
                                   ),
                                 ),
+                              ),
                       ),
                       ListTile(
                         leading: const Icon(Icons.hearing_rounded),
@@ -217,7 +230,9 @@ class SleepTrackingPage extends ConsumerWidget {
                               ? 'Chưa hiệu chỉnh'
                               : 'Lần gần nhất: ${pref.calibrationUpdatedAt}',
                         ),
-                        onTap: state.monitoringActive ? controller.recalibrate : null,
+                        onTap: state.monitoringActive
+                            ? controller.recalibrate
+                            : null,
                       ),
                     ],
                   ),
@@ -232,9 +247,14 @@ class SleepTrackingPage extends ConsumerWidget {
             Positioned.fill(
               child: SleepSafetyAlertOverlay(
                 startedAt: state.machine.alertStartedAt!,
-                dispatching: state.machine.phase == SleepSafetyPhase.escalating,
+                dispatching:
+                    state.machine.phase == SleepSafetyPhase.escalating &&
+                    !dispatchFailed,
+                dispatchFailed: dispatchFailed,
+                dispatchError: state.errorMessage,
                 onOk: controller.respondOk,
                 onNeedHelp: controller.requestHelp,
+                onRetry: controller.retryEmergencyDispatch,
               ),
             ),
         ],
@@ -243,8 +263,8 @@ class SleepTrackingPage extends ConsumerWidget {
   }
 
   static String _sensitivity(SleepSafetySensitivity? value) => switch (value) {
-        SleepSafetySensitivity.low => 'Thấp',
-        SleepSafetySensitivity.high => 'Cao',
-        _ => 'Cân bằng',
-      };
+    SleepSafetySensitivity.low => 'Thấp',
+    SleepSafetySensitivity.high => 'Cao',
+    _ => 'Cân bằng',
+  };
 }

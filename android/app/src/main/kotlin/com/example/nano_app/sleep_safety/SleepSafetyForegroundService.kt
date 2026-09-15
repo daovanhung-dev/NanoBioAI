@@ -22,6 +22,7 @@ class SleepSafetyForegroundService : Service() {
         const val ACTION_UPDATE = "com.nanobioai.app.sleep_safety.UPDATE"
         const val ACTION_RESPONSE_OK = "com.nanobioai.app.sleep_safety.RESPONSE_OK"
         const val ACTION_RESPONSE_HELP = "com.nanobioai.app.sleep_safety.RESPONSE_HELP"
+        const val ACTION_DISMISS_ALERT = "com.nanobioai.app.sleep_safety.DISMISS_ALERT"
 
         private const val METRICS_EMIT_INTERVAL_MS = 160L
         private const val CANDIDATE_EMIT_INTERVAL_MS = 300L
@@ -70,6 +71,7 @@ class SleepSafetyForegroundService : Service() {
                     intent.getStringExtra("eventId"),
                     "need_help",
                 )
+                ACTION_DISMISS_ALERT -> dismissAlert(intent.getStringExtra("eventId"))
             }
         } catch (error: RuntimeException) {
             val code = classifyStartFailure(error)
@@ -357,6 +359,18 @@ class SleepSafetyForegroundService : Service() {
                 SleepSafetyNativeEventBus.emit("monitoringReady")
             }
         }, cooldownSeconds * 1000L)
+    }
+
+    private fun dismissAlert(eventId: String?) {
+        val current = currentEventId ?: return
+        if (eventId != null && eventId != current) return
+        cancelAlertTimers()
+        stopPersistentAlert()
+        currentEventId = null
+        SleepSafetyRuntimeStatus.currentEvent = null
+        detectionSuppressed = false
+        SleepSafetyRuntimeStatus.phase = "monitoring"
+        SleepSafetyNativeEventBus.emit("monitoringReady")
     }
 
     private fun stopPersistentAlert() {

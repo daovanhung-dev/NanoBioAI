@@ -11,12 +11,16 @@ abstract class SleepSafetyRepository {
   Future<void> startNative(Map<String, Object?> config);
   Future<void> stopNative(String reason);
   Future<void> respondToAlert(String eventId, String response);
+  Future<void> dismissAlert(String eventId);
   Future<void> updateNativeConfig(Map<String, Object?> config);
   Future<SleepSafetyPreference> loadPreference(String userId);
   Future<void> savePreference(SleepSafetyPreference value);
   Future<void> saveSession(SleepSafetySession value);
   Future<SleepSafetySession?> getSession(String id);
-  Future<List<SleepSafetySession>> listSessions(String userId, {int limit = 14});
+  Future<List<SleepSafetySession>> listSessions(
+    String userId, {
+    int limit = 14,
+  });
   Future<void> updateSession(String id, Map<String, Object?> values);
   Future<void> saveEvent(SleepSafetyEvent value);
   Future<SleepSafetyEvent?> getEvent(String id);
@@ -36,6 +40,7 @@ abstract class SleepSafetyRepository {
     required String phoneE164,
     required int priority,
   });
+  Future<void> cacheContact(SafetyContact value);
   Future<void> deleteContact(String id);
   Future<void> requestContactVerification(String id);
   Future<void> confirmContactVerification(String id, String code);

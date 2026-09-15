@@ -63,14 +63,14 @@ class SleepSafetyLocalDatasource {
       (await _dao()).updateEvent(id, values);
 
   Future<List<SleepSafetyEvent>> listEvents(String userId) async =>
-      (await (await _dao()).listEvents(userId))
-          .map(SleepSafetyModelMapper.eventFromMap)
-          .toList(growable: false);
+      (await (await _dao()).listEvents(
+        userId,
+      )).map(SleepSafetyModelMapper.eventFromMap).toList(growable: false);
 
   Future<List<SleepSafetyEvent>> listEventsForSession(String sessionId) async =>
-      (await (await _dao()).listEventsForSession(sessionId))
-          .map(SleepSafetyModelMapper.eventFromMap)
-          .toList(growable: false);
+      (await (await _dao()).listEventsForSession(
+        sessionId,
+      )).map(SleepSafetyModelMapper.eventFromMap).toList(growable: false);
 
   Future<void> saveNightAnalysis(SleepNightAnalysis value) async =>
       (await _dao()).upsertNightAnalysis(
@@ -85,16 +85,19 @@ class SleepSafetyLocalDatasource {
   Future<void> cacheContacts(
     String userId,
     List<SafetyContact> contacts,
-  ) async =>
-      (await _dao()).replaceContacts(
-        userId,
-        contacts
-            .map(SleepSafetyModelMapper.contactToMap)
-            .toList(growable: false),
-      );
+  ) async => (await _dao()).replaceContacts(
+    userId,
+    contacts.map(SleepSafetyModelMapper.contactToMap).toList(growable: false),
+  );
+
+  Future<void> cacheContact(SafetyContact contact) async => (await _dao())
+      .upsertContact(SleepSafetyModelMapper.contactToMap(contact));
+
+  Future<void> deleteCachedContact(String id) async =>
+      (await _dao()).deleteContact(id);
 
   Future<List<SafetyContact>> listCachedContacts(String userId) async =>
-      (await (await _dao()).listContacts(userId))
-          .map(SleepSafetyModelMapper.contactFromMap)
-          .toList(growable: false);
+      (await (await _dao()).listContacts(
+        userId,
+      )).map(SleepSafetyModelMapper.contactFromMap).toList(growable: false);
 }

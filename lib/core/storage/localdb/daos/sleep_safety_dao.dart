@@ -18,16 +18,16 @@ class SleepSafetyDao {
   }
 
   Future<void> upsertPreference(Map<String, Object?> values) => db.insert(
-        SleepSafetyTables.preferences,
-        values,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    SleepSafetyTables.preferences,
+    values,
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   Future<void> insertSession(Map<String, Object?> values) => db.insert(
-        SleepSafetyTables.sessions,
-        values,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    SleepSafetyTables.sessions,
+    values,
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   Future<Map<String, Object?>?> getSession(String id) async {
     final rows = await db.query(
@@ -62,10 +62,10 @@ class SleepSafetyDao {
       );
 
   Future<void> insertEvent(Map<String, Object?> values) => db.insert(
-        SleepSafetyTables.events,
-        values,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    SleepSafetyTables.events,
+    values,
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   Future<Map<String, Object?>?> getEvent(String id) async {
     final rows = await db.query(
@@ -78,11 +78,11 @@ class SleepSafetyDao {
   }
 
   Future<void> updateEvent(String id, Map<String, Object?> values) => db.update(
-        SleepSafetyTables.events,
-        values,
-        where: 'id = ?',
-        whereArgs: [id],
-      );
+    SleepSafetyTables.events,
+    values,
+    where: 'id = ?',
+    whereArgs: [id],
+  );
 
   Future<List<Map<String, Object?>>> listEvents(
     String userId, {
@@ -111,10 +111,10 @@ class SleepSafetyDao {
   }
 
   Future<void> upsertNightAnalysis(Map<String, Object?> values) => db.insert(
-        SleepSafetyTables.analyses,
-        values,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+    SleepSafetyTables.analyses,
+    values,
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 
   Future<Map<String, Object?>?> getNightAnalysis(String sessionId) async {
     final rows = await db.query(
@@ -141,6 +141,24 @@ class SleepSafetyDao {
       }
     });
   }
+
+  Future<void> upsertContact(Map<String, Object?> values) async {
+    await db.transaction((txn) async {
+      await txn.delete(
+        SleepSafetyTables.contacts,
+        where: 'user_id = ? AND (id = ? OR priority = ?)',
+        whereArgs: [values['user_id'], values['id'], values['priority']],
+      );
+      await txn.insert(
+        SleepSafetyTables.contacts,
+        values,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  }
+
+  Future<void> deleteContact(String id) =>
+      db.delete(SleepSafetyTables.contacts, where: 'id = ?', whereArgs: [id]);
 
   Future<List<Map<String, Object?>>> listContacts(String userId) async {
     final rows = await db.query(

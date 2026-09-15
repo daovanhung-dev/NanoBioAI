@@ -41,18 +41,18 @@ abstract class SleepSafetyNativeGateway {
     required String eventId,
     required String response,
   });
+  Future<void> dismissAlert({required String eventId});
   Future<Map<String, Object?>> getMonitoringStatus();
 }
 
-class MethodChannelSleepSafetyNativeGateway implements SleepSafetyNativeGateway {
+class MethodChannelSleepSafetyNativeGateway
+    implements SleepSafetyNativeGateway {
   const MethodChannelSleepSafetyNativeGateway();
 
   static const _control = MethodChannel(
     'com.nanobioai.app/sleep_safety/control',
   );
-  static const _events = EventChannel(
-    'com.nanobioai.app/sleep_safety/events',
-  );
+  static const _events = EventChannel('com.nanobioai.app/sleep_safety/events');
 
   @override
   Stream<SleepSafetyNativeEvent> get events => _events
@@ -100,6 +100,11 @@ class MethodChannelSleepSafetyNativeGateway implements SleepSafetyNativeGateway 
       'eventId': eventId,
       'response': response,
     });
+  }
+
+  @override
+  Future<void> dismissAlert({required String eventId}) {
+    return _control.invokeMethod<void>('dismissAlert', {'eventId': eventId});
   }
 
   @override

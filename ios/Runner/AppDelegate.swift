@@ -543,6 +543,23 @@ private final class SleepSafetyIOSRuntime {
     }
   }
 
+  func dismissAlert(eventID: String?) {
+    guard let current = currentEventID else { return }
+    if let eventID, eventID != current { return }
+    cancelAlertTimers()
+    UNUserNotificationCenter.current().removePendingNotificationRequests(
+      withIdentifiers: [SleepSafetyIOSConstants.notificationPrefix + current]
+    )
+    UNUserNotificationCenter.current().removeDeliveredNotifications(
+      withIdentifiers: [SleepSafetyIOSConstants.notificationPrefix + current]
+    )
+    currentEventID = nil
+    currentEventData = nil
+    detectionSuppressed = false
+    phase = "monitoring"
+    emit("monitoringReady")
+  }
+
   func handlesNotificationResponse(_ response: UNNotificationResponse) -> Bool {
     guard response.notification.request.identifier.hasPrefix(SleepSafetyIOSConstants.notificationPrefix) else {
       return false
@@ -719,6 +736,9 @@ private final class SleepSafetyIOSChannelHandler: NSObject, FlutterStreamHandler
           eventID: arguments["eventId"] as? String,
           response: arguments["response"] as? String ?? "ok"
         )
+        result(nil)
+      case "dismissAlert":
+        self.runtime.dismissAlert(eventID: arguments["eventId"] as? String)
         result(nil)
       case "getMonitoringStatus":
         result(self.runtime.statusSnapshot())
