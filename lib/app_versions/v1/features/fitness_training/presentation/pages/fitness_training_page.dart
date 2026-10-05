@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../application/fitness_training_controller.dart';
 import '../../domain/entities/fitness_training_catalog.dart';
+import '../../domain/entities/fitness_schedule_conflict.dart';
 import '../../domain/entities/fitness_training_profile.dart';
 import '../../domain/entities/fitness_training_program.dart';
 import '../../domain/repositories/fitness_training_repository.dart';
@@ -24,6 +25,17 @@ class FitnessTrainingPage extends ConsumerStatefulWidget {
 }
 
 class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
+  static const _workoutTimes = <String>[
+    '06:00',
+    '07:00',
+    '08:00',
+    '12:00',
+    '16:30',
+    '17:30',
+    '18:30',
+    '19:30',
+  ];
+
   late Future<FitnessTrainingLoadedContext> _loadFuture;
   int _step = 0;
   bool _profileReviewed = false;
@@ -33,6 +45,8 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   String? _pendingRequestId;
   FitnessTrainingProgram? _preview;
   bool _filtersSeeded = false;
+  FitnessTrainingProgram? _replanProgram;
+  FitnessWeeklyCheckIn? _replanCheckIn;
 
   String _goal = 'general_fitness';
   String _experience = 'beginner';
@@ -40,12 +54,8 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   final Set<String> _equipmentIds = {};
   final Set<int> _weekdays = {1, 3, 5};
   final Set<String> _excludedMoves = {};
-  final Set<String> _excludedAllergens = {};
-  final Set<String> _foodGroups = {};
   int _sessionMinutes = 45;
   String _workoutTime = '17:30';
-  String _sleepTime = '22:30';
-  String _wakeTime = '06:30';
 
   @override
   void initState() {
@@ -89,28 +99,10 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
                   if (!mounted || _filtersSeeded) return;
                   setState(() {
                     _filtersSeeded = true;
-                    _foodGroups.addAll(data.catalog.foodGroups);
                     if (RegExp(
                       r'^\d{2}:\d{2}$',
                     ).hasMatch(data.profile.workoutTime)) {
                       _workoutTime = data.profile.workoutTime;
-                    }
-                    if (RegExp(
-                      r'^\d{2}:\d{2}$',
-                    ).hasMatch(data.profile.sleepTime)) {
-                      _sleepTime = data.profile.sleepTime;
-                    }
-                    if (RegExp(
-                      r'^\d{2}:\d{2}$',
-                    ).hasMatch(data.profile.wakeTime)) {
-                      _wakeTime = data.profile.wakeTime;
-                    }
-                    for (final restriction in data.profile.foodRestrictions) {
-                      _excludedAllergens.addAll(
-                        ref
-                            .read(fitnessTrainingControllerProvider)
-                            .allergenTagsFor(restriction),
-                      );
                     }
                   });
                 });
@@ -203,8 +195,6 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
           const SizedBox(height: 12),
           _movementRestrictions(),
           const SizedBox(height: 12),
-          _foodPreferences(data.catalog),
-          const SizedBox(height: 12),
           _aiConsentTile(metrics),
           if (_error != null) _errorCard(_error!),
           const SizedBox(height: 10),
@@ -275,7 +265,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Bản thử nghiệm: nội dung bài tập, thực đơn và minh họa đang chờ rà soát chuyên môn. Đây là gợi ý wellness, không thay thế tư vấn y tế hoặc huấn luyện viên.',
+              'Bản thử nghiệm: nội dung bài tập và minh họa đang chờ rà soát chuyên môn. Đây là gợi ý wellness, không thay thế tư vấn y tế hoặc huấn luyện viên.',
             ),
           ),
         ],
@@ -332,18 +322,8 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
                 : profile.conditions.join(' · '),
           ),
           _detailLine(
-            'Hạn chế/dị ứng thực phẩm',
-            profile.foodRestrictions.isEmpty
-                ? 'Chưa ghi nhận'
-                : profile.foodRestrictions.join(' · '),
-          ),
-          _detailLine(
             'Chiều cao / cân nặng',
             '${_displayNumber(profile.heightCm)} cm / ${_displayNumber(profile.weightKg)} kg',
-          ),
-          _detailLine(
-            'Lịch ngủ hiện tại',
-            '${profile.sleepTime} – ${profile.wakeTime}',
           ),
           const Divider(height: 22),
           if (metrics == null)
@@ -637,10 +617,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Lịch tập và nghỉ ngơi',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Lịch tập', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 6,
@@ -672,43 +649,12 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
                 setState(() => _sessionMinutes = value ?? _sessionMinutes),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _timeDropdown('Giờ tập', _workoutTime, const [
-                  '06:00',
-                  '07:00',
-                  '08:00',
-                  '12:00',
-                  '16:30',
-                  '17:30',
-                  '18:30',
-                  '19:30',
-                ], (v) => setState(() => _workoutTime = v)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _timeDropdown('Giờ ngủ', _sleepTime, const [
-                  '21:00',
-                  '21:30',
-                  '22:00',
-                  '22:30',
-                  '23:00',
-                  '23:30',
-                ], (v) => setState(() => _sleepTime = v)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          _timeDropdown('Giờ thức dậy', _wakeTime, const [
-            '05:00',
-            '05:30',
-            '06:00',
-            '06:30',
-            '07:00',
-            '07:30',
-            '08:00',
-          ], (v) => setState(() => _wakeTime = v)),
+          _timeDropdown('Giờ tập', _workoutTime, _workoutTimes, (v) {
+            setState(() {
+              _workoutTime = v;
+              _error = null;
+            });
+          }),
         ],
       ),
     ),
@@ -773,103 +719,6 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
     ),
   );
 
-  Widget _foodPreferences(FitnessTrainingCatalog catalog) {
-    const foodNames = {
-      'protein': 'Đạm',
-      'carbohydrate': 'Tinh bột',
-      'fruit_vegetable': 'Rau và trái cây',
-      'fat_source': 'Chất béo',
-    };
-    const allergenNames = {
-      'milk': 'Sữa',
-      'egg': 'Trứng',
-      'fish': 'Cá',
-      'crustacean_shellfish': 'Tôm cua',
-      'soy': 'Đậu nành',
-      'peanut': 'Đậu phộng',
-      'tree_nuts': 'Các loại hạt',
-      'wheat_gluten': 'Lúa mì/gluten',
-      'sesame': 'Mè/vừng',
-    };
-    final unknown = _excludedAllergens
-        .where((item) => item.startsWith('unknown:'))
-        .toList();
-    final unsupported = _excludedAllergens
-        .where(
-          (tag) =>
-              !catalog.allergenTags.contains(tag) &&
-              !tag.startsWith('unknown:'),
-        )
-        .toList();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Nguồn thực phẩm phù hợp',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final group in catalog.foodGroups)
-                  FilterChip(
-                    label: Text(foodNames[group] ?? group),
-                    selected: _foodGroups.contains(group),
-                    onSelected: (selected) => setState(
-                      () => selected
-                          ? _foodGroups.add(group)
-                          : _foodGroups.remove(group),
-                    ),
-                  ),
-              ],
-            ),
-            const Divider(height: 24),
-            Text(
-              'Dị ứng cần loại trừ',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Wrap(
-              spacing: 6,
-              children: [
-                for (final entry in allergenNames.entries)
-                  FilterChip(
-                    label: Text(entry.value),
-                    selected: _excludedAllergens.contains(entry.key),
-                    onSelected: (selected) => setState(
-                      () => selected
-                          ? _excludedAllergens.add(entry.key)
-                          : _excludedAllergens.remove(entry.key),
-                    ),
-                  ),
-              ],
-            ),
-            if (unknown.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Chưa thể lọc chính xác mục hạn chế từ hồ sơ: ${unknown.map((item) => item.substring(8).replaceAll('_', ' ')).join(', ')}. Hãy cập nhật hồ sơ trước khi tạo thực đơn.',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            if (unsupported.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Catalog thử nghiệm chưa có dữ liệu lọc cho: ${unsupported.join(', ')}. Chưa thể tạo thực đơn an toàn với lựa chọn này.',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 5),
-            const Text(
-              'Món ăn và giá trị dinh dưỡng trong bản thử nghiệm chỉ mang tính tham khảo.',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _aiConsentTile(BasicHealthReport? metrics) => Card(
     child: CheckboxListTile(
       value: _aiConsent,
@@ -877,40 +726,22 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Đồng ý tạo gợi ý bằng AI'),
       subtitle: Text(
-        'Gemini nhận mục tiêu, nơi tập, thiết bị, lịch, nhóm thực phẩm và điều kiện đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'}. Không gửi ngày sinh, tên hoặc ghi chú hồ sơ.',
+        'Gemini nhận mục tiêu, nơi tập, thiết bị, lịch tập và giới hạn vận động đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'}. Không gửi ngày sinh, tên, ghi chú hồ sơ, dị ứng, thực đơn hoặc giờ ngủ.',
       ),
     ),
   );
 
   bool _canGenerate(FitnessTrainingLoadedContext data, bool adult) {
-    if (_busy ||
-        !adult ||
-        !_aiConsent ||
-        _weekdays.isEmpty ||
-        _foodGroups.isEmpty) {
+    if (_busy || !adult || !_aiConsent || _weekdays.isEmpty) {
       return false;
     }
     if (_venue == 'gym' && _equipmentIds.isEmpty) return false;
-    if (_excludedAllergens.any(
-      (tag) =>
-          tag.startsWith('unknown:') ||
-          !data.catalog.allergenTags.contains(tag),
-    )) {
-      return false;
-    }
     final exercises = data.catalog.eligibleExercises(
       venue: _venue,
       equipmentIds: _equipmentIds,
       excludedMovementGroups: _excludedMoves,
     );
-    final recipes = data.catalog.eligibleRecipes(
-      excludedAllergens: _excludedAllergens,
-      availableFoodGroups: _foodGroups,
-    );
-    return exercises.isNotEmpty &&
-        FitnessProgramValidator.mealSlots.every(
-          (slot) => recipes.any((recipe) => recipe.mealSlot == slot),
-        );
+    return exercises.isNotEmpty;
   }
 
   Future<void> _generate(FitnessTrainingLoadedContext data) async {
@@ -925,10 +756,6 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       sessionMinutes: _sessionMinutes,
       workoutTime: _workoutTime,
       excludedMovementGroups: _excludedMoves.toList(),
-      excludedAllergens: _excludedAllergens,
-      availableFoodGroups: _foodGroups,
-      sleepTime: _sleepTime,
-      wakeTime: _wakeTime,
     );
     setState(() {
       _busy = true;
@@ -958,6 +785,9 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   }
 
   String _friendlyError(Object error) {
+    if (error is FitnessScheduleConflictException) {
+      return _conflictMessage(error);
+    }
     if (error is PersonalScheduleQuotaExceededException) {
       return PersonalScheduleQuotaExceededException.userMessage;
     }
@@ -972,13 +802,48 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
         'adult_gate' => 'Chế độ luyện tập chỉ dành cho người từ 18 tuổi.',
         'no_safe_exercises' =>
           'Chưa có bài phù hợp với thiết bị và giới hạn vận động đã chọn.',
-        'no_safe_meals' =>
-          'Chưa có đủ món ăn phù hợp với nhóm thực phẩm và dị ứng đã chọn.',
+        'workout_time' => 'Giờ tập chưa hợp lệ. Hãy chọn giờ khác.',
         _ =>
           'AI chưa tạo được lịch hợp lệ. Chương trình hiện tại vẫn được giữ nguyên; bạn có thể thử lại.',
       };
     }
     return 'Kết nối đang bận hoặc phản hồi chưa phù hợp. Chương trình hiện tại vẫn được giữ nguyên; bạn có thể thử lại.';
+  }
+
+  String _conflictMessage(FitnessScheduleConflictException error) {
+    final lines = error.conflicts
+        .take(3)
+        .map((conflict) {
+          final workout =
+              '${_formatTime(conflict.workoutStartAt)}–'
+              '${_formatTime(conflict.workoutEndAt)}';
+          final itemStartsOnDifferentDay =
+              conflict.itemStartAt.year != conflict.workoutStartAt.year ||
+              conflict.itemStartAt.month != conflict.workoutStartAt.month ||
+              conflict.itemStartAt.day != conflict.workoutStartAt.day;
+          final itemStartDate = itemStartsOnDifferentDay
+              ? '${_formatDate(conflict.itemStartAt)} '
+              : '';
+          final itemEndsOnDifferentDay =
+              conflict.itemEndAt != null &&
+              (conflict.itemEndAt!.year != conflict.itemStartAt.year ||
+                  conflict.itemEndAt!.month != conflict.itemStartAt.month ||
+                  conflict.itemEndAt!.day != conflict.itemStartAt.day);
+          final itemEndDate = itemEndsOnDifferentDay
+              ? '${_formatDate(conflict.itemEndAt!)} '
+              : '';
+          final existing = conflict.itemEndAt == null
+              ? '$itemStartDate${_formatTime(conflict.itemStartAt)}'
+              : '$itemStartDate${_formatTime(conflict.itemStartAt)}–'
+                    '$itemEndDate${_formatTime(conflict.itemEndAt!)}';
+          return '• ${_formatDate(conflict.workoutStartAt)} $workout trùng với '
+              '${conflict.itemTitle} ($existing).';
+        })
+        .join('\n');
+    final extra = error.conflicts.length > 3
+        ? '\nCòn ${error.conflicts.length - 3} xung đột khác.'
+        : '';
+    return 'Giờ tập bị trùng với lịch hiện có. Hãy chọn giờ khác; lịch cũ sẽ được giữ nguyên.\n$lines$extra';
   }
 
   Widget _errorCard(String message) => Card(
@@ -994,13 +859,20 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
     children: [
       _sectionTitle(
         'Xem trước chương trình',
-        'Tuần ${program.activeWeek} trong kế hoạch 4 tuần · Lịch khác chưa được thay đổi.',
+        'Tuần ${program.activeWeek} trong kế hoạch 4 tuần · Giờ tập $_workoutTime · Lịch khác chưa được thay đổi.',
       ),
+      const SizedBox(height: 10),
+      _timeDropdown('Giờ tập áp dụng', _workoutTime, _workoutTimes, (value) {
+        setState(() {
+          _workoutTime = value;
+          _error = null;
+        });
+      }),
       const SizedBox(height: 10),
       _programWeek(program.weekDays, data.catalog),
       const SizedBox(height: 8),
       const Text(
-        'Khi xác nhận, các mục tập, ăn và ngủ tương lai chưa hoàn thành sẽ được thêm vào lịch. Lịch sử hoàn thành và mục sức khỏe khác được giữ nguyên.',
+        'Khi xác nhận, chỉ các buổi tập M32 tương lai chưa hoàn thành được thay. Mục ăn, ngủ, sức khỏe, lịch đã hoàn thành và lịch quá khứ được giữ nguyên.',
       ),
     ],
   );
@@ -1025,6 +897,24 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
           const SizedBox(height: 10),
           for (final day in program.weekDays.take(7))
             _daySummary(day, data.catalog),
+          if (_replanProgram?.id == program.id && _replanCheckIn != null) ...[
+            const SizedBox(height: 8),
+            if (_error != null) _errorCard(_error!),
+            _timeDropdown('Giờ tập đề xuất mới', _workoutTime, _workoutTimes, (
+              value,
+            ) {
+              setState(() {
+                _workoutTime = value;
+                _error = null;
+              });
+            }),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : () => _retryReplan(data),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Kiểm tra giờ mới và thử lại'),
+            ),
+          ],
           if (program.activeWeek < 4 && _checkInDue(program)) ...[
             const SizedBox(height: 8),
             if (ref.read(fitnessTrainingControllerProvider).isGuest)
@@ -1065,6 +955,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
           OutlinedButton(
             onPressed: () => setState(() {
               _preview = program;
+              _workoutTime = program.intake.workoutTime;
               _step = 2;
             }),
             child: const Text('Xem lại chương trình'),
@@ -1088,9 +979,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       title: Text(
         '${_weekdayLabel(day.date.weekday)} · ${_formatDate(day.date)}${day.isRestDay ? ' · Nghỉ tập' : ''}',
       ),
-      subtitle: Text(
-        '${day.exercises.length} bài tập · ${day.meals.length} bữa · Ngủ ${day.sleepTime}',
-      ),
+      subtitle: Text('${day.exercises.length} bài tập'),
       childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
       children: [
         for (final planned in day.exercises)
@@ -1112,41 +1001,9 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
               trailing: const Icon(Icons.info_outline_rounded),
               onTap: () => _showExerciseDetails(exercise, planned, catalog),
             ),
-        for (final meal in _orderedMeals(day.meals))
-          if (catalog.recipesById[meal.recipeId] case final recipe?)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: FitnessCatalogImage(
-                catalog: catalog,
-                illustration: recipe.illustration,
-                width: 72,
-                height: 56,
-              ),
-              title: Text(recipe.name),
-              subtitle: Text(
-                '${_mealName(meal.mealSlot)} · ${meal.servings.toStringAsFixed(1)} khẩu phần',
-              ),
-            ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.bedtime_outlined),
-          title: Text('Ngủ ${day.sleepTime} · Dậy ${day.wakeTime}'),
-          subtitle: const Text(
-            'Nhắc lịch nghỉ ngơi theo mục tiêu bạn đã chọn.',
-          ),
-        ),
       ],
     ),
   );
-
-  List<FitnessProgramMeal> _orderedMeals(List<FitnessProgramMeal> meals) {
-    final ranks = {
-      for (var i = 0; i < FitnessProgramValidator.mealSlots.length; i++)
-        FitnessProgramValidator.mealSlots[i]: i,
-    };
-    return [...meals]
-      ..sort((a, b) => ranks[a.mealSlot]!.compareTo(ranks[b.mealSlot]!));
-  }
 
   Future<void> _showExerciseDetails(
     FitnessExercise exercise,
@@ -1234,7 +1091,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       builder: (context) => AlertDialog(
         title: Text('Áp dụng tuần ${program.activeWeek}?'),
         content: const Text(
-          'Các mục luyện tập, bữa ăn và giờ ngủ tương lai chưa hoàn thành sẽ được thay theo chương trình này.',
+          'Chỉ các buổi tập M32 tương lai chưa hoàn thành được thay. Mục ăn, ngủ và các lịch khác được giữ nguyên. Nếu giờ tập trùng lịch, bản xem trước vẫn được giữ để bạn chọn giờ khác.',
         ),
         actions: [
           TextButton(
@@ -1256,7 +1113,14 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
     try {
       await ref
           .read(fitnessTrainingControllerProvider)
-          .apply(context: data, program: program, week: program.activeWeek);
+          .apply(
+            context: data,
+            program: program,
+            week: program.activeWeek,
+            workoutTimeOverride: _workoutTime == program.intake.workoutTime
+                ? null
+                : _workoutTime,
+          );
       if (!mounted) return;
       setState(() {
         _busy = false;
@@ -1267,12 +1131,13 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã áp dụng lịch luyện tập của bạn.')),
       );
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error =
-              'Chưa áp dụng được lịch. Chương trình xem trước vẫn còn nguyên.';
+          _error = error is FitnessScheduleConflictException
+              ? _friendlyError(error)
+              : 'Chưa áp dụng được lịch. Chương trình xem trước vẫn còn nguyên.';
         });
       }
     }
@@ -1284,7 +1149,8 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   ) async {
     var effort = 3;
     var soreness = 2;
-    final answers = await showDialog<(int, int)>(
+    var workoutTime = active.intake.workoutTime;
+    final answers = await showDialog<(int, int, String)>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
@@ -1312,6 +1178,9 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
                 onChanged: (value) =>
                     setDialogState(() => soreness = value.round()),
               ),
+              _timeDropdown('Giờ tập', workoutTime, _workoutTimes, (value) {
+                setDialogState(() => workoutTime = value);
+              }),
               const Text(
                 'Chỉ gửi điểm đánh giá cho AI điều chỉnh; không gửi ghi chú.',
               ),
@@ -1323,7 +1192,8 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
               child: const Text('Để sau'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, (effort, soreness)),
+              onPressed: () =>
+                  Navigator.pop(context, (effort, soreness, workoutTime)),
               child: const Text('Tạo đề xuất'),
             ),
           ],
@@ -1339,10 +1209,11 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       note: '',
       createdAt: DateTime.now().toUtc(),
     );
-    final intake = _intakeFromProgram(active);
+    final intake = _intakeFromProgram(active).copyWith(workoutTime: answers.$3);
     setState(() {
       _busy = true;
       _error = null;
+      _workoutTime = answers.$3;
       _pendingRequestId ??= controller.newRequestId();
     });
     try {
@@ -1359,14 +1230,56 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
         _preview = preview;
         _step = 2;
         _pendingRequestId = null;
+        _replanProgram = null;
+        _replanCheckIn = null;
       });
     } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
           _error = _friendlyError(error);
+          if (error is FitnessScheduleConflictException) {
+            _replanProgram = active;
+            _replanCheckIn = checkIn;
+          }
         });
       }
+    }
+  }
+
+  Future<void> _retryReplan(FitnessTrainingLoadedContext data) async {
+    final active = _replanProgram;
+    final checkIn = _replanCheckIn;
+    final requestId = _pendingRequestId;
+    if (active == null || checkIn == null || requestId == null) return;
+    final controller = ref.read(fitnessTrainingControllerProvider);
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final preview = await controller.replan(
+        context: data,
+        activeProgram: active,
+        intake: _intakeFromProgram(active).copyWith(workoutTime: _workoutTime),
+        checkIn: checkIn,
+        requestId: requestId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _preview = preview;
+        _step = 2;
+        _pendingRequestId = null;
+        _replanProgram = null;
+        _replanCheckIn = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = _friendlyError(error);
+      });
     }
   }
 
@@ -1385,14 +1298,6 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
     program.startDate.day,
   ).add(Duration(days: program.activeWeek * 7 - 1));
 
-  String _mealName(String slot) => switch (slot) {
-    'breakfast' => 'Bữa sáng',
-    'morning_snack' => 'Bữa phụ sáng',
-    'lunch' => 'Bữa trưa',
-    'afternoon_snack' => 'Bữa phụ chiều',
-    _ => 'Bữa tối',
-  };
-
   String _weekdayLabel(int day) => switch (day) {
     1 => 'T2',
     2 => 'T3',
@@ -1405,6 +1310,9 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
 
   String _formatDate(DateTime value) =>
       '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
+
+  String _formatTime(DateTime value) =>
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
   String _displayNumber(double? value) =>
       value == null ? '—' : value.toStringAsFixed(1);

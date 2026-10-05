@@ -122,6 +122,8 @@ void main() {
       );
       expect(parsed.days, hasLength(28));
       expect(parsed.days.where((day) => day.isRestDay), hasLength(16));
+      expect(parsed.days.every((day) => day.meals.isEmpty), isTrue);
+      expect(parsed.days.every((day) => day.sleepTime.isEmpty), isTrue);
 
       final invalid = _response(catalog, intake);
       final firstWorkout =
@@ -169,7 +171,7 @@ void main() {
     );
   });
 
-  test('rejects incomplete workout and meal structures', () {
+  test('accepts only workout-only day structures', () {
     final intake = _intake();
     final missingWorkoutExercises = _response(catalog, intake);
     final firstDay = (missingWorkoutExercises['days'] as List).first as Map;
@@ -179,11 +181,10 @@ void main() {
       throwsA(isA<FitnessProgramValidationException>()),
     );
 
-    final invalidServings = _response(catalog, intake);
-    final day = (invalidServings['days'] as List).first as Map;
-    ((day['meals'] as List).first as Map).remove('servings');
+    final withFood = _response(catalog, intake);
+    ((withFood['days'] as List).first as Map)['meals'] = [];
     expect(
-      () => _parse(invalidServings, intake, catalog),
+      () => _parse(withFood, intake, catalog),
       throwsA(isA<FitnessProgramValidationException>()),
     );
   });
@@ -241,10 +242,6 @@ Map<String, Object?> _response(dynamic catalog, FitnessTrainingIntake intake) {
     equipmentIds: intake.equipmentIds.toSet(),
     excludedMovementGroups: intake.excludedMovementGroups.toSet(),
   );
-  final recipes = catalog.eligibleRecipes(
-    excludedAllergens: intake.excludedAllergens.toSet(),
-    availableFoodGroups: intake.availableFoodGroups.toSet(),
-  );
   final trainingExercise = exercises.first;
   final bounds = trainingExercise.bounds;
   final exercisePrescription = bounds.containsKey('sets_min')
@@ -275,16 +272,6 @@ Map<String, Object?> _response(dynamic catalog, FitnessTrainingIntake intake) {
               'is_rest_day': !training,
               'exercises': training ? [exercisePrescription] : <Object>[],
             },
-            'meals': [
-              for (final slot in FitnessProgramValidator.mealSlots)
-                {
-                  'meal_slot': slot,
-                  'recipe_id': recipes
-                      .firstWhere((recipe) => recipe.mealSlot == slot)
-                      .id,
-                  'servings': 1.0,
-                },
-            ],
           };
         }(),
     ],

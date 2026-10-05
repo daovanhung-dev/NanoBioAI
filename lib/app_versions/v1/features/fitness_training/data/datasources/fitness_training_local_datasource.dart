@@ -9,18 +9,20 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/fitness_training_catalog.dart';
+import '../../domain/entities/fitness_schedule_conflict.dart';
 import '../../domain/entities/fitness_training_program.dart';
 import '../../domain/repositories/fitness_training_repository.dart';
-import '../../domain/services/fitness_program_validator.dart';
 
 class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
   const FitnessTrainingLocalDatasource({
     this.databaseOverride,
     this.idGenerator,
+    this.now = DateTime.now,
   });
 
   final Database? databaseOverride;
   final String Function()? idGenerator;
+  final DateTime Function() now;
 
   Future<Database> _db() async => databaseOverride ?? DatabaseService.database;
 
@@ -177,12 +179,29 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
   }
 
   @override
+  Future<List<FitnessScheduleConflict>> findScheduleConflicts({
+    required String userId,
+    required List<FitnessWorkoutScheduleSlot> slots,
+    required DateTime now,
+  }) async {
+    if (slots.isEmpty) return const [];
+    final db = await _db();
+    final rows = await db.query(
+      LifestyleScheduleItemsTable.tableName,
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    return _findConflictsInRows(rows, slots, now);
+  }
+
+  @override
   Future<FitnessTrainingProgram> applyWeek({
     required String userId,
     required String programId,
     required int week,
     required DateTime today,
     required FitnessTrainingCatalog catalog,
+    String? workoutTimeOverride,
   }) async {
     if (week < 1 || week > 4) throw ArgumentError.value(week, 'week');
     final db = await _db();
@@ -205,34 +224,46 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
         throw StateError('Fitness preview week does not match.');
       }
 
-      final now = DateTime.now().toUtc();
+      final current = now();
+      final intake = workoutTimeOverride == null
+          ? target.intake
+          : target.intake.copyWith(workoutTime: workoutTimeOverride);
       applied = target.copyWith(
         status: FitnessProgramStatus.active,
         activeWeek: week,
-        updatedAt: now,
+        intake: intake,
+        updatedAt: current.toUtc(),
       );
+
+      final slots = _programWorkoutSlots(applied, week, current);
+      final scheduleRows = await txn.query(
+        LifestyleScheduleItemsTable.tableName,
+        where: 'user_id = ?',
+        whereArgs: [userId],
+      );
+      final conflicts = _findConflictsInRows(scheduleRows, slots, current);
+      if (conflicts.isNotEmpty) {
+        throw FitnessScheduleConflictException(conflicts);
+      }
 
       await txn.update(
         FitnessTrainingProgramsTable.tableName,
-        {'status': FitnessProgramStatus.archived, 'updated_at': _stamp(now)},
+        {
+          'status': FitnessProgramStatus.archived,
+          'updated_at': _stamp(current.toUtc()),
+        },
         where: 'user_id = ? AND status = ? AND id != ?',
         whereArgs: [userId, FitnessProgramStatus.active, programId],
       );
 
-      final todayKey = _dateKey(today);
-      await txn.delete(
-        LifestyleScheduleItemsTable.tableName,
-        where:
-            'user_id = ? AND source_type = ? AND is_completed = 0 '
-            'AND (schedule_date > ? OR (schedule_date = ? AND start_time >= ?))',
-        whereArgs: [
-          userId,
-          'fitness_training',
-          todayKey,
-          todayKey,
-          '${today.hour.toString().padLeft(2, '0')}:${today.minute.toString().padLeft(2, '0')}',
-        ],
-      );
+      final replaceableIds = _replaceableWorkoutIds(scheduleRows, current);
+      for (final id in replaceableIds) {
+        await txn.delete(
+          LifestyleScheduleItemsTable.tableName,
+          where: 'id = ? AND user_id = ?',
+          whereArgs: [id, userId],
+        );
+      }
 
       await _upsertWeekSchedule(
         txn: txn,
@@ -250,6 +281,154 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
     });
     LocalUserDataSyncDispatcher.requestImmediateSync(database: db);
     return applied;
+  }
+
+  List<FitnessWorkoutScheduleSlot> _programWorkoutSlots(
+    FitnessTrainingProgram program,
+    int week,
+    DateTime now,
+  ) {
+    final baseIndex = (week - 1) * 7;
+    final parts = program.intake.workoutTime.split(':');
+    final hour = parts.length == 2 ? int.tryParse(parts[0]) : null;
+    final minute = parts.length == 2 ? int.tryParse(parts[1]) : null;
+    if (hour == null || minute == null || hour > 23 || minute > 59) {
+      throw const FormatException('Invalid workout time.');
+    }
+    return [
+      for (final day in program.days)
+        if (day.dayIndex >= baseIndex &&
+            day.dayIndex < baseIndex + 7 &&
+            !day.isRestDay &&
+            day.exercises.isNotEmpty)
+          if (_slotFor(day.date, program.intake.sessionMinutes, hour, minute)
+              case final slot?)
+            if (!slot.startAt.isBefore(now)) slot,
+    ];
+  }
+
+  FitnessWorkoutScheduleSlot? _slotFor(
+    DateTime date,
+    int durationMinutes,
+    int hour,
+    int minute,
+  ) {
+    if (hour < 0 || minute < 0 || minute > 59) return null;
+    final start = DateTime(date.year, date.month, date.day, hour, minute);
+    return FitnessWorkoutScheduleSlot(
+      startAt: start,
+      endAt: start.add(Duration(minutes: durationMinutes)),
+    );
+  }
+
+  List<FitnessScheduleConflict> _findConflictsInRows(
+    List<Map<String, Object?>> rows,
+    List<FitnessWorkoutScheduleSlot> slots,
+    DateTime at,
+  ) {
+    final current = at.isUtc ? at.toLocal() : at;
+    final replaceableIds = _replaceableWorkoutIds(rows, current).toSet();
+    final conflicts = <FitnessScheduleConflict>[];
+    for (final row in rows) {
+      if (_asBool(row['is_completed'])) continue;
+      if (replaceableIds.contains(row['id']?.toString())) continue;
+      final itemStart = _scheduleDateTime(
+        row['schedule_date'],
+        row['start_time'],
+      );
+      if (itemStart == null) continue;
+      final itemEnd = _scheduleEnd(row, itemStart);
+      if (itemEnd == null && itemStart.isBefore(current)) continue;
+      if (itemEnd != null && !itemEnd.isAfter(current)) continue;
+      for (final slot in slots) {
+        final overlaps = itemEnd == null
+            ? !itemStart.isBefore(slot.startAt) &&
+                  itemStart.isBefore(slot.endAt)
+            : itemStart.isBefore(slot.endAt) && itemEnd.isAfter(slot.startAt);
+        if (!overlaps) continue;
+        conflicts.add(
+          FitnessScheduleConflict(
+            workoutStartAt: slot.startAt,
+            workoutEndAt: slot.endAt,
+            itemTitle: (row['title']?.toString().trim().isNotEmpty ?? false)
+                ? row['title'].toString()
+                : 'Mục lịch',
+            itemStartAt: itemStart,
+            itemEndAt: itemEnd,
+          ),
+        );
+      }
+    }
+    return conflicts;
+  }
+
+  List<String> _replaceableWorkoutIds(
+    List<Map<String, Object?>> rows,
+    DateTime at,
+  ) {
+    final current = at.isUtc ? at.toLocal() : at;
+    return [
+      for (final row in rows)
+        if (row['source_type'] == 'fitness_training' &&
+            row['category'] == 'routine' &&
+            !_asBool(row['is_completed']))
+          if (_scheduleDateTime(row['schedule_date'], row['start_time'])
+              case final start?)
+            if (!start.isBefore(current)) row['id'].toString(),
+    ];
+  }
+
+  DateTime? _scheduleEnd(Map<String, Object?> row, DateTime start) {
+    final raw = row['end_time']?.toString().trim() ?? '';
+    if (raw.isEmpty) return null;
+    final parts = _timeParts(raw);
+    if (parts == null) return null;
+    var end = DateTime(
+      start.year,
+      start.month,
+      start.day,
+      parts.$1,
+      parts.$2,
+      parts.$3,
+    );
+    if (end.isBefore(start)) end = end.add(const Duration(days: 1));
+    return end;
+  }
+
+  DateTime? _scheduleDateTime(Object? dateValue, Object? timeValue) {
+    final dateText = dateValue?.toString() ?? '';
+    final parsedDate = DateTime.tryParse(
+      dateText.length >= 10 ? dateText.substring(0, 10) : dateText,
+    );
+    final parts = _timeParts(timeValue?.toString() ?? '');
+    if (parsedDate == null || parts == null) return null;
+    return DateTime(
+      parsedDate.year,
+      parsedDate.month,
+      parsedDate.day,
+      parts.$1,
+      parts.$2,
+      parts.$3,
+    );
+  }
+
+  (int, int, int)? _timeParts(String value) {
+    final parts = value.split(':');
+    if (parts.length < 2 || parts.length > 3) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    final second = parts.length == 3 ? int.tryParse(parts[2]) ?? 0 : 0;
+    if (hour == null ||
+        minute == null ||
+        second < 0 ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59 ||
+        second > 59) {
+      return null;
+    }
+    return (hour, minute, second);
   }
 
   Future<void> _upsertWeekSchedule({
@@ -272,7 +451,6 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
           dayKey.compareTo(todayKey) < 0) {
         continue;
       }
-      var order = 0;
       if (!day.isRestDay &&
           day.exercises.isNotEmpty &&
           _isFutureOccurrence(
@@ -304,69 +482,7 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
               program.intake.workoutTime,
               program.intake.sessionMinutes,
             ),
-            sortOrder: order++,
-            now: now,
-          ),
-        );
-      }
-
-      final mealRanks = {
-        for (
-          var index = 0;
-          index < FitnessProgramValidator.mealSlots.length;
-          index++
-        )
-          FitnessProgramValidator.mealSlots[index]: index,
-      };
-      final orderedMeals = [...day.meals]
-        ..sort(
-          (a, b) => mealRanks[a.mealSlot]!.compareTo(mealRanks[b.mealSlot]!),
-        );
-      for (final meal in orderedMeals) {
-        final recipe = catalog.recipesById[meal.recipeId];
-        if (recipe == null) throw StateError('Recipe catalog changed.');
-        final mealTime =
-            mealRanks[meal.mealSlot]! < program.intake.mealTimes.length
-            ? program.intake.mealTimes[mealRanks[meal.mealSlot]!]
-            : '12:00';
-        if (!_isFutureOccurrence(dayKey, mealTime, todayKey, currentTime)) {
-          continue;
-        }
-        final nutrients = recipe.nutrientsPerServing;
-        final description = [
-          ...recipe.steps,
-          'Khẩu phần: ${meal.servings.toStringAsFixed(1)}',
-          if (nutrients['energy_kcal'] != null)
-            'Năng lượng tham khảo: ${nutrients['energy_kcal']!.round()} kcal',
-          if (nutrients['protein_g'] != null)
-            'Đạm: ${nutrients['protein_g']!.round()} g',
-        ].join('\n');
-        items.add(
-          _scheduleItem(
-            program: program,
-            day: day,
-            title: recipe.name,
-            description: description,
-            category: 'meal',
-            startTime: mealTime,
-            sortOrder: order++,
-            now: now,
-          ),
-        );
-      }
-
-      if (_isFutureOccurrence(dayKey, day.sleepTime, todayKey, currentTime)) {
-        items.add(
-          _scheduleItem(
-            program: program,
-            day: day,
-            title: 'Chuẩn bị giờ ngủ',
-            description:
-                'Giờ ngủ mục tiêu ${day.sleepTime}, thức dậy ${day.wakeTime}. Đây là lịch nhắc wellness.',
-            category: 'sleep',
-            startTime: day.sleepTime,
-            endTime: day.wakeTime,
-            sortOrder: order,
+            sortOrder: 0,
             now: now,
           ),
         );

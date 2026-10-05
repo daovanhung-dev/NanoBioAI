@@ -59,7 +59,7 @@ phải đọc ở cột verification.
 | Module | DD decision | Implementation | Verification | Source boundary |
 |---|---|---|---|---|
 | M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | M31 source is documented; real-device/provider/Supabase acceptance remains separate. |
-| M32 FITNESS_TRAINING | Draft | In Progress | 28 M32/FeatureHub Flutter tests, 16 M05 sync tests, 12 Edge tests, targeted analyze and Android debug/release builds passed; device/Sandbox unverified | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved. |
+| M32 FITNESS_TRAINING | Draft | In Progress | Workout-only/conflict guard: 20 focused Flutter tests and targeted analyze pass; Android QA profile/device and Sandbox acceptance pending | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved. Earlier pilot test/build evidence is recorded in its dated worklog. |
 
 M32 exception: PO directed implementation to proceed on 2026-10-05. Do not fabricate
 reviewer approvals. Tech/Privacy, QA and Clinical sign-offs remain pending; the pilot

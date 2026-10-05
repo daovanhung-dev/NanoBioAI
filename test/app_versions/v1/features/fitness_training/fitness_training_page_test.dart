@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/application/fitness_training_controller.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/application/fitness_training_service.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/entities/fitness_training_profile.dart';
+import 'package:nano_app/app_versions/v1/features/fitness_training/domain/entities/fitness_schedule_conflict.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/entities/fitness_training_program.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/repositories/fitness_training_profile_repository.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/repositories/fitness_training_repository.dart';
@@ -38,7 +39,7 @@ void main() {
 
     expect(
       find.text(
-        'Bản thử nghiệm: nội dung bài tập, thực đơn và minh họa đang chờ rà soát chuyên môn. Đây là gợi ý wellness, không thay thế tư vấn y tế hoặc huấn luyện viên.',
+        'Bản thử nghiệm: nội dung bài tập và minh họa đang chờ rà soát chuyên môn. Đây là gợi ý wellness, không thay thế tư vấn y tế hoặc huấn luyện viên.',
       ),
       findsOneWidget,
     );
@@ -53,8 +54,19 @@ void main() {
       220,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(reviewConfirmation);
     await tester.pumpAndSettle();
+    await tester.tap(
+      find.ancestor(
+        of: reviewConfirmation,
+        matching: find.byType(CheckboxListTile),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Tiếp tục thiết lập'),
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Tiếp tục thiết lập'));
     await tester.pumpAndSettle();
 
@@ -66,6 +78,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Chọn thiết bị bạn có thể dùng'), findsNothing);
     expect(find.text('Vùng vận động cần tránh'), findsOneWidget);
+    expect(find.text('Dị ứng cần loại trừ'), findsNothing);
+    expect(find.text('Giờ ngủ'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text('Đồng ý tạo gợi ý bằng AI'),
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Đồng ý tạo gợi ý bằng AI'));
+    await tester.pumpAndSettle();
+    final generateButton = find.widgetWithText(
+      FilledButton,
+      'Tạo bản xem trước 4 tuần',
+    );
+    await tester.scrollUntilVisible(
+      generateButton,
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(generateButton).onPressed, isNotNull);
     debugDefaultTargetPlatformOverride = null;
   });
 }
@@ -76,7 +108,7 @@ final _adultProfile = FitnessTrainingProfileSnapshot(
   birthDate: DateTime(1990, 4, 12),
   goals: const ['Vận động đều'],
   conditions: const [],
-  foodRestrictions: const [],
+  foodRestrictions: const ['động vật có vỏ'],
   heightCm: 170,
   weightKg: 68,
   gender: 'female',
@@ -138,11 +170,19 @@ class _EmptyRepository implements FitnessTrainingRepository {
   }) => Future.error(UnimplementedError());
 
   @override
+  Future<List<FitnessScheduleConflict>> findScheduleConflicts({
+    required String userId,
+    required List<FitnessWorkoutScheduleSlot> slots,
+    required DateTime now,
+  }) async => const [];
+
+  @override
   Future<FitnessTrainingProgram> applyWeek({
     required String userId,
     required String programId,
     required int week,
     required DateTime today,
     required catalog,
+    String? workoutTimeOverride,
   }) => Future.error(UnimplementedError());
 }

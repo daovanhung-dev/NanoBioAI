@@ -45,6 +45,74 @@ class FitnessTrainingIntake {
   final int? bmrKcal;
   final int? tdeeKcal;
 
+  FitnessTrainingIntake copyWith({String? workoutTime}) =>
+      FitnessTrainingIntake(
+        adultEligible: adultEligible,
+        goal: goal,
+        experience: experience,
+        venue: venue,
+        equipmentIds: equipmentIds,
+        trainingWeekdays: trainingWeekdays,
+        sessionMinutes: sessionMinutes,
+        workoutTime: workoutTime ?? this.workoutTime,
+        mealTimes: mealTimes,
+        excludedMovementGroups: excludedMovementGroups,
+        excludedAllergens: excludedAllergens,
+        availableFoodGroups: availableFoodGroups,
+        sleepTime: sleepTime,
+        wakeTime: wakeTime,
+        heightCm: heightCm,
+        weightKg: weightKg,
+        sexCode: sexCode,
+        activityLevel: activityLevel,
+        bmi: bmi,
+        bmrKcal: bmrKcal,
+        tdeeKcal: tdeeKcal,
+      );
+
+  FitnessTrainingIntake forWorkoutOnly() => FitnessTrainingIntake(
+    adultEligible: adultEligible,
+    goal: goal,
+    experience: experience,
+    venue: venue,
+    equipmentIds: equipmentIds,
+    trainingWeekdays: trainingWeekdays,
+    sessionMinutes: sessionMinutes,
+    workoutTime: workoutTime,
+    mealTimes: const [],
+    excludedMovementGroups: excludedMovementGroups,
+    excludedAllergens: const [],
+    availableFoodGroups: const [],
+    sleepTime: '',
+    wakeTime: '',
+    heightCm: heightCm,
+    weightKg: weightKg,
+    sexCode: sexCode,
+    activityLevel: activityLevel,
+    bmi: bmi,
+    bmrKcal: bmrKcal,
+    tdeeKcal: tdeeKcal,
+  );
+
+  /// Data that may be sent to AI for the workout-only M32 flow.
+  /// Legacy food and sleep fields remain in [toJson] for stored programs.
+  Map<String, Object?> toAiJson() => {
+    'adult_eligible': adultEligible,
+    'goal': goal,
+    'experience': experience,
+    'venue': venue,
+    'equipment_ids': equipmentIds,
+    'training_weekdays': trainingWeekdays,
+    'session_minutes': sessionMinutes,
+    'workout_time': workoutTime,
+    'excluded_movement_groups': excludedMovementGroups,
+    'metrics': {
+      if (bmi != null) 'bmi': bmi,
+      if (bmrKcal != null) 'bmr_kcal': bmrKcal,
+      if (tdeeKcal != null) 'tdee_kcal': tdeeKcal,
+    },
+  };
+
   Map<String, Object?> toJson() => {
     'adult_eligible': adultEligible,
     'goal': goal,
@@ -275,6 +343,7 @@ class FitnessTrainingProgram {
     String? status,
     int? activeWeek,
     bool? quotaCommitted,
+    FitnessTrainingIntake? intake,
     List<FitnessProgramDay>? days,
     List<FitnessWeeklyCheckIn>? checkIns,
     DateTime? updatedAt,
@@ -286,7 +355,7 @@ class FitnessTrainingProgram {
     activeWeek: activeWeek ?? this.activeWeek,
     quotaCommitted: quotaCommitted ?? this.quotaCommitted,
     startDate: startDate,
-    intake: intake,
+    intake: intake ?? this.intake,
     days: days ?? this.days,
     checkIns: checkIns ?? this.checkIns,
     createdAt: createdAt,

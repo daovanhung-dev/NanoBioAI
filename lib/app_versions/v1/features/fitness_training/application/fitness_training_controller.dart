@@ -112,10 +112,6 @@ class FitnessTrainingController {
     required int sessionMinutes,
     required String workoutTime,
     required List<String> excludedMovementGroups,
-    required Set<String> excludedAllergens,
-    required Set<String> availableFoodGroups,
-    required String sleepTime,
-    required String wakeTime,
   }) {
     final report = bodyMetrics(profile);
     final ageYears = age(profile);
@@ -128,12 +124,12 @@ class FitnessTrainingController {
       trainingWeekdays: [...trainingWeekdays]..sort(),
       sessionMinutes: sessionMinutes,
       workoutTime: workoutTime,
-      mealTimes: profile.mealTimes,
+      mealTimes: const [],
       excludedMovementGroups: excludedMovementGroups,
-      excludedAllergens: excludedAllergens.toList()..sort(),
-      availableFoodGroups: availableFoodGroups.toList()..sort(),
-      sleepTime: sleepTime,
-      wakeTime: wakeTime,
+      excludedAllergens: const [],
+      availableFoodGroups: const [],
+      sleepTime: '',
+      wakeTime: '',
       heightCm: profile.heightCm,
       weightKg: profile.weightKg,
       sexCode: _sex(profile.gender)?.code,
@@ -201,12 +197,14 @@ class FitnessTrainingController {
     required FitnessTrainingLoadedContext context,
     required FitnessTrainingProgram program,
     required int week,
+    String? workoutTimeOverride,
   }) => service.applyWeek(
     userId: context.profile.userId,
     program: program,
     week: week,
     catalog: context.catalog,
     today: now(),
+    workoutTimeOverride: workoutTimeOverride,
   );
 
   String newRequestId() {

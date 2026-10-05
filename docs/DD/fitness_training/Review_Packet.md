@@ -11,7 +11,9 @@
 
 - Bản pilot kiểm tra DOB tự khai trên thiết bị; DOB không gửi Gemini. Cách này có thể bị giả mạo và không phải adult attestation tin cậy.
 - Guest lưu cục bộ; Member đồng bộ theo M05 self-subject. FamilyPlus dependent-subject selection/consent is not implemented in the pilot.
-- Phạm vi wellness; không chẩn đoán/điều trị, dị ứng là hard filter và tôn trọng hạn chế vận động.
+- Phạm vi wellness; không chẩn đoán/điều trị. Food allergy filtering is not part of the workout-only M32 flow; movement restrictions are honored.
+- Requested pilot-scope update 2026-10-05: M32 app flow is workout-only. Food restrictions, recipes and sleep targets do not gate or enter workout AI requests; any future meal flow must own its allergy-safe filtering. This scope update is not reviewer approval.
+- Check workout interval overlaps before quota/AI and again in the apply transaction. Report date/time/item, preserve existing state on conflict, and let the user choose another time without regenerating the preview.
 - Android/iOS là mục tiêu phát hành đầu tiên. Video YouTube tùy chọn, chỉ nhúng qua IFrame chính thức sau kiểm tra; khi không phát được vẫn có minh họa, hướng dẫn và nút mở YouTube.
 
 Các hướng trên là quyết định sản phẩm của PO, chưa phải quyết định kỹ thuật/lâm sàng hoặc bằng chứng QA. DD vẫn Draft; pilot implementation is In Progress and is not release-approved.
@@ -38,7 +40,7 @@ Các hướng trên là quyết định sản phẩm của PO, chưa phải quy�
 ## QA + Tech
 
 - [ ] Xác nhận ma trận phát hành Android/iOS; Web/desktop ngoài phạm vi v1.
-- [ ] Duyệt M32-TC01..TC16: tuổi, trust boundary, nơi tập/thiết bị, dị ứng/hạn chế, quota, sai schema/ID, retry/idempotency, cancel preview, transaction/rollback, đổi tuần và thông báo.
+- [ ] Duyệt M32-TC01..TC16: tuổi, trust boundary, nơi tập/thiết bị, movement restrictions, workout-only payload, quota, sai schema/ID, retry/idempotency, cancel preview, overlap/overnight/point-event cases, apply-time transaction/rollback, preview time change without another AI call, đổi tuần và thông báo.
 - [ ] Xác nhận accessibility: TalkBack/VoiceOver, text scaling, focus order, tương phản, reduced motion và nhãn điều khiển video.
 - [ ] Xác nhận video chỉ dùng ID được duyệt; kiểm tra public/embed và IFrame trên từng nền tảng. Khi lỗi/private/embed-disabled phải hiện hình, hướng dẫn và đường dẫn mở YouTube.
 - [ ] Xác nhận catalog có provenance/ID nguồn và số lượng mục; không phát hành candidate chưa được duyệt.

@@ -1,5 +1,6 @@
 import '../entities/fitness_training_program.dart';
 import '../entities/fitness_training_catalog.dart';
+import '../entities/fitness_schedule_conflict.dart';
 
 abstract interface class FitnessTrainingRepository {
   Future<bool> guestInitialPlanAvailable(String userId);
@@ -27,12 +28,19 @@ abstract interface class FitnessTrainingRepository {
     required FitnessWeeklyCheckIn checkIn,
   });
 
+  Future<List<FitnessScheduleConflict>> findScheduleConflicts({
+    required String userId,
+    required List<FitnessWorkoutScheduleSlot> slots,
+    required DateTime now,
+  });
+
   Future<FitnessTrainingProgram> applyWeek({
     required String userId,
     required String programId,
     required int week,
     required DateTime today,
     required FitnessTrainingCatalog catalog,
+    String? workoutTimeOverride,
   });
 }
 

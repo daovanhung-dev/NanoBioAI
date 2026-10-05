@@ -8,6 +8,7 @@ import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
 import '../data/datasources/fitness_training_catalog_asset_datasource.dart';
 import '../domain/entities/fitness_training_catalog.dart';
+import '../domain/entities/fitness_schedule_conflict.dart';
 import '../domain/entities/fitness_training_program.dart';
 import '../domain/repositories/fitness_training_repository.dart';
 import '../domain/services/fitness_program_validator.dart';
@@ -85,16 +86,20 @@ class FitnessTrainingService {
         checkIn.sorenessScore > 5) {
       throw const FitnessProgramValidationException('checkin_range');
     }
+    final firstDayIndex = checkIn.week * 7;
+    await _ensureNoScheduleConflicts(
+      userId: activeProgram.userId,
+      intake: intake,
+      startDate: activeProgram.startDate,
+      firstDayIndex: firstDayIndex,
+    );
     if (guest &&
         !await repository.guestInitialPlanAvailable(activeProgram.userId)) {
       throw const FitnessTrainingGuestQuotaExceededException();
     }
-    final checkedInProgram = await repository.saveCheckIn(
-      userId: activeProgram.userId,
-      programId: activeProgram.id,
-      checkIn: checkIn,
-    );
-    final firstDayIndex = checkIn.week * 7;
+    final withoutWeek = activeProgram.checkIns
+        .where((item) => item.week != checkIn.week)
+        .toList(growable: false);
     return _singleFlight(
       '${activeProgram.userId}:$requestId',
       () => _generate(
@@ -105,8 +110,8 @@ class FitnessTrainingService {
         catalog: catalog,
         startDate: activeProgram.startDate,
         firstDayIndex: firstDayIndex,
-        preservedDays: checkedInProgram.days,
-        checkIns: checkedInProgram.checkIns,
+        preservedDays: activeProgram.days,
+        checkIns: [...withoutWeek, checkIn],
         parentProgramId: activeProgram.id,
         checkIn: checkIn,
         operation: _replanOperation,
@@ -120,6 +125,7 @@ class FitnessTrainingService {
     required int week,
     required FitnessTrainingCatalog catalog,
     required DateTime today,
+    String? workoutTimeOverride,
   }) async {
     final ready = await _ensureQuotaCommitted(
       program,
@@ -131,6 +137,7 @@ class FitnessTrainingService {
       week: week,
       today: today,
       catalog: catalog,
+      workoutTimeOverride: workoutTimeOverride,
     );
   }
 
@@ -151,6 +158,7 @@ class FitnessTrainingService {
     if (!intake.adultEligible) {
       throw const FitnessProgramValidationException('adult_gate');
     }
+    final workoutIntake = intake.forWorkoutOnly();
     if (requestId.trim().isEmpty || userId.trim().isEmpty) {
       throw const FormatException('Request identity is required.');
     }
@@ -158,6 +166,13 @@ class FitnessTrainingService {
     if (existing != null) {
       return _ensureQuotaCommitted(existing, guest: guest);
     }
+
+    await _ensureNoScheduleConflicts(
+      userId: userId,
+      intake: workoutIntake,
+      startDate: startDate,
+      firstDayIndex: firstDayIndex,
+    );
 
     final authUserId = currentUserId();
     if (!guest) {
@@ -177,21 +192,12 @@ class FitnessTrainingService {
     }
 
     final exercises = catalog.eligibleExercises(
-      venue: intake.venue,
-      equipmentIds: intake.equipmentIds.toSet(),
-      excludedMovementGroups: intake.excludedMovementGroups.toSet(),
-    );
-    final recipes = catalog.eligibleRecipes(
-      excludedAllergens: intake.excludedAllergens.toSet(),
-      availableFoodGroups: intake.availableFoodGroups.toSet(),
+      venue: workoutIntake.venue,
+      equipmentIds: workoutIntake.equipmentIds.toSet(),
+      excludedMovementGroups: workoutIntake.excludedMovementGroups.toSet(),
     );
     if (exercises.isEmpty) {
       throw const FitnessProgramValidationException('no_safe_exercises');
-    }
-    for (final slot in FitnessProgramValidator.mealSlots) {
-      if (!recipes.any((recipe) => recipe.mealSlot == slot)) {
-        throw const FitnessProgramValidationException('no_safe_meals');
-      }
     }
 
     final response = await aiClientFactory(operation).generateText(
@@ -199,9 +205,8 @@ class FitnessTrainingService {
       contents: [
         GeminiContent.user(
           _prompt(
-            intake: intake,
+            intake: workoutIntake,
             exercises: exercises,
-            recipes: recipes,
             startDate: startDate,
             firstDayIndex: firstDayIndex,
             checkIn: checkIn,
@@ -225,7 +230,7 @@ class FitnessTrainingService {
       programId: idGenerator(),
       status: FitnessProgramStatus.preview,
       quotaCommitted: guest,
-      intake: intake,
+      intake: workoutIntake,
       catalog: catalog,
       startDate: startDate,
       now: stamp,
@@ -259,10 +264,57 @@ class FitnessTrainingService {
     return program.copyWith(quotaCommitted: true, updatedAt: now().toUtc());
   }
 
+  Future<void> _ensureNoScheduleConflicts({
+    required String userId,
+    required FitnessTrainingIntake intake,
+    required DateTime startDate,
+    required int firstDayIndex,
+  }) async {
+    final start = DateTime(startDate.year, startDate.month, startDate.day);
+    final slots = <FitnessWorkoutScheduleSlot>[];
+    final timeParts = intake.workoutTime.split(':');
+    final hour = timeParts.length == 2 ? int.tryParse(timeParts[0]) : null;
+    final minute = timeParts.length == 2 ? int.tryParse(timeParts[1]) : null;
+    if (hour == null || minute == null || hour > 23 || minute > 59) {
+      throw const FitnessProgramValidationException('workout_time');
+    }
+    final at = now();
+    for (
+      var index = firstDayIndex;
+      index < firstDayIndex + 7 && index < 28;
+      index++
+    ) {
+      final date = start.add(Duration(days: index));
+      if (!intake.trainingWeekdays.contains(date.weekday)) continue;
+      final workoutStart = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        hour,
+        minute,
+      );
+      if (workoutStart.isBefore(at)) continue;
+      slots.add(
+        FitnessWorkoutScheduleSlot(
+          startAt: workoutStart,
+          endAt: workoutStart.add(Duration(minutes: intake.sessionMinutes)),
+        ),
+      );
+    }
+    if (slots.isEmpty) return;
+    final conflicts = await repository.findScheduleConflicts(
+      userId: userId,
+      slots: slots,
+      now: at,
+    );
+    if (conflicts.isNotEmpty) {
+      throw FitnessScheduleConflictException(conflicts);
+    }
+  }
+
   String _prompt({
     required FitnessTrainingIntake intake,
     required List<FitnessExercise> exercises,
-    required List<FitnessRecipe> recipes,
     required DateTime startDate,
     required int firstDayIndex,
     FitnessWeeklyCheckIn? checkIn,
@@ -281,28 +333,14 @@ class FitnessTrainingService {
           },
         )
         .toList(growable: false);
-    final recipeRows = recipes
-        .map(
-          (recipe) => {
-            'id': recipe.id,
-            'meal_slot': recipe.mealSlot,
-            'allergens': recipe.allergens,
-            'ingredient_ids': recipe.ingredients
-                .map((item) => item.ingredientId)
-                .toList(growable: false),
-            'nutrition_per_serving': recipe.nutrientsPerServing,
-          },
-        )
-        .toList(growable: false);
     final payload = <String, Object?>{
-      'profile': intake.toJson(),
+      'profile': intake.toAiJson(),
       'program': {
         'start_date': _dateKey(startDate),
         'first_day_index': firstDayIndex,
         'last_day_index': endDay,
       },
       'available_exercises': exerciseRows,
-      'available_recipes': recipeRows,
       if (checkIn != null)
         'weekly_feedback': {
           'week': checkIn.week,
@@ -312,14 +350,12 @@ class FitnessTrainingService {
     };
     return '''
 Tạo hoặc điều chỉnh chương trình luyện tập wellness 4 tuần theo dữ liệu JSON dưới đây.
-Chỉ được dùng exercise_id và recipe_id có trong catalog gửi kèm. Không tạo ID, bài tập, món ăn hay nguyên liệu mới.
+Chỉ được dùng exercise_id có trong catalog gửi kèm. Không tạo ID hoặc bài tập mới.
 Người dùng chọn tập ${intake.venue == 'home' ? 'tại nhà' : 'ở phòng gym'}; chỉ dùng đúng thiết bị và nhóm vận động còn lại sau khi lọc.
 Ngày tập lặp theo các thứ ${intake.trainingWeekdays.join(', ')} (1=Thứ Hai ... 7=Chủ Nhật). Ngày khác phải là ngày nghỉ.
-Mỗi ngày phải có đủ 5 meal_slot: breakfast, morning_snack, lunch, afternoon_snack, dinner; recipe phải đúng meal_slot.
-Không tạo lời khuyên chẩn đoán/điều trị, không tự đặt con số dinh dưỡng, calories hoặc macro. Số liệu món ăn là tham khảo từ catalog.
 Các thông số sets/reps/rest hoặc duration phải nằm trong bounds của bài tập. Giữ mức độ vừa với kinh nghiệm và session_minutes.
 Chỉ trả về JSON thuần, không markdown, theo cấu trúc:
-{"days":[{"day_index":0,"workout":{"is_rest_day":false,"exercises":[{"exercise_id":"...","sets":2,"reps":8,"rest_seconds":60,"duration_minutes":null}]},"meals":[{"meal_slot":"breakfast","recipe_id":"...","servings":1.0}]}]}
+{"days":[{"day_index":0,"workout":{"is_rest_day":false,"exercises":[{"exercise_id":"...","sets":2,"reps":8,"rest_seconds":60,"duration_minutes":null}]}}]}
 Trả đúng các day_index từ $firstDayIndex đến $endDay. Với bài sức mạnh, điền sets/reps/rest_seconds và duration_minutes=null. Với cardio, điền sets/reps/rest_seconds=null và duration_minutes trong bounds.
 Không đưa ngày sinh, tên, ghi chú hồ sơ hoặc thông tin định danh vào câu trả lời.
 DATA=${jsonEncode(payload)}
@@ -368,7 +404,7 @@ DATA=${jsonEncode(payload)}
 }
 
 const _systemInstruction = '''
-You create structured wellness fitness schedules using only the supplied catalog.
-Treat every user restriction and allowlisted catalog as mandatory. Never invent catalog IDs or nutrition facts.
-Return valid JSON matching the requested shape. Do not include personal identifiers or medical diagnosis/treatment.
+You create structured workout-only wellness schedules using only the supplied exercise catalog.
+Treat movement restrictions and the allowlisted exercise catalog as mandatory. Never invent exercise IDs.
+Return only valid JSON matching the requested workout-day shape with no extra keys. Do not include personal identifiers, diagnoses, or treatment advice.
 ''';

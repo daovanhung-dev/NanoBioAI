@@ -15,14 +15,6 @@ class FitnessProgramValidationException implements Exception {
 class FitnessProgramValidator {
   const FitnessProgramValidator();
 
-  static const mealSlots = <String>[
-    'breakfast',
-    'morning_snack',
-    'lunch',
-    'afternoon_snack',
-    'dinner',
-  ];
-
   FitnessTrainingProgram parse({
     required String response,
     required String userId,
@@ -58,24 +50,10 @@ class FitnessProgramValidator {
         )
         .map((item) => item.id)
         .toSet();
-    final eligibleRecipeIds = catalog
-        .eligibleRecipes(
-          excludedAllergens: intake.excludedAllergens.toSet(),
-          availableFoodGroups: intake.availableFoodGroups.toSet(),
-        )
-        .map((item) => item.id)
-        .toSet();
-
     final generatedByIndex = <int, FitnessProgramDay>{};
     for (final row in dayRows) {
-      _requireOnlyKeys(row, const {
-        'day_index',
-        'workout',
-        'meals',
-      }, 'day_shape');
-      if (row['day_index'] == null || row['meals'] is! List) {
-        _invalid('day_shape');
-      }
+      _requireOnlyKeys(row, const {'day_index', 'workout'}, 'day_shape');
+      if (row['day_index'] == null) _invalid('day_shape');
       final index = _int(row['day_index']);
       if (index < firstDayIndex ||
           index > 27 ||
@@ -126,42 +104,14 @@ class FitnessProgramValidator {
         validatedExercises.add(exercise);
       }
 
-      final meals = _objectList(row['meals']);
-      if (meals.length != mealSlots.length) _invalid('meal_count');
-      final validatedMeals = <FitnessProgramMeal>[];
-      for (final mealRow in meals) {
-        _requireOnlyKeys(mealRow, const {
-          'meal_slot',
-          'recipe_id',
-          'servings',
-        }, 'meal_shape');
-        if (mealRow['servings'] is! num) _invalid('meal_servings');
-        final meal = FitnessProgramMeal.fromJson(mealRow);
-        final recipe = catalog.recipesById[meal.recipeId];
-        if (!eligibleRecipeIds.contains(meal.recipeId) ||
-            recipe == null ||
-            recipe.mealSlot != meal.mealSlot ||
-            !mealSlots.contains(meal.mealSlot) ||
-            meal.servings < 0.5 ||
-            meal.servings > 2.5) {
-          _invalid('meal_catalog_filter');
-        }
-        validatedMeals.add(meal);
-      }
-      final mealSlotSet = validatedMeals.map((item) => item.mealSlot).toSet();
-      if (mealSlotSet.length != mealSlots.length ||
-          !mealSlots.every(mealSlotSet.contains)) {
-        _invalid('meal_slots');
-      }
-
       generatedByIndex[index] = FitnessProgramDay(
         dayIndex: index,
         date: date,
         isRestDay: isRestDay,
         exercises: validatedExercises,
-        meals: validatedMeals,
-        sleepTime: intake.sleepTime,
-        wakeTime: intake.wakeTime,
+        meals: const [],
+        sleepTime: '',
+        wakeTime: '',
       );
     }
 
