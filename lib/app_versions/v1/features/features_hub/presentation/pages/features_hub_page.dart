@@ -60,9 +60,8 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
                     icon: Icons.schedule_rounded,
                     count: plannedFeatures.length,
                     expanded: _plannedExpanded,
-                    onToggle: () => setState(
-                      () => _plannedExpanded = !_plannedExpanded,
-                    ),
+                    onToggle: () =>
+                        setState(() => _plannedExpanded = !_plannedExpanded),
                     child: _AdaptiveFeatureGrid(
                       actions: plannedFeatures,
                       gridKey: const Key('planned-features-grid'),
@@ -79,9 +78,8 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
                     icon: Icons.health_and_safety_outlined,
                     count: advancedHealthFeatureCatalog.length,
                     expanded: _advancedExpanded,
-                    onToggle: () => setState(
-                      () => _advancedExpanded = !_advancedExpanded,
-                    ),
+                    onToggle: () =>
+                        setState(() => _advancedExpanded = !_advancedExpanded),
                     child: _AdaptiveAdvancedGrid(
                       items: advancedHealthFeatureCatalog,
                       onTap: (item) => context.push(
@@ -114,6 +112,14 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
       AppColors.primary,
       AppColors.pastelBlue,
       () => context.push(V1RoutePaths.lifestyleSchedule),
+    ),
+    _FeatureAction(
+      'fitness-training',
+      'Chế độ luyện tập',
+      Icons.fitness_center_rounded,
+      AppColors.success,
+      AppColors.pastelMint,
+      () => context.push(V1RoutePaths.fitnessTraining),
     ),
     _FeatureAction(
       'today-tasks',
@@ -370,11 +376,7 @@ class _AdaptiveFeatureGrid extends StatelessWidget {
 }
 
 class _FeatureTile extends StatelessWidget {
-  const _FeatureTile({
-    super.key,
-    required this.action,
-    this.statusLabel,
-  });
+  const _FeatureTile({super.key, required this.action, this.statusLabel});
 
   final _FeatureAction action;
   final String? statusLabel;
@@ -509,10 +511,7 @@ class _CollapsibleSection extends StatelessWidget {
 }
 
 class _AdaptiveAdvancedGrid extends StatelessWidget {
-  const _AdaptiveAdvancedGrid({
-    required this.items,
-    required this.onTap,
-  });
+  const _AdaptiveAdvancedGrid({required this.items, required this.onTap});
 
   final List<HealthFeatureCatalogItem> items;
   final ValueChanged<HealthFeatureCatalogItem> onTap;

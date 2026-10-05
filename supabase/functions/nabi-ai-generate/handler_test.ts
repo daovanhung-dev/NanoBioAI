@@ -34,6 +34,7 @@ const providerInput = {
     thinkingConfig: { thinkingLevel: "MINIMAL" },
   },
   systemInstruction: null,
+  operation: null,
   userId: null,
   ip: "127.0.0.1",
   traceId: "test-ai-trace-001",
@@ -133,6 +134,42 @@ Deno.test("validates and delegates a bounded AI request with trace correlation",
   }
   if (response.headers.get("x-ai-trace-id") !== "test-ai-trace-001") {
     throw new Error("trace id response header missing");
+  }
+});
+
+Deno.test("accepts only the two M32 operations", async () => {
+  let seenOperation: string | null = null;
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async (input) => {
+      seenOperation = input.operation;
+      return "{\"days\":[]}";
+    },
+  });
+  const response = await handler(request({
+    ...validBody,
+    operation: "fitness_training_generate",
+  }));
+  if (response.status !== 200 || seenOperation !== "fitness_training_generate") {
+    throw new Error("M32 generation operation was not forwarded");
+  }
+
+  let invoked = false;
+  const rejectingHandler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      invoked = true;
+      return "should not run";
+    },
+  });
+  const rejected = await rejectingHandler(request({
+    ...validBody,
+    operation: "fitness_training_unknown",
+  }));
+  if (rejected.status !== 400 || invoked) {
+    throw new Error("unsupported AI operation reached provider");
   }
 });
 

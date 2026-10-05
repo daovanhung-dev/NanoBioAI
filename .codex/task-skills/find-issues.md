@@ -2,16 +2,20 @@
 
 - Canonical key: find-issues
 - Workflow: .codex/workflows/find-issues.md
-- Generated from 3 worklog(s).
+- Generated from 6 worklog(s).
 
 ## When To Read
 
 - Historical task type: review/audit/docs (1)
 - Historical task type: docs-context / UI design audit / coding plan (1)
 - Historical task type: find-issues / UI-UX audit (1)
+- Historical task type: M32 implementation readiness review (1)
+- Historical task type: docs-dd / implementation readiness (1)
+- Historical task type: coding / test / cập nhật BD-DD-handoff (1)
 
 ## Common Modules
 
+- M32 FITNESS_TRAINING: 3
 - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks: 1
 - UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer: 1
 - toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen: 1
@@ -35,3 +39,6 @@
 - [Worklog - Release 1.0 bug audit](../../docs/worklog/2026-06-19/007-worklog-release-1-0-bug-audit.md) - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks
 - [Worklog - Nabi Kinetic Aura design toàn bộ UI](../../docs/worklog/2026-08-05/001-worklog-nabi-kinetic-aura-design.md) - UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer
 - [Worklog - Flutter UI UX Full Audit](../../docs/worklog/2026-08-19/001-worklog-flutter-ui-ux-full-audit.md) - toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen
+- [Worklog — M32 continuation and approval follow-up](../../docs/worklog/2026-10-05/001-worklog-m32-continuation.md) - M32 FITNESS_TRAINING
+- [Worklog — M32 PO directions and review packet](../../docs/worklog/2026-10-05/002-worklog-m32-po-directions-review-packet.md) - M32 FITNESS_TRAINING
+- [Worklog — M32 fitness-training runtime pilot](../../docs/worklog/2026-10-05/003-worklog-m32-runtime.md) - M32 FITNESS_TRAINING

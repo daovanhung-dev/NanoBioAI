@@ -1,0 +1,952 @@
+{
+  "catalog": "NanoBio M32 exercise and equipment candidates",
+  "version": "0.1-draft",
+  "status": "pilot_runtime_pending_review",
+  "provenance": {
+    "text": "Original Vietnamese draft authored for NanoBio; clinical/QA review pending.",
+    "illustrations": "69 original generated candidate panels in exercise, equipment and recipe atlases; 4 original food-group icon panels; cell mappings in fitness_image_atlases_draft_v1.json; review pending.",
+    "youtube": "Two Chrome-discovered seated cable row video candidates are recorded but not approved; iframe playback returned error 153 in the browser client, so retain fallback and recheck in supported app clients."
+  },
+  "equipment": [
+    {
+      "id": "gym_treadmill",
+      "name_vi": "Máy chạy bộ",
+      "description_vi": "Cardio đi bộ/chạy có kiểm soát.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "gym_bike",
+      "name_vi": "Xe đạp tập",
+      "description_vi": "Cardio ít va chạm; điều chỉnh yên trước khi tập.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "gym_leg_press",
+      "name_vi": "Máy đạp chân",
+      "description_vi": "Động tác đẩy bằng chân với lưng tựa.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "gym_seated_row",
+      "name_vi": "Máy kéo cáp ngồi",
+      "description_vi": "Kéo tay về thân, giữ thân ổn định.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "gym_lat_pulldown",
+      "name_vi": "Máy kéo xô",
+      "description_vi": "Kéo thanh về trước ngực, không kéo sau gáy.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "gym_chest_press",
+      "name_vi": "Máy đẩy ngực",
+      "description_vi": "Đẩy tay cầm ra trước trong biên độ dễ chịu.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "gym_leg_extension",
+      "name_vi": "Máy duỗi gối",
+      "description_vi": "Duỗi gối có kiểm soát trong biên độ phù hợp.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "gym_leg_curl",
+      "name_vi": "Máy gập gối",
+      "description_vi": "Gập gối có kiểm soát, chỉnh trục máy theo khớp gối.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 8
+    },
+    {
+      "id": "gym_cable_station",
+      "name_vi": "Trạm cáp đa năng",
+      "description_vi": "Dùng tay cầm phù hợp; khóa chốt và chỉnh tải trước.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 9
+    },
+    {
+      "id": "gym_smith_machine",
+      "name_vi": "Máy Smith",
+      "description_vi": "Thanh đòn có ray dẫn hướng; cần kiểm tra chốt an toàn.",
+      "illustration_asset": "images/atlas/m32_equipment_10.png",
+      "provenance": "NanoBio original content; illustration pending generation/review",
+      "review_status": "draft_requires_qa_and_safety_review",
+      "illustration_atlas_id": "m32_equipment_10",
+      "illustration_cell_index_1based": 10
+    }
+  ],
+  "exercises": [
+    {
+      "id": "gym_treadmill_walk",
+      "name_vi": "Đi bộ trên máy chạy bộ",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_treadmill"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Cardio"
+      ],
+      "instruction_steps_vi": [
+        "Điều chỉnh tốc độ chậm trước khi bước lên.",
+        "Đi bộ với thân người thẳng và bước tự nhiên.",
+        "Giảm tốc trước khi dừng."
+      ],
+      "safety_notes_vi": "Dùng dây an toàn nếu máy có; dừng nếu chóng mặt hoặc đau.",
+      "program_bounds_candidate": {
+        "duration_minutes_min": 10,
+        "duration_minutes_max": 30,
+        "intensity": "light_to_moderate_talk_test_candidate"
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "cardio",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "gym_stationary_cycle",
+      "name_vi": "Đạp xe tại chỗ",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_bike"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Cardio",
+        "Chân"
+      ],
+      "instruction_steps_vi": [
+        "Chỉnh yên để đầu gối hơi chùng ở điểm thấp nhất.",
+        "Đạp đều với lực nhẹ đến vừa.",
+        "Giảm nhịp trước khi xuống xe."
+      ],
+      "safety_notes_vi": "Không tăng lực cản đột ngột; dừng nếu đau ngực, khó thở bất thường hoặc choáng.",
+      "program_bounds_candidate": {
+        "duration_minutes_min": 10,
+        "duration_minutes_max": 30,
+        "intensity": "light_to_moderate_talk_test_candidate"
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "cardio",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "gym_leg_press",
+      "name_vi": "Đạp chân máy",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_leg_press"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi trước",
+        "Mông"
+      ],
+      "instruction_steps_vi": [
+        "Đặt bàn chân vững trên bàn đạp.",
+        "Hạ bàn đạp trong biên độ không đau.",
+        "Đẩy lên mà không khóa cứng gối."
+      ],
+      "safety_notes_vi": "Không để lưng rời tựa; tránh khóa gối; cần hướng dẫn cách chỉnh chốt.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "gym_seated_row",
+      "name_vi": "Kéo cáp ngồi",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_seated_row"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Lưng",
+        "Tay trước"
+      ],
+      "instruction_steps_vi": [
+        "Ngồi vững, giữ lưng trung tính.",
+        "Kéo tay cầm về gần thân bằng chuyển động có kiểm soát.",
+        "Duỗi tay chậm về vị trí đầu."
+      ],
+      "safety_notes_vi": "Không giật người hoặc cong lưng để kéo tải.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "candidate_embed_and_rights_review_pending",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 4,
+      "youtube_video_candidates": [
+        {
+          "video_id": "lJoozxC0Rns",
+          "title": "How To Do A Seated Cable Row",
+          "creator": "PureGym",
+          "source_url": "https://www.youtube.com/watch?v=lJoozxC0Rns",
+          "fallback_url": "https://www.youtube.com/watch?v=lJoozxC0Rns",
+          "discovery_method": "Chrome YouTube search",
+          "checked_at": "2026-10-01",
+          "public_listing_seen": true,
+          "iframe_playback": "unverified; browser client returned error 153",
+          "creator_embed_permission_review": "pending",
+          "status": "candidate_not_approved"
+        },
+        {
+          "video_id": "xQNrFHEMhI4",
+          "title": "Seated Cable Row | Exercise Guide",
+          "creator": "Bodybuilding.com",
+          "source_url": "https://www.youtube.com/watch?v=xQNrFHEMhI4",
+          "fallback_url": "https://www.youtube.com/watch?v=xQNrFHEMhI4",
+          "discovery_method": "Chrome YouTube search",
+          "checked_at": "2026-10-01",
+          "public_listing_seen": true,
+          "iframe_playback": "unverified; browser client returned error 153",
+          "creator_embed_permission_review": "pending",
+          "status": "candidate_not_approved"
+        }
+      ]
+    },
+    {
+      "id": "gym_lat_pulldown",
+      "name_vi": "Kéo xô trước ngực",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_lat_pulldown"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Lưng",
+        "Vai",
+        "Tay trước"
+      ],
+      "instruction_steps_vi": [
+        "Ngồi cố định đùi dưới đệm.",
+        "Kéo thanh về trước ngực trong biên độ thoải mái.",
+        "Trả thanh lên có kiểm soát."
+      ],
+      "safety_notes_vi": "Không kéo thanh sau gáy; giảm tải nếu vai khó chịu.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "gym_chest_press",
+      "name_vi": "Đẩy ngực máy",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_chest_press"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Ngực",
+        "Vai",
+        "Tay sau"
+      ],
+      "instruction_steps_vi": [
+        "Chỉnh ghế để tay cầm ngang giữa ngực.",
+        "Đẩy tay cầm ra trước mà không khóa khuỷu.",
+        "Trở lại chậm trong biên độ dễ chịu."
+      ],
+      "safety_notes_vi": "Không nhún vai hoặc cố kéo khuỷu quá sâu.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "gym_leg_extension",
+      "name_vi": "Duỗi gối máy",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_leg_extension"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi trước"
+      ],
+      "instruction_steps_vi": [
+        "Chỉnh trục máy gần khớp gối.",
+        "Duỗi chân nhẹ nhàng trong biên độ thoải mái.",
+        "Hạ chân chậm về vị trí đầu."
+      ],
+      "safety_notes_vi": "Không đá bật tải; dừng nếu đau khớp gối.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "gym_leg_curl",
+      "name_vi": "Gập gối máy",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_leg_curl"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi sau"
+      ],
+      "instruction_steps_vi": [
+        "Chỉnh trục máy theo khớp gối và đặt đệm đúng vị trí.",
+        "Gập gối có kiểm soát.",
+        "Trả chân chậm về vị trí đầu."
+      ],
+      "safety_notes_vi": "Không dùng đà; dừng nếu đau hoặc chuột rút.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 8
+    },
+    {
+      "id": "gym_cable_triceps",
+      "name_vi": "Duỗi tay sau với cáp",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_cable_station"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Tay sau"
+      ],
+      "instruction_steps_vi": [
+        "Đứng vững, khuỷu gần thân.",
+        "Đẩy tay cầm xuống trong biên độ dễ chịu.",
+        "Trả tay lên chậm mà không xoay thân."
+      ],
+      "safety_notes_vi": "Dùng tải nhẹ lúc làm quen; không khóa mạnh khuỷu.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 9
+    },
+    {
+      "id": "gym_cable_face_pull",
+      "name_vi": "Kéo cáp ngang mặt",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_cable_station"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Vai sau",
+        "Lưng trên"
+      ],
+      "instruction_steps_vi": [
+        "Đặt cáp ngang tầm mặt và cầm dây chắc.",
+        "Kéo dây về phía mặt, khuỷu mở vừa phải.",
+        "Duỗi tay chậm về trước."
+      ],
+      "safety_notes_vi": "Dùng tải nhẹ; không ngửa lưng hoặc kéo giật.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 10
+    },
+    {
+      "id": "gym_cable_biceps",
+      "name_vi": "Cuốn tay trước với cáp",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_cable_station"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Tay trước"
+      ],
+      "instruction_steps_vi": [
+        "Đứng ổn định, khuỷu gần thân.",
+        "Cuốn tay cầm lên trong biên độ dễ chịu.",
+        "Hạ tay chậm."
+      ],
+      "safety_notes_vi": "Tránh lắc thân để lấy đà.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 11
+    },
+    {
+      "id": "gym_cable_chest_fly",
+      "name_vi": "Ép ngực cáp đứng",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_cable_station"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Ngực",
+        "Vai trước"
+      ],
+      "instruction_steps_vi": [
+        "Chỉnh hai ròng rọc ở tầm ngực và đứng vững.",
+        "Đưa hai tay về trước với khuỷu hơi cong.",
+        "Mở tay chậm đến vị trí vai vẫn thoải mái."
+      ],
+      "safety_notes_vi": "Dùng tải nhẹ; tránh kéo tay quá sâu ra sau.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 12
+    },
+    {
+      "id": "gym_smith_squat_to_box",
+      "name_vi": "Ngồi xuống ghế với máy Smith",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_smith_machine"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi",
+        "Mông"
+      ],
+      "instruction_steps_vi": [
+        "Đặt ghế phía sau và kiểm tra chốt an toàn.",
+        "Hạ người về ghế trong biên độ dễ chịu.",
+        "Đứng lên bằng bàn chân vững."
+      ],
+      "safety_notes_vi": "Cần người hướng dẫn thiết lập ray/chốt; ngừng nếu mất thăng bằng hoặc đau.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 13
+    },
+    {
+      "id": "gym_smith_incline_pushup",
+      "name_vi": "Chống đẩy tay trên thanh Smith",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_smith_machine"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Ngực",
+        "Tay sau",
+        "Thân giữa"
+      ],
+      "instruction_steps_vi": [
+        "Khóa thanh ở độ cao phù hợp và kiểm tra chắc chắn.",
+        "Giữ thân thành một đường thẳng rồi hạ ngực về thanh.",
+        "Đẩy trở lại có kiểm soát."
+      ],
+      "safety_notes_vi": "Kiểm tra thanh đã khóa; tăng độ khó bằng cách hạ thanh từ từ.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 14
+    },
+    {
+      "id": "gym_legpress_calf_raise",
+      "name_vi": "Nhón bắp chân trên máy đạp chân",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_leg_press"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Bắp chân"
+      ],
+      "instruction_steps_vi": [
+        "Đặt phần trước bàn chân chắc trên bàn đạp.",
+        "Hạ gót nhẹ trong biên độ dễ chịu.",
+        "Nhón gót lên rồi hạ chậm."
+      ],
+      "safety_notes_vi": "Giữ khóa an toàn theo hướng dẫn của máy; không bật nảy.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 15
+    },
+    {
+      "id": "gym_cable_glute_kickback",
+      "name_vi": "Đá chân sau với cáp",
+      "venue": "gym",
+      "gear_ids": [
+        "gym_cable_station"
+      ],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Mông",
+        "Đùi sau"
+      ],
+      "instruction_steps_vi": [
+        "Gắn cổ chân đúng cách và vịn trụ để giữ thăng bằng.",
+        "Đưa chân ra sau trong biên độ thoải mái.",
+        "Trả chân chậm, giữ thân ổn định."
+      ],
+      "safety_notes_vi": "Dùng tải nhẹ; không ưỡn lưng hoặc xoay hông.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_gym_exercises_16.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_gym_exercises_16",
+      "illustration_cell_index_1based": 16
+    },
+    {
+      "id": "home_chair_sit_to_stand",
+      "name_vi": "Đứng lên ngồi xuống ghế",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi",
+        "Mông"
+      ],
+      "instruction_steps_vi": [
+        "Đặt ghế chắc sát tường và bàn chân vững.",
+        "Nghiêng thân nhẹ từ hông rồi đứng lên.",
+        "Hạ người chậm để chạm ghế."
+      ],
+      "safety_notes_vi": "Dùng tay vịn nếu cần; ghế không được trượt.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "home_wall_pushup",
+      "name_vi": "Chống đẩy tường",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Ngực",
+        "Tay sau"
+      ],
+      "instruction_steps_vi": [
+        "Đứng cách tường một bước và đặt tay ngang ngực.",
+        "Gập khuỷu đưa ngực gần tường.",
+        "Đẩy tường để trở về."
+      ],
+      "safety_notes_vi": "Giữ thân ổn định; chọn khoảng cách không gây đau vai/cổ tay.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "home_glute_bridge",
+      "name_vi": "Nâng hông nằm",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Mông",
+        "Đùi sau"
+      ],
+      "instruction_steps_vi": [
+        "Nằm ngửa, gối co và bàn chân đặt chắc.",
+        "Siết mông nâng hông vừa tầm.",
+        "Hạ hông chậm xuống."
+      ],
+      "safety_notes_vi": "Không ưỡn lưng quá mức; dừng nếu đau lưng.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "home_bird_dog",
+      "name_vi": "Duỗi tay chân đối bên",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Thân giữa",
+        "Lưng"
+      ],
+      "instruction_steps_vi": [
+        "Bắt đầu ở tư thế bốn điểm vững.",
+        "Duỗi tay và chân đối bên trong biên độ kiểm soát.",
+        "Thu về chậm rồi đổi bên."
+      ],
+      "safety_notes_vi": "Giữ lưng trung tính; có thể chỉ duỗi một chi nếu khó giữ thăng bằng.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "home_dead_bug",
+      "name_vi": "Hạ tay chân đối bên khi nằm",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Thân giữa"
+      ],
+      "instruction_steps_vi": [
+        "Nằm ngửa, gối co và lưng ở vị trí tự nhiên.",
+        "Hạ một tay cùng chân đối bên trong biên độ kiểm soát.",
+        "Trở lại chậm rồi đổi bên."
+      ],
+      "safety_notes_vi": "Không ép lưng xuống sàn nếu gây đau; giảm biên độ khi cần.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "home_march_in_place",
+      "name_vi": "Đi bộ nâng gối tại chỗ",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Cardio",
+        "Chân"
+      ],
+      "instruction_steps_vi": [
+        "Đứng gần điểm vịn chắc.",
+        "Bước luân phiên tại chỗ với nhịp thoải mái.",
+        "Giảm nhịp rồi dừng."
+      ],
+      "safety_notes_vi": "Chọn mặt sàn không trơn; dùng điểm vịn nếu thăng bằng hạn chế.",
+      "program_bounds_candidate": {
+        "duration_minutes_min": 10,
+        "duration_minutes_max": 30,
+        "intensity": "light_to_moderate_talk_test_candidate"
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "cardio",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "home_low_step_up",
+      "name_vi": "Bước lên bục thấp",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Đùi",
+        "Mông"
+      ],
+      "instruction_steps_vi": [
+        "Chọn bục thấp, chắc và đặt sát tường.",
+        "Bước một chân lên, đứng vững rồi bước xuống.",
+        "Đổi chân dẫn sau số lần phù hợp."
+      ],
+      "safety_notes_vi": "Không dùng ghế lỏng; giữ điểm vịn nếu cần; dừng nếu đau gối.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "home_calf_raise",
+      "name_vi": "Nhón gót đứng",
+      "venue": "home",
+      "gear_ids": [],
+      "level_candidate": "beginner",
+      "muscle_groups": [
+        "Bắp chân"
+      ],
+      "instruction_steps_vi": [
+        "Đứng cạnh tường hoặc ghế chắc để vịn.",
+        "Nhón gót lên trong biên độ dễ chịu.",
+        "Hạ gót chậm xuống sàn."
+      ],
+      "safety_notes_vi": "Không bật nảy; dùng điểm vịn để giữ thăng bằng.",
+      "program_bounds_candidate": {
+        "sets_min": 2,
+        "sets_max": 4,
+        "reps_min": 6,
+        "reps_max": 15,
+        "rest_seconds_min": 45,
+        "rest_seconds_max": 120
+      },
+      "illustration_asset": "images/atlas/m32_home_exercises_8.png",
+      "youtube_video_id": null,
+      "video_review_status": "pending_manual_embed_check",
+      "provenance": "Original NanoBio draft text; no copied media",
+      "review_status": "draft_requires_clinical_and_qa_review",
+      "movement_type": "strength_or_mobility",
+      "illustration_atlas_id": "m32_home_exercises_8",
+      "illustration_cell_index_1based": 8
+    }
+  ]
+}

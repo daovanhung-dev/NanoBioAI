@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/m
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart';
+import 'package:nano_app/app_versions/v1/features/fitness_training/presentation/pages/fitness_training_page.dart';
 import 'package:nano_app/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart';
 import 'package:nano_app/app_versions/v1/features/goal_review/presentation/pages/goal_review_page.dart';
 import 'package:nano_app/app_versions/v1/features/health_check_in/presentation/pages/health_check_in_page.dart';
@@ -143,6 +144,11 @@ final v1Routes = <RouteBase>[
     builder: (context, state) => const BodyMetricsPage(),
   ),
   buildLifestyleScheduleRoute(),
+  GoRoute(
+    path: V1RoutePaths.fitnessTraining,
+    name: V1RoutePaths.fitnessTraining,
+    builder: (context, state) => const FitnessTrainingPage(),
+  ),
   GoRoute(
     path: V1RoutePaths.dailyRoutinePreferences,
     name: V1RoutePaths.dailyRoutinePreferences,

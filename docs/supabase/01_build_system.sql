@@ -13256,6 +13256,47 @@ begin
   end loop;
 end $$;
 
+-- M32 programs are synced only for the signed-in user's self subject through
+-- the trusted mobile snapshot RPC. The client cannot write rows directly.
+create table if not exists public.fitness_training_programs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid()
+    references public.users(id) on delete cascade,
+  subject_id uuid not null default public.default_self_subject_id()
+    references public.health_subjects(id) on delete cascade,
+  request_id text not null,
+  status text not null check (status in ('preview', 'active', 'archived')),
+  active_week smallint not null check (active_week between 1 and 4),
+  quota_committed boolean not null default false,
+  parent_program_id uuid,
+  program_json jsonb not null check (jsonb_typeof(program_json) = 'object'),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, request_id)
+);
+
+create index if not exists idx_fitness_training_programs_owner_status
+  on public.fitness_training_programs(user_id, subject_id, status, updated_at desc);
+
+alter table public.fitness_training_programs enable row level security;
+drop policy if exists fitness_training_programs_read_own
+  on public.fitness_training_programs;
+create policy fitness_training_programs_read_own
+  on public.fitness_training_programs for select to authenticated
+  using (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.health_subjects hs
+      where hs.id = subject_id
+        and hs.owner_user_id = auth.uid()
+        and hs.subject_type = 'self'
+        and hs.is_active = true
+    )
+  );
+revoke insert, update, delete on public.fitness_training_programs
+  from anon, authenticated;
+grant select on public.fitness_training_programs to authenticated;
+
 -- Catalog is public-safe metadata only. No user health data and no client writes.
 alter table public.meal_catalog enable row level security;
 
@@ -13311,7 +13352,8 @@ declare
     'lab_results',
     'nutrition_goals',
     'meal_schedule_preferences',
-    'nutrition_preference_rules'
+    'nutrition_preference_rules',
+    'fitness_training_programs'
   ];
   v_singleton_tables text[] := array['health_profiles', 'lifestyle_habits', 'nutrition_profiles'];
 begin
@@ -13543,6 +13585,11 @@ begin
       v_allowed_columns := array[
         'id', 'rule_type', 'item_code', 'item_name', 'preference_level',
         'note', 'schema_version', 'is_active'
+      ];
+    elsif v_table = 'fitness_training_programs' then
+      v_allowed_columns := array[
+        'id', 'request_id', 'status', 'active_week', 'quota_committed',
+        'parent_program_id', 'program_json', 'created_at', 'updated_at'
       ];
     else
       raise exception 'UNSUPPORTED_SNAPSHOT_TABLE: %', v_table

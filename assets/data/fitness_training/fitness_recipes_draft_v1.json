@@ -1,0 +1,1447 @@
+{
+  "catalog": "NanoBio M32 recipe candidates",
+  "version": "0.1-draft",
+  "status": "pilot_runtime_pending_review",
+  "source_ingredients": "./fitness_ingredients_draft_v1.json",
+  "nutrition_caution": "Values are arithmetic estimates derived from FDC source ingredients, not verified finished-dish laboratory values. Review ingredient state, preparation, allergen cross-contact and serving size before any recommendation.",
+  "items": [
+    {
+      "id": "m32_recipe_01",
+      "name_vi": "Bát sữa chua Hy Lạp chuối chia",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 170
+        },
+        {
+          "ingredient_id": "chuoi",
+          "amount_g": 70
+        },
+        {
+          "ingredient_id": "hat_chia",
+          "amount_g": 5
+        },
+        {
+          "ingredient_id": "viet_quat",
+          "amount_g": 30
+        }
+      ],
+      "instructions_vi": [
+        "Cho sữa chua vào bát.",
+        "Thêm chuối, việt quất và hạt chia."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 211.7,
+        "protein_g": 19.06,
+        "fat_g": 2.45,
+        "carbohydrate_g": 28.56,
+        "fiber_g": 3.63,
+        "sodium_mg": 62.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "m32_recipe_02",
+      "name_vi": "Bánh mì trứng rau bina",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "trung_ga_nguyen_qua",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 25
+        },
+        {
+          "ingredient_id": "banh_mi_nguyen_cam",
+          "amount_g": 40
+        },
+        {
+          "ingredient_id": "dau_olive",
+          "amount_g": 2
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng rau bina với dầu ô liu.",
+        "Nấu trứng chín kỹ, dùng cùng bánh mì nguyên cám."
+      ],
+      "allergens": [
+        "egg",
+        "wheat_gluten"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 269.35,
+        "protein_g": 18.03,
+        "fat_g": 13.54,
+        "carbohydrate_g": 18.8,
+        "fiber_g": 2.8,
+        "sodium_mg": 328.79
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "m32_recipe_03",
+      "name_vi": "Bánh mì bơ đậu phộng chuối",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "banh_mi_nguyen_cam",
+          "amount_g": 60
+        },
+        {
+          "ingredient_id": "bo_dau_phong",
+          "amount_g": 15
+        },
+        {
+          "ingredient_id": "chuoi",
+          "amount_g": 60
+        }
+      ],
+      "instructions_vi": [
+        "Phết bơ đậu phộng lên bánh mì.",
+        "Thêm chuối cắt lát."
+      ],
+      "allergens": [
+        "peanut",
+        "wheat_gluten"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 300.3,
+        "protein_g": 11.15,
+        "fat_g": 10.01,
+        "carbohydrate_g": 42.82,
+        "fiber_g": 5.37,
+        "sodium_mg": 321.9
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "m32_recipe_04",
+      "name_vi": "Phô mai tươi việt quất hạnh nhân",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "pho_mai_tuoi_farmer",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "viet_quat",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "hanh_nhan",
+          "amount_g": 10
+        }
+      ],
+      "instructions_vi": [
+        "Cho phô mai tươi vào bát.",
+        "Thêm việt quất và hạnh nhân đã cắt nhỏ."
+      ],
+      "allergens": [
+        "milk",
+        "tree_nuts"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 272.2,
+        "protein_g": 15.69,
+        "fat_g": 16.94,
+        "carbohydrate_g": 14.5,
+        "fiber_g": 2.28,
+        "sodium_mg": 396.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "m32_recipe_05",
+      "name_vi": "Bát quinoa sữa đậu nành xoài",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "quinoa",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "sua_dau_nanh_khong_duong",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "xoai",
+          "amount_g": 60
+        },
+        {
+          "ingredient_id": "hat_chia",
+          "amount_g": 4
+        }
+      ],
+      "instructions_vi": [
+        "Làm ấm quinoa cùng sữa đậu nành.",
+        "Thêm xoài và hạt chia."
+      ],
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 247.04,
+        "protein_g": 9.61,
+        "fat_g": 9.42,
+        "carbohydrate_g": 32.43,
+        "fiber_g": 5.04,
+        "sodium_mg": 226.04
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "m32_recipe_06",
+      "name_vi": "Sữa chua dâu tây hạt chia",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 170
+        },
+        {
+          "ingredient_id": "dau_tay",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "hat_chia",
+          "amount_g": 5
+        }
+      ],
+      "instructions_vi": [
+        "Cho sữa chua vào bát.",
+        "Thêm dâu tây cắt miếng và hạt chia."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 153.4,
+        "protein_g": 18.85,
+        "fat_g": 2.34,
+        "carbohydrate_g": 14.66,
+        "fiber_g": 3.16,
+        "sodium_mg": 62.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "m32_recipe_07",
+      "name_vi": "Khoai lang và trứng rau bina",
+      "meal_slot": "breakfast",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "khoai_lang",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "trung_ga_nguyen_qua",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 25
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng khoai lang đã nấu chín.",
+        "Nấu trứng chín kỹ cùng rau bina và dùng chung."
+      ],
+      "allergens": [
+        "egg"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 219.55,
+        "protein_g": 12.61,
+        "fat_g": 8.6,
+        "carbohydrate_g": 22.97,
+        "fiber_g": 4.12,
+        "sodium_mg": 130.95
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_breakfast_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_breakfast_7",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "m32_recipe_08",
+      "name_vi": "Táo chấm bơ đậu phộng",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "tao",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "bo_dau_phong",
+          "amount_g": 12
+        }
+      ],
+      "instructions_vi": [
+        "Rửa và cắt táo.",
+        "Dùng cùng một phần bơ đậu phộng."
+      ],
+      "allergens": [
+        "peanut"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 144.96,
+        "protein_g": 2.87,
+        "fat_g": 6.35,
+        "carbohydrate_g": 20.44,
+        "fiber_g": 3.12,
+        "sodium_mg": 51.12
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "m32_recipe_09",
+      "name_vi": "Cam và sữa chua Hy Lạp",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "cam",
+          "amount_g": 130
+        },
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 100
+        }
+      ],
+      "instructions_vi": [
+        "Bóc cam và tách múi.",
+        "Dùng cùng sữa chua nguyên vị."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 124.0,
+        "protein_g": 11.5,
+        "fat_g": 0.55,
+        "carbohydrate_g": 18.98,
+        "fiber_g": 2.86,
+        "sodium_mg": 41.2
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "m32_recipe_10",
+      "name_vi": "Đậu gà nghiền chanh tỏi",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_ga",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "toi_tuoi",
+          "amount_g": 2
+        },
+        {
+          "ingredient_id": "chanh",
+          "amount_g": 5
+        },
+        {
+          "ingredient_id": "dau_olive",
+          "amount_g": 3
+        }
+      ],
+      "instructions_vi": [
+        "Nghiền đậu gà với tỏi và nước cốt chanh.",
+        "Thêm dầu ô liu, trộn đều và dùng ngay."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 161.71,
+        "protein_g": 7.24,
+        "fat_g": 5.09,
+        "carbohydrate_g": 22.87,
+        "fiber_g": 6.27,
+        "sodium_mg": 190.9
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "m32_recipe_11",
+      "name_vi": "Edamame và dưa leo",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "edamame",
+          "amount_g": 90
+        },
+        {
+          "ingredient_id": "dua_leo",
+          "amount_g": 80
+        }
+      ],
+      "instructions_vi": [
+        "Dùng edamame đã nấu chín.",
+        "Thêm dưa leo tươi cắt lát."
+      ],
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 138.8,
+        "protein_g": 10.85,
+        "fat_g": 6.97,
+        "carbohydrate_g": 10.13,
+        "fiber_g": 4.9,
+        "sodium_mg": 115.9
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "m32_recipe_12",
+      "name_vi": "Chuối và phô mai tươi",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "chuoi",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "pho_mai_tuoi_farmer",
+          "amount_g": 70
+        }
+      ],
+      "instructions_vi": [
+        "Cắt chuối thành lát.",
+        "Dùng cùng phô mai tươi."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 181.2,
+        "protein_g": 8.29,
+        "fat_g": 7.04,
+        "carbohydrate_g": 21.19,
+        "fiber_g": 1.36,
+        "sodium_mg": 231.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "m32_recipe_13",
+      "name_vi": "Sinh tố dứa sữa đậu nành",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dua",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "sua_dau_nanh_khong_duong",
+          "amount_g": 150
+        },
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 50
+        }
+      ],
+      "instructions_vi": [
+        "Xay dứa với sữa đậu nành và sữa chua.",
+        "Dùng lạnh; không thêm nguyên liệu ngoài lựa chọn."
+      ],
+      "allergens": [
+        "milk",
+        "soy"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 146.5,
+        "protein_g": 10.94,
+        "fat_g": 3.58,
+        "carbohydrate_g": 17.86,
+        "fiber_g": 0.9,
+        "sodium_mg": 69.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "m32_recipe_14",
+      "name_vi": "Việt quất óc chó và sữa chua",
+      "meal_slot": "morning_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "viet_quat",
+          "amount_g": 60
+        },
+        {
+          "ingredient_id": "oc_cho",
+          "amount_g": 8
+        },
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 80
+        }
+      ],
+      "instructions_vi": [
+        "Cho sữa chua và việt quất vào bát.",
+        "Rắc óc chó đã bẻ nhỏ."
+      ],
+      "allergens": [
+        "milk",
+        "tree_nuts"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 144.0,
+        "protein_g": 9.83,
+        "fat_g": 6.06,
+        "carbohydrate_g": 12.54,
+        "fiber_g": 1.86,
+        "sodium_mg": 28.8
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_morning_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_morning_snack_7",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "m32_recipe_15",
+      "name_vi": "Cơm gà bông cải cà rốt",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "uc_ga_khong_da",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "com_gao_lut",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "bong_cai_xanh",
+          "amount_g": 60
+        },
+        {
+          "ingredient_id": "ca_rot",
+          "amount_g": 30
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng ức gà và cơm đã nấu.",
+        "Dùng cùng bông cải và cà rốt đã nấu chín."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 320.6,
+        "protein_g": 34.44,
+        "fat_g": 4.91,
+        "carbohydrate_g": 32.47,
+        "fiber_g": 3.31,
+        "sodium_mg": 605.1
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "m32_recipe_16",
+      "name_vi": "Cá hồi cơm gạo lứt rau bina",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "ca_hoi",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "com_gao_lut",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 35
+        }
+      ],
+      "instructions_vi": [
+        "Nấu cá hồi chín hoàn toàn theo cách phù hợp.",
+        "Dùng cùng cơm gạo lứt và rau bina."
+      ],
+      "allergens": [
+        "fish"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 320.45,
+        "protein_g": 23.84,
+        "fat_g": 12.53,
+        "carbohydrate_g": 26.64,
+        "fiber_g": 1.56,
+        "sodium_mg": 302.85
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "m32_recipe_17",
+      "name_vi": "Bò quinoa ớt chuông cà chua",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "thit_bo_xay",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "quinoa",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "ot_chuong_xanh",
+          "amount_g": 35
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 50
+        }
+      ],
+      "instructions_vi": [
+        "Nấu thịt bò chín kỹ.",
+        "Dùng cùng quinoa và rau củ đã rửa, cắt."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 372.85,
+        "protein_g": 25.34,
+        "fat_g": 19.05,
+        "carbohydrate_g": 23.89,
+        "fiber_g": 3.62,
+        "sodium_mg": 490.8
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "m32_recipe_18",
+      "name_vi": "Cá ngừ cơm dưa leo cà chua",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "ca_ngu_dong_hop",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "com_gao_trang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "dua_leo",
+          "amount_g": 35
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 50
+        }
+      ],
+      "instructions_vi": [
+        "Để ráo cá ngừ đóng hộp.",
+        "Dùng cùng cơm và rau củ tươi đã rửa."
+      ],
+      "allergens": [
+        "fish"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 212.6,
+        "protein_g": 18.5,
+        "fat_g": 1.25,
+        "carbohydrate_g": 31.12,
+        "fiber_g": 1.17,
+        "sodium_mg": 421.9
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "m32_recipe_19",
+      "name_vi": "Tôm quinoa bông cải",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "tom_hap",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "quinoa",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "bong_cai_xanh",
+          "amount_g": 60
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng tôm đã hấp hoặc luộc.",
+        "Dùng cùng quinoa và bông cải đã nấu chín."
+      ],
+      "allergens": [
+        "crustacean_shellfish"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 259.4,
+        "protein_g": 22.94,
+        "fat_g": 6.9,
+        "carbohydrate_g": 25.11,
+        "fiber_g": 4.14,
+        "sodium_mg": 453.6
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "m32_recipe_20",
+      "name_vi": "Đậu lăng khoai lang rau bina",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_lang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "khoai_lang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 35
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng đậu lăng và khoai lang đã nấu.",
+        "Thêm rau bina đã rửa và làm chín nhẹ."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 206.45,
+        "protein_g": 11.62,
+        "fat_g": 1.0,
+        "carbohydrate_g": 38.84,
+        "fiber_g": 11.56,
+        "sodium_mg": 271.85
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "m32_recipe_21",
+      "name_vi": "Đậu gà cơm gạo lứt cà chua",
+      "meal_slot": "lunch",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_ga",
+          "amount_g": 90
+        },
+        {
+          "ingredient_id": "com_gao_lut",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 20
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng đậu gà và cơm.",
+        "Dùng cùng cà chua và rau bina đã rửa."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 285.1,
+        "protein_g": 11.35,
+        "fat_g": 3.71,
+        "carbohydrate_g": 52.87,
+        "fiber_g": 8.76,
+        "sodium_mg": 439.4
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_lunch_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_lunch_7",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "m32_recipe_22",
+      "name_vi": "Trứng chín rau bina",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "trung_ga_nguyen_qua",
+          "amount_g": 70
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 20
+        }
+      ],
+      "instructions_vi": [
+        "Nấu trứng chín kỹ.",
+        "Dùng cùng rau bina đã rửa và làm chín nhẹ."
+      ],
+      "allergens": [
+        "egg"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 105.5,
+        "protein_g": 9.25,
+        "fat_g": 7.1,
+        "carbohydrate_g": 1.15,
+        "fiber_g": 0.32,
+        "sodium_mg": 112.5
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "m32_recipe_23",
+      "name_vi": "Dưa leo với đậu gà nghiền",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_ga",
+          "amount_g": 60
+        },
+        {
+          "ingredient_id": "dua_leo",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "chanh",
+          "amount_g": 5
+        },
+        {
+          "ingredient_id": "toi_tuoi",
+          "amount_g": 1
+        }
+      ],
+      "instructions_vi": [
+        "Nghiền đậu gà với tỏi và chanh.",
+        "Dùng như món chấm với dưa leo đã rửa."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 116.68,
+        "protein_g": 6.03,
+        "fat_g": 1.75,
+        "carbohydrate_g": 20.08,
+        "fiber_g": 5.23,
+        "sodium_mg": 145.07
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "m32_recipe_24",
+      "name_vi": "Cốc edamame",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "edamame",
+          "amount_g": 100
+        }
+      ],
+      "instructions_vi": [
+        "Dùng edamame đã nấu chín.",
+        "Để nguội đến nhiệt độ phù hợp trước khi ăn."
+      ],
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 140.0,
+        "protein_g": 11.5,
+        "fat_g": 7.58,
+        "carbohydrate_g": 8.63,
+        "fiber_g": 5.0,
+        "sodium_mg": 127.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "m32_recipe_25",
+      "name_vi": "Sinh tố việt quất chuối đậu nành",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "viet_quat",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "chuoi",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "sua_dau_nanh_khong_duong",
+          "amount_g": 150
+        }
+      ],
+      "instructions_vi": [
+        "Xay việt quất và chuối với sữa đậu nành.",
+        "Dùng ngay sau khi xay."
+      ],
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 137.5,
+        "protein_g": 6.04,
+        "fat_g": 3.48,
+        "carbohydrate_g": 20.58,
+        "fiber_g": 2.05,
+        "sodium_mg": 51.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "m32_recipe_26",
+      "name_vi": "Khoai lang và phô mai tươi",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "khoai_lang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "pho_mai_tuoi_farmer",
+          "amount_g": 50
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng khoai lang đã nấu chín.",
+        "Dùng cùng phô mai tươi."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 156.0,
+        "protein_g": 7.15,
+        "fat_g": 5.27,
+        "carbohydrate_g": 20.16,
+        "fiber_g": 3.1,
+        "sodium_mg": 165.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "m32_recipe_27",
+      "name_vi": "Bánh mì bơ trái và cà chua",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "banh_mi_nguyen_cam",
+          "amount_g": 40
+        },
+        {
+          "ingredient_id": "bo",
+          "amount_g": 30
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 40
+        }
+      ],
+      "instructions_vi": [
+        "Nướng nhẹ bánh mì nếu muốn.",
+        "Thêm bơ trái và cà chua đã rửa."
+      ],
+      "allergens": [
+        "wheat_gluten"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 157.6,
+        "protein_g": 5.85,
+        "fat_g": 5.95,
+        "carbohydrate_g": 21.41,
+        "fiber_g": 4.89,
+        "sodium_mg": 175.7
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "m32_recipe_28",
+      "name_vi": "Sữa chua chuối chia",
+      "meal_slot": "afternoon_snack",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "sua_chua_hy_lap",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "chuoi",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "hat_chia",
+          "amount_g": 4
+        }
+      ],
+      "instructions_vi": [
+        "Cho sữa chua và chuối vào bát.",
+        "Thêm hạt chia và dùng ngay."
+      ],
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 126.94,
+        "protein_g": 11.33,
+        "fat_g": 1.74,
+        "carbohydrate_g": 16.67,
+        "fiber_g": 2.23,
+        "sodium_mg": 36.64
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_afternoon_snack_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_afternoon_snack_7",
+      "illustration_cell_index_1based": 7
+    },
+    {
+      "id": "m32_recipe_29",
+      "name_vi": "Cá hồi khoai tây bông cải",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "ca_hoi",
+          "amount_g": 90
+        },
+        {
+          "ingredient_id": "khoai_tay_nuong",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "bong_cai_xanh",
+          "amount_g": 60
+        }
+      ],
+      "instructions_vi": [
+        "Nấu cá hồi chín hoàn toàn.",
+        "Dùng cùng khoai tây nướng và bông cải đã nấu chín."
+      ],
+      "allergens": [
+        "fish"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 304.2,
+        "protein_g": 22.24,
+        "fat_g": 10.4,
+        "carbohydrate_g": 29.44,
+        "fiber_g": 3.24,
+        "sodium_mg": 295.5
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 1
+    },
+    {
+      "id": "m32_recipe_30",
+      "name_vi": "Gà khoai lang cà rốt",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "uc_ga_khong_da",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "khoai_lang",
+          "amount_g": 120
+        },
+        {
+          "ingredient_id": "ca_rot",
+          "amount_g": 40
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng hoặc nấu chín hoàn toàn phần gà.",
+        "Dùng cùng khoai lang và cà rốt đã nấu."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 277.0,
+        "protein_g": 32.53,
+        "fat_g": 4.1,
+        "carbohydrate_g": 25.47,
+        "fiber_g": 4.88,
+        "sodium_mg": 390.0
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 2
+    },
+    {
+      "id": "m32_recipe_31",
+      "name_vi": "Bò quinoa cà chua ớt chuông",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "thit_bo_xay",
+          "amount_g": 80
+        },
+        {
+          "ingredient_id": "quinoa",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "ot_chuong_xanh",
+          "amount_g": 30
+        }
+      ],
+      "instructions_vi": [
+        "Nấu thịt bò chín kỹ.",
+        "Dùng cùng quinoa và rau củ đã rửa, cắt."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 371.7,
+        "protein_g": 25.31,
+        "fat_g": 19.05,
+        "carbohydrate_g": 23.65,
+        "fiber_g": 3.57,
+        "sodium_mg": 490.8
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 3
+    },
+    {
+      "id": "m32_recipe_32",
+      "name_vi": "Tôm cơm trắng bông cải",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "tom_hap",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "com_gao_trang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "bong_cai_xanh",
+          "amount_g": 60
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng tôm đã hấp hoặc luộc.",
+        "Dùng cùng cơm và bông cải đã nấu chín."
+      ],
+      "allergens": [
+        "crustacean_shellfish"
+      ],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 242.4,
+        "protein_g": 21.41,
+        "fat_g": 1.76,
+        "carbohydrate_g": 32.91,
+        "fiber_g": 1.84,
+        "sodium_mg": 513.6
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 4
+    },
+    {
+      "id": "m32_recipe_33",
+      "name_vi": "Đậu lăng khoai lang rau bina",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_lang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "khoai_lang",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 40
+        },
+        {
+          "ingredient_id": "dau_olive",
+          "amount_g": 2
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng đậu lăng và khoai lang đã nấu.",
+        "Thêm rau bina làm chín nhẹ và dầu ô liu."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 225.8,
+        "protein_g": 11.76,
+        "fat_g": 3.03,
+        "carbohydrate_g": 38.96,
+        "fiber_g": 11.64,
+        "sodium_mg": 277.44
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 5
+    },
+    {
+      "id": "m32_recipe_34",
+      "name_vi": "Đậu đen cơm gạo lứt cà chua bơ",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_den",
+          "amount_g": 90
+        },
+        {
+          "ingredient_id": "com_gao_lut",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "ca_chua",
+          "amount_g": 40
+        },
+        {
+          "ingredient_id": "bo",
+          "amount_g": 30
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng đậu đen và cơm.",
+        "Dùng cùng cà chua và bơ trái đã rửa, cắt."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 296.9,
+        "protein_g": 11.3,
+        "fat_g": 6.13,
+        "carbohydrate_g": 51.21,
+        "fiber_g": 11.23,
+        "sodium_mg": 413.5
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 6
+    },
+    {
+      "id": "m32_recipe_35",
+      "name_vi": "Đậu kidney quinoa nấm rau bina",
+      "meal_slot": "dinner",
+      "servings": 1,
+      "ingredients": [
+        {
+          "ingredient_id": "dau_do_kidney",
+          "amount_g": 90
+        },
+        {
+          "ingredient_id": "quinoa",
+          "amount_g": 100
+        },
+        {
+          "ingredient_id": "nam_tuoi",
+          "amount_g": 50
+        },
+        {
+          "ingredient_id": "rau_bina",
+          "amount_g": 25
+        }
+      ],
+      "instructions_vi": [
+        "Làm nóng đậu và quinoa.",
+        "Nấu nấm chín, thêm rau bina và dùng cùng."
+      ],
+      "allergens": [],
+      "nutrition_per_serving_draft": {
+        "energy_kcal": 281.65,
+        "protein_g": 14.12,
+        "fat_g": 6.2,
+        "carbohydrate_g": 43.3,
+        "fiber_g": 10.61,
+        "sodium_mg": 424.45
+      },
+      "nutrition_method": "sum of source ingredient values per 100 g multiplied by draft ingredient grams; excludes preparation yield changes and unlisted seasoning",
+      "illustration_asset": "images/atlas/m32_recipes_dinner_7.png",
+      "provenance": "Original NanoBio draft recipe; not copied from cookbook",
+      "review_status": "draft_requires_dietitian_and_clinical_review",
+      "illustration_atlas_id": "m32_recipes_dinner_7",
+      "illustration_cell_index_1based": 7
+    }
+  ]
+}

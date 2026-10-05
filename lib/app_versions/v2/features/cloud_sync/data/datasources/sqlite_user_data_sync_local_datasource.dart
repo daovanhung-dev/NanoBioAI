@@ -223,7 +223,7 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     if (UserDataSyncTables.booleanColumns.contains(column)) {
       return _boolToInt(value);
     }
-    if (column == 'payload') {
+    if (column == 'payload' || column == 'program_json') {
       if (value is String) return value;
       return jsonEncode(value);
     }

@@ -36,6 +36,7 @@ class UserDataSyncTables {
     'meal_schedule_preferences',
     'nutrition_preference_rules',
     'personal_schedule_ai_requests',
+    'fitness_training_programs',
   ];
 
   static const localColumnsByTable = <String, Set<String>>{
@@ -408,6 +409,18 @@ class UserDataSyncTables {
       'updated_at',
       'completed_at',
     },
+    'fitness_training_programs': {
+      'id',
+      'user_id',
+      'request_id',
+      'status',
+      'active_week',
+      'quota_committed',
+      'parent_program_id',
+      'program_json',
+      'created_at',
+      'updated_at',
+    },
   };
 
   static const cloudColumnsByTable = <String, Set<String>>{
@@ -763,6 +776,18 @@ class UserDataSyncTables {
       'updated_at',
       'completed_at',
     },
+    'fitness_training_programs': {
+      'id',
+      'user_id',
+      'request_id',
+      'status',
+      'active_week',
+      'quota_committed',
+      'parent_program_id',
+      'program_json',
+      'created_at',
+      'updated_at',
+    },
   };
 
   static const booleanColumns = <String>{
@@ -781,5 +806,6 @@ class UserDataSyncTables {
     'coffee_high',
     'water_restriction',
     'prescriber_confirmed',
+    'quota_committed',
   };
 }

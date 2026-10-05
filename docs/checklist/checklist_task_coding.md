@@ -47,6 +47,16 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 - [ ] M20-M29: keep the reachable shell data-free until each module has an
   approved DD and safety/privacy/data contracts.
 
+## Current Blocker Addendum — 2026-10-01
+
+- M32 runtime coding is proceeding under the PO's explicit direction dated
+  2026-10-05; this does not represent Tech/Privacy, QA or Clinical approval.
+- Keep the pilot labeled as such, use the self-declared local DOB gate selected
+  by the PO, retain catalog provenance/review status, and do not claim release
+  readiness until reviewer and Android/iOS acceptance evidence is recorded.
+- Record runtime, test, device and Supabase evidence independently as work lands.
+- 2026-10-05 pilot source evidence: focused M32/FeatureHub/router suite 28/28, M05 sync/outbox suite 16/16, `nabi-ai-generate` Edge suite 12/12, targeted analyzer 0 issues and Android debug/release APK builds PASS. No live Gemini, Supabase sandbox, iOS build or on-device M32 flow was verified. FamilyPlus dependent-subject support remains out of scope for this pilot source.
+
 ## Historical Task Log — Superseded 2026-08-24
 
 The dated checkboxes and percentage claims below are retained as historical

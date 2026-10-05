@@ -54,6 +54,18 @@ phải đọc ở cột verification.
 | M29 `AI_HEALTH_TRENDS` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
 | M30 `NABI_COMPANION_NOTIFICATIONS` | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20, engine/repository/controller and SQL/RPC/RLS source exist; app-shell trigger/presentation wiring is absent. |
 
+## Current Module Addendum — 2026-10-05
+
+| Module | DD decision | Implementation | Verification | Source boundary |
+|---|---|---|---|---|
+| M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | M31 source is documented; real-device/provider/Supabase acceptance remains separate. |
+| M32 FITNESS_TRAINING | Draft | In Progress | 28 M32/FeatureHub Flutter tests, 16 M05 sync tests, 12 Edge tests, targeted analyze and Android debug/release builds passed; device/Sandbox unverified | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved. |
+
+M32 exception: PO directed implementation to proceed on 2026-10-05. Do not fabricate
+reviewer approvals. Tech/Privacy, QA and Clinical sign-offs remain pending; the pilot
+must remain clearly labeled and is not release-approved. This addendum supersedes the
+older module-range metadata above.
+
 ## Historical Percentage Rubric — Superseded 2026-08-24
 
 The percentage model and dated evidence below are retained for history only.

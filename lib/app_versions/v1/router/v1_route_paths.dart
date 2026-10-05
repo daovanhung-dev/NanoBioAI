@@ -21,6 +21,7 @@ abstract class V1RoutePaths {
   static const namiCare = '/nami-care';
   static const bodyMetrics = '/body-metrics';
   static const lifestyleSchedule = '/lifestyle-schedule';
+  static const fitnessTraining = '/fitness-training';
   static const dailyRoutinePreferences = '/daily-routine-preferences';
   static const nutrition = '/nutrition';
   static const nutritionProfile = '/nutrition-profile';

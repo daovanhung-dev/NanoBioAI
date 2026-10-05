@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 168
+- Total worklogs: 172
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -177,3 +177,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-09-15 | coding | coding | UI Cài đặt, quản lý notification và điều hướng V1. | [Worklog - Nút quay về và quản lý thông báo](../../docs/worklog/2026-09-15/001-worklog-notification-navigation-actions.md) |
 | 2026-09-15 | test / release artifact | test | Android release build và Google Play handoff. | [Worklog - Xuất Android App Bundle cho bản vá Google Play](../../docs/worklog/2026-09-15/002-worklog-google-play-aab.md) |
 | 2026-09-15 | test / Android runtime build. | test | unknown | [Worklog - Chạy lại ứng dụng version 1.0.0+3](../../docs/worklog/2026-09-15/003-worklog-version-1-0-0-3-runtime.md) |
+| 2026-10-01 | feature/business design/catalog preparation | docs-context | M32 FITNESS_TRAINING | [Worklog — M32 Chế độ luyện tập](../../docs/worklog/2026-10-01/001-worklog-fitness-training-m32.md) |
+| 2026-10-05 | M32 implementation readiness review | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 continuation and approval follow-up](../../docs/worklog/2026-10-05/001-worklog-m32-continuation.md) |
+| 2026-10-05 | docs-dd / implementation readiness | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 PO directions and review packet](../../docs/worklog/2026-10-05/002-worklog-m32-po-directions-review-packet.md) |
+| 2026-10-05 | coding / test / cập nhật BD-DD-handoff | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 fitness-training runtime pilot](../../docs/worklog/2026-10-05/003-worklog-m32-runtime.md) |

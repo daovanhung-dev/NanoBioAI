@@ -1,0 +1,18 @@
+flowchart TD
+  A[Open FeatureHub] --> B{Verified adult?}
+  B -- No --> X[Stop; no quota or AI]
+  B -- Yes --> C[Review profile and preferences]
+  C --> D[Filter approved catalog]
+  D --> E[Authorize M02 quota]
+  E --> F[Gemini creates 28 day draft]
+  F --> G{Schema and safety valid?}
+  G -- No --> H[Preserve active plan; no schedule write]
+  G -- Yes --> I[Preview program]
+  I --> J{User confirms?}
+  J -- No --> K[Keep current schedule]
+  J -- Yes --> L[Atomic apply current 7 day week]
+  L --> M[Weekly check-in]
+  M --> N{Adjust and quota available?}
+  N -- Yes --> O[Replan remaining weeks and preview]
+  O --> I
+  N -- No --> P[Continue saved program]

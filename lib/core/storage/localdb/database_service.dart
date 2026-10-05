@@ -12,6 +12,7 @@ import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_tabl
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nutrition_profile_tables.dart';
+import 'package:nano_app/core/storage/localdb/tables/fitness_training_programs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/sleep_safety_tables.dart';
 import 'package:nano_app/core/utils/logger/app_log_category.dart';
 import 'package:nano_app/core/utils/logger/app_log_level.dart';
@@ -43,6 +44,7 @@ import 'migrations/migration_v21.dart';
 import 'migrations/migration_v22.dart';
 import 'migrations/migration_v23.dart';
 import 'migrations/migration_v24.dart';
+import 'migrations/migration_v25.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -151,6 +153,7 @@ class DatabaseService {
             if (oldVersion < 22 && newVersion >= 22) await MigrationV22.run(db);
             if (oldVersion < 23 && newVersion >= 23) await MigrationV23.run(db);
             if (oldVersion < 24 && newVersion >= 24) await MigrationV24.run(db);
+            if (oldVersion < 25 && newVersion >= 25) await MigrationV25.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -187,6 +190,7 @@ class DatabaseService {
             if (version >= 21) await MigrationV21.ensureSchema(db);
             if (version >= 22) await MigrationV22.ensureSchema(db);
             if (version >= 23) await MigrationV23.ensureSchema(db);
+            if (version >= 25) await MigrationV25.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -278,6 +282,8 @@ class DatabaseService {
     await db.execute(MealPlansTable.createTable);
     await NutritionProfileTables.create(db);
     await db.execute(PersonalScheduleAiRequestsTable.createTable);
+    await db.execute(FitnessTrainingProgramsTable.createTable);
+    await db.execute(FitnessTrainingProgramsTable.createStatusIndex);
     await db.execute(PersonalScheduleAiRequestsTable.createUserModeIndex);
     await db.execute(MealCatalogTable.createTable);
     await db.execute(MealCatalogTable.createTypeIndex);

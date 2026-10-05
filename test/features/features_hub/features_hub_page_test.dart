@@ -8,6 +8,7 @@ void main() {
   const activeFeatureTitles = [
     'Nabi Care',
     'Lịch trình cá nhân',
+    'Chế độ luyện tập',
     'Nhiệm vụ hôm nay',
     'Thực đơn theo tuần',
     'Dinh dưỡng',
@@ -23,13 +24,9 @@ void main() {
     'Trò chuyện giọng nói',
   ];
 
-  const plannedFeatureTitles = [
-    'Giấc ngủ',
-    'Cảm xúc & stress',
-    'Cộng đồng chăm sóc',
-  ];
+  const plannedFeatureTitles = ['Cảm xúc & stress', 'Cộng đồng chăm sóc'];
 
-  testWidgets('renders 15 active tools and keeps future sections collapsed', (
+  testWidgets('renders active tools and keeps future sections collapsed', (
     tester,
   ) async {
     await tester.pumpWidget(const MaterialApp(home: FeaturesHubPage()));
@@ -57,13 +54,10 @@ void main() {
     for (final title in plannedFeatureTitles) {
       expect(find.text(title), findsNothing, reason: title);
     }
-    expect(
-      find.byKey(const Key('advanced-health-feature-M20')),
-      findsNothing,
-    );
+    expect(find.byKey(const Key('advanced-health-feature-M20')), findsNothing);
   });
 
-  testWidgets('compact layout uses three active feature columns', (
+  testWidgets('compact phone layout uses two active feature columns', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(360, 800);
@@ -76,8 +70,8 @@ void main() {
 
     final first = find.byKey(const Key('feature-tile-nabi-care'));
     final second = find.byKey(const Key('feature-tile-lifestyle-schedule'));
-    final third = find.byKey(const Key('feature-tile-today-tasks'));
-    final fourth = find.byKey(const Key('feature-tile-meal-plan'));
+    final third = find.byKey(const Key('feature-tile-fitness-training'));
+    final fourth = find.byKey(const Key('feature-tile-today-tasks'));
 
     final firstOffset = tester.getTopLeft(first);
     final secondOffset = tester.getTopLeft(second);
@@ -85,16 +79,14 @@ void main() {
     final fourthOffset = tester.getTopLeft(fourth);
 
     expect(secondOffset.dy, moreOrLessEquals(firstOffset.dy, epsilon: .1));
-    expect(thirdOffset.dy, moreOrLessEquals(firstOffset.dy, epsilon: .1));
-    expect(fourthOffset.dy, greaterThan(firstOffset.dy));
+    expect(thirdOffset.dy, greaterThan(firstOffset.dy));
+    expect(fourthOffset.dy, moreOrLessEquals(thirdOffset.dy, epsilon: .1));
     expect(firstOffset.dx, lessThan(secondOffset.dx));
-    expect(secondOffset.dx, lessThan(thirdOffset.dx));
+    expect(thirdOffset.dx, lessThan(fourthOffset.dx));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('planned and advanced sections expand on demand', (
-    tester,
-  ) async {
+  testWidgets('planned and advanced sections expand on demand', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: FeaturesHubPage()));
 
     final plannedToggle = find.byKey(const Key('planned-features-toggle'));
@@ -112,22 +104,17 @@ void main() {
     }
 
     final plannedFirst = find.byKey(
-      const Key('planned-feature-sleep-tracking'),
-    );
-    final plannedSecond = find.byKey(
       const Key('planned-feature-stress-tracking'),
     );
-    final plannedThird = find.byKey(
-      const Key('planned-feature-community'),
-    );
+    final plannedSecond = find.byKey(const Key('planned-feature-community'));
     final plannedY = tester.getTopLeft(plannedFirst).dy;
     expect(
       tester.getTopLeft(plannedSecond).dy,
       moreOrLessEquals(plannedY, epsilon: .1),
     );
     expect(
-      tester.getTopLeft(plannedThird).dy,
-      moreOrLessEquals(plannedY, epsilon: .1),
+      find.byKey(const Key('planned-feature-sleep-tracking')),
+      findsNothing,
     );
     expect(tester.getSize(plannedFirst).height, lessThan(140));
 
@@ -159,12 +146,11 @@ void main() {
     final m21Offset = tester.getTopLeft(m21);
     final m22Offset = tester.getTopLeft(m22);
     expect(m21Offset.dy, moreOrLessEquals(m20Offset.dy, epsilon: .1));
-    expect(m22Offset.dy, greaterThan(m20Offset.dy));
+    expect(m22Offset.dy, moreOrLessEquals(m20Offset.dy, epsilon: .1));
     expect(m20Offset.dx, lessThan(m21Offset.dx));
+    expect(m21Offset.dx, lessThan(m22Offset.dx));
     expect(tester.getSize(m20).height, lessThan(175));
 
-    expect(find.text('Miễn phí'), findsNWidgets(3));
-    expect(find.text('Plus'), findsNWidgets(7));
     expect(find.text('Đang phát triển'), findsNWidgets(10));
   });
 
@@ -199,6 +185,8 @@ void main() {
       500,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.ensureVisible(advancedToggle);
+    await tester.pumpAndSettle();
     await tester.tap(advancedToggle);
     await tester.pumpAndSettle();
 

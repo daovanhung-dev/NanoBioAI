@@ -26,6 +26,7 @@ void main() {
         V1RoutePaths.namiCare,
         V1RoutePaths.bodyMetrics,
         V1RoutePaths.lifestyleSchedule,
+        V1RoutePaths.fitnessTraining,
         V1RoutePaths.dailyRoutinePreferences,
         V1RoutePaths.sleepTracking,
         V1RoutePaths.stressTracking,
@@ -66,6 +67,10 @@ void main() {
 
     test('registered V1 route contract contains only live route paths', () {
       expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.dashboard));
+      expect(
+        V1RouteGuards.registeredV1Paths,
+        contains(V1RoutePaths.fitnessTraining),
+      );
       expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.aiChat));
       expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.aiVoice));
       expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.community));

@@ -100,6 +100,9 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 - UI design source: `.codex/design/`
 - Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 
+M32 design records: docs/BD/fitness_training/ and docs/DD/fitness_training/
+(Draft; PO-directed pilot runtime is in progress; reviewer approvals remain pending).
+
 ## Inventory Commands
 
 ```powershell

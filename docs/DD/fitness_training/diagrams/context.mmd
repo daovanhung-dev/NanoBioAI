@@ -1,0 +1,11 @@
+flowchart LR
+  User --> FeatureHub --> M32
+  M32 --> M01[Onboarding profile]
+  M32 --> M04[Local BMI BMR TDEE]
+  M32 --> M02[Schedule and idempotency]
+  M32 --> M06[Trusted quota]
+  M32 --> Gemini[Existing Gemini Edge Function]
+  M32 --> M03[Seven day schedule]
+  M32 --> M09[Notifications]
+  M32 --> YouTube[Official IFrame player]
+  M32 --> Catalog[Versioned curated catalog]

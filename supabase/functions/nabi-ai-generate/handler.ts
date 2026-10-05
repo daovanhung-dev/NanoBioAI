@@ -8,6 +8,7 @@ export type NabiAiGenerateInput = {
   contents: unknown[];
   generationConfig: Record<string, unknown>;
   systemInstruction: string | null;
+  operation: string | null;
   userId: string | null;
   ip: string;
   traceId: string;
@@ -59,6 +60,10 @@ const MAX_TRACE_ID = 100;
 const TRACE_ID_PATTERN = /^[A-Za-z0-9._:-]+$/;
 const SAFE_PROVIDER_ERROR_PATTERN =
   /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response|max_tokens)$/;
+const ALLOWED_OPERATIONS = new Set([
+  'fitness_training_generate',
+  'fitness_training_replan',
+]);
 
 export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
   return async (request: Request): Promise<Response> => {
@@ -146,6 +151,19 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
       const systemInstruction = body.system_instruction == null
         ? null
         : text(body.system_instruction);
+      const operation = body.operation == null ? null : body.operation;
+      if (
+        operation != null &&
+        (typeof operation !== 'string' || !ALLOWED_OPERATIONS.has(operation))
+      ) {
+        return failure(
+          400,
+          'Thao tác AI chưa được hỗ trợ.',
+          traceId,
+          startedAt,
+          'UNSUPPORTED_OPERATION',
+        );
+      }
       if (
         !model ||
         model.length > 120 ||
@@ -205,6 +223,7 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
           userId,
           ip,
           traceId,
+          operation,
         })).trim();
         if (!generated || generated.length > MAX_RESPONSE) {
           return failure(

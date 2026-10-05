@@ -40,6 +40,7 @@ class SyncOutboxSchema {
     'nutrition_goals',
     'meal_schedule_preferences',
     'nutrition_preference_rules',
+    'fitness_training_programs',
   ];
 
   /// Full snapshot contract. The request ledger uses `request_id` instead of

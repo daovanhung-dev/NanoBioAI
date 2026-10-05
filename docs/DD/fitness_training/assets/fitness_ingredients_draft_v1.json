@@ -1,0 +1,1267 @@
+{
+  "catalog": "NanoBio M32 ingredient candidates",
+  "version": "0.1-draft",
+  "status": "pilot_runtime_pending_review",
+  "basis": "Per 100 g as published by the cited USDA FDC survey record; do not infer recipe values until recipe-specific portions and preparation are reviewed.",
+  "provenance": {
+    "dataset": "USDA FoodData Central FNDDS 2021-2023 release, 2024-10",
+    "download_page": "https://fdc.nal.usda.gov/download-datasets/",
+    "license_reference": "https://fdc.nal.usda.gov/api-spec/fdc_api.html",
+    "license": "CC0 1.0 per USDA FDC API specification",
+    "retrieved_at": "2026-10-01",
+    "api_key_used": false,
+    "notes": "Static source extract only. Candidate names are Vietnamese display labels; English FDC descriptions are retained for traceability."
+  },
+  "items": [
+    {
+      "id": "trung_ga_nguyen_qua",
+      "name_vi": "Trứng gà nguyên quả",
+      "fdc_description": "Egg, whole, raw",
+      "food_group": "protein",
+      "allergens": [
+        "egg"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 12.4,
+        "fat_g": 9.96,
+        "carbohydrate_g": 0.96,
+        "energy_kcal": 143,
+        "fiber_g": 0.0,
+        "sodium_mg": 129
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707152,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "uc_ga_khong_da",
+      "name_vi": "Ức gà nướng hoặc áp chảo, bỏ da",
+      "fdc_description": "Chicken breast, baked, broiled, or roasted, skin not eaten, from raw",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 30.2,
+        "fat_g": 3.52,
+        "carbohydrate_g": 0.0,
+        "energy_kcal": 161,
+        "fiber_g": 0.0,
+        "sodium_mg": 360
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705956,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "thit_bo_xay",
+      "name_vi": "Thịt bò xay",
+      "fdc_description": "Beef, ground",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 25.6,
+        "fat_g": 16.8,
+        "carbohydrate_g": 0.0,
+        "energy_kcal": 261,
+        "fiber_g": 0.0,
+        "sodium_mg": 381
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705854,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "ca_hoi",
+      "name_vi": "Cá hồi",
+      "fdc_description": "Fish, salmon, raw",
+      "food_group": "protein",
+      "allergens": [
+        "fish"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 20.4,
+        "fat_g": 11.2,
+        "carbohydrate_g": 0.0,
+        "energy_kcal": 188,
+        "fiber_g": 0.0,
+        "sodium_mg": 63.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2706284,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "ca_ngu_dong_hop",
+      "name_vi": "Cá ngừ đóng hộp",
+      "fdc_description": "Fish, tuna, canned",
+      "food_group": "protein",
+      "allergens": [
+        "fish"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 19.0,
+        "fat_g": 0.94,
+        "carbohydrate_g": 0.08,
+        "energy_kcal": 85.0,
+        "fiber_g": 0.0,
+        "sodium_mg": 219
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2706311,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "tom_hap",
+      "name_vi": "Tôm hấp hoặc luộc",
+      "fdc_description": "Shrimp, steamed or boiled",
+      "food_group": "protein",
+      "allergens": [
+        "crustacean_shellfish"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 17.2,
+        "fat_g": 1.28,
+        "carbohydrate_g": 1.15,
+        "energy_kcal": 90.0,
+        "fiber_g": 0.0,
+        "sodium_mg": 248
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2706363,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "sua_chua_hy_lap",
+      "name_vi": "Sữa chua Hy Lạp không béo, nguyên vị",
+      "fdc_description": "Yogurt, Greek, nonfat milk, plain",
+      "food_group": "protein",
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 10.3,
+        "fat_g": 0.37,
+        "carbohydrate_g": 3.64,
+        "energy_kcal": 59.0,
+        "fiber_g": 0.0,
+        "sodium_mg": 36.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705424,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "pho_mai_tuoi_farmer",
+      "name_vi": "Phô mai tươi kiểu farmer",
+      "fdc_description": "Cottage cheese, farmer's",
+      "food_group": "protein",
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 11.0,
+        "fat_g": 9.73,
+        "carbohydrate_g": 4.33,
+        "energy_kcal": 148,
+        "fiber_g": 0.0,
+        "sodium_mg": 330
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705749,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "sua_tuoi_nguyen_kem",
+      "name_vi": "Sữa tươi nguyên kem",
+      "fdc_description": "Milk, whole",
+      "food_group": "protein",
+      "allergens": [
+        "milk"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 3.27,
+        "fat_g": 3.2,
+        "carbohydrate_g": 4.63,
+        "energy_kcal": 61.0,
+        "fiber_g": 0.0,
+        "sodium_mg": 38.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705385,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "sua_dau_nanh_khong_duong",
+      "name_vi": "Sữa đậu nành không đường",
+      "fdc_description": "Soy milk, unsweetened",
+      "food_group": "protein",
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 3.55,
+        "fat_g": 2.12,
+        "carbohydrate_g": 1.29,
+        "energy_kcal": 38.0,
+        "fiber_g": 0.0,
+        "sodium_mg": 34.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2705405,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "edamame",
+      "name_vi": "Đậu nành edamame đã nấu chín",
+      "fdc_description": "Edamame, cooked",
+      "food_group": "protein",
+      "allergens": [
+        "soy"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 11.5,
+        "fat_g": 7.58,
+        "carbohydrate_g": 8.63,
+        "energy_kcal": 140,
+        "fiber_g": 5.0,
+        "sodium_mg": 127
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707436,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "dau_ga",
+      "name_vi": "Đậu gà nấu chín, không thêm dầu",
+      "fdc_description": "Chickpeas, from dried, no added fat",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 8.81,
+        "fat_g": 2.58,
+        "carbohydrate_g": 27.3,
+        "energy_kcal": 163,
+        "fiber_g": 7.6,
+        "sodium_mg": 238
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707416,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "dau_lang",
+      "name_vi": "Đậu lăng nấu chín, không thêm dầu",
+      "fdc_description": "Lentils, from dried, no added fat",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 8.97,
+        "fat_g": 0.38,
+        "carbohydrate_g": 20.0,
+        "energy_kcal": 115,
+        "fiber_g": 7.9,
+        "sodium_mg": 233
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707425,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "dau_den",
+      "name_vi": "Đậu đen nấu chín, không thêm dầu",
+      "fdc_description": "Black beans, from dried, no added fat",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 8.81,
+        "fat_g": 0.54,
+        "carbohydrate_g": 23.6,
+        "energy_kcal": 131,
+        "fiber_g": 8.6,
+        "sodium_mg": 232
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707361,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "dau_do_kidney",
+      "name_vi": "Đậu kidney nấu chín, không thêm dầu",
+      "fdc_description": "Kidney beans, from dried, no added fat",
+      "food_group": "protein",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 8.62,
+        "fat_g": 0.5,
+        "carbohydrate_g": 22.7,
+        "energy_kcal": 126,
+        "fiber_g": 7.4,
+        "sodium_mg": 233
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707381,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 1
+    },
+    {
+      "id": "quinoa",
+      "name_vi": "Quinoa, không rõ có thêm chất béo",
+      "fdc_description": "Quinoa, NS as to fat",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 4.2,
+        "fat_g": 5.42,
+        "carbohydrate_g": 20.2,
+        "energy_kcal": 146,
+        "fiber_g": 2.7,
+        "sodium_mg": 184
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2708399,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "com_gao_trang",
+      "name_vi": "Cơm gạo trắng đã nấu",
+      "fdc_description": "Rice, white, cooked, NS as to fat",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.67,
+        "fat_g": 0.28,
+        "carbohydrate_g": 28.0,
+        "energy_kcal": 129,
+        "fiber_g": 0.4,
+        "sodium_mg": 244
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2708403,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "com_gao_lut",
+      "name_vi": "Cơm gạo lứt đã nấu",
+      "fdc_description": "Rice, brown, cooked, NS as to fat",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.44,
+        "fat_g": 1.11,
+        "carbohydrate_g": 25.8,
+        "energy_kcal": 123,
+        "fiber_g": 1.0,
+        "sodium_mg": 201
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2708409,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "khoai_tay_nuong",
+      "name_vi": "Khoai tây nướng",
+      "fdc_description": "Potato, baked, NFS",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 1.95,
+        "fat_g": 0.1,
+        "carbohydrate_g": 21.4,
+        "energy_kcal": 93.0,
+        "fiber_g": 1.5,
+        "sodium_mg": 181
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709383,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "khoai_lang",
+      "name_vi": "Khoai lang nấu chín",
+      "fdc_description": "Sweet potato, cooked, as ingredient",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 1.65,
+        "fat_g": 0.4,
+        "carbohydrate_g": 18.0,
+        "energy_kcal": 82.0,
+        "fiber_g": 3.1,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2710794,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "banh_mi_nguyen_cam",
+      "name_vi": "Bánh mì nguyên cám",
+      "fdc_description": "Bread, whole wheat",
+      "food_group": "carbohydrate",
+      "allergens": [
+        "wheat_gluten"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 12.3,
+        "fat_g": 3.55,
+        "carbohydrate_g": 43.1,
+        "energy_kcal": 254,
+        "fiber_g": 6.0,
+        "sodium_mg": 430
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707709,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "ngo_nau",
+      "name_vi": "Ngô nấu chín theo dữ liệu nhà hàng",
+      "fdc_description": "Corn, cooked, from restaurant",
+      "food_group": "carbohydrate",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 3.11,
+        "fat_g": 5.43,
+        "carbohydrate_g": 17.7,
+        "energy_kcal": 119,
+        "fiber_g": 1.9,
+        "sodium_mg": 212
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709909,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 2
+    },
+    {
+      "id": "chuoi",
+      "name_vi": "Chuối tươi",
+      "fdc_description": "Banana, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.74,
+        "fat_g": 0.28,
+        "carbohydrate_g": 22.7,
+        "energy_kcal": 97.0,
+        "fiber_g": 1.7,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709224,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "tao",
+      "name_vi": "Táo tươi",
+      "fdc_description": "Apple, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.17,
+        "fat_g": 0.15,
+        "carbohydrate_g": 14.8,
+        "energy_kcal": 61.0,
+        "fiber_g": 2.1,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709215,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "cam",
+      "name_vi": "Cam tươi",
+      "fdc_description": "Orange, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.92,
+        "fat_g": 0.14,
+        "carbohydrate_g": 11.8,
+        "energy_kcal": 50.0,
+        "fiber_g": 2.2,
+        "sodium_mg": 4.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709171,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "viet_quat",
+      "name_vi": "Việt quất tươi",
+      "fdc_description": "Blueberries, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.7,
+        "fat_g": 0.31,
+        "carbohydrate_g": 14.6,
+        "energy_kcal": 64.0,
+        "fiber_g": 2.4,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709275,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "dau_tay",
+      "name_vi": "Dâu tây tươi",
+      "fdc_description": "Strawberries, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.64,
+        "fat_g": 0.22,
+        "carbohydrate_g": 7.96,
+        "energy_kcal": 36.0,
+        "fiber_g": 1.8,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709283,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "xoai",
+      "name_vi": "Xoài tươi",
+      "fdc_description": "Mango, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.82,
+        "fat_g": 0.38,
+        "carbohydrate_g": 15.0,
+        "energy_kcal": 60.0,
+        "fiber_g": 1.6,
+        "sodium_mg": 1.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709242,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "dua",
+      "name_vi": "Dứa tươi",
+      "fdc_description": "Pineapple, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.46,
+        "fat_g": 0.21,
+        "carbohydrate_g": 14.1,
+        "energy_kcal": 60.0,
+        "fiber_g": 0.9,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709260,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "rau_bina",
+      "name_vi": "Rau bina tươi",
+      "fdc_description": "Spinach, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.85,
+        "fat_g": 0.62,
+        "carbohydrate_g": 2.41,
+        "energy_kcal": 27.0,
+        "fiber_g": 1.6,
+        "sodium_mg": 111
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709614,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "bong_cai_xanh",
+      "name_vi": "Bông cải xanh tươi",
+      "fdc_description": "Broccoli, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.57,
+        "fat_g": 0.34,
+        "carbohydrate_g": 6.27,
+        "energy_kcal": 39.0,
+        "fiber_g": 2.4,
+        "sodium_mg": 36.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709643,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "ca_chua",
+      "name_vi": "Cà chua tươi",
+      "fdc_description": "Tomatoes, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.82,
+        "fat_g": 0.31,
+        "carbohydrate_g": 4.04,
+        "energy_kcal": 20.0,
+        "fiber_g": 1.2,
+        "sodium_mg": 4.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709719,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "ca_rot",
+      "name_vi": "Cà rốt tươi",
+      "fdc_description": "Carrots, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.87,
+        "fat_g": 0.24,
+        "carbohydrate_g": 9.68,
+        "energy_kcal": 44.0,
+        "fiber_g": 2.9,
+        "sodium_mg": 75.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709660,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "dua_leo",
+      "name_vi": "Dưa leo tươi",
+      "fdc_description": "Cucumber, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.62,
+        "fat_g": 0.18,
+        "carbohydrate_g": 2.95,
+        "energy_kcal": 16.0,
+        "fiber_g": 0.5,
+        "sodium_mg": 2.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709784,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "ot_chuong_xanh",
+      "name_vi": "Ớt chuông xanh tươi",
+      "fdc_description": "Peppers, sweet, green, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.72,
+        "fat_g": 0.11,
+        "carbohydrate_g": 4.78,
+        "energy_kcal": 23.0,
+        "fiber_g": 0.9,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709800,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "nam_tuoi",
+      "name_vi": "Nấm tươi",
+      "fdc_description": "Mushrooms, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.9,
+        "fat_g": 0.35,
+        "carbohydrate_g": 4.13,
+        "energy_kcal": 31.0,
+        "fiber_g": 1.7,
+        "sodium_mg": 6.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709793,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "hanh_tay",
+      "name_vi": "Hành tây tươi",
+      "fdc_description": "Onions, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.86,
+        "fat_g": 0.08,
+        "carbohydrate_g": 8.46,
+        "energy_kcal": 38.0,
+        "fiber_g": 1.7,
+        "sodium_mg": 1.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709795,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "toi_tuoi",
+      "name_vi": "Tỏi tươi",
+      "fdc_description": "Garlic, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 6.62,
+        "fat_g": 0.38,
+        "carbohydrate_g": 28.2,
+        "energy_kcal": 143,
+        "fiber_g": 2.7,
+        "sodium_mg": 17.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709786,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "hanh_nhan",
+      "name_vi": "Hạnh nhân chưa rang",
+      "fdc_description": "Almonds, unroasted",
+      "food_group": "fat_source",
+      "allergens": [
+        "tree_nuts"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 21.4,
+        "fat_g": 51.1,
+        "carbohydrate_g": 20.0,
+        "energy_kcal": 626,
+        "fiber_g": 10.8,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707486,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "oc_cho",
+      "name_vi": "Óc chó",
+      "fdc_description": "Walnuts, excluding honey roasted",
+      "food_group": "fat_source",
+      "allergens": [
+        "tree_nuts"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 14.6,
+        "fat_g": 69.7,
+        "carbohydrate_g": 10.9,
+        "energy_kcal": 730,
+        "fiber_g": 5.2,
+        "sodium_mg": 0.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707531,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "dau_phong",
+      "name_vi": "Đậu phộng rang không muối",
+      "fdc_description": "Peanuts, roasted, unsalted",
+      "food_group": "fat_source",
+      "allergens": [
+        "peanut"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 28.0,
+        "fat_g": 52.5,
+        "carbohydrate_g": 15.3,
+        "energy_kcal": 599,
+        "fiber_g": 9.4,
+        "sodium_mg": 6.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707516,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "bo_dau_phong",
+      "name_vi": "Bơ đậu phộng",
+      "fdc_description": "Peanut butter",
+      "food_group": "fat_source",
+      "allergens": [
+        "peanut"
+      ],
+      "nutrition_per_100g": {
+        "protein_g": 22.2,
+        "fat_g": 51.4,
+        "carbohydrate_g": 22.3,
+        "energy_kcal": 598,
+        "fiber_g": 5.0,
+        "sodium_mg": 426
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707537,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "dau_olive",
+      "name_vi": "Dầu ô liu",
+      "fdc_description": "Olive oil",
+      "food_group": "fat_source",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 0.0,
+        "fat_g": 100,
+        "carbohydrate_g": 0.0,
+        "energy_kcal": 900,
+        "fiber_g": 0.0,
+        "sodium_mg": 2.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2710186,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "hat_chia",
+      "name_vi": "Hạt chia",
+      "fdc_description": "Chia seeds",
+      "food_group": "fat_source",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 16.5,
+        "fat_g": 30.7,
+        "carbohydrate_g": 42.1,
+        "energy_kcal": 486,
+        "fiber_g": 34.4,
+        "sodium_mg": 16.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707590,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "hat_bi",
+      "name_vi": "Hạt bí không muối",
+      "fdc_description": "Pumpkin seeds, unsalted",
+      "food_group": "fat_source",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 29.8,
+        "fat_g": 49.0,
+        "carbohydrate_g": 14.7,
+        "energy_kcal": 574,
+        "fiber_g": 6.5,
+        "sodium_mg": 18.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2707581,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    },
+    {
+      "id": "chanh",
+      "name_vi": "Chanh tươi",
+      "fdc_description": "Lemon, raw",
+      "food_group": "fruit_vegetable",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 1.1,
+        "fat_g": 0.3,
+        "carbohydrate_g": 9.32,
+        "energy_kcal": 29.0,
+        "fiber_g": 2.8,
+        "sodium_mg": 2.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709168,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 3
+    },
+    {
+      "id": "bo",
+      "name_vi": "Bơ trái tươi",
+      "fdc_description": "Avocado, raw",
+      "food_group": "fat_source",
+      "allergens": [],
+      "nutrition_per_100g": {
+        "protein_g": 2.0,
+        "fat_g": 14.7,
+        "carbohydrate_g": 8.53,
+        "energy_kcal": 160,
+        "fiber_g": 6.7,
+        "sodium_mg": 7.0
+      },
+      "source": {
+        "name": "USDA FoodData Central",
+        "data_type": "FNDDS 2021-2023",
+        "release_file": "FoodData_Central_survey_food_json_2024-10-31.zip",
+        "fdc_id": 2709223,
+        "retrieved_at": "2026-10-01"
+      },
+      "review_status": "draft_requires_nutrition_and_clinical_review",
+      "category_icon_asset": "images/atlas/m32_food_groups_4.png",
+      "category_icon_atlas_id": "m32_food_groups_4",
+      "category_icon_cell_index_1based": 4
+    }
+  ]
+}

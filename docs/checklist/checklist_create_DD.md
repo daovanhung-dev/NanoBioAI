@@ -65,6 +65,16 @@ UI catalog cards and the shared development placeholder are approved shell work 
 |---:|---|---|---|---|---|---|
 | 30 | DD-NABI-COMPANION-NOTIFICATIONS-001 | M30 `NABI_COMPANION_NOTIFICATIONS` | Approved / Source-only | `docs/DD/nabi_companion_notifications/` | 2026-07-17 | SQLite v15/current v20, engine/repository/controller and Supabase source exist; app-shell wiring remains Runtime-unverified. |
 
+## DD Registry Addendum — 2026-10-01
+
+| # | DD | Module | DD decision / implementation | Output path | Created | Notes |
+|---:|---|---|---|---|---|---|
+| 31 | DD-SLEEP-SAFETY-MONITORING-001 | M31 SLEEP_SAFETY_MONITORING | Approved / Implemented | docs/DD/sleep_safety_monitoring/ | 2026-08-24 | Source is documented; runtime/device/Supabase evidence remains separate. |
+| 32 | DD-FITNESS-TRAINING-001 | M32 FITNESS_TRAINING | Draft / In Progress | docs/DD/fitness_training/ | 2026-10-01 | PO-directed pilot implementation present; Tech, Privacy, Clinical and QA sign-off plus device/Sandbox acceptance remain pending. |
+
+M20-M29 remain without module DD. M32 is a separate Draft module with pilot
+runtime code; it is not release-approved.
+
 ## Deleted Historical DD Claims
 
 The former `docs/DD/product_flow/` and `docs/DD/authentication/` trees are not
