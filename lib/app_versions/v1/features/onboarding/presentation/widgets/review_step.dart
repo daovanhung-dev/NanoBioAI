@@ -253,7 +253,7 @@ class ReviewStep extends ConsumerWidget {
           .read(onboardingProvider)
           .initialPlanGenerationSource;
       if (generationSource.isBasicSuggestion && context.mounted) {
-        _showMessage(context, 'NaBi đã tạo lịch gợi ý cơ bản đầu tiên.');
+        _showMessage(context, 'Nabi đã tạo lịch gợi ý cơ bản đầu tiên.');
       }
       if (context.mounted) V1AppNavigator.goMenu(context);
     } catch (error) {
@@ -351,7 +351,7 @@ class _ReadinessHero extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   ready
-                      ? 'NaBi sẽ tạo lộ trình cá nhân.'
+                      ? 'Nabi sẽ tạo lộ trình cá nhân.'
                       : 'Kiểm tra các mục chưa hoàn tất.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textInverse.withValues(alpha: 0.86),

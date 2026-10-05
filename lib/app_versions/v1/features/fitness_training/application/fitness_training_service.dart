@@ -141,6 +141,164 @@ class FitnessTrainingService {
     );
   }
 
+  Future<FitnessWorkoutTimeResolution> resolveWorkoutTime({
+    required String userId,
+    required FitnessTrainingIntake intake,
+    required DateTime startDate,
+    required int firstDayIndex,
+    required String requestedTime,
+  }) {
+    final start = _dateOnly(startDate);
+    final dates = <DateTime>[];
+    for (
+      var index = firstDayIndex;
+      index < firstDayIndex + 7 && index < 28;
+      index++
+    ) {
+      final date = start.add(Duration(days: index));
+      if (intake.trainingWeekdays.contains(date.weekday)) dates.add(date);
+    }
+    return _resolveWorkoutTimeAcrossDates(
+      userId: userId,
+      dates: dates,
+      sessionMinutes: intake.sessionMinutes,
+      requestedTime: requestedTime,
+    );
+  }
+
+  Future<FitnessWorkoutTimeResolution> resolveWorkoutTimeForProgramWeek({
+    required String userId,
+    required FitnessTrainingProgram program,
+    required int week,
+    required String requestedTime,
+  }) {
+    final baseIndex = (week - 1) * 7;
+    final dates = [
+      for (final day in program.days)
+        if (day.dayIndex >= baseIndex &&
+            day.dayIndex < baseIndex + 7 &&
+            !day.isRestDay &&
+            day.exercises.isNotEmpty)
+          day.date,
+    ];
+    return _resolveWorkoutTimeAcrossDates(
+      userId: userId,
+      dates: dates,
+      sessionMinutes: program.intake.sessionMinutes,
+      requestedTime: requestedTime,
+    );
+  }
+
+  Future<FitnessWorkoutTimeResolution> _resolveWorkoutTimeAcrossDates({
+    required String userId,
+    required List<DateTime> dates,
+    required int sessionMinutes,
+    required String requestedTime,
+  }) async {
+    final requestedMinutes = _minutesOfDay(requestedTime);
+    if (requestedMinutes == null) {
+      throw const FitnessProgramValidationException('workout_time');
+    }
+
+    final alternatives =
+        fitnessWorkoutTimeOptions
+            .where((time) => time != requestedTime)
+            .toList(growable: false)
+          ..sort((left, right) {
+            final leftMinutes = _minutesOfDay(left) ?? requestedMinutes;
+            final rightMinutes = _minutesOfDay(right) ?? requestedMinutes;
+            final distance = (leftMinutes - requestedMinutes).abs().compareTo(
+              (rightMinutes - requestedMinutes).abs(),
+            );
+            return distance != 0 ? distance : left.compareTo(right);
+          });
+    final candidateTimes = [requestedTime, ...alternatives];
+    final nowAt = now();
+    final slotsByTime = <String, List<FitnessWorkoutScheduleSlot>>{
+      for (final time in candidateTimes)
+        time: _slotsForDates(
+          dates: dates,
+          sessionMinutes: sessionMinutes,
+          time: time,
+          nowAt: nowAt,
+        ),
+    };
+    final conflictsByTime = await repository.findScheduleConflictsByWorkoutTime(
+      userId: userId,
+      slotsByTime: slotsByTime,
+      now: nowAt,
+    );
+    final conflicts = conflictsByTime[requestedTime];
+    if (conflicts == null) {
+      throw StateError('Schedule conflict query omitted the requested time.');
+    }
+    if (conflicts.isEmpty) {
+      return FitnessWorkoutTimeResolution(
+        requestedTime: requestedTime,
+        conflicts: conflicts,
+      );
+    }
+
+    String? suggestedTime;
+    for (final alternative in alternatives) {
+      final candidateConflicts = conflictsByTime[alternative];
+      if (candidateConflicts == null) {
+        throw StateError('Schedule conflict query omitted $alternative.');
+      }
+      if (candidateConflicts.isEmpty) {
+        suggestedTime = alternative;
+        break;
+      }
+    }
+    return FitnessWorkoutTimeResolution(
+      requestedTime: requestedTime,
+      suggestedTime: suggestedTime,
+      conflicts: conflicts,
+    );
+  }
+
+  List<FitnessWorkoutScheduleSlot> _slotsForDates({
+    required List<DateTime> dates,
+    required int sessionMinutes,
+    required String time,
+    required DateTime nowAt,
+  }) {
+    final minutes = _minutesOfDay(time);
+    if (minutes == null) {
+      throw const FitnessProgramValidationException('workout_time');
+    }
+    final hour = minutes ~/ 60;
+    final minute = minutes % 60;
+    final slots = <FitnessWorkoutScheduleSlot>[];
+    for (final date in dates) {
+      final startAt = DateTime(date.year, date.month, date.day, hour, minute);
+      if (startAt.isBefore(nowAt)) continue;
+      slots.add(
+        FitnessWorkoutScheduleSlot(
+          startAt: startAt,
+          endAt: startAt.add(Duration(minutes: sessionMinutes)),
+        ),
+      );
+    }
+    return slots;
+  }
+
+  int? _minutesOfDay(String value) {
+    final parts = value.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null ||
+        minute == null ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59) {
+      return null;
+    }
+    return hour * 60 + minute;
+  }
+
   Future<FitnessTrainingProgram> _generate({
     required String userId,
     required bool guest,
@@ -270,46 +428,15 @@ class FitnessTrainingService {
     required DateTime startDate,
     required int firstDayIndex,
   }) async {
-    final start = DateTime(startDate.year, startDate.month, startDate.day);
-    final slots = <FitnessWorkoutScheduleSlot>[];
-    final timeParts = intake.workoutTime.split(':');
-    final hour = timeParts.length == 2 ? int.tryParse(timeParts[0]) : null;
-    final minute = timeParts.length == 2 ? int.tryParse(timeParts[1]) : null;
-    if (hour == null || minute == null || hour > 23 || minute > 59) {
-      throw const FitnessProgramValidationException('workout_time');
-    }
-    final at = now();
-    for (
-      var index = firstDayIndex;
-      index < firstDayIndex + 7 && index < 28;
-      index++
-    ) {
-      final date = start.add(Duration(days: index));
-      if (!intake.trainingWeekdays.contains(date.weekday)) continue;
-      final workoutStart = DateTime(
-        date.year,
-        date.month,
-        date.day,
-        hour,
-        minute,
-      );
-      if (workoutStart.isBefore(at)) continue;
-      slots.add(
-        FitnessWorkoutScheduleSlot(
-          startAt: workoutStart,
-          endAt: workoutStart.add(Duration(minutes: intake.sessionMinutes)),
-        ),
-      );
-    }
-    if (slots.isEmpty) return;
-    final conflicts = await repository.findScheduleConflicts(
+    final resolution = await resolveWorkoutTime(
       userId: userId,
-      slots: slots,
-      now: at,
+      intake: intake,
+      startDate: startDate,
+      firstDayIndex: firstDayIndex,
+      requestedTime: intake.workoutTime,
     );
-    if (conflicts.isNotEmpty) {
-      throw FitnessScheduleConflictException(conflicts);
-    }
+    if (!resolution.hasConflicts) return;
+    throw FitnessWorkoutTimeResolutionRequired(resolution);
   }
 
   String _prompt({

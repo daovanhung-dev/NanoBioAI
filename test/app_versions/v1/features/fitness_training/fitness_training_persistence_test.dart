@@ -267,6 +267,39 @@ void main() {
       expect(titles, isNot(contains('completed')));
       expect(titles, isNot(contains('past')));
       expect(titles, isNot(contains('replaceable')));
+
+      final byTime =
+          await FitnessTrainingLocalDatasource(
+            databaseOverride: db,
+            now: () => DateTime(2026, 1, 1, 10),
+          ).findScheduleConflictsByWorkoutTime(
+            userId: 'user-1',
+            now: DateTime(2026, 1, 1, 10),
+            slotsByTime: {
+              '17:30': [
+                FitnessWorkoutScheduleSlot(
+                  startAt: DateTime(2026, 1, 2, 17, 30),
+                  endAt: DateTime(2026, 1, 2, 18, 15),
+                ),
+                FitnessWorkoutScheduleSlot(
+                  startAt: DateTime(2026, 1, 3, 17, 30),
+                  endAt: DateTime(2026, 1, 3, 18, 15),
+                ),
+              ],
+              '16:30': [
+                FitnessWorkoutScheduleSlot(
+                  startAt: DateTime(2026, 1, 2, 16, 30),
+                  endAt: DateTime(2026, 1, 2, 17, 15),
+                ),
+                FitnessWorkoutScheduleSlot(
+                  startAt: DateTime(2026, 1, 3, 16, 30),
+                  endAt: DateTime(2026, 1, 3, 17, 15),
+                ),
+              ],
+            },
+          );
+      expect(byTime['17:30'], isNotEmpty);
+      expect(byTime['16:30'], isEmpty);
     },
   );
 

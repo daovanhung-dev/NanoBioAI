@@ -51,8 +51,8 @@ extension _BootStagePresentation on _BootStage {
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({
     super.key,
-    this.title = 'NanoBio',
-    this.subtitle = 'Cùng Nabi chăm sóc sức khỏe mỗi ngày.',
+    this.title = 'Nabi',
+    this.subtitle = 'Hiểu bạn để chăm bạn tốt hơn.',
   });
 
   final String title;
@@ -272,7 +272,7 @@ class _SplashExperience extends StatelessWidget {
     final colors = context.semanticColors;
 
     return Semantics(
-      label: 'NanoBio, trợ lý sức khỏe cá nhân cùng Nabi',
+      label: 'Nabi - Trợ lý sức khỏe AI',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -340,7 +340,7 @@ class _NabiHero extends StatelessWidget {
 
     return Semantics(
       image: true,
-      label: 'Nabi, trợ lý sức khỏe của NanoBio',
+      label: 'Nabi, trợ lý sức khỏe AI đồng hành cùng bạn',
       child: SizedBox.square(
         dimension: size * 1.18,
         child: Stack(

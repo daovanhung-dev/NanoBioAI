@@ -25,16 +25,7 @@ class FitnessTrainingPage extends ConsumerStatefulWidget {
 }
 
 class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
-  static const _workoutTimes = <String>[
-    '06:00',
-    '07:00',
-    '08:00',
-    '12:00',
-    '16:30',
-    '17:30',
-    '18:30',
-    '19:30',
-  ];
+  static const _workoutTimes = fitnessWorkoutTimeOptions;
 
   late Future<FitnessTrainingLoadedContext> _loadFuture;
   int _step = 0;
@@ -744,7 +735,10 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
     return exercises.isNotEmpty;
   }
 
-  Future<void> _generate(FitnessTrainingLoadedContext data) async {
+  Future<void> _generate(
+    FitnessTrainingLoadedContext data, {
+    String? workoutTimeOverride,
+  }) async {
     final controller = ref.read(fitnessTrainingControllerProvider);
     final intake = controller.makeIntake(
       profile: data.profile,
@@ -754,7 +748,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       equipmentIds: _equipmentIds,
       trainingWeekdays: _weekdays.toList(),
       sessionMinutes: _sessionMinutes,
-      workoutTime: _workoutTime,
+      workoutTime: workoutTimeOverride ?? _workoutTime,
       excludedMovementGroups: _excludedMoves.toList(),
     );
     setState(() {
@@ -777,6 +771,28 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       });
     } catch (error) {
       if (!mounted) return;
+      if (error is FitnessWorkoutTimeResolutionRequired) {
+        setState(() => _busy = false);
+        if (error.resolution.suggestedTime == null) {
+          setState(
+            () => _error = _noAvailableWorkoutTimeMessage(error.resolution),
+          );
+          return;
+        }
+        final acceptedTime = await _confirmWorkoutTimeChange(error.resolution);
+        if (!mounted) return;
+        if (acceptedTime != null) {
+          setState(() => _workoutTime = acceptedTime);
+          await _generate(data, workoutTimeOverride: acceptedTime);
+          return;
+        }
+        setState(
+          () => _error = _conflictMessage(
+            FitnessScheduleConflictException(error.resolution.conflicts),
+          ),
+        );
+        return;
+      }
       setState(() {
         _busy = false;
         _error = _friendlyError(error);
@@ -785,6 +801,9 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   }
 
   String _friendlyError(Object error) {
+    if (error is FitnessWorkoutTimeResolutionRequired) {
+      return _noAvailableWorkoutTimeMessage(error.resolution);
+    }
     if (error is FitnessScheduleConflictException) {
       return _conflictMessage(error);
     }
@@ -808,6 +827,43 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       };
     }
     return 'Kết nối đang bận hoặc phản hồi chưa phù hợp. Chương trình hiện tại vẫn được giữ nguyên; bạn có thể thử lại.';
+  }
+
+  String _noAvailableWorkoutTimeMessage(
+    FitnessWorkoutTimeResolution resolution,
+  ) =>
+      'Chưa tìm thấy giờ trống trong các khung giờ gợi ý. Hãy điều chỉnh ngày '
+      'tập, thời lượng hoặc giờ tập rồi thử lại.\n'
+      '${_conflictMessage(FitnessScheduleConflictException(resolution.conflicts))}';
+
+  Future<String?> _confirmWorkoutTimeChange(
+    FitnessWorkoutTimeResolution resolution,
+  ) {
+    final suggestedTime = resolution.suggestedTime;
+    if (suggestedTime == null) return Future.value(null);
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Giờ tập đang bị trùng'),
+        content: Text(
+          'Giờ ${resolution.requestedTime} có '
+          '${resolution.conflicts.length} xung đột lịch trong tuần sắp áp dụng. '
+          'Cho phép đổi giờ tập của chương trình M32 này sang $suggestedTime? '
+          'Chỉ giờ tập của chương trình này thay đổi; hồ sơ cá nhân và lịch '
+          'hiện có được giữ nguyên.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Giữ giờ đã chọn'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, suggestedTime),
+            child: const Text('Đồng ý đổi giờ'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _conflictMessage(FitnessScheduleConflictException error) {
@@ -1132,14 +1188,59 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
         const SnackBar(content: Text('Đã áp dụng lịch luyện tập của bạn.')),
       );
     } catch (error) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = error is FitnessScheduleConflictException
-              ? _friendlyError(error)
-              : 'Chưa áp dụng được lịch. Chương trình xem trước vẫn còn nguyên.';
-        });
+      if (!mounted) return;
+      if (error is FitnessScheduleConflictException) {
+        try {
+          final resolution = await ref
+              .read(fitnessTrainingControllerProvider)
+              .resolveWorkoutTimeForProgramWeek(
+                context: data,
+                program: program,
+                week: program.activeWeek,
+                requestedTime: _workoutTime,
+              );
+          if (!mounted) return;
+          if (resolution.suggestedTime != null) {
+            setState(() => _busy = false);
+            final acceptedTime = await _confirmWorkoutTimeChange(resolution);
+            if (!mounted) return;
+            if (acceptedTime != null) {
+              setState(() {
+                _workoutTime = acceptedTime;
+                _error =
+                    'Đã đổi giờ trong bản xem trước. Hãy xác nhận lại để áp dụng; lịch hiện có vẫn được giữ nguyên.';
+              });
+              return;
+            }
+            setState(() {
+              _busy = false;
+              _error = _conflictMessage(
+                FitnessScheduleConflictException(resolution.conflicts),
+              );
+            });
+            return;
+          }
+          setState(() {
+            _busy = false;
+            _error = resolution.hasConflicts
+                ? _noAvailableWorkoutTimeMessage(resolution)
+                : 'Lịch đã thay đổi. Hãy xác nhận áp dụng lại; bản xem trước vẫn được giữ nguyên.';
+          });
+          return;
+        } catch (resolutionError) {
+          if (!mounted) return;
+          setState(() {
+            _busy = false;
+            _error = _friendlyError(resolutionError);
+          });
+          return;
+        }
       }
+      setState(() {
+        _busy = false;
+        _error =
+            'Chưa áp dụng được lịch. Chương trình xem trước vẫn còn nguyên.';
+      });
     }
   }
 
@@ -1234,15 +1335,31 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
         _replanCheckIn = null;
       });
     } catch (error) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = _friendlyError(error);
-          if (error is FitnessScheduleConflictException) {
-            _replanProgram = active;
-            _replanCheckIn = checkIn;
-          }
-        });
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _replanProgram = active;
+        _replanCheckIn = checkIn;
+        _error = _friendlyError(error);
+      });
+      if (error is FitnessWorkoutTimeResolutionRequired &&
+          error.resolution.suggestedTime != null) {
+        final acceptedTime = await _confirmWorkoutTimeChange(error.resolution);
+        if (!mounted) return;
+        if (acceptedTime != null) {
+          setState(() => _workoutTime = acceptedTime);
+          await _retryReplan(data);
+        } else {
+          setState(
+            () => _error = _conflictMessage(
+              FitnessScheduleConflictException(error.resolution.conflicts),
+            ),
+          );
+        }
+      } else if (error is FitnessWorkoutTimeResolutionRequired) {
+        setState(
+          () => _error = _noAvailableWorkoutTimeMessage(error.resolution),
+        );
       }
     }
   }
@@ -1280,6 +1397,25 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
         _busy = false;
         _error = _friendlyError(error);
       });
+      if (error is FitnessWorkoutTimeResolutionRequired &&
+          error.resolution.suggestedTime != null) {
+        final acceptedTime = await _confirmWorkoutTimeChange(error.resolution);
+        if (!mounted) return;
+        if (acceptedTime != null) {
+          setState(() => _workoutTime = acceptedTime);
+          await _retryReplan(data);
+        } else {
+          setState(
+            () => _error = _conflictMessage(
+              FitnessScheduleConflictException(error.resolution.conflicts),
+            ),
+          );
+        }
+      } else if (error is FitnessWorkoutTimeResolutionRequired) {
+        setState(
+          () => _error = _noAvailableWorkoutTimeMessage(error.resolution),
+        );
+      }
     }
   }
 

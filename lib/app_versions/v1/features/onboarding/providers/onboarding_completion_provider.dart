@@ -4,7 +4,7 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 
 class OnboardingInitialPlanException implements Exception {
   static const userMessage =
-      'NaBi đã lưu hồ sơ, nhưng chưa thể tạo lịch cá nhân đầu tiên lúc này. Bạn thử lại sau một chút nhé.';
+      'Nabi đã lưu hồ sơ, nhưng chưa thể tạo lịch cá nhân đầu tiên lúc này. Bạn thử lại sau một chút nhé.';
 
   final String message;
 

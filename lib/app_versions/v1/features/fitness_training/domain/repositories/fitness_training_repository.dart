@@ -34,6 +34,13 @@ abstract interface class FitnessTrainingRepository {
     required DateTime now,
   });
 
+  Future<Map<String, List<FitnessScheduleConflict>>>
+  findScheduleConflictsByWorkoutTime({
+    required String userId,
+    required Map<String, List<FitnessWorkoutScheduleSlot>> slotsByTime,
+    required DateTime now,
+  });
+
   Future<FitnessTrainingProgram> applyWeek({
     required String userId,
     required String programId,

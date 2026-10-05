@@ -195,6 +195,26 @@ class FitnessTrainingLocalDatasource implements FitnessTrainingRepository {
   }
 
   @override
+  Future<Map<String, List<FitnessScheduleConflict>>>
+  findScheduleConflictsByWorkoutTime({
+    required String userId,
+    required Map<String, List<FitnessWorkoutScheduleSlot>> slotsByTime,
+    required DateTime now,
+  }) async {
+    if (slotsByTime.isEmpty) return const {};
+    final db = await _db();
+    final rows = await db.query(
+      LifestyleScheduleItemsTable.tableName,
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+    return {
+      for (final entry in slotsByTime.entries)
+        entry.key: _findConflictsInRows(rows, entry.value, now),
+    };
+  }
+
+  @override
   Future<FitnessTrainingProgram> applyWeek({
     required String userId,
     required String programId,

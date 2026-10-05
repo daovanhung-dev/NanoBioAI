@@ -22,7 +22,7 @@ class BasicInfoStep extends ConsumerWidget {
     final colors = context.semanticColors;
     return OnboardingStepShell(
       stepIndex: 1,
-      title: 'Để NaBi hiểu bạn',
+      title: 'Để Nabi hiểu bạn',
       subtitle: 'Thông tin gần đúng là đủ.',
       mood: NabiOnboardingMood.guide,
       onBack: controller.previousStep,

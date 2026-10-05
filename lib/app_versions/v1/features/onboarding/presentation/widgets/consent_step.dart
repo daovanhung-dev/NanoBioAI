@@ -192,7 +192,7 @@ class _TeamStorySection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Những người đồng hành cùng NanoBio',
+                      'Những người đồng hành cùng Nabi',
                       style: AppTextStyles.labelLarge.copyWith(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w900,

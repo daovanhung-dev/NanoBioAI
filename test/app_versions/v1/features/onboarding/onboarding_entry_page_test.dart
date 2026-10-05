@@ -41,7 +41,7 @@ void main() {
 
     router.go(V1RoutePaths.onboardingEntry);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 600));
 
     final guestCta = find.byKey(const Key('onboarding_entry_guest_cta'));
     await tester.ensureVisible(guestCta);

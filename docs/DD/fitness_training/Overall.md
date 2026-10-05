@@ -8,7 +8,7 @@
 | Version | v1.0 |
 | DD decision | Draft |
 | Implementation | Implemented in Flutter/Edge pilot; reviewer approval pending |
-| Verification | Workout-only/conflict guard: 20 focused Flutter tests and targeted analyze passed; Android QA profile acceptance pending; personal device data untouched |
+| Verification | Workout-only/conflict consent: 24 focused Flutter tests and targeted analyze passed; Android QA profile acceptance pending; personal device data untouched |
 | Source BD | BD-NANOBIO-FITNESS-TRAINING-001 |
 | Owner | M32 pilot implementation; Tech/Privacy, Clinical and QA sign-off pending |
 | Updated | 2026-10-05 |
@@ -17,7 +17,7 @@
 
 PO-directed pilot source is now wired from FeatureHub through the intake, catalog selection, preview/confirm, program calendar and weekly check-in/replan flow. SQLite v25 stores the 28-day program. M02 is checked before Gemini for members and the one-time Guest allowance is checked before Gemini and consumed atomically when the preview is saved. Gemini operations are limited to `fitness_training_generate` and `fitness_training_replan`; app validation rejects unknown exercise IDs, unsafe movement filters and response keys outside the declared schema.
 
-2026-10-05 pilot scope update: this flow now creates workout-only programs. Food restrictions, recipes and sleep preferences do not gate training generation and are excluded from its AI payload; new program days serialize empty meals and blank legacy sleep fields while older saved meal/sleep data remains readable. Before quota/AI, the app checks the coming workout week against incomplete future schedule entries. Confirm rechecks inside the SQLite transaction; only future incomplete M32 `routine` rows are replaceable. M32 meal/sleep and all other schedule rows are preserved and checked for overlap. A conflict reports the date/time and item, leaves the preview and schedule intact, and lets the user change time and retry without another AI request.
+2026-10-05 pilot scope update: this flow now creates workout-only programs. Food restrictions, recipes and sleep preferences do not gate training generation and are excluded from its AI payload; new program days serialize empty meals and blank legacy sleep fields while older saved meal/sleep data remains readable. Before quota/AI, the app checks the coming workout week against incomplete future schedule entries. On conflict, it proposes the nearest free option among the eight existing workout times; that option must be clear on every selected workout date, with earlier time winning ties. The app reports the requested time and conflict count, then asks one-time consent before AI. Consent changes only the current M32 program's time; profile and existing schedule rows are preserved. Declining or finding no free option does not use quota, call AI or write data. Confirm rechecks inside the SQLite transaction; only future incomplete M32 `routine` rows are replaceable. If a conflict appears after preview, rollback preserves the preview and schedule; the app resolves current availability and asks consent again. Changing the preview time does not call AI again.
 
 The static pilot pack is bundled in `assets/data/fitness_training/`: 24 exercise, 10 equipment, 35 recipe and 47 candidate ingredient records with nine original illustration atlases. Nutrition metadata retains USDA FDC IDs. Current YouTube rows are not approved for embedding; the app keeps original instructions/illustrations and offers an external YouTube search fallback. The feature is connected to FeatureHub and the v1 router. Member self-owned rows have an M05 snapshot/RLS source contract; FamilyPlus subject selection and consent flow are not implemented. SQLite/Edge tests and Android build evidence are recorded in the 2026-10-05 runtime worklog.
 
@@ -71,17 +71,19 @@ Guest data theo local policy hiện có. Member data theo M05/Supabase owner/RLS
 | M32-BR10 | Nội dung là wellness support; no diagnosis/treatment/medical claim |
 | M32-BR11 | Log chỉ stage/status/count/error type/correlation ID, không raw prompt/response/profile |
 | M32-BR12 | Phạm vi phát hành v1 hướng tới Android/iOS; video là tùy chọn, chỉ dùng YouTube IFrame đã kiểm tra và luôn có minh họa/hướng dẫn cùng đường dẫn mở YouTube dự phòng. QA/Tech xác nhận ma trận cuối. |
+| M32-BR13 | Khi lịch tập trùng, chỉ đề xuất giờ trống trên mọi ngày tập; hỏi đồng ý trước khi quota/AI. Consent chỉ đổi giờ trong chương trình M32 hiện tại và không lưu mặc định. Apply-time conflict phải rollback và yêu cầu đồng ý lại cho giờ mới. |
 
 ## 5. Main flow and failures
 
 1. FeatureHub → adult gate → review onboarding → training questionnaire.
 2. Chọn home/gym; chọn thiết bị hoặc bodyweight; chọn ngày/giờ, thời lượng và movement restrictions.
 3. Kiểm tra overlap với lịch sắp tới trước quota/AI; mục đang tồn tại chưa hoàn thành, gồm M32 meal/sleep, có thể chặn buổi tập.
-4. M04 tính metric cục bộ; catalog bài tập được lọc trước khi AI request.
-5. M02/M06 authorize/quota check; backend Gemini generate program dùng allowlisted exercise catalog context.
-6. Validator kiểm tra IDs, giới hạn sets/reps/duration và đúng 28 ngày. Output không có meals.
-7. Hiển thị preview; confirm transaction kiểm tra overlap lần nữa trước mọi mutation, rồi chỉ thay tuần tập hiện tại.
-8. Cuối mỗi tuần hỏi check-in. Nếu user chọn điều chỉnh và có quota, replan phần còn lại; preview rồi confirm tuần kế.
+4. Nếu giờ trùng, tìm giờ gần nhất còn trống trong tám lựa chọn trên mọi ngày tập (hòa chọn giờ sớm hơn). Từ chối hoặc không tìm được giờ thì giữ nguyên, không gọi AI, tiêu quota hay ghi dữ liệu. Chỉ sau khi đồng ý, tiếp tục với giờ mới ở chương trình M32.
+5. M04 tính metric cục bộ; catalog bài tập được lọc trước khi AI request.
+6. M02/M06 authorize/quota check; backend Gemini generate program dùng allowlisted exercise catalog context.
+7. Validator kiểm tra IDs, giới hạn sets/reps/duration và đúng 28 ngày. Output không có meals.
+8. Hiển thị preview; confirm transaction kiểm tra overlap lần nữa trước mọi mutation, rồi chỉ thay tuần tập hiện tại. Conflict mới rollback; app đề xuất giờ hiện trống và hỏi consent lại. Áp dụng cần xác nhận lại, không gọi AI.
+9. Cuối mỗi tuần hỏi check-in. Nếu user chọn điều chỉnh và có quota, replan phần còn lại; conflict cần consent trước AI, rồi preview và confirm tuần kế.
 
 | Failure | Result |
 |---|---|
@@ -89,7 +91,7 @@ Guest data theo local policy hiện có. Member data theo M05/Supabase owner/RLS
 | Quota denied | Không gọi AI; giữ program/lịch cũ, dùng thông điệp M02 |
 | AI/network/invalid response | Không sửa schedule/program đang active; retry idempotent theo M02 |
 | Không có bài phù hợp | Không tạo; yêu cầu người dùng điều chỉnh thiết bị/hạn chế vận động hoặc dừng |
-| Lịch chồng lấn | Nêu ngày, giờ và mục xung đột; không tự dời hoặc thay lịch, cho phép chọn giờ khác |
+| Lịch chồng lấn | Nêu giờ yêu cầu và số lịch trùng; đề xuất giờ gần nhất còn trống trên mọi ngày tập và xin consent một lần trước AI. Từ chối/no slot không dùng quota hoặc ghi dữ liệu. Conflict mới lúc áp dụng rollback và cần consent lại. |
 | YouTube blocked/unavailable | Hiện hình/minh họa và mô tả; nút mở YouTube |
 | Schedule write/sync thất bại | Rollback transaction, giữ trạng thái cũ; retry an toàn |
 

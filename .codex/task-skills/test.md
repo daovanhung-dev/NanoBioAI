@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 11 worklog(s).
+- Generated from 13 worklog(s).
 
 ## When To Read
 
@@ -15,6 +15,8 @@
 - Historical task type: docs-context cleanup (1)
 - Historical task type: test / release artifact (1)
 - Historical task type: test / Android runtime build. (1)
+- Historical task type: release build và xác minh artifact (1)
+- Historical task type: fix / coding / test / cập nhật DD và worklog. (1)
 
 ## Common Modules
 
@@ -54,3 +56,4 @@
 - [Worklog - Dọn file và dữ liệu dư thừa an toàn](../../docs/worklog/2026-08-24/003-worklog-redundant-file-cleanup.md) - documentation, historical visual evidence, local build caches
 - [Worklog - Xuất Android App Bundle cho bản vá Google Play](../../docs/worklog/2026-09-15/002-worklog-google-play-aab.md) - Android release build và Google Play handoff.
 - [Worklog - Chạy lại ứng dụng version 1.0.0+3](../../docs/worklog/2026-09-15/003-worklog-version-1-0-0-3-runtime.md) - unknown
+- [Worklog - Xuất Android App Bundle Nabi](../../docs/worklog/2026-10-05/005-worklog-release-aab.md) - Android release signing, Android App Bundle

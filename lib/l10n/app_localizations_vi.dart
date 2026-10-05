@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'NanoBio';
+  String get appTitle => 'Nabi - Trợ lý sức khỏe AI';
 
   @override
   String get adminAppTitle => 'NanoBio - Quản trị';

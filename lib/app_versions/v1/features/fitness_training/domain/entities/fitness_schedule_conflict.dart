@@ -1,3 +1,14 @@
+const fitnessWorkoutTimeOptions = <String>[
+  '06:00',
+  '07:00',
+  '08:00',
+  '12:00',
+  '16:30',
+  '17:30',
+  '18:30',
+  '19:30',
+];
+
 class FitnessWorkoutScheduleSlot {
   const FitnessWorkoutScheduleSlot({
     required this.startAt,
@@ -6,6 +17,20 @@ class FitnessWorkoutScheduleSlot {
 
   final DateTime startAt;
   final DateTime endAt;
+}
+
+class FitnessWorkoutTimeResolution {
+  const FitnessWorkoutTimeResolution({
+    required this.requestedTime,
+    required this.conflicts,
+    this.suggestedTime,
+  });
+
+  final String requestedTime;
+  final String? suggestedTime;
+  final List<FitnessScheduleConflict> conflicts;
+
+  bool get hasConflicts => conflicts.isNotEmpty;
 }
 
 class FitnessScheduleConflict {
@@ -31,4 +56,15 @@ class FitnessScheduleConflictException implements Exception {
 
   @override
   String toString() => 'Fitness schedule conflicts: ${conflicts.length}';
+}
+
+class FitnessWorkoutTimeResolutionRequired implements Exception {
+  const FitnessWorkoutTimeResolutionRequired(this.resolution);
+
+  final FitnessWorkoutTimeResolution resolution;
+
+  @override
+  String toString() =>
+      'Workout time resolution required: ${resolution.requestedTime} '
+      'to ${resolution.suggestedTime ?? 'a manually selected time'}';
 }

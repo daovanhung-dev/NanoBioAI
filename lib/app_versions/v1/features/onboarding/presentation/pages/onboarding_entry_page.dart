@@ -107,14 +107,14 @@ class _BrandBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'NanoBio',
+                'Nabi',
                 style: AppTextStyles.heading4.copyWith(
                   color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               Text(
-                'Sức khỏe theo cách của bạn',
+                'Trợ lý sức khỏe AI',
                 style: AppTextStyles.labelSmall.copyWith(
                   color: colors.textSecondary,
                   fontWeight: FontWeight.w700,
@@ -196,7 +196,7 @@ class _GreenHero extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'NaBi hiểu bạn và tạo lộ trình mỗi ngày.',
+                'Nabi hiểu bạn và tạo lộ trình mỗi ngày.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textInverse.withValues(alpha: 0.86),

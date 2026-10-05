@@ -11,9 +11,9 @@ Tạo lịch tập wellness cá nhân hóa cho người trưởng thành, bắt 
 1. Mở FeatureHub, xác minh đủ 18 tuổi và rà soát hồ sơ onboarding.
 2. Chọn mục tiêu, kinh nghiệm, ngày/giờ tập, thời lượng và hạn chế vận động.
 3. Chọn Gym cùng thiết bị có sẵn, hoặc tập tại nhà và chỉ nhận động tác phù hợp tại nhà.
-4. Trước quota/AI, kiểm tra giờ tập dự kiến trong tuần với các mục lịch tương lai chưa hoàn thành. Nếu trùng, nêu ngày/giờ và yêu cầu chọn giờ khác.
-5. Gemini sắp xếp exercise catalog thành lịch tập 28 ngày sau khi qua quota M02 và kiểm tra dữ liệu.
-6. Xem trước; lúc xác nhận kiểm tra xung đột lần nữa trong transaction rồi chỉ áp các buổi tập M32.
+4. Trước quota/AI, kiểm tra giờ tập trên tất cả ngày tập trong tuần sắp áp dụng với các mục lịch tương lai chưa hoàn thành. Nếu trùng, đề xuất giờ trống gần nhất trong tám lựa chọn (phải trống trên mọi ngày; nếu cách đều thì chọn giờ sớm hơn) và hỏi đồng ý rõ ràng.
+5. Từ chối hoặc không tìm được giờ phù hợp thì giữ lựa chọn, không gọi AI, tiêu quota hay ghi dữ liệu. Chỉ sau khi đồng ý, Gemini sắp xếp exercise catalog thành lịch tập 28 ngày theo giờ mới; mỗi thao tác chỉ gọi AI một lần.
+6. Xem trước hiển thị giờ mới. Lúc xác nhận kiểm tra xung đột lần nữa trong transaction; nếu lịch đã đổi, rollback, đề xuất giờ mới và hỏi đồng ý lại. Đổi giờ trong bản xem trước không gọi AI; chỉ áp các buổi tập M32 sau khi người dùng xác nhận.
 7. Check-in sau mỗi tuần; nếu muốn và còn quota, xem trước đề xuất cập nhật các tuần còn lại.
 
 ## Data/content v1
@@ -29,6 +29,7 @@ Pilot draft: workout flow dùng 24 bài tập (16 gym, 8 tại nhà) và 10 thi�
 - Dùng M04 cho BMI/BMR/TDEE; không chẩn đoán hoặc kê điều trị.
 - Mỗi Gemini generate/replan dùng quota lịch M02; overlap được kiểm tra trước quota/AI.
 - Chỉ thay buổi tập M32 tương lai chưa hoàn thành; giữ mục M32 ăn/ngủ, lịch sức khỏe, nguồn lịch khác, lịch đã hoàn thành và quá khứ. Không tự dời mục xung đột.
+- Đồng ý đổi giờ chỉ áp dụng cho đề xuất của thao tác hiện tại; chỉ cập nhật giờ của chương trình M32, không sửa giờ tập hồ sơ hoặc lịch hiện có.
 - Đổi giờ khi còn preview áp dụng cùng preview, không gọi AI lần nữa.
 - PO-directed pilot coding proceeds before reviewer sign-off. Keep M32 Draft and do not represent it as release-approved while Tech/Privacy, Clinical and QA reviews remain pending.
 

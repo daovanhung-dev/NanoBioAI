@@ -946,3 +946,18 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-05/003-worklog-m32-runtime.md :: - Chưa fix: Feature is still a PO-directed pilot, not release-approved; self-declared DOB can be spoofed; FamilyPlus dependent subject support is absent; server Edge operation does not independently enforce M02 quota/catalog semantics; candidate nutrition/exercise content has not received clinical review.
 - docs/worklog/2026-10-05/003-worklog-m32-runtime.md :: - Cần kiểm tra tiếp: sync/quota/RLS on disposable Supabase sandbox; Android on an isolated QA device; iOS/Xcode and native IFrame; accessibility/crop review; Tech/Privacy, Clinical and QA sign-offs; decide if server-side M02 enforcement and FamilyPlus subject ownership are required before release.
 - docs/worklog/2026-10-05/003-worklog-m32-runtime.md :: - Chất lượng đầu ra: tốt — feature path is layered, catalog filters and response validation are fail-closed, local schedule apply is transactional, and remaining boundary is stated without marking reviewers approved.
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do baseline repo thiếu `docs/audit/source_truth_manifest.json` và có backticked paths cũ trong history/task-skill có sẵn; các đường dẫn lỗi không nằm trong worklog mới.
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: - iOS/macOS/Windows native build: SKIPPED trên Linux; metadata và bộ icon đã kiểm tra tĩnh.
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: - Chưa fix: validator toàn repo còn lỗi cấu hình/đường dẫn cũ không thuộc thay đổi branding; không sửa dữ liệu nền ngoài phạm vi.
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: - Chưa fix: không thay dependency/toolchain cũ của dự án; cảnh báo Android/Web đã được ghi nhận, không ngăn build.
+- docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md :: - Cần kiểm tra tiếp: build native iOS/macOS/Windows trên runner phù hợp trước phát hành.
+- docs/worklog/2026-10-05/005-worklog-release-aab.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-05/005-worklog-release-aab.md :: - Chưa fix: không thể xác nhận fingerprint có trùng upload key đã đăng ký trên Play Console nếu ứng dụng đã có listing; người dùng cần so khớp fingerprint trước upload.
+- docs/worklog/2026-10-05/005-worklog-release-aab.md :: - Cần kiểm tra tiếp: upload vào Internal testing track để Play Console kiểm tra đầy đủ policy, target API, kích thước download và signing continuity.
+- docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL on repository context baseline: missing `docs/audit/source_truth_manifest.json` and stale generated-history/task-skill paths; no M32-specific failure was reported.
+- docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - Android QA profile/device, live Gemini and Supabase sandbox: SKIPPED; no disposable QA profile/device requested or available. Connected personal phone was not inspected or modified this turn.
+- docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - Chưa fix: M32 vẫn là pilot/Draft; reviewer approvals, Android/iOS QA, sandbox/RLS, live Gemini và nội dung lâm sàng còn pending.
+- docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - Cần kiểm tra tiếp: cài đặt và xác nhận trên hồ sơ QA rời; không dùng hồ sơ cá nhân hiện tại.
+- docs/worklog/2026-10-05/007-worklog-m32-workout-time-consent.md :: ## Lỗi/Rủi ro

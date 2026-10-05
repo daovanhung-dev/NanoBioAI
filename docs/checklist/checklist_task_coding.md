@@ -59,6 +59,12 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
   in the apply transaction; replace only future incomplete M32 `routine` rows,
   preserving meal/sleep and other schedule entries. Focused local tests pass;
   Android acceptance with a disposable QA profile remains pending.
+- 2026-10-05 M32 time-consent update: find the nearest time free on every workout
+  date (earlier choice on ties) before quota/AI; ask before changing only the
+  current M32 program. Decline/no free slot means no AI, quota or writes. Apply
+  rechecks transactionally and asks again after stale conflicts; changing the
+  preview time does not regenerate AI. 24 focused tests and targeted analyze
+  pass; Android QA profile/device and Sandbox acceptance remain pending.
 - Record runtime, test, device and Supabase evidence independently as work lands.
 - 2026-10-05 pilot source evidence: focused M32/FeatureHub/router suite 28/28, M05 sync/outbox suite 16/16, `nabi-ai-generate` Edge suite 12/12, targeted analyzer 0 issues and Android debug/release APK builds PASS. No live Gemini, Supabase sandbox, iOS build or on-device M32 flow was verified. FamilyPlus dependent-subject support remains out of scope for this pilot source.
 

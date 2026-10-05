@@ -13,7 +13,8 @@
 - Guest lưu cục bộ; Member đồng bộ theo M05 self-subject. FamilyPlus dependent-subject selection/consent is not implemented in the pilot.
 - Phạm vi wellness; không chẩn đoán/điều trị. Food allergy filtering is not part of the workout-only M32 flow; movement restrictions are honored.
 - Requested pilot-scope update 2026-10-05: M32 app flow is workout-only. Food restrictions, recipes and sleep targets do not gate or enter workout AI requests; any future meal flow must own its allergy-safe filtering. This scope update is not reviewer approval.
-- Check workout interval overlaps before quota/AI and again in the apply transaction. Report date/time/item, preserve existing state on conflict, and let the user choose another time without regenerating the preview.
+- Check workout interval overlaps for the week before quota/AI and again in the apply transaction. If the requested time conflicts, propose the nearest free option from the eight existing workout times; a proposal must be free on every selected workout date, and equal-distance choices select the earlier time. Report the requested time and conflict count, then ask for one-time consent before AI. Consent changes only this M32 program's workout time; profile data and existing calendar entries remain unchanged. Declining or finding no free option must not consume quota, call AI or write data.
+- If a conflict appears after preview, the apply transaction must roll back without changing the preview or calendar. Recheck current availability, request consent again for any new proposal, and require the user to confirm apply; changing the time in an existing preview must not call AI again. Apply only future incomplete M32 workout entries.
 - Android/iOS là mục tiêu phát hành đầu tiên. Video YouTube tùy chọn, chỉ nhúng qua IFrame chính thức sau kiểm tra; khi không phát được vẫn có minh họa, hướng dẫn và nút mở YouTube.
 
 Các hướng trên là quyết định sản phẩm của PO, chưa phải quyết định kỹ thuật/lâm sàng hoặc bằng chứng QA. DD vẫn Draft; pilot implementation is In Progress and is not release-approved.
@@ -40,7 +41,7 @@ Các hướng trên là quyết định sản phẩm của PO, chưa phải quy�
 ## QA + Tech
 
 - [ ] Xác nhận ma trận phát hành Android/iOS; Web/desktop ngoài phạm vi v1.
-- [ ] Duyệt M32-TC01..TC16: tuổi, trust boundary, nơi tập/thiết bị, movement restrictions, workout-only payload, quota, sai schema/ID, retry/idempotency, cancel preview, overlap/overnight/point-event cases, apply-time transaction/rollback, preview time change without another AI call, đổi tuần và thông báo.
+- [ ] Duyệt M32-TC01..TC16: tuổi, trust boundary, nơi tập/thiết bị, movement restrictions, workout-only payload, quota, sai schema/ID, retry/idempotency, cancel preview, overlap/overnight/point-event cases, nearest free time/tie/all selected dates/no option, consent refusal/acceptance and one AI call, apply-time transaction rollback/re-consent, preview time change without another AI call, đổi tuần và thông báo.
 - [ ] Xác nhận accessibility: TalkBack/VoiceOver, text scaling, focus order, tương phản, reduced motion và nhãn điều khiển video.
 - [ ] Xác nhận video chỉ dùng ID được duyệt; kiểm tra public/embed và IFrame trên từng nền tảng. Khi lỗi/private/embed-disabled phải hiện hình, hướng dẫn và đường dẫn mở YouTube.
 - [ ] Xác nhận catalog có provenance/ID nguồn và số lượng mục; không phát hành candidate chưa được duyệt.

@@ -17,14 +17,14 @@ void main() {
     });
   });
 
-  testWidgets('renders NanoBio and Nabi as the primary splash hierarchy', (
+  testWidgets('renders Nabi as the primary splash hierarchy', (
     tester,
   ) async {
     await _pumpSplash(tester);
 
-    expect(find.text('NanoBio'), findsOneWidget);
+    expect(find.text('Nabi'), findsOneWidget);
     expect(find.text('TRỢ LÝ SỨC KHỎE CÁ NHÂN'), findsOneWidget);
-    expect(find.text('Cùng Nabi chăm sóc sức khỏe mỗi ngày.'), findsOneWidget);
+    expect(find.text('Hiểu bạn để chăm bạn tốt hơn.'), findsOneWidget);
     expect(find.text('Nabi đang chuẩn bị trải nghiệm của bạn'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 2));
@@ -41,7 +41,7 @@ void main() {
     await _pumpSplash(tester, textScaler: const TextScaler.linear(1.35));
 
     expect(tester.takeException(), isNull);
-    expect(find.text('NanoBio'), findsOneWidget);
+    expect(find.text('Nabi'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 2));
     expect(tester.takeException(), isNull);
@@ -50,8 +50,8 @@ void main() {
   testWidgets('dark mode keeps the splash hierarchy renderable', (tester) async {
     await _pumpSplash(tester, themeMode: ThemeMode.dark);
 
-    expect(find.text('NanoBio'), findsOneWidget);
-    expect(find.text('Cùng Nabi chăm sóc sức khỏe mỗi ngày.'), findsOneWidget);
+    expect(find.text('Nabi'), findsOneWidget);
+    expect(find.text('Hiểu bạn để chăm bạn tốt hơn.'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pump(const Duration(seconds: 2));
@@ -61,7 +61,7 @@ void main() {
   testWidgets('reduced motion path remains renderable', (tester) async {
     await _pumpSplash(tester, disableAnimations: true);
 
-    expect(find.text('NanoBio'), findsOneWidget);
+    expect(find.text('Nabi'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pump(const Duration(seconds: 2));

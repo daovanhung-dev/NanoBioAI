@@ -4,6 +4,7 @@ import 'package:nano_app/app_versions/v1/features/body_metrics/domain/entities/b
 import 'package:nano_app/app_versions/v1/features/body_metrics/domain/services/basic_health_calculator.dart';
 
 import '../domain/entities/fitness_training_catalog.dart';
+import '../domain/entities/fitness_schedule_conflict.dart';
 import '../domain/entities/fitness_training_profile.dart';
 import '../domain/entities/fitness_training_program.dart';
 import '../domain/repositories/fitness_training_profile_repository.dart';
@@ -205,6 +206,18 @@ class FitnessTrainingController {
     catalog: context.catalog,
     today: now(),
     workoutTimeOverride: workoutTimeOverride,
+  );
+
+  Future<FitnessWorkoutTimeResolution> resolveWorkoutTimeForProgramWeek({
+    required FitnessTrainingLoadedContext context,
+    required FitnessTrainingProgram program,
+    required int week,
+    required String requestedTime,
+  }) => service.resolveWorkoutTimeForProgramWeek(
+    userId: context.profile.userId,
+    program: program,
+    week: week,
+    requestedTime: requestedTime,
   );
 
   String newRequestId() {

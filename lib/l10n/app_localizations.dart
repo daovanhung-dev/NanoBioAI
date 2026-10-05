@@ -97,7 +97,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In vi, this message translates to:
-  /// **'NanoBio'**
+  /// **'Nabi - Trợ lý sức khỏe AI'**
   String get appTitle;
 
   /// No description provided for @adminAppTitle.

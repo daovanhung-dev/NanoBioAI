@@ -117,7 +117,7 @@ class ExtrasStep extends ConsumerWidget {
           const SizedBox(height: AppSpacing.sm),
           const OnboardingInlineInfo(
             icon: Icons.verified_user_rounded,
-            text: 'NaBi dùng thông tin này để gợi ý phù hợp hơn.',
+            text: 'Nabi dùng thông tin này để gợi ý phù hợp hơn.',
             color: NabiPalette.greenPrimary,
           ),
         ],

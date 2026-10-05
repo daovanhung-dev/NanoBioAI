@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
 
-/// Visual foundation for the NaBi Green Wellness onboarding experience.
+/// Visual foundation for the Nabi Green Wellness onboarding experience.
 class NabiPalette {
   const NabiPalette._();
 
@@ -433,7 +433,7 @@ class _NabiCompanionAvatarState extends State<NabiCompanionAvatar>
     final accent = widget.mood.accent;
     return Semantics(
       image: true,
-      label: 'NaBi: ${widget.statusLabel ?? widget.mood.message}',
+      label: 'Nabi: ${widget.statusLabel ?? widget.mood.message}',
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {

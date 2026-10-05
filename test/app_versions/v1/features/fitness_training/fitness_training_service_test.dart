@@ -219,11 +219,159 @@ void main() {
         intake: _intake(),
         catalog: catalog,
       ),
-      throwsA(isA<FitnessScheduleConflictException>()),
+      throwsA(isA<FitnessWorkoutTimeResolutionRequired>()),
     );
     expect(aiCalls, 0);
     expect(quota.checkCalls, 0);
     expect(repository.saveCalls, 0);
+  });
+
+  test(
+    'nearest free time checks the whole week and prefers earlier on a tie',
+    () async {
+      final conflict = FitnessScheduleConflict(
+        workoutStartAt: DateTime(2026, 10, 5, 17, 30),
+        workoutEndAt: DateTime(2026, 10, 5, 18, 15),
+        itemTitle: 'Lịch khác',
+        itemStartAt: DateTime(2026, 10, 5, 17, 30),
+        itemEndAt: DateTime(2026, 10, 5, 18),
+      );
+      final repository = _MemoryRepository()
+        ..conflictsByTime = {
+          '17:30': [conflict],
+        };
+      final service = FitnessTrainingService(
+        repository: repository,
+        currentUserId: () => 'member-1',
+        now: () => DateTime(2026, 10, 5, 8),
+      );
+
+      final resolution = await service.resolveWorkoutTime(
+        userId: 'member-1',
+        intake: _intake(),
+        startDate: DateTime(2026, 10, 5),
+        firstDayIndex: 0,
+        requestedTime: '17:30',
+      );
+
+      expect(resolution.requestedTime, '17:30');
+      expect(resolution.suggestedTime, '16:30');
+      expect(resolution.conflicts, [conflict]);
+      expect(repository.lastSlotsByTime!['17:30'], hasLength(3));
+      expect(repository.lastSlotsByTime!['16:30'], hasLength(3));
+    },
+  );
+
+  test('nearest free time skips a closer conflicting choice', () async {
+    final conflict = FitnessScheduleConflict(
+      workoutStartAt: DateTime(2026, 10, 5, 17, 30),
+      workoutEndAt: DateTime(2026, 10, 5, 18, 15),
+      itemTitle: 'Lịch khác',
+      itemStartAt: DateTime(2026, 10, 5, 17, 30),
+      itemEndAt: DateTime(2026, 10, 5, 18),
+    );
+    final repository = _MemoryRepository()
+      ..conflictsByTime = {
+        '17:30': [conflict],
+        '16:30': [conflict],
+      };
+    final service = FitnessTrainingService(
+      repository: repository,
+      currentUserId: () => 'member-1',
+      now: () => DateTime(2026, 10, 5, 8),
+    );
+
+    final resolution = await service.resolveWorkoutTime(
+      userId: 'member-1',
+      intake: _intake(),
+      startDate: DateTime(2026, 10, 5),
+      firstDayIndex: 0,
+      requestedTime: '17:30',
+    );
+
+    expect(resolution.suggestedTime, '18:30');
+  });
+
+  test(
+    'conflicts at every configured time provide no automatic change',
+    () async {
+      final conflict = FitnessScheduleConflict(
+        workoutStartAt: DateTime(2026, 10, 5, 17, 30),
+        workoutEndAt: DateTime(2026, 10, 5, 18, 15),
+        itemTitle: 'Lịch khác',
+        itemStartAt: DateTime(2026, 10, 5, 17, 30),
+        itemEndAt: DateTime(2026, 10, 5, 18),
+      );
+      final repository = _MemoryRepository()
+        ..conflictsByTime = {
+          for (final time in fitnessWorkoutTimeOptions) time: [conflict],
+        };
+      final service = FitnessTrainingService(
+        repository: repository,
+        currentUserId: () => 'member-1',
+        now: () => DateTime(2026, 10, 5, 8),
+      );
+
+      final resolution = await service.resolveWorkoutTime(
+        userId: 'member-1',
+        intake: _intake(),
+        startDate: DateTime(2026, 10, 5),
+        firstDayIndex: 0,
+        requestedTime: '17:30',
+      );
+
+      expect(resolution.suggestedTime, isNull);
+      expect(resolution.conflicts, isNotEmpty);
+    },
+  );
+
+  test('accepted free time goes to AI once and stays program-local', () async {
+    final conflict = FitnessScheduleConflict(
+      workoutStartAt: DateTime(2026, 10, 5, 17, 30),
+      workoutEndAt: DateTime(2026, 10, 5, 18, 15),
+      itemTitle: 'Lịch khác',
+      itemStartAt: DateTime(2026, 10, 5, 17, 30),
+      itemEndAt: DateTime(2026, 10, 5, 18),
+    );
+    final repository = _MemoryRepository()
+      ..conflictsByTime = {
+        '17:30': [conflict],
+      };
+    final quota = _QuotaGateway();
+    var aiCalls = 0;
+    final service = FitnessTrainingService(
+      repository: repository,
+      quotaGateway: quota,
+      currentUserId: () => 'member-1',
+      now: () => DateTime(2026, 10, 5, 8),
+      idGenerator: () => 'program-accepted-time',
+      validator: _AcceptingValidator(),
+      aiClientFactory: (_) => _FakeAiClient(() {
+        aiCalls++;
+        return '{"days":[]}';
+      }),
+    );
+    final resolution = await service.resolveWorkoutTime(
+      userId: 'member-1',
+      intake: _intake(),
+      startDate: DateTime(2026, 10, 5),
+      firstDayIndex: 0,
+      requestedTime: '17:30',
+    );
+    expect(resolution.suggestedTime, '16:30');
+
+    final preview = await service.generateProgram(
+      userId: 'member-1',
+      guest: false,
+      requestId: 'accepted-time',
+      intake: _intake().copyWith(workoutTime: resolution.suggestedTime!),
+      catalog: catalog,
+    );
+
+    expect(preview.intake.workoutTime, '16:30');
+    expect(aiCalls, 1);
+    expect(quota.checkCalls, 1);
+    expect(repository.saveCalls, 1);
   });
 
   test('replan conflict leaves active program check-in untouched', () async {
@@ -279,7 +427,7 @@ void main() {
         intake: _intake(),
         catalog: catalog,
       ),
-      throwsA(isA<FitnessScheduleConflictException>()),
+      throwsA(isA<FitnessWorkoutTimeResolutionRequired>()),
     );
     expect(repository.saveCheckInCalls, 0);
     expect(quota.checkCalls, 0);
@@ -417,6 +565,8 @@ class _MemoryRepository implements FitnessTrainingRepository {
   int saveCheckInCalls = 0;
   int applyCalls = 0;
   List<FitnessScheduleConflict> conflicts = const [];
+  Map<String, List<FitnessScheduleConflict>> conflictsByTime = const {};
+  Map<String, List<FitnessWorkoutScheduleSlot>>? lastSlotsByTime;
 
   @override
   Future<bool> guestInitialPlanAvailable(String userId) async => guestAvailable;
@@ -465,6 +615,22 @@ class _MemoryRepository implements FitnessTrainingRepository {
     required List<FitnessWorkoutScheduleSlot> slots,
     required DateTime now,
   }) async => conflicts;
+
+  @override
+  Future<Map<String, List<FitnessScheduleConflict>>>
+  findScheduleConflictsByWorkoutTime({
+    required String userId,
+    required Map<String, List<FitnessWorkoutScheduleSlot>> slotsByTime,
+    required DateTime now,
+  }) async {
+    lastSlotsByTime = slotsByTime;
+    return {
+      for (final time in slotsByTime.keys)
+        time: conflictsByTime.isEmpty
+            ? conflicts
+            : (conflictsByTime[time] ?? const []),
+    };
+  }
 
   @override
   Future<FitnessTrainingProgram> applyWeek({

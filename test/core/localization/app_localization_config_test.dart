@@ -39,7 +39,7 @@ void main() {
       );
 
       expect(locale, const Locale('vi', 'VN'));
-      expect(title, 'NanoBio');
+      expect(title, 'Nabi - Trợ lý sức khỏe AI');
       expect(
         cancelLabel.toLowerCase(),
         anyOf(contains('hủy'), contains('huỷ')),

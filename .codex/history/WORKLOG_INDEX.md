@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 172
+- Total worklogs: 176
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -181,3 +181,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-05 | M32 implementation readiness review | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 continuation and approval follow-up](../../docs/worklog/2026-10-05/001-worklog-m32-continuation.md) |
 | 2026-10-05 | docs-dd / implementation readiness | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 PO directions and review packet](../../docs/worklog/2026-10-05/002-worklog-m32-po-directions-review-packet.md) |
 | 2026-10-05 | coding / test / cập nhật BD-DD-handoff | find-issues | M32 FITNESS_TRAINING | [Worklog — M32 fitness-training runtime pilot](../../docs/worklog/2026-10-05/003-worklog-m32-runtime.md) |
+| 2026-10-05 | coding, localization, platform branding và validation | docs-context | tên ứng dụng, splash/onboarding, launcher icons, app version | [Worklog - Đổi thương hiệu và nâng phiên bản Nabi](../../docs/worklog/2026-10-05/004-worklog-rebrand-nabi.md) |
+| 2026-10-05 | release build và xác minh artifact | test | Android release signing, Android App Bundle | [Worklog - Xuất Android App Bundle Nabi](../../docs/worklog/2026-10-05/005-worklog-release-aab.md) |
+| 2026-10-05 | fix / coding / test / cập nhật DD và worklog. | test | M32 FITNESS_TRAINING. | [Worklog — M32 workout-only conflict guard](../../docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md) |
+| 2026-10-05 | coding. | coding | M32 FITNESS_TRAINING | [Worklog — M32 xin phép đổi giờ tập khi có xung đột](../../docs/worklog/2026-10-05/007-worklog-m32-workout-time-consent.md) |

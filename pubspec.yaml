@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: "none"
 
-version: 1.0.0+3
+version: 1.0.1+4
 
 environment:
   sdk: ^3.9.2
@@ -153,4 +153,16 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/Logo.jpg"
+  image_path: "assets/logo.jpg"
+  web:
+    generate: true
+    image_path: "assets/logo.jpg"
+    background_color: "#0175C2"
+    theme_color: "#0175C2"
+  windows:
+    generate: true
+    image_path: "assets/logo.jpg"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/logo.jpg"
