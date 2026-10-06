@@ -92,14 +92,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
               })}
             </div>
           ))}
-          <div className="nav-group website-nav-group">
-            <span className="nav-group-title">Website</span>
-            <NavLink to="/nanobio" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>
-              <Globe2 size={18} aria-hidden="true" /><span>Website NanoBio</span>
-            </NavLink>
-          </div>
         </nav>
         <div className="sidebar-footer">
+          <NavLink to="/nanobio" className={({ isActive }) => `nav-link website-cta ${isActive ? 'active' : ''}`} onClick={() => setMobileOpen(false)}>
+            <Globe2 size={18} aria-hidden="true" /><span>Website NanoBio</span>
+          </NavLink>
           <span className="safe-note"><span className="online-dot" /> Phiên quản trị đang hoạt động</span>
           <button className="sidebar-signout" onClick={() => void handleSignOut()}><LogOut size={16} /> Đăng xuất</button>
         </div>
