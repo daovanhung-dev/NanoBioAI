@@ -94,29 +94,41 @@ AI runtime dùng Edge Function `nabi-ai-generate`. Gemini API key chỉ được
 không nhận/ghi credential nhà cung cấp. `report-ai-content` cho phép guest gửi
 phản hồi có giới hạn tốc độ và lưu qua service role.
 
-Website Admin Web dùng Edge Function `register-early-access` để nhận đăng ký
-NanoBio Early Access. Function tự xác thực consent/số điện thoại, ép promotion
-`EARLY_ACCESS_PLUS_30D` sang Plus 30 ngày ở server, trả phản hồi trùng số chung
-và không cập nhật lại lead đã tồn tại. Bảng `early_access_leads` không cấp quyền
-trực tiếp cho anon/authenticated; HMAC IP rate state nằm trong schema
-`early_access_private`, chỉ RPC rate-limit được gọi bằng service role. Rate
-state hết hạn sau 24 giờ và được dọn bởi cron mỗi 5 phút. APK chỉ được ký URL từ
-bucket riêng `early-access-apk`; thiếu APK không làm giả link tải.
+Website NanoBio dùng Edge Function `register-early-access` để nhận số điện thoại,
+họ tên, tuổi, giới tính, địa chỉ và consent. Function tự xác thực dữ liệu, ép
+promotion `EARLY_ACCESS_PLUS_30D` sang Plus 30 ngày ở server, trả phản hồi trùng
+số chung và không cập nhật lại lead đã tồn tại. Bảng `early_access_leads` không
+cấp quyền trực tiếp cho anon/authenticated; việc ghi lead chỉ qua RPC
+service-role. HMAC IP rate state nằm trong schema `early_access_private`, giới
+hạn 10 yêu cầu/IP/giờ và được dọn sau 24 giờ. HMAC điện thoại riêng được giữ lại
+sau khi xóa hồ sơ quá hạn để ngăn ghi nhận/cấp lại ưu đãi trùng. Lead đã đóng
+được dọn sau 12 tháng; hồ sơ đang xử lý được giữ đến khi đóng.
 
-Forward migration cho môi trường cần nâng cấp là
-`supabase/migrations/20261007000000_nanobio_early_access.sql`. Không chạy
-`docs/supabase/01_build_system.sql` hoặc `02_seed_data.sql` trên staging/
-production. Function đặt `verify_jwt = false` vì khách website chưa đăng nhập;
-handler vẫn yêu cầu origin nằm trong `ALLOWED_ORIGINS`, kiểm tra dữ liệu và áp
-dụng rate limit.
+APK được phát hành công khai như asset của GitHub Release prerelease
+`nanobio-early-access-v1.0.1-build4`; Edge Function chỉ trả URL tải cố định sau
+khi ghi nhận request thành công. URL Release có thể được chia sẻ trực tiếp và
+không dùng làm cơ chế bảo vệ nội dung APK. Admin Web gọi
+`admin-early-access-leads` (JWT bắt buộc); chỉ `super_admin`, `support_admin`,
+`operations_admin` được xem hồ sơ và cập nhật trạng thái. Edge Function và RPC
+ghi trạng thái đều kiểm tra role allowlist độc lập với wildcard permission;
+thao tác được ghi vào `admin_audit_events`.
 
-Trước khi triển khai function, đặt `ALLOWED_ORIGINS` bằng origin chính xác
+Forward migrations cho môi trường cần nâng cấp là
+`supabase/migrations/20261007000000_nanobio_early_access.sql` và
+`supabase/migrations/20261007130000_nanobio_early_access_customer_admin.sql`.
+Không chạy `docs/supabase/01_build_system.sql` hoặc `02_seed_data.sql` trên
+staging/production. Function đăng ký đặt `verify_jwt = false` vì khách website
+chưa đăng nhập; function Admin đặt `verify_jwt = true`. Cả hai handler đều yêu
+cầu origin nằm trong `ALLOWED_ORIGINS`.
+
+Trước khi triển khai functions, đặt `ALLOWED_ORIGINS` bằng origin chính xác
 (`https://daovanhung-dev.github.io`; khi phát triển local dùng
-`http://localhost:5173`) và tạo secret `EARLY_ACCESS_RATE_LIMIT_HMAC_KEY` với
-ít nhất 32 ký tự ngẫu nhiên. Đặt thêm `APP_VERSION`, `EARLY_ACCESS_BUCKET`,
-`EARLY_ACCESS_APK_PATH` và `SIGNED_URL_SECONDS` nếu cần; không lưu giá trị secret
-trong repository. Nếu HMAC secret/RPC không khả dụng, endpoint từ chối submit
-thay vì bỏ qua giới hạn.
+`http://localhost:5173`), tạo hai secret riêng
+`EARLY_ACCESS_RATE_LIMIT_HMAC_KEY` và `EARLY_ACCESS_PHONE_HMAC_KEY` (mỗi secret
+tối thiểu 32 ký tự ngẫu nhiên), và đặt `NANOBIO_APK_DOWNLOAD_URL` tới đúng asset
+URL của release. Giữ phone-HMAC key ổn định để suppression token tiếp tục ngăn
+cấp trùng sau retention; không lưu giá trị secret trong repository. Nếu secret
+hoặc RPC bảo vệ không khả dụng, endpoint từ chối submit.
 
 Food Scan dùng Edge Function riêng `food-scan-analyze` cho hai operation
 `vision` và `health`. Function xác thực JWT, kiểm tra quyền Plus/FamilyPlus

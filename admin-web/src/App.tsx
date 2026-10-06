@@ -1,4 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { AuthProvider, useAdminAuth } from './auth/AuthProvider';
 import { AdminShell } from './components/AdminShell';
 import { ErrorState, LoadingState } from './components/Ui';
@@ -9,6 +10,8 @@ import { SectionPage } from './pages/SectionPage';
 import { WellnessRewardsPage } from './pages/WellnessRewardsPage';
 import { NanoBioLandingPage } from './pages/NanoBioLandingPage';
 import { NanoBioPrivacyPage } from './pages/NanoBioPrivacyPage';
+import { EventInfoPage } from './pages/EventInfoPage';
+import { canAccessEarlyAccess } from './types';
 
 export function App() {
   return (
@@ -32,6 +35,7 @@ export function App() {
             <Route path="sale-conversions" element={<SectionPage section="sale-conversions" />} />
             <Route path="sales/payouts" element={<SectionPage section="sale-conversions" />} />
             <Route path="wellness-rewards" element={<WellnessRewardsPage />} />
+            <Route path="event-info" element={<RequireEarlyAccessAccess><EventInfoPage /></RequireEarlyAccessAccess>} />
             <Route path="reconciliation" element={<SectionPage section="reconciliation" />} />
             <Route path="plans" element={<SectionPage section="plans" />} />
             <Route path="reports" element={<SectionPage section="reports" />} />
@@ -64,6 +68,14 @@ function RequireAdmin() {
 
 function ShellRoute() {
   return <AdminShell><Outlet /></AdminShell>;
+}
+
+function RequireEarlyAccessAccess({ children }: { children: ReactNode }) {
+  const { session } = useAdminAuth();
+  if (!session || !canAccessEarlyAccess(session)) {
+    return <AccessDenied message="Thông tin sự kiện chỉ dành cho Super Admin, Support Admin và Operations Admin." />;
+  }
+  return <>{children}</>;
 }
 
 function AccessDenied({ message }: { message: string }) {

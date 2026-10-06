@@ -64,6 +64,14 @@
 .modal-vip-summary small{font-size:9px;color:var(--muted)}
 .vip-modal .register-head{margin-top:16px}
 .vip-modal .success-state p strong{color:var(--green)}
+.customer-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;margin:13px 0}
+.customer-fields>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.customer-fields label,#earlyAccessForm>label:not(.consent){font-size:10px;font-weight:800;color:#304c40}
+.customer-fields input,.customer-fields select{width:100%;min-height:39px;border:1px solid #d4e2da;border-radius:10px;padding:0 11px;outline:0;color:#17392d;background:#fff;font:inherit;font-size:11px}
+.customer-fields input:focus,.customer-fields select:focus{border-color:#42a47c;box-shadow:0 0 0 3px rgba(36,143,99,.1)}
+.customer-fields [aria-invalid="true"]{border-color:#b42318;box-shadow:0 0 0 3px rgba(180,35,24,.08)}
+.customer-address{grid-column:1/-1}
+.vip-modal .field-help a{color:var(--green);font-weight:800}
 .vip-activation-note{font-size:9.5px!important;line-height:1.55;padding:10px 12px;background:#f3f8f5;border-radius:13px;color:#637a70!important;margin-top:13px!important}
 body.vip-modal-open{overflow:hidden}
 
@@ -81,6 +89,8 @@ body.vip-modal-open{overflow:hidden}
   .vip-modal-card{padding:22px 18px;border-radius:24px;max-height:94vh}
   .vip-modal-hero h2{font-size:27px}
   .modal-vip-summary{grid-template-columns:1fr}
+  .customer-fields{grid-template-columns:1fr}
+  .customer-address{grid-column:auto}
   .download-offer-head h2{font-size:37px}
   .vip-benefit{padding:18px}
 }

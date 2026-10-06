@@ -309,3 +309,21 @@ tr:hover td { background: #fbfdff; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+.event-info-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.event-info-summary > div { min-width: 0; }
+.event-info-summary strong { display: block; margin-top: 7px; color: var(--navy); font-size: 13px; }
+.event-info-table table { min-width: 1180px; }
+.event-info-address { max-width: 330px; line-height: 1.5; overflow-wrap: anywhere; }
+.event-info-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+.event-info-pagination > div { display: flex; align-items: center; gap: 10px; }
+.event-info-pagination .button { min-height: 34px; padding: 0 10px; }
+.event-info-pagination span { white-space: nowrap; }
+#early-access-status { margin: 2px 0 16px; }
+
+@media (max-width: 560px) {
+  .event-info-summary { grid-template-columns: 1fr; }
+  .event-info-pagination { align-items: flex-start; flex-direction: column; }
+  .event-info-pagination > div { width: 100%; justify-content: space-between; gap: 6px; }
+  .event-info-pagination .button { padding: 0 8px; }
+}

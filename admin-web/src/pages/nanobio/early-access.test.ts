@@ -3,6 +3,10 @@ import { EarlyAccessError, readCampaignValue, sanitizeCampaignValue, submitEarly
 
 const payload: EarlyAccessPayload = {
   phone: '0912 345 678',
+  full_name: 'Nguyễn An',
+  age: 24,
+  gender: 'prefer_not_to_say',
+  address: 'Quận 1, Thành phố Hồ Chí Minh',
   privacy_consent: true,
   landing_path: '/nanobio',
 };
@@ -26,10 +30,10 @@ describe('Early Access function client', () => {
     expect(JSON.parse(String(request?.body))).toEqual(payload);
   });
 
-  it('accepts only signed URLs from the configured Supabase origin', async () => {
+  it('accepts only the approved public GitHub release APK URL', async () => {
     const accepted = await submitEarlyAccess(payload, {
       supabaseUrl: 'https://nano.example', anonKey: 'public',
-      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://nano.example/storage/v1/object/sign/apk?token=x' }),
+      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk' }),
     });
     const rejected = await submitEarlyAccess(payload, {
       supabaseUrl: 'https://nano.example', anonKey: 'public',
@@ -37,6 +41,14 @@ describe('Early Access function client', () => {
     });
     expect(accepted.downloadAvailable).toBe(true);
     expect(rejected.downloadAvailable).toBe(false);
+  });
+
+  it('does not accept a different GitHub repository or release asset', async () => {
+    const result = await submitEarlyAccess(payload, {
+      supabaseUrl: 'https://nano.example', anonKey: 'public',
+      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://github.com/attacker/repo/releases/download/x/app-release.apk' }),
+    });
+    expect(result.downloadAvailable).toBe(false);
   });
 
   it('maps rate limits and backend failures to safe typed errors', async () => {

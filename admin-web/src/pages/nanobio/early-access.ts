@@ -2,6 +2,10 @@ import { readRuntimeConfig } from '../../lib/config';
 
 export type EarlyAccessPayload = {
   phone: string;
+  full_name: string;
+  age: number;
+  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  address: string;
   privacy_consent: true;
   utm_source?: string;
   utm_medium?: string;
@@ -98,7 +102,7 @@ export async function submitEarlyAccess(
   }
 
   const downloadUrl = typeof body.download_url === 'string' && body.download_available === true
-    ? safeDownloadUrl(body.download_url, config.supabaseUrl)
+    ? safeDownloadUrl(body.download_url)
     : null;
 
   return {
@@ -111,11 +115,13 @@ export async function submitEarlyAccess(
   };
 }
 
-function safeDownloadUrl(value: string, supabaseUrl: string): string | null {
+export function safeDownloadUrl(value: string): string | null {
   try {
     const url = new URL(value);
-    const service = new URL(supabaseUrl);
-    return url.protocol === 'https:' && url.origin === service.origin ? url.toString() : null;
+    const expectedPath = '/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk';
+    return url.protocol === 'https:' && url.origin === 'https://github.com' && url.pathname === expectedPath && !url.search && !url.hash
+      ? url.toString()
+      : null;
   } catch {
     return null;
   }

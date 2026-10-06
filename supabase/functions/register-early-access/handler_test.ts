@@ -18,6 +18,10 @@ function validRequest(payload: Record<string, unknown> = {}) {
       },
       body: JSON.stringify({
         phone: "0912 345 678",
+        full_name: "Nguyễn An",
+        age: 24,
+        gender: "prefer_not_to_say",
+        address: "Quận 1, Thành phố Hồ Chí Minh",
         privacy_consent: true,
         landing_path: "/nanobio",
         ...payload,
@@ -30,7 +34,7 @@ function handler(overrides: Partial<{
   allowedOrigins: readonly string[];
   withinLimit: boolean;
   saveLead: (lead: EarlyAccessLead) => Promise<void>;
-  signedDownload: { url: string; expiresAt: string } | null;
+  downloadUrl: string | null;
   hmacIp: (ip: string) => Promise<string>;
 }> = {}) {
   const captured: { lead?: EarlyAccessLead; ip?: string; window?: string } = {};
@@ -39,6 +43,7 @@ function handler(overrides: Partial<{
       [allowedOrigin, "http://localhost:5173"],
     appVersion: "1.0.1+4",
     hmacIp: overrides.hmacIp ?? (async (ip) => `hash:${ip}`),
+    hmacPhone: async () => "a".repeat(64),
     consumeRateLimit: async (ip, window) => {
       captured.ip = ip;
       captured.window = window;
@@ -48,7 +53,7 @@ function handler(overrides: Partial<{
       captured.lead = lead;
       await overrides.saveLead?.(lead);
     },
-    createSignedDownload: async () => overrides.signedDownload ?? null,
+    getPublicDownloadUrl: async () => overrides.downloadUrl ?? null,
     now: () => testNow,
   });
   return { run, captured };
@@ -63,7 +68,7 @@ Deno.test("persists only server-owned promotion fields and sanitized attribution
     vip_duration_days: 900,
     vip_grant_status: "active",
     status: "converted",
-    full_name: "Unexpected Name",
+    full_name: "Đặng An",
     utm_source: "campaign 2026",
     utm_medium: "email/newsletter",
     utm_campaign: "launch#1",
@@ -84,8 +89,14 @@ Deno.test("persists only server-owned promotion fields and sanitized attribution
   ) throw new Error("client changed promotion values");
   if (
     captured.lead.vip_grant_status !== "pending_account_link" ||
-    captured.lead.status !== "new" || captured.lead.full_name !== null
+    captured.lead.status !== "new" || captured.lead.full_name !== "Đặng An"
   ) throw new Error("client changed lead state");
+  if (
+    captured.lead.age !== 24 ||
+    captured.lead.gender !== "prefer_not_to_say" ||
+    captured.lead.address !== "Quận 1, Thành phố Hồ Chí Minh" ||
+    captured.lead.phone_hash !== "a".repeat(64)
+  ) throw new Error("customer data was not persisted safely");
   if (
     captured.lead.source !== "nanobio_web" ||
     captured.lead.utm_source !== "campaign2026" ||
@@ -118,6 +129,22 @@ Deno.test("requires a valid Vietnamese mobile number and explicit consent", asyn
     noConsent.status !== 400 ||
     (await noConsent.json()).code !== "CONSENT_REQUIRED"
   ) throw new Error("missing consent was accepted");
+  const underAge = await run(validRequest({ age: 17 }));
+  if (underAge.status !== 400 || (await underAge.json()).code !== "INVALID_AGE") {
+    throw new Error("underage customer was accepted");
+  }
+  const missingName = await run(validRequest({ full_name: " " }));
+  if (missingName.status !== 400 || (await missingName.json()).code !== "INVALID_FULL_NAME") {
+    throw new Error("missing customer name was accepted");
+  }
+  const badGender = await run(validRequest({ gender: "admin" }));
+  if (badGender.status !== 400 || (await badGender.json()).code !== "INVALID_GENDER") {
+    throw new Error("unsupported gender was accepted");
+  }
+  const missingAddress = await run(validRequest({ address: " " }));
+  if (missingAddress.status !== 400 || (await missingAddress.json()).code !== "INVALID_ADDRESS") {
+    throw new Error("missing address was accepted");
+  }
 });
 
 Deno.test("rejects unapproved origins and handles preflight without writing", async () => {
@@ -202,4 +229,22 @@ Deno.test("returns a truthful success when the APK is not available", async () =
     body.success !== true || body.download_available !== false ||
     body.download_url !== ""
   ) throw new Error("missing APK was reported as downloadable");
+});
+
+Deno.test("returns the approved public release URL only after saving the lead", async () => {
+  let saved = false;
+  const run = createEarlyAccessHandler({
+    allowedOrigins: [allowedOrigin],
+    appVersion: "1.0.1+4",
+    hmacIp: async (ip) => `hash:${ip}`,
+    hmacPhone: async () => "b".repeat(64),
+    consumeRateLimit: async () => true,
+    saveLead: async () => { saved = true; },
+    getPublicDownloadUrl: async () => "https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk",
+    now: () => testNow,
+  });
+  const body = await (await run(validRequest())).json();
+  if (!saved || body.download_available !== true || !String(body.download_url).endsWith("/app-release.apk")) {
+    throw new Error("download URL was not returned after persisting a valid lead");
+  }
 });

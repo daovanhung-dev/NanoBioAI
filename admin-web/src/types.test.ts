@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   canAccessSection,
+  canAccessEarlyAccess,
+  canManageEarlyAccess,
   canAdjustPoints,
   canCreateAccount,
   canBulkProvisionAccounts,
@@ -59,6 +61,20 @@ describe('NanoBio Admin permission matrix', () => {
     expect(canAccessSection(operations, 'reconciliation')).toBe(true);
     expect(canAccessSection(operations, 'plans')).toBe(true);
     expect(canAccessSection(operations, 'payments')).toBe(false);
+  });
+
+  it('restricts customer event data to the selected admin roles even when another role has wildcard', () => {
+    const support = session(['support_admin'], ['early_access.read', 'early_access.update']);
+    const operations = session(['operations_admin'], ['early_access.read']);
+    const finance = session(['finance_admin'], ['*']);
+    const content = session(['content_admin'], ['*', 'early_access.read']);
+
+    expect(canAccessSection(support, 'event-info')).toBe(true);
+    expect(canManageEarlyAccess(support)).toBe(true);
+    expect(canAccessEarlyAccess(operations)).toBe(true);
+    expect(canManageEarlyAccess(operations)).toBe(false);
+    expect(canAccessSection(finance, 'event-info')).toBe(false);
+    expect(canAccessSection(content, 'event-info')).toBe(false);
   });
 
   it('denies inactive or role-less sessions', () => {

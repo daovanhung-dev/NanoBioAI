@@ -213,6 +213,7 @@ function sectionDescription(section: AdminSection): string {
     config: 'Cập nhật thiết lập vận hành theo phạm vi được cấp.',
     dashboard: '',
     'wellness-rewards': '',
+    'event-info': 'Xem và cập nhật thông tin đăng ký NanoBio Early Access.',
   } satisfies Record<AdminSection, string>)[section];
 }
 

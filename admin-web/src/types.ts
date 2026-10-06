@@ -17,6 +17,8 @@ export const PERMISSIONS = {
   pointsWrite: 'points.write',
   wellnessRewardsRead: 'wellness_rewards.read',
   wellnessRewardsWrite: 'wellness_rewards.write',
+  earlyAccessRead: 'early_access.read',
+  earlyAccessUpdate: 'early_access.update',
   plansWrite: 'plans.write',
   reportsWrite: 'reports.write',
   auditRead: 'audit.read',
@@ -33,6 +35,7 @@ export const SECTIONS = [
   'sales',
   'sale-conversions',
   'wellness-rewards',
+  'event-info',
   'reconciliation',
   'plans',
   'reports',
@@ -41,6 +44,35 @@ export const SECTIONS = [
 ] as const;
 
 export type AdminSection = (typeof SECTIONS)[number];
+
+export const EARLY_ACCESS_LEAD_STATUSES = [
+  'new',
+  'contacted',
+  'registered',
+  'converted',
+  'rejected',
+] as const;
+
+export type EarlyAccessLeadStatus = (typeof EARLY_ACCESS_LEAD_STATUSES)[number];
+
+export type EarlyAccessLead = {
+  id: string;
+  phoneE164: string;
+  phoneDisplay: string | null;
+  fullName: string | null;
+  age: number | null;
+  gender: string | null;
+  address: string | null;
+  status: EarlyAccessLeadStatus;
+  createdAt: string;
+};
+
+export type EarlyAccessLeadPage = {
+  rows: EarlyAccessLead[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
 export type AdminSession = {
   userId: string;
@@ -307,6 +339,12 @@ export const SECTION_CONFIG: Record<AdminSection, SectionConfig> = {
     permission: PERMISSIONS.wellnessRewardsRead,
     group: 'Vận hành',
   },
+  'event-info': {
+    label: 'Thông tin sự kiện',
+    description: 'Xem và xử lý thông tin đăng ký NanoBio Early Access.',
+    permission: PERMISSIONS.earlyAccessRead,
+    group: 'Vận hành',
+  },
   reconciliation: {
     label: 'Đối soát',
     description: 'Theo dõi sai lệch và ghi nhận kết quả đối soát.',
@@ -351,7 +389,28 @@ export function hasPermission(session: AdminSession, permission: string): boolea
 }
 
 export function canAccessSection(session: AdminSession, section: AdminSection): boolean {
+  if (section === 'event-info') return canAccessEarlyAccess(session);
   return hasPermission(session, SECTION_CONFIG[section].permission);
+}
+
+export function canAccessEarlyAccess(session: AdminSession): boolean {
+  const allowedRole = session.roles.some((role) =>
+    role === 'super_admin' || role === 'support_admin' || role === 'operations_admin'
+  );
+  return session.active && allowedRole && (
+    session.permissions.includes(PERMISSIONS.wildcard) ||
+    session.permissions.includes(PERMISSIONS.earlyAccessRead)
+  );
+}
+
+export function canManageEarlyAccess(session: AdminSession): boolean {
+  const allowedRole = session.roles.some((role) =>
+    role === 'super_admin' || role === 'support_admin' || role === 'operations_admin'
+  );
+  return session.active && allowedRole && (
+    session.permissions.includes(PERMISSIONS.wildcard) ||
+    session.permissions.includes(PERMISSIONS.earlyAccessUpdate)
+  );
 }
 
 export function canCreateAccount(session: AdminSession): boolean {

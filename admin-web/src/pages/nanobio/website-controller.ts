@@ -2,6 +2,7 @@ import { submitEarlyAccess, EarlyAccessError, readCampaignValue } from './early-
 import { displayVietnamPhone, normalizeVietnamPhone } from './phone';
 import { websiteAssets, websiteFaq, websiteFeatures, websiteGallery, websitePeople } from './data';
 import { websiteAssetUrls } from './assets';
+import { validateEarlyAccessCustomer } from './customer-validation';
 
 type Navigate = (path: string) => void;
 
@@ -139,6 +140,10 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
 
   const vipModal = query<HTMLElement>('#vipModal');
   const phone = query<HTMLInputElement>('#phone');
+  const fullName = query<HTMLInputElement>('#fullName');
+  const age = query<HTMLInputElement>('#age');
+  const gender = query<HTMLSelectElement>('#gender');
+  const address = query<HTMLInputElement>('#address');
   const form = query<HTMLFormElement>('#earlyAccessForm');
   const consent = query<HTMLInputElement>('#consent');
   const submitButton = query<HTMLButtonElement>('#submitButton');
@@ -239,6 +244,27 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
   };
   phone?.addEventListener('input', onPhoneInput);
   cleanup.push(() => phone?.removeEventListener('input', onPhoneInput));
+  const customerInputs: Array<HTMLInputElement | HTMLSelectElement> = [
+    fullName,
+    age,
+    gender,
+    address,
+  ].filter((field): field is HTMLInputElement | HTMLSelectElement => field !== null);
+  const onCustomerInput = (event: Event) => {
+    const field = event.currentTarget;
+    if (field instanceof HTMLElement) field.removeAttribute('aria-invalid');
+    if (errorBox) errorBox.textContent = '';
+    const label = submitButton?.querySelector('span');
+    if (label && !submissionInFlight) label.textContent = 'Nhận VIP 1 tháng & tải ứng dụng';
+  };
+  customerInputs.forEach((field) => {
+    field.addEventListener('input', onCustomerInput);
+    field.addEventListener('change', onCustomerInput);
+  });
+  cleanup.push(() => customerInputs.forEach((field) => {
+    field.removeEventListener('input', onCustomerInput);
+    field.removeEventListener('change', onCustomerInput);
+  }));
   const onConsentChange = () => {
     if (!consent?.checked) return;
     consent.removeAttribute('aria-invalid');
@@ -251,7 +277,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
 
   const onSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (!phone || !consent || !submitButton || !form || submissionInFlight) return;
+    if (!phone || !fullName || !age || !gender || !address || !consent || !submitButton || !form || submissionInFlight) return;
     if (errorBox) errorBox.textContent = '';
     const normalizedPhone = normalizeVietnamPhone(phone.value);
     if (!normalizedPhone) {
@@ -261,8 +287,24 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
       phone.focus();
       return;
     }
+    const customer = validateEarlyAccessCustomer({
+      fullName: fullName.value,
+      age: age.value,
+      gender: gender.value,
+      address: address.value,
+    });
+    if (!customer.valid) {
+      const fields: Record<string, HTMLElement> = { fullName, age, gender, address };
+      const field = fields[customer.field];
+      phone.removeAttribute('aria-invalid');
+      field?.setAttribute('aria-invalid', 'true');
+      showError(customer.message);
+      field?.focus();
+      return;
+    }
     if (!consent.checked) {
       phone.removeAttribute('aria-invalid');
+      customerInputs.forEach((field) => field.removeAttribute('aria-invalid'));
       consent.setAttribute('aria-invalid', 'true');
       showError('Bạn cần đồng ý với mục đích sử dụng thông tin để tiếp tục.');
       consent.focus();
@@ -278,6 +320,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
       const routePath = window.location.hash.replace(/^#/, '').split('?')[0];
       const result = await submitEarlyAccess({
         phone: displayVietnamPhone(normalizedPhone),
+        ...customer.value,
         privacy_consent: true,
         utm_source: readCampaignValue('utm_source'),
         utm_medium: readCampaignValue('utm_medium'),

@@ -23,6 +23,10 @@ Deno.serve(createEarlyAccessHandler({
     const secret = Deno.env.get("EARLY_ACCESS_RATE_LIMIT_HMAC_KEY") ?? "";
     return await hmacIpAddress(ip, secret);
   },
+  hmacPhone: async (phone) => {
+    const secret = Deno.env.get("EARLY_ACCESS_PHONE_HMAC_KEY") ?? "";
+    return await hmacIpAddress(`early-access-phone:${phone}`, secret);
+  },
   consumeRateLimit: async (ipHash, windowStart) => {
     const { data, error } = await admin.rpc("consume_early_access_rate_limit", {
       p_ip_hash: ipHash,
@@ -32,9 +36,8 @@ Deno.serve(createEarlyAccessHandler({
     return data === true;
   },
   saveLead: async (lead: EarlyAccessLead) => {
-    const { error } = await admin.from("early_access_leads").upsert(lead, {
-      onConflict: "phone_e164",
-      ignoreDuplicates: true,
+    const { error } = await admin.rpc("save_early_access_lead", {
+      p_lead: lead,
     });
     if (error) {
       console.error("early_access_lead_insert_failed", {
@@ -43,28 +46,9 @@ Deno.serve(createEarlyAccessHandler({
       throw new Error("EARLY_ACCESS_INSERT_FAILED");
     }
   },
-  createSignedDownload: async () => {
-    const bucket = Deno.env.get("EARLY_ACCESS_BUCKET")?.trim() ||
-      "early-access-apk";
-    const path = Deno.env.get("EARLY_ACCESS_APK_PATH")?.trim() ||
-      "nanobio-early-access.apk";
-    const configuredSeconds = Number(
-      Deno.env.get("SIGNED_URL_SECONDS") ?? "900",
-    );
-    const expiresIn =
-      Number.isInteger(configuredSeconds) && configuredSeconds >= 60 &&
-        configuredSeconds <= 3600
-        ? configuredSeconds
-        : 900;
-    const { data, error } = await admin.storage.from(bucket).createSignedUrl(
-      path,
-      expiresIn,
-    );
-    if (error || !data?.signedUrl) return null;
-    return {
-      url: data.signedUrl,
-      expiresAt: new Date(Date.now() + expiresIn * 1000).toISOString(),
-    };
+  getPublicDownloadUrl: async () => {
+    const url = Deno.env.get("NANOBIO_APK_DOWNLOAD_URL")?.trim() ?? "";
+    return url || null;
   },
 }));
 

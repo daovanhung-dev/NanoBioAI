@@ -61,6 +61,12 @@ describe('NanoBio public routes', () => {
     expect(container.textContent).toContain('Đăng nhập');
   });
 
+  it('keeps event information behind the Admin login route', async () => {
+    await act(async () => root.render(<MemoryRouter initialEntries={['/admin/event-info']}><App /></MemoryRouter>));
+    expect(container.querySelector('[data-admin-auth-provider]')).not.toBeNull();
+    expect(container.textContent).toContain('Đăng nhập');
+  });
+
   it('validates phone and consent before sending the public form', async () => {
     await renderLanding();
     const site = getLandingShadow();
@@ -68,6 +74,7 @@ describe('NanoBio public routes', () => {
     const phone = site.querySelector<HTMLInputElement>('#phone')!;
     const consent = site.querySelector<HTMLInputElement>('#consent')!;
     const form = site.querySelector<HTMLFormElement>('#earlyAccessForm')!;
+    fillCustomer(site);
 
     await submitWith(phone, form, '0123 456 789');
     expect(site.querySelector('#formError')?.textContent).toContain('chưa đúng định dạng');
@@ -96,6 +103,7 @@ describe('NanoBio public routes', () => {
     const phone = site.querySelector<HTMLInputElement>('#phone')!;
     const consent = site.querySelector<HTMLInputElement>('#consent')!;
     const form = site.querySelector<HTMLFormElement>('#earlyAccessForm')!;
+    fillCustomer(site);
     phone.value = '0912 345 678';
     consent.checked = true;
 
@@ -107,6 +115,7 @@ describe('NanoBio public routes', () => {
     expect(submitEarlyAccessMock).toHaveBeenCalledTimes(2);
     expect(submitEarlyAccessMock).toHaveBeenLastCalledWith(expect.objectContaining({
       phone: '0912 345 678', privacy_consent: true, landing_path: '/nanobio',
+      full_name: 'Nguyễn An', age: 30, gender: 'prefer_not_to_say', address: 'Hà Nội',
     }));
     expect(site.querySelector<HTMLElement>('#successState')?.hidden).toBe(false);
     expect(site.querySelector<HTMLAnchorElement>('#downloadButton')?.hidden).toBe(true);
@@ -129,6 +138,7 @@ describe('NanoBio public routes', () => {
     const phone = site.querySelector<HTMLInputElement>('#phone')!;
     const consent = site.querySelector<HTMLInputElement>('#consent')!;
     const form = site.querySelector<HTMLFormElement>('#earlyAccessForm')!;
+    fillCustomer(site);
     phone.value = '0912 345 678';
     consent.checked = true;
 
@@ -176,6 +186,13 @@ describe('NanoBio public routes', () => {
 
   function getLandingShadow(): ShadowRoot {
     return container.querySelector<HTMLElement>('.nanobio-landing-host')!.shadowRoot!;
+  }
+
+  function fillCustomer(site: ShadowRoot) {
+    site.querySelector<HTMLInputElement>('#fullName')!.value = 'Nguyễn An';
+    site.querySelector<HTMLInputElement>('#age')!.value = '30';
+    site.querySelector<HTMLSelectElement>('#gender')!.value = 'prefer_not_to_say';
+    site.querySelector<HTMLInputElement>('#address')!.value = 'Hà Nội';
   }
 
   async function submitWith(phone: HTMLInputElement, form: HTMLFormElement, value: string) {

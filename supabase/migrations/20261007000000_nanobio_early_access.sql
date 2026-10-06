@@ -3,6 +3,7 @@
 begin;
 
 create extension if not exists pgcrypto;
+create extension if not exists pg_cron;
 create schema if not exists early_access_private;
 revoke all on schema early_access_private from public, anon, authenticated, service_role;
 
@@ -187,16 +188,5 @@ begin
   );
 end
 $cron$;
-
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'early-access-apk', 'early-access-apk', false, 314572800,
-  array['application/vnd.android.package-archive','application/octet-stream']::text[]
-)
-on conflict (id) do update set
-  name = excluded.name,
-  public = false,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;
 
 commit;

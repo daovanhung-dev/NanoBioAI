@@ -5,7 +5,7 @@ import { AdminApi, AdminApiError, makeKey } from './admin-api';
 type RpcCall = { name: string; params?: Record<string, unknown> };
 type FunctionCall = { name: string; body?: Record<string, unknown> };
 
-function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unknown>> = [], functionCalls: FunctionCall[] = []) {
+function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unknown>> = [], functionCalls: FunctionCall[] = [], functionResponse: unknown = { success: true, message: 'ok' }) {
   return {
     rpc: async (name: string, params?: Record<string, unknown>) => {
       rpcCalls.push({ name, params });
@@ -17,7 +17,7 @@ function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unkn
       signInWithPassword: async () => ({ error: null }),
       signOut: async () => ({ error: null }),
     },
-    functions: { invoke: async (name: string, options: { body?: Record<string, unknown> }) => { functionCalls.push({ name, body: options.body }); return { data: { success: true, message: 'ok' }, error: null }; } },
+    functions: { invoke: async (name: string, options: { body?: Record<string, unknown> }) => { functionCalls.push({ name, body: options.body }); return { data: functionResponse, error: null }; } },
     storage: {
       from: () => ({
         upload: async (path: string, file: File, options: Record<string, unknown>) => { storageCalls.push({ path, file, options }); return { data: { path }, error: null }; },
@@ -28,6 +28,53 @@ function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unkn
 }
 
 describe('AdminApi mutation contract', () => {
+  it('loads a bounded event lead page through the authenticated function', async () => {
+    const functionCalls: FunctionCall[] = [];
+    const api = new AdminApi(() => fakeClient([], [], functionCalls, {
+      success: true,
+      rows: [{
+        id: 'lead-1', phone_e164: '+84912345678', phone_display: '0912 345 678',
+        full_name: 'Nguyễn An', age: 24, gender: 'female', address: 'Quận 1',
+        status: 'new', created_at: '2026-10-07T00:00:00.000Z',
+      }],
+      total: 51,
+      page: 2,
+      page_size: 25,
+    }));
+    const page = await api.fetchEarlyAccessLeads(' Nguyen An ', 2, 25);
+
+    expect(page).toEqual({ rows: [{
+      id: 'lead-1', phoneE164: '+84912345678', phoneDisplay: '0912 345 678',
+      fullName: 'Nguyễn An', age: 24, gender: 'female', address: 'Quận 1',
+      status: 'new', createdAt: '2026-10-07T00:00:00.000Z',
+    }], total: 51, page: 2, pageSize: 25 });
+    expect(functionCalls[0]).toEqual({
+      name: 'admin-early-access-leads',
+      body: { action: 'list', query: 'Nguyen An', page: 2, page_size: 25 },
+    });
+  });
+
+  it('sends an audited lead status update with an idempotency key', async () => {
+    const functionCalls: FunctionCall[] = [];
+    const api = new AdminApi(() => fakeClient([], [], functionCalls));
+    await api.updateEarlyAccessLeadStatus({
+      leadId: 'lead-1',
+      status: 'contacted',
+      reason: 'Đã gọi khách hàng.',
+      idempotencyKey: 'status-change-1',
+    });
+    expect(functionCalls[0]).toEqual({
+      name: 'admin-early-access-leads',
+      body: {
+        action: 'update_status',
+        lead_id: 'lead-1',
+        status: 'contacted',
+        reason: 'Đã gọi khách hàng.',
+        idempotency_key: 'status-change-1',
+      },
+    });
+  });
+
   it('sends a membership period adjustment through the protected Edge Function', async () => {
     const functionCalls: FunctionCall[] = [];
     const api = new AdminApi(() => fakeClient([], [], functionCalls));

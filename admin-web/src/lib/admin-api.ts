@@ -15,6 +15,10 @@ import {
   type BulkProvisionPreviewRow,
   type BulkProvisionResult,
   type DashboardMetric,
+  EARLY_ACCESS_LEAD_STATUSES,
+  type EarlyAccessLead,
+  type EarlyAccessLeadPage,
+  type EarlyAccessLeadStatus,
   type MembershipGrantInput,
   type MembershipPeriodAdjustmentInput,
   type MembershipPeriodAdjustmentResult,
@@ -70,6 +74,45 @@ export class AdminApi {
     return toAdminSession(data);
   }
 
+  async fetchEarlyAccessLeads(query: string, page: number, pageSize = 25): Promise<EarlyAccessLeadPage> {
+    const data = await this.invoke<unknown>('admin-early-access-leads', {
+      action: 'list',
+      query: query.trim(),
+      page,
+      page_size: pageSize,
+    });
+    const response = normalizeMap(data);
+    if (response.success !== true) {
+      throw new AdminApiError('Chưa tải được danh sách thông tin sự kiện.', true);
+    }
+    const rows = normalizeArray<Record<string, unknown>>(response.rows).map((row) => toEarlyAccessLead(row));
+    return {
+      rows,
+      total: integerValue(response.total),
+      page: integerValue(response.page),
+      pageSize: integerValue(response.page_size),
+    };
+  }
+
+  async updateEarlyAccessLeadStatus(input: {
+    leadId: string;
+    status: EarlyAccessLeadStatus;
+    reason: string;
+    idempotencyKey: string;
+  }): Promise<MutationResult> {
+    assertWriteContext(input.reason, input.idempotencyKey);
+    if (!input.leadId.trim() || !EARLY_ACCESS_LEAD_STATUSES.includes(input.status)) {
+      throw new AdminApiError('Chưa chọn hồ sơ hoặc trạng thái hợp lệ.');
+    }
+    return toMutationResult(await this.invoke<unknown>('admin-early-access-leads', {
+      action: 'update_status',
+      lead_id: input.leadId,
+      status: input.status,
+      reason: input.reason.trim(),
+      idempotency_key: input.idempotencyKey,
+    }));
+  }
+
   async fetchDashboard(from: Date, to: Date): Promise<DashboardMetric[]> {
     const data = await this.rpc<unknown>('get_admin_dashboard_summary', {
       p_from: from.toISOString(),
@@ -93,7 +136,10 @@ export class AdminApi {
   }
 
   async listSection(section: AdminSection, query = ''): Promise<AdminWorkItem[]> {
-    const rpcBySection: Record<AdminSection, string> = {
+    if (section === 'event-info') {
+      throw new AdminApiError('Khu vực này cần API thông tin sự kiện chuyên biệt.');
+    }
+    const rpcBySection: Record<Exclude<AdminSection, 'event-info'>, string> = {
       dashboard: 'admin_search_users',
       users: 'admin_search_users',
       payments: 'admin_list_payments',
@@ -202,6 +248,8 @@ export class AdminApi {
       case 'dashboard':
       case 'audit':
         throw new AdminApiError('Khu vực này chỉ cho phép xem thông tin.');
+      case 'event-info':
+        throw new AdminApiError('Thao tác thông tin sự kiện cần biểu mẫu chuyên biệt.');
       case 'wellness-rewards':
         throw new AdminApiError('Thao tác phần thưởng cần biểu mẫu chuyên biệt.');
     }
@@ -498,6 +546,38 @@ function optionalRecord(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : undefined;
+}
+
+function toEarlyAccessLead(value: Record<string, unknown>): EarlyAccessLead {
+  const statusValue = String(value.status ?? 'new');
+  const status = EARLY_ACCESS_LEAD_STATUSES.includes(statusValue as EarlyAccessLeadStatus)
+    ? statusValue as EarlyAccessLeadStatus
+    : 'new';
+  return {
+    id: String(value.id ?? ''),
+    phoneE164: String(value.phone_e164 ?? ''),
+    phoneDisplay: nullableString(value.phone_display),
+    fullName: nullableString(value.full_name),
+    age: nullableNumber(value.age),
+    gender: nullableString(value.gender),
+    address: nullableString(value.address),
+    status,
+    createdAt: String(value.created_at ?? ''),
+  };
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function nullableNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return null;
+}
+
+function integerValue(value: unknown): number {
+  const number = numberValue(value);
+  return Number.isInteger(number) && number >= 0 ? number : 0;
 }
 
 function recordArray(value: unknown): Array<Record<string, unknown>> {

@@ -207,6 +207,23 @@ values ('super_admin', '*'),
     ('content_admin', '*'),
     ('operations_admin', '*') on conflict (role_code, permission_code) do nothing;
 
+insert into public.admin_permissions (code, description)
+values
+    ('early_access.read', 'Xem hồ sơ đăng ký NanoBio Early Access.'),
+    ('early_access.update', 'Cập nhật trạng thái hồ sơ NanoBio Early Access.')
+on conflict (code) do update
+set description = excluded.description, is_active = true;
+
+insert into public.admin_role_permissions (role_code, permission_code)
+values
+    ('super_admin', 'early_access.read'),
+    ('super_admin', 'early_access.update'),
+    ('support_admin', 'early_access.read'),
+    ('support_admin', 'early_access.update'),
+    ('operations_admin', 'early_access.read'),
+    ('operations_admin', 'early_access.update')
+on conflict (role_code, permission_code) do nothing;
+
 -- Preserve historical transfer evidence without changing its stored memo.
 -- All requests created by the V2 contract below carry reference_only_v2 and
 -- must have an exact NB reference as their transfer memo.

@@ -133,6 +133,7 @@ export function sectionTitle(section: AdminSection): string {
     sales: 'Cộng tác viên',
     'sale-conversions': 'Chi trả cộng tác viên',
     'wellness-rewards': 'Điểm chăm sóc',
+    'event-info': 'Thông tin sự kiện',
     reconciliation: 'Đối soát',
     plans: 'Gói dịch vụ',
     reports: 'Báo cáo',

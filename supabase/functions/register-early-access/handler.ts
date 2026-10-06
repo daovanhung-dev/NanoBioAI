@@ -9,7 +9,11 @@ export type EarlyAccessLead = {
   requested_plan: "plus";
   vip_duration_days: 30;
   vip_grant_status: "pending_account_link";
-  full_name: null;
+  phone_hash: string;
+  full_name: string;
+  age: number;
+  gender: "male" | "female" | "other" | "prefer_not_to_say";
+  address: string;
   status: "new";
   utm_source: string | null;
   utm_medium: string | null;
@@ -23,18 +27,24 @@ export type EarlyAccessHandlerDependencies = {
   allowedOrigins: readonly string[];
   appVersion: string;
   hmacIp: (ip: string) => Promise<string>;
+  hmacPhone: (phone: string) => Promise<string>;
   consumeRateLimit: (ipHash: string, windowStart: string) => Promise<boolean>;
   saveLead: (lead: EarlyAccessLead) => Promise<void>;
-  createSignedDownload: () => Promise<
-    { url: string; expiresAt: string } | null
-  >;
+  getPublicDownloadUrl: () => Promise<string | null>;
   now?: () => Date;
 };
 
 const PROMOTION_CODE = "EARLY_ACCESS_PLUS_30D";
 const REQUESTED_PLAN = "plus";
 const VIP_DURATION_DAYS = 30;
-const MAX_BODY_BYTES = 4096;
+const MAX_BODY_BYTES = 8192;
+const RELEASE_APK_URL = "https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk";
+const ALLOWED_GENDERS = new Set([
+  "male",
+  "female",
+  "other",
+  "prefer_not_to_say",
+]);
 
 export function createEarlyAccessHandler(deps: EarlyAccessHandlerDependencies) {
   return async (request: Request): Promise<Response> => {
@@ -142,6 +152,50 @@ export function createEarlyAccessHandler(deps: EarlyAccessHandlerDependencies) {
       }, origin);
     }
 
+    const fullName = requiredText(input.full_name, 120);
+    if (!fullName) {
+      return jsonResponse(400, {
+        success: false,
+        code: "INVALID_FULL_NAME",
+        message: "Vui lòng nhập họ tên hợp lệ.",
+      }, origin);
+    }
+    const age = input.age;
+    if (typeof age !== "number" || !Number.isInteger(age) || age < 18 || age > 120) {
+      return jsonResponse(400, {
+        success: false,
+        code: "INVALID_AGE",
+        message: "NanoBio Early Access hiện dành cho người từ 18 tuổi trở lên.",
+      }, origin);
+    }
+    if (typeof input.gender !== "string" || !ALLOWED_GENDERS.has(input.gender)) {
+      return jsonResponse(400, {
+        success: false,
+        code: "INVALID_GENDER",
+        message: "Vui lòng chọn giới tính hoặc “Không muốn trả lời”.",
+      }, origin);
+    }
+    const address = requiredText(input.address, 512);
+    if (!address) {
+      return jsonResponse(400, {
+        success: false,
+        code: "INVALID_ADDRESS",
+        message: "Vui lòng nhập địa chỉ hợp lệ.",
+      }, origin);
+    }
+
+    let phoneHash: string;
+    try {
+      phoneHash = await deps.hmacPhone(phoneE164);
+      if (!/^[0-9a-f]{64}$/.test(phoneHash)) throw new Error("PHONE_HMAC_INVALID");
+    } catch {
+      return jsonResponse(503, {
+        success: false,
+        code: "REGISTRATION_UNAVAILABLE",
+        message: "Đăng ký tạm thời chưa khả dụng. Vui lòng thử lại sau.",
+      }, origin);
+    }
+
     const lead: EarlyAccessLead = {
       phone_e164: phoneE164,
       phone_display: displayVietnamPhone(phoneE164),
@@ -153,7 +207,11 @@ export function createEarlyAccessHandler(deps: EarlyAccessHandlerDependencies) {
       requested_plan: REQUESTED_PLAN,
       vip_duration_days: VIP_DURATION_DAYS,
       vip_grant_status: "pending_account_link",
-      full_name: null,
+      phone_hash: phoneHash,
+      full_name: fullName,
+      age,
+      gender: input.gender as EarlyAccessLead["gender"],
+      address,
       status: "new",
       utm_source: campaignValue(input.utm_source),
       utm_medium: campaignValue(input.utm_medium),
@@ -173,19 +231,20 @@ export function createEarlyAccessHandler(deps: EarlyAccessHandlerDependencies) {
       }, origin);
     }
 
-    let download: { url: string; expiresAt: string } | null = null;
+    let downloadUrl: string | null = null;
     try {
-      download = await deps.createSignedDownload();
+      const configuredUrl = await deps.getPublicDownloadUrl();
+      downloadUrl = configuredUrl === RELEASE_APK_URL ? configuredUrl : null;
     } catch {
-      download = null;
+      downloadUrl = null;
     }
 
     return jsonResponse(200, {
       success: true,
       message: "Đã ghi nhận yêu cầu của bạn.",
-      download_url: download?.url ?? "",
-      download_available: download !== null,
-      expires_at: download?.expiresAt ?? null,
+      download_url: downloadUrl ?? "",
+      download_available: downloadUrl !== null,
+      expires_at: null,
       app_version: boundedText(deps.appVersion, 50) ?? "1.0.1+4",
       promotion_code: PROMOTION_CODE,
       vip_plan: REQUESTED_PLAN,
@@ -222,6 +281,12 @@ function boundedText(value: unknown, maximum: number): string | null {
   if (typeof value !== "string") return null;
   const normalized = value.trim().replace(/[\u0000-\u001f\u007f]/g, "");
   return normalized ? normalized.slice(0, maximum) : null;
+}
+
+function requiredText(value: unknown, maximum: number): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().replace(/[\u0000-\u001f\u007f]/g, "");
+  return normalized && normalized.length <= maximum ? normalized : null;
 }
 
 function sanitizeReferrer(value: string | null): string | null {

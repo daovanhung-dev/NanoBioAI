@@ -772,8 +772,8 @@ create index if not exists idx_ai_content_reports_user_created
   on public.ai_content_reports (user_id, created_at desc)
   where user_id is not null;
 
--- Website Early Access stores contact requests only. Membership activation is
--- still handled by a trusted Admin/membership flow, never by this public form.
+-- Website Early Access stores submitted customer details. Membership
+-- activation is still handled by a trusted Admin/membership flow.
 create table if not exists public.early_access_leads (
     id uuid primary key default gen_random_uuid(),
     phone_e164 text not null unique,
@@ -789,7 +789,11 @@ create table if not exists public.early_access_leads (
     claimed_user_id uuid null references auth.users(id) on delete set null,
     vip_granted_at timestamptz null,
     vip_expires_at timestamptz null,
+    phone_hash text null,
     full_name text null,
+    age smallint null,
+    gender text null,
+    address text null,
     status text not null default 'new',
     utm_source text null,
     utm_medium text null,
@@ -805,7 +809,11 @@ create table if not exists public.early_access_leads (
     constraint early_access_vip_days_ck check (vip_duration_days = 30),
     constraint early_access_vip_status_ck check (vip_grant_status in ('pending_account_link','pending_activation','active','expired','cancelled')),
     constraint early_access_lead_status_ck check (status in ('new','contacted','registered','converted','rejected')),
+    constraint early_access_phone_hash_ck check (phone_hash is null or phone_hash ~ '^[0-9a-f]{64}$'),
     constraint early_access_full_name_length_ck check (full_name is null or char_length(full_name) <= 120),
+    constraint early_access_age_ck check (age is null or age between 18 and 120),
+    constraint early_access_gender_ck check (gender is null or gender in ('male','female','other','prefer_not_to_say')),
+    constraint early_access_address_length_ck check (address is null or char_length(address) <= 512),
     constraint early_access_utm_source_length_ck check (utm_source is null or char_length(utm_source) <= 100),
     constraint early_access_utm_medium_length_ck check (utm_medium is null or char_length(utm_medium) <= 100),
     constraint early_access_utm_campaign_length_ck check (utm_campaign is null or char_length(utm_campaign) <= 100),
@@ -818,6 +826,9 @@ create index if not exists early_access_vip_grant_status_idx
   on public.early_access_leads (vip_grant_status, created_at desc);
 create index if not exists early_access_lead_status_created_idx
   on public.early_access_leads (status, created_at desc);
+create index if not exists early_access_lead_retention_idx
+  on public.early_access_leads(status, created_at)
+  where status in ('registered','converted','rejected');
 
 create table if not exists early_access_private.rate_limits (
     ip_hash text not null check (ip_hash ~ '^[0-9a-f]{64}$'),
@@ -825,6 +836,11 @@ create table if not exists early_access_private.rate_limits (
     request_count integer not null check (request_count between 1 and 10),
     expires_at timestamptz not null,
     primary key (ip_hash, window_started_at)
+);
+
+create table if not exists early_access_private.promo_phone_suppressions (
+    phone_hash text primary key check (phone_hash ~ '^[0-9a-f]{64}$'),
+    created_at timestamptz not null default now()
 );
 
 create table if not exists public.personal_schedule_ai_requests (
@@ -1100,6 +1116,11 @@ create trigger trg_ai_content_reports_updated_at
 alter table public.early_access_leads enable row level security;
 revoke all on public.early_access_leads from public, anon, authenticated;
 grant select, insert, update on public.early_access_leads to service_role;
+alter table early_access_private.rate_limits enable row level security;
+revoke all on schema early_access_private from public, anon, authenticated, service_role;
+revoke all on early_access_private.rate_limits from public, anon, authenticated, service_role;
+alter table early_access_private.promo_phone_suppressions enable row level security;
+revoke all on early_access_private.promo_phone_suppressions from public, anon, authenticated, service_role;
 
 create or replace function public.set_early_access_updated_at()
 returns trigger
@@ -1171,6 +1192,156 @@ begin
 end;
 $$;
 revoke all on function public.purge_early_access_rate_limits() from public, anon, authenticated, service_role;
+
+create or replace function public.save_early_access_lead(p_lead jsonb)
+returns boolean
+language plpgsql
+security definer
+set search_path = pg_catalog, public, early_access_private
+as $$
+declare
+  v_phone text := p_lead ->> 'phone_e164';
+  v_phone_hash text := p_lead ->> 'phone_hash';
+  v_inserted integer;
+begin
+  if jsonb_typeof(p_lead) <> 'object'
+     or v_phone is null or v_phone !~ '^\+84(3|5|7|8|9)[0-9]{8}$'
+     or v_phone_hash is null or v_phone_hash !~ '^[0-9a-f]{64}$' then
+    raise exception 'INVALID_EARLY_ACCESS_LEAD' using errcode = '22023';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_phone_hash, 0));
+  if exists (
+    select 1 from early_access_private.promo_phone_suppressions
+    where phone_hash = v_phone_hash
+  ) then
+    return false;
+  end if;
+
+  insert into public.early_access_leads (
+    phone_e164, phone_display, source, app_version, vip_support_requested,
+    privacy_consent, promotion_code, requested_plan, vip_duration_days,
+    vip_grant_status, phone_hash, full_name, age, gender, address, status,
+    utm_source, utm_medium, utm_campaign, referrer, landing_path, user_agent
+  ) values (
+    v_phone, p_lead ->> 'phone_display', 'nanobio_web', p_lead ->> 'app_version',
+    true, true, 'EARLY_ACCESS_PLUS_30D', 'plus', 30, 'pending_account_link',
+    v_phone_hash, p_lead ->> 'full_name', (p_lead ->> 'age')::smallint,
+    p_lead ->> 'gender', p_lead ->> 'address', 'new',
+    p_lead ->> 'utm_source', p_lead ->> 'utm_medium', p_lead ->> 'utm_campaign',
+    p_lead ->> 'referrer', coalesce(p_lead ->> 'landing_path', '/nanobio'),
+    p_lead ->> 'user_agent'
+  ) on conflict (phone_e164) do nothing;
+  get diagnostics v_inserted = row_count;
+  return v_inserted = 1;
+end;
+$$;
+revoke all on function public.save_early_access_lead(jsonb) from public, anon, authenticated;
+grant execute on function public.save_early_access_lead(jsonb) to service_role;
+
+create or replace function public.admin_update_early_access_lead_status(
+  p_lead_id uuid,
+  p_status text,
+  p_actor_id uuid,
+  p_reason text,
+  p_idempotency_key text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_old_status text;
+  v_existing_target text;
+begin
+  if p_status not in ('new','contacted','registered','converted','rejected')
+     or p_reason is null or char_length(btrim(p_reason)) < 5 or char_length(p_reason) > 300
+     or p_idempotency_key is null or char_length(p_idempotency_key) < 8
+     or char_length(p_idempotency_key) > 120 then
+    raise exception 'INVALID_EARLY_ACCESS_STATUS_UPDATE' using errcode = '22023';
+  end if;
+  if not exists (
+    select 1 from public.users u
+    where u.id = p_actor_id and u.admin_status = 'active'
+  ) or not exists (
+    select 1
+    from public.admin_user_roles aur
+    join public.admin_roles ar on ar.code = aur.role_code and ar.is_active = true
+    where aur.user_id = p_actor_id
+      and aur.role_code in ('super_admin','support_admin','operations_admin')
+      and aur.is_active = true and aur.revoked_at is null
+  ) then
+    raise exception 'EARLY_ACCESS_ADMIN_ROLE_REQUIRED' using errcode = '42501';
+  end if;
+
+  select target_id into v_existing_target
+  from public.admin_audit_events
+  where action = 'early_access_lead_status_updated'
+    and idempotency_key = p_idempotency_key;
+  if found then
+    if v_existing_target <> p_lead_id::text then
+      raise exception 'EARLY_ACCESS_IDEMPOTENCY_CONFLICT' using errcode = '23505';
+    end if;
+    return jsonb_build_object('success', true, 'message', 'Đã xử lý thao tác trước đó.');
+  end if;
+
+  select status into v_old_status
+  from public.early_access_leads
+  where id = p_lead_id
+  for update;
+  if not found then
+    raise exception 'EARLY_ACCESS_LEAD_NOT_FOUND' using errcode = 'P0002';
+  end if;
+
+  update public.early_access_leads set status = p_status where id = p_lead_id;
+  insert into public.admin_audit_events (
+    actor_id, action, target_type, target_id, reason, idempotency_key, metadata
+  ) values (
+    p_actor_id, 'early_access_lead_status_updated', 'early_access_lead',
+    p_lead_id::text, btrim(p_reason), p_idempotency_key,
+    jsonb_build_object('from_status', v_old_status, 'to_status', p_status)
+  );
+  return jsonb_build_object('success', true, 'message', 'Đã cập nhật trạng thái hồ sơ.');
+end;
+$$;
+revoke all on function public.admin_update_early_access_lead_status(uuid,text,uuid,text,text) from public, anon, authenticated;
+grant execute on function public.admin_update_early_access_lead_status(uuid,text,uuid,text,text) to service_role;
+
+create or replace function public.purge_early_access_closed_leads()
+returns integer
+language plpgsql
+security definer
+set search_path = pg_catalog, public, early_access_private
+as $$
+declare
+  v_candidate record;
+  v_deleted integer := 0;
+  v_row_count integer;
+begin
+  for v_candidate in
+    select id, phone_hash
+    from public.early_access_leads
+    where created_at < now() - interval '12 months'
+      and status in ('registered','converted','rejected')
+  loop
+    if v_candidate.phone_hash is not null then
+      perform pg_advisory_xact_lock(hashtextextended(v_candidate.phone_hash, 0));
+      insert into early_access_private.promo_phone_suppressions(phone_hash)
+      values (v_candidate.phone_hash)
+      on conflict (phone_hash) do nothing;
+    end if;
+    delete from public.early_access_leads
+    where id = v_candidate.id
+      and created_at < now() - interval '12 months'
+      and status in ('registered','converted','rejected');
+    get diagnostics v_row_count = row_count;
+    v_deleted := v_deleted + v_row_count;
+  end loop;
+  return v_deleted;
+end;
+$$;
+revoke all on function public.purge_early_access_closed_leads() from public, anon, authenticated, service_role;
 
 -- Account deletion keeps only non-reusable operational evidence. Purchase
 -- ledger rows remain for financial reconciliation with their user relation
@@ -13853,8 +14024,7 @@ grant
 execute on function public.sync_my_mobile_snapshot (jsonb) to authenticated;
 
 -- pg_cron jobs live outside public and survive the destructive schema reset.
--- The preflight above removed every stale copy before the rebuild; create one
--- active five-minute membership expiry runner after the schema is complete.
+-- The preflight above removed stale copies before the rebuild.
 do $cron$
 begin
   perform cron.schedule(
@@ -13866,6 +14036,11 @@ begin
     'nanobio-purge-early-access-rate-limits',
     '*/5 * * * *',
     'select public.purge_early_access_rate_limits();'
+  );
+  perform cron.schedule(
+    'nanobio-purge-closed-early-access-leads',
+    '17 3 * * *',
+    'select public.purge_early_access_closed_leads();'
   );
 end
 $cron$;
@@ -15434,13 +15609,6 @@ values
     false,
     5242880,
     array['image/jpeg']::text[]
-  ),
-  (
-    'early-access-apk',
-    'early-access-apk',
-    false,
-    314572800,
-    array['application/vnd.android.package-archive','application/octet-stream']::text[]
   )
 on conflict (id) do update
 set
@@ -15970,20 +16138,14 @@ begin
 
   select array_agg(v.name order by v.name)
   into v_missing_buckets
-  from unnest(array['schedule-completion-proofs', 'sale-payout-proofs', 'early-access-apk']) as v(name)
+  from unnest(array['schedule-completion-proofs', 'sale-payout-proofs']) as v(name)
   where not exists (
     select 1
     from storage.buckets b
     where b.id = v.name
       and b.public = false
-      and (
-        (v.name = 'early-access-apk'
-          and b.file_size_limit = 314572800
-          and b.allowed_mime_types = array['application/vnd.android.package-archive','application/octet-stream']::text[])
-        or (v.name <> 'early-access-apk'
-          and b.file_size_limit = 5242880
-          and b.allowed_mime_types = array['image/jpeg']::text[])
-      )
+      and b.file_size_limit = 5242880
+      and b.allowed_mime_types = array['image/jpeg']::text[]
   );
 
   if v_missing_buckets is not null then
@@ -15996,6 +16158,9 @@ begin
   ) or not exists (
     select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'early_access_private' and c.relname = 'rate_limits' and c.relrowsecurity
+  ) or not exists (
+    select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'early_access_private' and c.relname = 'promo_phone_suppressions' and c.relrowsecurity
   ) then
     raise exception 'EARLY_ACCESS_RLS_MISSING';
   end if;
@@ -16003,7 +16168,7 @@ begin
   if exists (
     select 1 from pg_policies
     where (schemaname = 'public' and tablename = 'early_access_leads')
-       or (schemaname = 'early_access_private' and tablename = 'rate_limits')
+       or (schemaname = 'early_access_private' and tablename in ('rate_limits','promo_phone_suppressions'))
   ) then
     raise exception 'EARLY_ACCESS_PUBLIC_POLICY_INVALID';
   end if;
@@ -16018,6 +16183,8 @@ begin
      or has_table_privilege('authenticated', 'public.early_access_leads', 'DELETE')
      or has_table_privilege('anon', 'early_access_private.rate_limits', 'SELECT')
      or has_table_privilege('authenticated', 'early_access_private.rate_limits', 'SELECT')
+     or has_table_privilege('anon', 'early_access_private.promo_phone_suppressions', 'SELECT')
+     or has_table_privilege('authenticated', 'early_access_private.promo_phone_suppressions', 'SELECT')
      or has_schema_privilege('anon', 'early_access_private', 'USAGE')
      or has_schema_privilege('authenticated', 'early_access_private', 'USAGE') then
     raise exception 'EARLY_ACCESS_CLIENT_GRANT_INVALID';
@@ -16025,6 +16192,8 @@ begin
 
   if not has_table_privilege('service_role', 'public.early_access_leads', 'INSERT')
      or not has_function_privilege('service_role', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.save_early_access_lead(jsonb)'::regprocedure, 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.admin_update_early_access_lead_status(uuid,text,uuid,text,text)'::regprocedure, 'EXECUTE')
      or has_function_privilege('anon', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE')
      or has_function_privilege('authenticated', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE') then
     raise exception 'EARLY_ACCESS_SERVICE_ROLE_GRANT_INVALID';
@@ -16038,6 +16207,16 @@ begin
       and active
   ) then
     raise exception 'EARLY_ACCESS_RATE_LIMIT_CLEANUP_JOB_INVALID';
+  end if;
+
+  if not exists (
+    select 1 from cron.job
+    where jobname = 'nanobio-purge-closed-early-access-leads'
+      and schedule = '17 3 * * *'
+      and command = 'select public.purge_early_access_closed_leads();'
+      and active
+  ) then
+    raise exception 'EARLY_ACCESS_LEAD_RETENTION_JOB_INVALID';
   end if;
 
   if not has_function_privilege(

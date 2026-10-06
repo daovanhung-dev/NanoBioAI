@@ -19,14 +19,14 @@ export function NanoBioPrivacyPage() {
 
         <section>
           <h2>1. Dữ liệu được ghi nhận</h2>
-          <p>Khi bạn chủ động gửi đăng ký, NanoBio ghi nhận số điện thoại, nguồn đăng ký, phiên bản ứng dụng, trạng thái đồng ý, mã ưu đãi và thời điểm gửi. Để hiểu nguồn truy cập và hỗ trợ xử lý sự cố, hệ thống có thể lưu thông tin chiến dịch (UTM), đường dẫn giới thiệu đã loại phần truy vấn, trang đăng ký và thông tin trình duyệt.</p>
-          <p>Hệ thống đăng ký không lưu địa chỉ IP nguyên bản trong dữ liệu lead. Một mã HMAC chỉ dùng để giới hạn yêu cầu được xóa trong vòng 24 giờ.</p>
+          <p>Khi bạn chủ động gửi đăng ký, NanoBio ghi nhận số điện thoại, họ tên, tuổi, giới tính, địa chỉ, nguồn đăng ký, phiên bản ứng dụng, trạng thái đồng ý, mã ưu đãi và thời điểm gửi. Để hiểu nguồn truy cập và hỗ trợ xử lý sự cố, hệ thống có thể lưu thông tin chiến dịch (UTM), đường dẫn giới thiệu đã loại phần truy vấn, trang đăng ký và thông tin trình duyệt.</p>
+          <p>Hệ thống đăng ký không lưu địa chỉ IP nguyên bản. Mã HMAC dùng để giới hạn yêu cầu sẽ được xóa trong vòng 24 giờ. Sau thời hạn lưu thông tin liên hệ, một mã HMAC riêng có thể được giữ để ngăn ghi nhận hoặc cấp lại trùng ưu đãi.</p>
         </section>
 
         <section>
           <h2>2. Mục đích sử dụng</h2>
           <ul>
-            <li>Ghi nhận người dùng NanoBio Early Access và hỗ trợ cài đặt bản Android.</li>
+            <li>Ghi nhận người dùng NanoBio Early Access, hỗ trợ cài đặt bản Android và liên hệ khi cần thiết.</li>
             <li>Đối chiếu số điện thoại với tài khoản NanoBio để hỗ trợ ưu đãi Plus 30 ngày.</li>
             <li>Hiểu hiệu quả nguồn chiến dịch và khắc phục sự cố khi gửi đăng ký.</li>
           </ul>
@@ -40,7 +40,7 @@ export function NanoBioPrivacyPage() {
         <section>
           <h2>4. Lưu trữ và bảo mật</h2>
           <p>Thông tin đăng ký chỉ được dùng để hỗ trợ Early Access và quyền lợi đã thông báo. Website không công khai số điện thoại, không đưa số điện thoại vào URL và không gửi số điện thoại tới công cụ phân tích truy cập. Trình duyệt không có quyền xem hoặc chỉnh sửa dữ liệu đăng ký trực tiếp.</p>
-          <p>Thông tin liên hệ được lưu trong thời gian cần thiết để hỗ trợ cài đặt và xử lý ưu đãi. Bạn có thể yêu cầu cập nhật hoặc xóa thông tin qua kênh hỗ trợ chính thức của NanoBio.</p>
+          <p>Thông tin đăng ký được lưu tối đa 12 tháng kể từ ngày đăng ký nếu hồ sơ đã đóng. Hồ sơ còn đang được hỗ trợ được giữ lại đến khi xử lý xong. Bạn có thể yêu cầu cập nhật hoặc xóa thông tin qua kênh hỗ trợ chính thức của NanoBio; mã HMAC chống cấp trùng ưu đãi có thể vẫn được giữ riêng, không hiển thị cho Admin.</p>
         </section>
 
         <section>

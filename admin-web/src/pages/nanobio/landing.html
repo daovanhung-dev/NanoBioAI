@@ -232,7 +232,7 @@
         <div class="vip-modal-hero">
           <span class="promo-badge compact">🎁 Tặng VIP 1 tháng</span>
           <h2 id="vipModalTitle">Nhận NanoBio miễn phí + VIP 30 ngày</h2>
-          <p id="vipModalDesc">Nhập số điện thoại để đội ngũ ghi nhận suất VIP của bạn. Trong hệ thống, VIP tương đương quyền lợi gói Plus trong 30 ngày.</p>
+          <p id="vipModalDesc">Điền thông tin cơ bản để ghi nhận suất Early Access và tải NanoBio. Trong hệ thống, VIP tương đương quyền lợi gói Plus trong 30 ngày.</p>
         </div>
         <div class="modal-vip-summary">
           <div><b>✦</b><span><strong>AI Chat không giới hạn</strong><small>Free: 3 lượt/ngày</small></span></div>
@@ -240,10 +240,16 @@
         </div>
         <div class="register-head"><span class="android-mark">◉</span><div><strong>Ứng dụng Android miễn phí</strong><small>NanoBio/Nabi · Early Access</small></div><span class="version-pill" id="versionPill">v1.0.1+4</span></div>
         <form id="earlyAccessForm" novalidate>
-          <label for="phone">Số điện thoại nhận VIP</label>
+          <label for="phone">Số điện thoại</label>
           <div class="phone-input"><span>🇻🇳 +84</span><input id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="0912 345 678" maxlength="16" required aria-describedby="phoneHelp formError" /></div>
-          <p id="phoneHelp" class="field-help"><strong>Mục đích:</strong> số điện thoại được dùng để ghi nhận Early Access và hỗ trợ đối chiếu ưu đãi Plus 30 ngày. Nguồn chiến dịch, trang đăng ký và thông tin trình duyệt được ghi nhận để hiểu nguồn truy cập, cải thiện trải nghiệm và xử lý sự cố.</p>
-          <label class="consent"><input id="consent" name="consent" type="checkbox" required aria-describedby="formError" /><span>Tôi đồng ý cung cấp số điện thoại và ghi nhận nguồn truy cập, thông tin trình duyệt để đăng ký tải ứng dụng, hỗ trợ tài khoản và ưu đãi Plus 30 ngày theo <a href="#/nanobio/privacy">chính sách quyền riêng tư</a>.</span></label>
+          <div class="customer-fields">
+            <div><label for="fullName">Họ và tên</label><input id="fullName" name="full_name" autocomplete="name" maxlength="120" required aria-describedby="formError" /></div>
+            <div><label for="age">Tuổi</label><input id="age" name="age" type="number" inputmode="numeric" min="18" max="120" step="1" placeholder="Từ 18 tuổi" required aria-describedby="formError" /></div>
+            <div><label for="gender">Giới tính</label><select id="gender" name="gender" required aria-describedby="formError"><option value="">Chọn giới tính</option><option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option><option value="prefer_not_to_say">Không muốn trả lời</option></select></div>
+            <div class="customer-address"><label for="address">Địa chỉ</label><input id="address" name="address" autocomplete="street-address" maxlength="512" placeholder="Số nhà, đường, phường/xã, tỉnh/thành" required aria-describedby="formError" /></div>
+          </div>
+          <p id="phoneHelp" class="field-help"><strong>Mục đích:</strong> thông tin liên hệ được dùng để ghi nhận Early Access, tải ứng dụng và hỗ trợ ưu đãi Plus 30 ngày. Thông tin hồ sơ được lưu tối đa 12 tháng kể từ ngày đăng ký; hồ sơ còn đang được hỗ trợ được giữ đến khi xử lý xong. Nguồn chiến dịch, trang đăng ký và thông tin trình duyệt giúp cải thiện trải nghiệm và xử lý sự cố. Chi tiết tại <a href="#/nanobio/privacy">chính sách quyền riêng tư</a>.</p>
+          <label class="consent"><input id="consent" name="consent" type="checkbox" required aria-describedby="formError" /><span>Tôi đồng ý cung cấp số điện thoại, họ tên, tuổi, giới tính và địa chỉ; đồng thời cho phép ghi nhận nguồn truy cập và thông tin trình duyệt để đăng ký tải ứng dụng, hỗ trợ tài khoản và ưu đãi Plus 30 ngày theo <a href="#/nanobio/privacy">chính sách quyền riêng tư</a>.</span></label>
           <div id="formError" class="form-error" role="alert" aria-live="polite" tabindex="-1"></div>
           <button class="btn btn-primary btn-full" type="submit" id="submitButton"><span>Nhận VIP 1 tháng & tải ứng dụng</span><i>→</i></button>
           <p class="security-note">🔒 Số điện thoại không hiển thị công khai. Website không chứa service-role key.</p>
@@ -251,7 +257,7 @@
       </div>
       <div id="successState" class="success-state" hidden>
         <div class="success-icon">✓</div><h3>Đã ghi nhận quyền nhận VIP 1 tháng 🎉</h3>
-        <p>SĐT của bạn đã được ghi nhận để tải NanoBio và hỗ trợ kích hoạt quyền <strong>Plus/VIP 30 ngày</strong> cho tài khoản tương ứng.</p>
+        <p>Thông tin đăng ký của bạn đã được gửi an toàn để tải NanoBio và hỗ trợ kích hoạt quyền <strong>Plus/VIP 30 ngày</strong> cho tài khoản tương ứng.</p>
         <div class="release-meta"><div><span>Phiên bản</span><strong id="successVersion">1.0.1+4</strong></div><div><span>Ưu đãi</span><strong>VIP 30 ngày</strong></div><div><span>Quyền hệ thống</span><strong>Plus</strong></div></div>
         <a id="downloadButton" class="btn btn-primary btn-full" href="#" rel="nofollow noopener">Tải NanoBio cho Android ↓</a>
         <p id="downloadHint" class="field-help"></p>
