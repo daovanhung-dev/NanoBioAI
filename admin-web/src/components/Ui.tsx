@@ -40,7 +40,11 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 export function StatusBadge({ value }: { value: string }) {
   const normalized = value.toLowerCase();
   const has = (token: string) => normalized === token || new RegExp(`(^|[_-])${token}($|[_-])`).test(normalized);
-  const tone = has('fail') || has('reject') || has('closed') || has('cancel') || has('inactive') || has('expired')
+  const tone = normalized === 'new' || normalized === 'contacted'
+    ? 'warning'
+    : normalized === 'registered' || normalized === 'converted'
+      ? 'success'
+      : has('fail') || has('reject') || has('closed') || has('cancel') || has('inactive') || has('expired')
     ? 'danger'
     : has('pending') || has('open') || has('follow') || has('awaiting')
       ? 'warning'

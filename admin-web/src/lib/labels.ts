@@ -17,6 +17,10 @@ const technicalLabels: Record<string, string> = {
 };
 
 const statusLabels: Array<[string, string]> = [
+  ['new', 'Mới'],
+  ['contacted', 'Đã liên hệ'],
+  ['registered', 'Đã đăng ký'],
+  ['converted', 'Đã chuyển đổi'],
   ['awaiting_transfer', 'Chờ chuyển khoản'],
   ['pending_review', 'Chờ duyệt'],
   ['needs_follow_up', 'Cần theo dõi'],

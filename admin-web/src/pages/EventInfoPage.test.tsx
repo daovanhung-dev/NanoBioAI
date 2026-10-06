@@ -72,6 +72,8 @@ describe('EventInfoPage', () => {
     expect(container.textContent).toContain('24');
     expect(container.textContent).toContain('Nữ');
     expect(container.textContent).toContain('Quận 1, Thành phố Hồ Chí Minh');
+    expect(container.textContent).toContain('Mới');
+    expect(container.querySelector('.status-badge')?.classList.contains('warning')).toBe(true);
   });
 
   it('requires a reason before sending a status change', async () => {
@@ -83,6 +85,7 @@ describe('EventInfoPage', () => {
     await act(async () => update?.click());
 
     const status = container.querySelector<HTMLSelectElement>('#early-access-status');
+    expect(status?.querySelector('option[value="contacted"]')?.textContent).toBe('Đã liên hệ');
     const statusSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
     await act(async () => {
       statusSetter?.call(status, 'contacted');
