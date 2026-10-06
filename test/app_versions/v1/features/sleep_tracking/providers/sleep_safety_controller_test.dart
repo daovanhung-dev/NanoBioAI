@@ -3,10 +3,15 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/gateways/sleep_safety_native_gateway.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/gateways/sleep_safety_connectivity_gateway.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/gateways/sleep_safety_phone_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/safety_contact.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_dispatch_retry.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_dispatch_result.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_event.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_night_analysis.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_preference.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_runtime_config.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_session.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/repositories/sleep_safety_repository.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/services/sleep_safety_state_machine.dart';
@@ -23,6 +28,9 @@ void main() {
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
@@ -50,6 +58,9 @@ void main() {
       overrides: [
         currentAuthUserIdProvider.overrideWithValue(userId),
         sleepSafetyRepositoryProvider.overrideWithValue(repository),
+        sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+          const _NoopSleepSafetyConnectivity(),
+        ),
         sleepSafetyRolloutApprovedProvider.overrideWithValue(false),
         sleepSafetyNotificationPermissionProvider.overrideWithValue(
           () async => true,
@@ -82,6 +93,9 @@ void main() {
       overrides: [
         currentAuthUserIdProvider.overrideWithValue(userId),
         sleepSafetyRepositoryProvider.overrideWithValue(repository),
+        sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+          const _NoopSleepSafetyConnectivity(),
+        ),
         sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
         sleepSafetyNotificationPermissionProvider.overrideWithValue(
           () async => true,
@@ -109,6 +123,9 @@ void main() {
       overrides: [
         currentAuthUserIdProvider.overrideWithValue(userId),
         sleepSafetyRepositoryProvider.overrideWithValue(repository),
+        sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+          const _NoopSleepSafetyConnectivity(),
+        ),
         sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
         sleepSafetyNotificationPermissionProvider.overrideWithValue(
           () async => false,
@@ -141,6 +158,9 @@ void main() {
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
@@ -177,6 +197,9 @@ void main() {
       overrides: [
         currentAuthUserIdProvider.overrideWithValue(userId),
         sleepSafetyRepositoryProvider.overrideWithValue(repository),
+        sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+          const _NoopSleepSafetyConnectivity(),
+        ),
         sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
         sleepSafetyNotificationPermissionProvider.overrideWithValue(
           () async => true,
@@ -237,6 +260,9 @@ void main() {
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
@@ -300,7 +326,11 @@ void main() {
     'Contact save keeps the RPC result when refresh returns stale cache',
     () async {
       const userId = 'user-1';
-      final savedContact = _contact(id: 'contact-new', priority: 2);
+      final savedContact = _contact(
+        id: 'contact-new',
+        priority: 2,
+        allowUnverifiedVoiceAlert: true,
+      );
       final repository = _FakeSleepSafetyRepository(
         userId,
         cachedContacts: [_contact(id: 'contact-old', priority: 1)],
@@ -310,6 +340,9 @@ void main() {
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
@@ -325,11 +358,19 @@ void main() {
         relationship: 'Mẹ',
         phoneE164: '0901234567',
         priority: 1,
+        allowUnverifiedVoiceAlert: true,
       );
 
       final contacts = container.read(sleepSafetyControllerProvider).contacts;
       expect(contacts.map((contact) => contact.id), contains('contact-new'));
       expect(repository.lastSavedPriority, 2);
+      expect(repository.lastSavedUnverifiedVoiceAlert, isTrue);
+      expect(
+        contacts
+            .singleWhere((contact) => contact.id == 'contact-new')
+            .allowUnverifiedVoiceAlert,
+        isTrue,
+      );
       expect(
         container.read(sleepSafetyControllerProvider).notice,
         contains('Đã lưu'),
@@ -338,21 +379,515 @@ void main() {
   );
 
   test(
-    'Native acknowledgement failure does not block cloud dispatch',
+    'Contact save waits for the initial contact load before choosing priority',
     () async {
       const userId = 'user-1';
+      final existingContact = _contact(id: 'contact-existing', priority: 1);
+      final contactsLoad = Completer<List<SafetyContact>>();
       final repository = _FakeSleepSafetyRepository(
         userId,
-        respondToAlertError: true,
+        cachedContacts: [existingContact],
+        contactsLoadFuture: contactsLoad.future,
       );
       final container = ProviderContainer(
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
           ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      expect(
+        container.read(sleepSafetyControllerProvider).contactsLoaded,
+        isFalse,
+      );
+      final saveExpectation = expectLater(
+        notifier.saveContact(
+          name: 'Người thử nghiệm',
+          relationship: 'QA',
+          phoneE164: '+12025550100',
+          priority: 1,
+        ),
+        completes,
+      );
+      await Future<void>.delayed(Duration.zero);
+      contactsLoad.complete([existingContact]);
+      await saveExpectation;
+
+      final state = container.read(sleepSafetyControllerProvider);
+      expect(state.contactsLoaded, isTrue);
+      expect(repository.lastSavedPriority, 2);
+      expect(
+        state.contacts.map((contact) => contact.id),
+        contains('contact-new'),
+      );
+    },
+  );
+
+  test(
+    'Help directly calls the highest-priority opted-in contact without dispatch',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [
+          _contact(id: 'priority-3', priority: 3),
+          _contact(id: 'priority-2', priority: 2),
+          _contact(
+            id: 'priority-1-disabled',
+            priority: 1,
+            allowPhoneFallback: false,
+          ),
+        ],
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(directCalling: true);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      expect(phone.permissionRequestCount, 1);
+      expect(phone.operations, ['permission']);
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-direct-call',
+            'detectedAt': DateTime.now().toUtc().toIso8601String(),
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+      final state = container.read(sleepSafetyControllerProvider);
+      expect(phone.lastStartedNumber, '+84901234567');
+      expect(phone.lastStartedEventId, 'manual-help-direct-call');
+      expect(phone.lastDialedNumber, isNull);
+      expect(phone.operations, ['permission', 'direct_call']);
+      expect(state.notice, contains('priority-2'));
+      expect(repository.dispatchCount, 0);
+      expect(repository.retries, isEmpty);
+      expect(state.currentEvent?.response, SleepSafetyResponse.needHelp);
+      expect(state.currentEvent?.escalationRequired, isFalse);
+      expect(
+        state.currentEvent?.escalationStatus,
+        SleepSafetyEscalationStatus.notRequired,
+      );
+      expect(state.currentEvent?.state, 'manual_call_started');
+      expect(state.notice, contains('chưa được xác nhận'));
+      expect(state.machine.phase, SleepSafetyPhase.monitoring);
+    },
+  );
+
+  test(
+    'Denied call permission opens the dialer with the selected contact',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
+        phoneFallbackEnabled: false,
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(
+        directCalling: true,
+        permissionGranted: false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-permission-denied',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+
+      expect(phone.permissionRequestCount, 1);
+      expect(phone.lastStartedNumber, isNull);
+      expect(phone.lastDialedNumber, '+84901234567');
+      expect(phone.lastDialedEventId, 'manual-help-permission-denied');
+      expect(phone.operations, ['permission', 'dialer']);
+      expect(
+        container.read(sleepSafetyControllerProvider).currentEvent?.state,
+        'manual_call_handoff',
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).notice,
+        contains('bấm Gọi'),
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.monitoring,
+      );
+      expect(repository.dispatchCount, 0);
+    },
+  );
+
+  test(
+    'Manual phone fallback dials an unverified contact with phone fallback enabled',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [
+          _contact(
+            id: 'contact-pending',
+            priority: 1,
+            verified: false,
+            allowPhoneFallback: true,
+          ),
+        ],
+      );
+      final phone = _FakeSleepSafetyPhoneGateway();
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.callPhoneFallback();
+
+      expect(phone.lastDialedNumber, '+84901234567');
+      expect(
+        container.read(sleepSafetyControllerProvider).notice,
+        contains('Cuộc gọi chưa được kết nối'),
+      );
+    },
+  );
+
+  test(
+    'Explicit help calls the selected contact when automatic calling is disabled',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-verified', priority: 1)],
+        phoneFallbackEnabled: false,
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(directCalling: true);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-fallback-disabled',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+      await notifier.requestHelp();
+
+      final state = container.read(sleepSafetyControllerProvider);
+      expect(state.phoneFallbackEnabled, isFalse);
+      expect(state.phoneFallbackContact, isNull);
+      expect(phone.lastStartedNumber, '+84901234567');
+      expect(phone.lastDialedNumber, isNull);
+      expect(phone.operations, ['permission', 'direct_call']);
+      expect(state.notice, contains('đã yêu cầu điện thoại khởi tạo'));
+      expect(state.currentEvent?.response, SleepSafetyResponse.needHelp);
+      expect(state.currentEvent?.state, 'manual_call_started');
+      expect(state.machine.phase, SleepSafetyPhase.monitoring);
+      expect(repository.dispatchCount, 0);
+      expect(repository.retries, isEmpty);
+    },
+  );
+
+  test(
+    'No eligible phone contact keeps the help alert and gives guidance',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(userId);
+      final phone = _FakeSleepSafetyPhoneGateway(directCalling: true);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-no-contact',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+
+      final state = container.read(sleepSafetyControllerProvider);
+      expect(phone.permissionRequestCount, 0);
+      expect(phone.operations, isEmpty);
+      expect(state.errorMessage, contains('Chưa có người liên hệ'));
+      expect(state.currentEvent?.response, SleepSafetyResponse.needHelp);
+      expect(state.currentEvent?.state, 'manual_call_unavailable');
+      expect(state.machine.phase, SleepSafetyPhase.manualHelp);
+      expect(repository.dispatchCount, 0);
+    },
+  );
+
+  test(
+    'Failed native call launch falls back to the prefilled dialer',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(
+        directCalling: true,
+        callStartSucceeds: false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-call-launch-failed',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+
+      expect(phone.lastStartedNumber, '+84901234567');
+      expect(phone.lastDialedNumber, '+84901234567');
+      expect(phone.operations, ['permission', 'direct_call', 'dialer']);
+      expect(repository.dispatchCount, 0);
+      expect(
+        container.read(sleepSafetyControllerProvider).currentEvent?.state,
+        'manual_call_handoff',
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.monitoring,
+      );
+    },
+  );
+
+  test(
+    'Failed call and dialer launch stop loading and keep an actionable alert',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(
+        directCalling: true,
+        callStartSucceeds: false,
+        dialerOpenSucceeds: false,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'manual-help-no-handoff',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      await notifier.requestHelp();
+
+      final state = container.read(sleepSafetyControllerProvider);
+      expect(phone.operations, ['permission', 'direct_call', 'dialer']);
+      expect(state.currentEvent?.state, 'manual_call_unavailable');
+      expect(state.machine.phase, SleepSafetyPhase.manualHelp);
+      expect(state.errorMessage, contains('Chưa thể mở cuộc gọi'));
+      expect(repository.dispatchCount, 0);
+    },
+  );
+
+  test(
+    'Native acknowledgement failure does not block the direct phone call',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        respondToAlertError: true,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
+      );
+      final phone = _FakeSleepSafetyPhoneGateway(directCalling: true);
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
         ],
       );
       addTearDown(container.dispose);
@@ -378,30 +913,39 @@ void main() {
       await _waitForCurrentEvent(container);
 
       await notifier.requestHelp();
-      expect(repository.dispatchCount, 1);
-      expect(repository.dismissAlertCount, 1);
+      expect(repository.dispatchCount, 0);
+      expect(repository.dismissAlertCount, 0);
+      expect(phone.lastStartedNumber, '+84901234567');
       expect(
         container
             .read(sleepSafetyControllerProvider)
             .currentEvent
             ?.escalationStatus,
-        SleepSafetyEscalationStatus.accepted,
+        SleepSafetyEscalationStatus.notRequired,
+      );
+      expect(
+        container.read(sleepSafetyControllerProvider).machine.phase,
+        SleepSafetyPhase.monitoring,
       );
     },
   );
 
   test(
-    'Provider failure exposes retry state and retries idempotently',
+    'Provider failure exposes retry state and retries with the same idempotency key',
     () async {
       const userId = 'user-1';
       final repository = _FakeSleepSafetyRepository(
         userId,
-        dispatchFailuresRemaining: 2,
+        dispatchFailuresRemaining: 1,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
       );
       final container = ProviderContainer(
         overrides: [
           currentAuthUserIdProvider.overrideWithValue(userId),
           sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            const _NoopSleepSafetyConnectivity(),
+          ),
           sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
           sleepSafetyNotificationPermissionProvider.overrideWithValue(
             () async => true,
@@ -430,7 +974,20 @@ void main() {
       );
       await _waitForCurrentEvent(container);
 
-      await notifier.requestHelp();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'escalationRequired',
+          data: {'eventId': 'dispatch-retry'},
+        ),
+      );
+      await _waitUntil(
+        () =>
+            container
+                .read(sleepSafetyControllerProvider)
+                .currentEvent
+                ?.escalationStatus ==
+            SleepSafetyEscalationStatus.failed,
+      );
       expect(
         container
             .read(sleepSafetyControllerProvider)
@@ -439,9 +996,8 @@ void main() {
         SleepSafetyEscalationStatus.failed,
       );
       await notifier.retryEmergencyDispatch();
-      expect(repository.dispatchCount, 3);
+      expect(repository.dispatchCount, 2);
       expect(repository.dispatchKeys, [
-        'sleep-safety-dispatch-retry',
         'sleep-safety-dispatch-retry',
         'sleep-safety-dispatch-retry',
       ]);
@@ -454,9 +1010,92 @@ void main() {
       );
     },
   );
+
+  test(
+    'Offline escalation queues cloud retry and keeps phone call user-triggered',
+    () async {
+      const userId = 'user-1';
+      final repository = _FakeSleepSafetyRepository(
+        userId,
+        cachedContacts: [_contact(id: 'contact-1', priority: 1)],
+      );
+      final connectivity = _FakeSleepSafetyConnectivity(false);
+      final phone = _FakeSleepSafetyPhoneGateway();
+      final container = ProviderContainer(
+        overrides: [
+          currentAuthUserIdProvider.overrideWithValue(userId),
+          sleepSafetyRepositoryProvider.overrideWithValue(repository),
+          sleepSafetyRolloutApprovedProvider.overrideWithValue(true),
+          sleepSafetyNotificationPermissionProvider.overrideWithValue(
+            () async => true,
+          ),
+          sleepSafetyConnectivityGatewayProvider.overrideWithValue(
+            connectivity,
+          ),
+          sleepSafetyPhoneGatewayProvider.overrideWithValue(phone),
+        ],
+      );
+      addTearDown(() async {
+        await connectivity.dispose();
+        container.dispose();
+      });
+
+      final notifier = container.read(sleepSafetyControllerProvider.notifier);
+      await _waitForPreference(container);
+      await notifier.startMonitoring();
+      repository.emitNative(
+        const SleepSafetyNativeEvent(type: 'serviceStarted', data: {}),
+      );
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'confirmedSafetyEvent',
+          data: {
+            'eventId': 'dispatch-offline',
+            'detectedAt': '2026-10-06T04:00:00Z',
+            'eventType': 'abnormalScream',
+            'severity': 'high',
+            'confidence': 0.95,
+          },
+        ),
+      );
+      await _waitForCurrentEvent(container);
+
+      repository.emitNative(
+        const SleepSafetyNativeEvent(
+          type: 'escalationRequired',
+          data: {'eventId': 'dispatch-offline'},
+        ),
+      );
+      await _waitUntil(
+        () =>
+            repository.retries.isNotEmpty &&
+            repository.retries.values.single.lastErrorCode != null,
+      );
+      expect(repository.dispatchCount, 0);
+      expect(repository.dismissAlertCount, 0);
+      expect(
+        repository.retries.values.single.lastErrorCode,
+        'network_unavailable',
+      );
+
+      await notifier.callPhoneFallback();
+      expect(phone.lastDialedNumber, '+84901234567');
+      expect(repository.dismissAlertCount, 0);
+      expect(
+        container.read(sleepSafetyControllerProvider).notice,
+        contains('Cuộc gọi chưa được kết nối'),
+      );
+    },
+  );
 }
 
-SafetyContact _contact({required String id, required int priority}) {
+SafetyContact _contact({
+  required String id,
+  required int priority,
+  bool verified = true,
+  bool allowPhoneFallback = true,
+  bool allowUnverifiedVoiceAlert = false,
+}) {
   final now = DateTime.utc(2026, 8, 24);
   return SafetyContact(
     id: id,
@@ -465,17 +1104,23 @@ SafetyContact _contact({required String id, required int priority}) {
     relationship: 'Gia đình',
     phoneE164: '+84901234567',
     priority: priority,
-    verificationStatus: SafetyContactVerificationStatus.verified,
+    verificationStatus: verified
+        ? SafetyContactVerificationStatus.verified
+        : SafetyContactVerificationStatus.pending,
     active: true,
     createdAt: now,
     updatedAt: now,
+    allowPhoneFallback: allowPhoneFallback,
+    allowUnverifiedVoiceAlert: allowUnverifiedVoiceAlert,
   );
 }
 
 Future<void> _waitForPreference(ProviderContainer container) async {
   for (var attempt = 0; attempt < 20; attempt++) {
-    if (container.read(sleepSafetyControllerProvider).preference != null) {
-      await Future<void>.delayed(Duration.zero);
+    final state = container.read(sleepSafetyControllerProvider);
+    if (state.preference != null &&
+        state.runtimeConfig != null &&
+        state.contactsLoaded) {
       return;
     }
     await Future<void>.delayed(Duration.zero);
@@ -499,26 +1144,33 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
     this.microphoneGranted = true,
     this.nativeStartErrorCode,
     this.cachedContacts = const [],
+    this.contactsLoadFuture,
     this.savedContact,
     this.respondToAlertError = false,
     this.dispatchFailuresRemaining = 0,
+    this.phoneFallbackEnabled = true,
   });
 
   final String userId;
   final bool microphoneGranted;
   final String? nativeStartErrorCode;
-  final List<SafetyContact> cachedContacts;
+  List<SafetyContact> cachedContacts;
+  final Future<List<SafetyContact>>? contactsLoadFuture;
   final SafetyContact? savedContact;
   final bool respondToAlertError;
+  final bool phoneFallbackEnabled;
   int dispatchFailuresRemaining;
   int rolloutFetchCount = 0;
   int microphonePermissionCount = 0;
   int nativeStartCount = 0;
   int lastSavedPriority = 0;
+  bool lastSavedUnverifiedVoiceAlert = false;
   int dispatchCount = 0;
   int dismissAlertCount = 0;
   final List<String> dispatchKeys = [];
   final List<SleepSafetySession> savedSessions = [];
+  final Map<String, SleepSafetyEvent> savedEvents = {};
+  final Map<String, SleepSafetyDispatchRetry> retries = {};
   final StreamController<SleepSafetyNativeEvent> _nativeController =
       StreamController<SleepSafetyNativeEvent>.broadcast(sync: true);
 
@@ -542,6 +1194,99 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   }
 
   @override
+  Future<SleepSafetyRuntimeConfig> loadRuntimeConfig() async =>
+      SleepSafetyRuntimeConfig(
+        enabled: true,
+        maxDispatchesPerHour: 3,
+        eventFreshnessSeconds: 600,
+        phoneFallbackEnabled: phoneFallbackEnabled,
+      );
+
+  @override
+  Future<void> enqueueEmergencyRetry({
+    required String userId,
+    required SleepSafetyEvent event,
+    required String idempotencyKey,
+  }) async {
+    final id = 'sleep-safety-retry-${event.id}';
+    retries.putIfAbsent(
+      id,
+      () => SleepSafetyDispatchRetry(
+        id: id,
+        userId: userId,
+        eventId: event.id,
+        idempotencyKey: idempotencyKey,
+        createdAt: event.detectedAt,
+        attemptCount: 0,
+        status: 'pending',
+      ),
+    );
+  }
+
+  @override
+  Future<List<SleepSafetyDispatchRetry>> listPendingEmergencyRetries() async =>
+      retries.values
+          .where(
+            (row) =>
+                row.attemptCount < 4 &&
+                (row.status == 'pending' ||
+                    row.status == 'sending' ||
+                    row.status == 'failed' &&
+                        row.lastErrorCode == 'network_unavailable') &&
+                (row.nextRetryAt == null ||
+                    !row.nextRetryAt!.isAfter(DateTime.now())),
+          )
+          .toList(growable: false);
+
+  @override
+  Future<void> markEmergencyRetrySending(String id) async {
+    final row = retries[id]!;
+    retries[id] = SleepSafetyDispatchRetry(
+      id: row.id,
+      userId: row.userId,
+      eventId: row.eventId,
+      idempotencyKey: row.idempotencyKey,
+      createdAt: row.createdAt,
+      attemptCount: row.attemptCount + 1,
+      status: 'sending',
+    );
+  }
+
+  @override
+  Future<void> markEmergencyRetryAcknowledged(String id) async {
+    final row = retries[id]!;
+    retries[id] = SleepSafetyDispatchRetry(
+      id: row.id,
+      userId: row.userId,
+      eventId: row.eventId,
+      idempotencyKey: row.idempotencyKey,
+      createdAt: row.createdAt,
+      attemptCount: row.attemptCount,
+      status: 'acknowledged',
+    );
+  }
+
+  @override
+  Future<void> markEmergencyRetryFailed({
+    required String id,
+    required String errorCode,
+    DateTime? nextRetryAt,
+  }) async {
+    final row = retries[id]!;
+    retries[id] = SleepSafetyDispatchRetry(
+      id: row.id,
+      userId: row.userId,
+      eventId: row.eventId,
+      idempotencyKey: row.idempotencyKey,
+      createdAt: row.createdAt,
+      attemptCount: row.attemptCount,
+      status: 'failed',
+      nextRetryAt: nextRetryAt,
+      lastErrorCode: errorCode,
+    );
+  }
+
+  @override
   Future<SleepSafetyPreference> loadPreference(String userId) async {
     return SleepSafetyPreference.defaults(userId);
   }
@@ -550,7 +1295,9 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<List<SafetyContact>> loadContacts(
     String userId, {
     bool refreshCloud = true,
-  }) async => cachedContacts;
+  }) =>
+      contactsLoadFuture ??
+      Future<List<SafetyContact>>.value(List<SafetyContact>.of(cachedContacts));
 
   @override
   Future<List<SleepSafetyEvent>> listEvents(String userId) async => const [];
@@ -595,10 +1342,12 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<void> updateSession(String id, Map<String, Object?> values) async {}
 
   @override
-  Future<void> saveEvent(SleepSafetyEvent value) async {}
+  Future<void> saveEvent(SleepSafetyEvent value) async {
+    savedEvents[value.id] = value;
+  }
 
   @override
-  Future<SleepSafetyEvent?> getEvent(String id) async => null;
+  Future<SleepSafetyEvent?> getEvent(String id) async => savedEvents[id];
 
   @override
   Future<void> updateEvent(String id, Map<String, Object?> values) async {}
@@ -631,8 +1380,15 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
     required String relationship,
     required String phoneE164,
     required int priority,
+    bool allowPhoneFallback = true,
+    bool allowUnverifiedVoiceAlert = false,
   }) async {
     lastSavedPriority = priority;
+    lastSavedUnverifiedVoiceAlert = allowUnverifiedVoiceAlert;
+    if (id == null &&
+        cachedContacts.any((contact) => contact.priority == priority)) {
+      throw StateError('sleep_safety_contact_priority_conflict');
+    }
     return savedContact ??
         _contact(id: id ?? 'contact-new', priority: priority);
   }
@@ -650,7 +1406,7 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
   Future<void> confirmContactVerification(String id, String code) async {}
 
   @override
-  Future<Map<String, Object?>> dispatchEmergency(
+  Future<SleepSafetyDispatchResult> dispatchEmergency(
     String eventId,
     String idempotencyKey,
   ) async {
@@ -660,6 +1416,94 @@ class _FakeSleepSafetyRepository implements SleepSafetyRepository {
       dispatchFailuresRemaining -= 1;
       throw StateError('provider_unavailable');
     }
-    return const {'status': 'accepted'};
+    return const SleepSafetyDispatchResult(
+      route: SleepSafetyDispatchRoute.cloudAccepted,
+    );
   }
+}
+
+class _FakeSleepSafetyConnectivity implements SleepSafetyConnectivityGateway {
+  _FakeSleepSafetyConnectivity(this.available);
+
+  bool available;
+  final StreamController<bool> _controller = StreamController<bool>.broadcast(
+    sync: true,
+  );
+
+  @override
+  Future<bool> hasNetworkTransport() async => available;
+
+  @override
+  Stream<bool> get networkAvailable => _controller.stream;
+
+  void setAvailable(bool value) {
+    available = value;
+    _controller.add(value);
+  }
+
+  Future<void> dispose() => _controller.close();
+}
+
+class _NoopSleepSafetyConnectivity implements SleepSafetyConnectivityGateway {
+  const _NoopSleepSafetyConnectivity();
+
+  @override
+  Future<bool> hasNetworkTransport() async => true;
+
+  @override
+  Stream<bool> get networkAvailable => const Stream<bool>.empty();
+}
+
+class _FakeSleepSafetyPhoneGateway implements SleepSafetyPhoneGateway {
+  _FakeSleepSafetyPhoneGateway({
+    this.directCalling = false,
+    this.permissionGranted = true,
+    this.callStartSucceeds = true,
+    this.dialerOpenSucceeds = true,
+  });
+
+  final bool directCalling;
+  final bool permissionGranted;
+  final bool callStartSucceeds;
+  final bool dialerOpenSucceeds;
+  String? lastDialedNumber;
+  String? lastStartedNumber;
+  String? lastDialedEventId;
+  String? lastStartedEventId;
+  int permissionRequestCount = 0;
+  final List<String> operations = [];
+
+  @override
+  bool get supportsDirectCalling => directCalling;
+
+  @override
+  Future<bool> ensureDirectCallPermission() async {
+    permissionRequestCount += 1;
+    operations.add('permission');
+    return permissionGranted;
+  }
+
+  @override
+  Future<bool> startCall(String phoneE164, {String? eventId}) async {
+    operations.add('direct_call');
+    lastStartedNumber = phoneE164;
+    lastStartedEventId = eventId;
+    return permissionGranted && callStartSucceeds;
+  }
+
+  @override
+  Future<bool> openDialer(String phoneE164, {String? eventId}) async {
+    operations.add('dialer');
+    lastDialedNumber = phoneE164;
+    lastDialedEventId = eventId;
+    return dialerOpenSucceeds;
+  }
+}
+
+Future<void> _waitUntil(bool Function() condition) async {
+  for (var attempt = 0; attempt < 30; attempt++) {
+    if (condition()) return;
+    await Future<void>.delayed(Duration.zero);
+  }
+  fail('SleepSafetyController did not reach the expected state.');
 }

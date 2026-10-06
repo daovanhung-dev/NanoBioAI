@@ -2,11 +2,12 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 31 worklog(s).
+- Generated from 37 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (28)
+- Historical task type: bugfix (31)
+- Historical task type: bugfix. (3)
 - Historical task type: fix (1)
 - Historical task type: fix UI/copy (1)
 - Historical task type: fix flow dữ liệu (1)
@@ -15,12 +16,12 @@
 
 - M05 AI / runtime configuration / onboarding: 2
 - M05 AI / AI Chat / runtime configuration: 2
+- M31 SLEEP_SAFETY_MONITORING: 2
 - AI chat: 1
 - lib/features/**/presentation: 1
 - Dashboard, Lifestyle Schedule, Meal Plan, Nutrition: 1
 - v1 onboarding, generated plan service, v1/v2 router gate, v2 cloud sync test, docs/worklog.: 1
 - v1 dashboard daily score, v2 health_scoring placeholder, docs/worklog.: 1
-- Admin dashboard / Supabase RPC: 1
 
 ## Work Pattern
 

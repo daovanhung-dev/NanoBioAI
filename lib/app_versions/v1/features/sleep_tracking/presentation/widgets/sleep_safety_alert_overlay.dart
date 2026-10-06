@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../domain/services/sleep_safety_state_machine.dart';
 import 'sleep_safety_countdown.dart';
 
 class SleepSafetyAlertOverlay extends StatefulWidget {
@@ -11,7 +12,18 @@ class SleepSafetyAlertOverlay extends StatefulWidget {
     required this.dispatching,
     this.dispatchFailed = false,
     this.dispatchError,
+    this.manualHelpPending = false,
+    this.manualHelpFailed = false,
+    this.manualHelpError,
+    this.onRetryHelp,
+    this.requiresContactSetup = false,
     this.onRetry,
+    this.onManageContacts,
+    this.onCallContact,
+    this.onNextContact,
+    this.dispatchNotice,
+    this.phoneFallbackName,
+    this.phoneFallbackMessage,
   });
   final DateTime startedAt;
   final VoidCallback onOk;
@@ -19,7 +31,18 @@ class SleepSafetyAlertOverlay extends StatefulWidget {
   final bool dispatching;
   final bool dispatchFailed;
   final String? dispatchError;
+  final bool manualHelpPending;
+  final bool manualHelpFailed;
+  final String? manualHelpError;
+  final VoidCallback? onRetryHelp;
+  final bool requiresContactSetup;
   final VoidCallback? onRetry;
+  final VoidCallback? onManageContacts;
+  final VoidCallback? onCallContact;
+  final VoidCallback? onNextContact;
+  final String? dispatchNotice;
+  final String? phoneFallbackName;
+  final String? phoneFallbackMessage;
   @override
   State<SleepSafetyAlertOverlay> createState() =>
       _SleepSafetyAlertOverlayState();
@@ -27,7 +50,7 @@ class SleepSafetyAlertOverlay extends StatefulWidget {
 
 class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
   Timer? _timer;
-  int _seconds = 60;
+  int _seconds = SleepSafetyMachineState.noResponseEscalationSeconds;
   @override
   void initState() {
     super.initState();
@@ -36,8 +59,9 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
   }
 
   void _update() {
-    final value = 60 - DateTime.now().difference(widget.startedAt).inSeconds;
-    if (mounted) setState(() => _seconds = value.clamp(0, 60));
+    final limit = SleepSafetyMachineState.noResponseEscalationSeconds;
+    final value = limit - DateTime.now().difference(widget.startedAt).inSeconds;
+    if (mounted) setState(() => _seconds = value.clamp(0, limit));
   }
 
   @override
@@ -77,12 +101,44 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                if (widget.dispatching)
+                if (widget.manualHelpPending)
                   const Column(
                     children: [
                       CircularProgressIndicator(),
                       SizedBox(height: 12),
-                      Text('Nabi đang liên hệ người hỗ trợ đã xác minh…'),
+                      Text('Nabi đang chuẩn bị cuộc gọi…'),
+                    ],
+                  )
+                else if (widget.manualHelpFailed) ...[
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 44,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.manualHelpError ??
+                        'Chưa thể khởi tạo cuộc gọi. Hãy thử lại hoặc mở danh bạ.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: widget.onRetryHelp,
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Thử gọi lại'),
+                  ),
+                  if (widget.onManageContacts != null)
+                    TextButton.icon(
+                      onPressed: widget.onManageContacts,
+                      icon: const Icon(Icons.contacts_outlined),
+                      label: const Text('Mở danh bạ'),
+                    ),
+                ] else if (widget.dispatching)
+                  const Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 12),
+                      Text('Nabi đang liên hệ người hỗ trợ…'),
                     ],
                   )
                 else if (widget.dispatchFailed) ...[
@@ -97,11 +153,26 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 18),
-                  FilledButton.icon(
-                    onPressed: widget.onRetry,
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Thử gửi lại'),
-                  ),
+                  if (widget.requiresContactSetup)
+                    OutlinedButton.icon(
+                      onPressed: widget.onManageContacts,
+                      icon: const Icon(Icons.contacts_outlined),
+                      label: const Text('Mở danh bạ'),
+                    )
+                  else
+                    FilledButton.icon(
+                      onPressed: widget.onRetry,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Thử gửi lại'),
+                    ),
+                  if (widget.dispatchNotice != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.dispatchNotice!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ] else ...[
                   SleepSafetyCountdown(seconds: _seconds),
                   const SizedBox(height: 8),
@@ -126,6 +197,32 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                         ),
                       ),
                     ],
+                  ),
+                ],
+                if (widget.onCallContact != null) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: widget.onCallContact,
+                      icon: const Icon(Icons.call_outlined),
+                      label: Text(
+                        'Gọi ngay ${widget.phoneFallbackName ?? 'người liên hệ'}',
+                      ),
+                    ),
+                  ),
+                  if (widget.onNextContact != null)
+                    TextButton(
+                      onPressed: widget.onNextContact,
+                      child: const Text('Gọi người tiếp theo'),
+                    ),
+                ],
+                if (widget.phoneFallbackMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.phoneFallbackMessage!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ],

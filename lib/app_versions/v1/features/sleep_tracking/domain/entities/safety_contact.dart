@@ -13,6 +13,8 @@ class SafetyContact {
     required this.createdAt,
     required this.updatedAt,
     this.verifiedAt,
+    this.allowPhoneFallback = true,
+    this.allowUnverifiedVoiceAlert = false,
   });
   final String id;
   final String userId;
@@ -25,5 +27,10 @@ class SafetyContact {
   final bool active;
   final DateTime createdAt;
   final DateTime updatedAt;
-  bool get isVerified => active && verificationStatus == SafetyContactVerificationStatus.verified;
+  final bool allowPhoneFallback;
+  final bool allowUnverifiedVoiceAlert;
+  bool get isVerified =>
+      active && verificationStatus == SafetyContactVerificationStatus.verified;
+  bool get canReceiveSafetyCall =>
+      isVerified || (active && allowUnverifiedVoiceAlert);
 }

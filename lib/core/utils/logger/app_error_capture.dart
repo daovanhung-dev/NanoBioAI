@@ -23,14 +23,27 @@ class AppErrorCapture {
 
     _previousFlutterHandler = FlutterError.onError;
     FlutterError.onError = (details) {
+      final stackTrace = details.stack ?? StackTrace.current;
       AppLogger.captureError(
         category: AppLogCategory.ui,
         scope: details.library ?? 'FlutterFramework',
         operation: 'FRAMEWORK_ERROR',
         message: details.context?.toDescription() ?? 'Flutter framework error',
         error: details.exception,
-        stackTrace: details.stack ?? StackTrace.current,
+        stackTrace: stackTrace,
       );
+
+      if (kDebugMode) {
+        FlutterError.dumpErrorToConsole(
+          FlutterErrorDetails(
+            exception: FlutterError(
+              'Flutter framework error (${details.exception.runtimeType}).',
+            ),
+            stack: stackTrace,
+            library: details.library,
+          ),
+        );
+      }
     };
 
     _previousPlatformHandler = PlatformDispatcher.instance.onError;

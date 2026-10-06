@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:nano_app/core/storage/localdb/daos/sleep_safety_dao.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -5,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../domain/entities/safety_contact.dart';
 import '../../domain/entities/sleep_night_analysis.dart';
 import '../../domain/entities/sleep_safety_event.dart';
+import '../../domain/entities/sleep_safety_dispatch_retry.dart';
 import '../../domain/entities/sleep_safety_preference.dart';
 import '../../domain/entities/sleep_safety_session.dart';
 import '../models/sleep_night_analysis_model.dart';
@@ -100,4 +103,63 @@ class SleepSafetyLocalDatasource {
       (await (await _dao()).listContacts(
         userId,
       )).map(SleepSafetyModelMapper.contactFromMap).toList(growable: false);
+
+  Future<void> enqueueDispatchRetry({
+    required String userId,
+    required SleepSafetyEvent event,
+    required String idempotencyKey,
+  }) => _dao().then(
+    (dao) => dao.enqueueDispatchRetry(
+      userId: userId,
+      eventId: event.id,
+      idempotencyKey: idempotencyKey,
+      createdAt: event.detectedAt,
+    ),
+  );
+
+  Future<List<SleepSafetyDispatchRetry>> listPendingDispatches() async {
+    final rows = await (await _dao()).listPendingDispatches();
+    return rows
+        .map((row) {
+          final payload = jsonDecode(row['payload_json']?.toString() ?? '{}');
+          final data = payload is Map
+              ? Map<String, Object?>.from(payload)
+              : <String, Object?>{};
+          return SleepSafetyDispatchRetry(
+            id: row['id'].toString(),
+            userId: row['user_id'].toString(),
+            eventId: data['event_id']?.toString() ?? row['event_id'].toString(),
+            idempotencyKey: data['idempotency_key']?.toString() ?? '',
+            createdAt:
+                DateTime.tryParse(row['created_at']?.toString() ?? '') ??
+                DateTime.now(),
+            attemptCount: (row['attempt_count'] as num?)?.toInt() ?? 0,
+            status: row['status']?.toString() ?? 'pending',
+            nextRetryAt: DateTime.tryParse(
+              row['next_retry_at']?.toString() ?? '',
+            ),
+            lastErrorCode: row['last_error_code']?.toString(),
+          );
+        })
+        .toList(growable: false);
+  }
+
+  Future<void> markDispatchSending(String id) =>
+      _dao().then((dao) => dao.markDispatchSending(id, DateTime.now()));
+
+  Future<void> markDispatchAcknowledged(String id) =>
+      _dao().then((dao) => dao.markDispatchAcknowledged(id, DateTime.now()));
+
+  Future<void> markDispatchFailed({
+    required String id,
+    required String errorCode,
+    DateTime? nextRetryAt,
+  }) => _dao().then(
+    (dao) => dao.markDispatchFailed(
+      id: id,
+      errorCode: errorCode,
+      now: DateTime.now(),
+      nextRetryAt: nextRetryAt,
+    ),
+  );
 }

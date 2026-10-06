@@ -5,10 +5,13 @@ import {
   isTerminalFailure,
   normalizeStatus,
 } from "../_shared/sleep_safety_provider.ts";
+import { type CascadeContact, continueSleepSafetyCascade } from "./cascade.ts";
 
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const serviceRoleKey = requiredEnvironment("SUPABASE_SERVICE_ROLE_KEY");
-const webhookSecret = requiredEnvironment("SLEEP_SAFETY_PROVIDER_WEBHOOK_SECRET");
+const webhookSecret = requiredEnvironment(
+  "SLEEP_SAFETY_PROVIDER_WEBHOOK_SECRET",
+);
 const provider = createGenericHttpSleepSafetyProvider({
   baseUrl: requiredEnvironment("SLEEP_SAFETY_PROVIDER_BASE_URL"),
   token: requiredEnvironment("SLEEP_SAFETY_PROVIDER_TOKEN"),
@@ -20,7 +23,9 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 Deno.serve(async (request) => {
-  if (request.method !== "POST") return response(405, { error: "method_not_allowed" });
+  if (request.method !== "POST") {
+    return response(405, { error: "method_not_allowed" });
+  }
   if (request.headers.get("x-sleep-safety-token") !== webhookSecret) {
     return response(401, { error: "invalid_callback_token" });
   }
@@ -37,13 +42,17 @@ Deno.serve(async (request) => {
 
   const { data: dispatch, error } = await admin
     .from("sleep_safety_dispatches")
-    .select("id,event_id,user_id,contact_id,priority,channel,idempotency_key,status")
+    .select(
+      "id,event_id,user_id,contact_id,priority,channel,idempotency_key,status",
+    )
     .eq("provider_external_id", externalId)
     .maybeSingle();
   if (error) throw error;
   if (!dispatch) return response(202, { accepted: true, ignored: true });
 
-  const databaseStatus = providerStatus === "no_answer" ? "noAnswer" : providerStatus;
+  const databaseStatus = providerStatus === "no_answer"
+    ? "noAnswer"
+    : providerStatus;
   await admin.from("sleep_safety_dispatches")
     .update({ status: databaseStatus })
     .eq("id", dispatch.id);
@@ -52,78 +61,76 @@ Deno.serve(async (request) => {
     return response(200, { accepted: true, continued: false });
   }
 
-  const continued = await continueCascade({
+  const continued = await continueSleepSafetyCascade({
     eventId: dispatch.event_id,
     userId: dispatch.user_id,
     contactId: dispatch.contact_id,
     priority: dispatch.priority,
-    failedChannel: dispatch.channel,
+    failedChannel: dispatch.channel === "voice" ? "voice" : "sms",
     idempotencyKey: dispatch.idempotency_key,
+  }, {
+    getContact,
+    getContactsAfterPriority,
+    alreadyAttempted,
+    submit,
   });
   return response(200, { accepted: true, continued });
 });
 
-async function continueCascade(input: {
-  eventId: string;
-  userId: string;
-  contactId: string;
-  priority: number;
-  failedChannel: "sms" | "voice";
-  idempotencyKey: string;
-}): Promise<boolean> {
-  if (input.failedChannel === "voice") {
-    const contact = await getContact(input.userId, input.contactId);
-    if (contact && !(await alreadyAttempted(input.idempotencyKey, contact.id, "sms"))) {
-      const sms = await submit(
-        input.eventId,
-        input.userId,
-        contact,
-        "sms",
-        input.idempotencyKey,
-      );
-      if (!isTerminalFailure(sms)) return true;
-    }
-  }
-
+async function getContactsAfterPriority(
+  userId: string,
+  priority: number,
+): Promise<CascadeContact[]> {
   const { data: contacts, error } = await admin
     .from("sleep_safety_contacts")
-    .select("id,phone_e164,priority")
-    .eq("user_id", input.userId)
+    .select(
+      "id,phone_e164,priority,verification_status,allow_unverified_voice_alert",
+    )
+    .eq("user_id", userId)
     .eq("active", true)
-    .eq("verification_status", "verified")
-    .gt("priority", input.priority)
+    .gt("priority", priority)
     .order("priority", { ascending: true });
   if (error) throw error;
+  return (contacts ?? []).map(mapContact);
+}
 
-  for (const contact of contacts ?? []) {
-    if (await alreadyAttempted(input.idempotencyKey, contact.id, "voice")) continue;
-    const voice = await submit(
-      input.eventId,
-      input.userId,
-      contact,
-      "voice",
-      input.idempotencyKey,
-    );
-    if (!isTerminalFailure(voice)) return true;
+async function getContact(
+  userId: string,
+  contactId: string,
+): Promise<CascadeContact | null> {
+  const { data, error } = await admin
+    .from("sleep_safety_contacts")
+    .select(
+      "id,phone_e164,priority,verification_status,allow_unverified_voice_alert",
+    )
+    .eq("id", contactId)
+    .eq("user_id", userId)
+    .eq("active", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data == null ? null : mapContact(data);
+}
 
-    if (!(await alreadyAttempted(input.idempotencyKey, contact.id, "sms"))) {
-      const sms = await submit(
-        input.eventId,
-        input.userId,
-        contact,
-        "sms",
-        input.idempotencyKey,
-      );
-      if (!isTerminalFailure(sms)) return true;
-    }
-  }
-  return false;
+function mapContact(row: {
+  id: string;
+  phone_e164: string;
+  priority: number;
+  verification_status: string;
+  allow_unverified_voice_alert: boolean;
+}): CascadeContact {
+  return {
+    id: row.id,
+    phoneE164: row.phone_e164,
+    priority: row.priority,
+    isVerified: row.verification_status === "verified",
+    allowUnverifiedVoiceAlert: row.allow_unverified_voice_alert === true,
+  };
 }
 
 async function submit(
   eventId: string,
   userId: string,
-  contact: { id: string; phone_e164: string; priority: number },
+  contact: CascadeContact,
   channel: "sms" | "voice",
   idempotencyKey: string,
 ) {
@@ -131,7 +138,7 @@ async function submit(
     ? "NanoBio đang gửi cảnh báo an toàn giấc ngủ. Vui lòng kiểm tra tình trạng của người thân ngay khi có thể."
     : "NanoBio phát hiện một tình huống âm thanh cần chú ý trong phiên giám sát giấc ngủ và người dùng chưa xác nhận an toàn. Vui lòng liên hệ hoặc kiểm tra người thân.";
   const result = await provider.send(channel, {
-    to: contact.phone_e164,
+    to: contact.phoneE164,
     message,
     idempotencyKey: `${idempotencyKey}-${contact.id}-${channel}`,
   });
@@ -149,19 +156,6 @@ async function submit(
   });
   if (error) throw error;
   return result.status;
-}
-
-async function getContact(userId: string, contactId: string) {
-  const { data, error } = await admin
-    .from("sleep_safety_contacts")
-    .select("id,phone_e164,priority")
-    .eq("id", contactId)
-    .eq("user_id", userId)
-    .eq("active", true)
-    .eq("verification_status", "verified")
-    .maybeSingle();
-  if (error) throw error;
-  return data;
 }
 
 async function alreadyAttempted(

@@ -5,6 +5,8 @@ import '../data/datasources/sleep_safety_local_datasource.dart';
 import '../data/datasources/sleep_safety_reminder_service.dart';
 import '../data/gateways/sleep_safety_native_gateway.dart';
 import '../data/gateways/sleep_safety_notification_permission_gateway.dart';
+import '../data/gateways/sleep_safety_connectivity_gateway.dart';
+import '../data/gateways/sleep_safety_phone_gateway.dart';
 import '../data/repositories/sleep_safety_repository_impl.dart';
 import '../domain/repositories/sleep_safety_repository.dart';
 import 'sleep_safety_controller.dart';
@@ -23,7 +25,16 @@ final sleepSafetyNativeGatewayProvider = Provider<SleepSafetyNativeGateway>(
 
 final sleepSafetyNotificationPermissionGatewayProvider =
     Provider<SleepSafetyNotificationPermissionGateway>(
-  (ref) => const LocalSleepSafetyNotificationPermissionGateway(),
+      (ref) => const LocalSleepSafetyNotificationPermissionGateway(),
+    );
+
+final sleepSafetyConnectivityGatewayProvider =
+    Provider<SleepSafetyConnectivityGateway>(
+      (ref) => ConnectivityPlusSleepSafetyGateway(),
+    );
+
+final sleepSafetyPhoneGatewayProvider = Provider<SleepSafetyPhoneGateway>(
+  (ref) => const UrlLauncherSleepSafetyPhoneGateway(),
 );
 
 final sleepSafetyReminderServiceProvider = Provider<SleepSafetyReminderService>(
@@ -54,11 +65,13 @@ final sleepSafetyRolloutApprovedProvider = Provider<bool>((ref) {
 /// to Special App Access immediately before foreground-service creation.
 final sleepSafetyNotificationPermissionProvider =
     Provider<Future<bool> Function()>((ref) {
-  final gateway = ref.watch(sleepSafetyNotificationPermissionGatewayProvider);
-  return gateway.requestPermission;
-});
+      final gateway = ref.watch(
+        sleepSafetyNotificationPermissionGatewayProvider,
+      );
+      return gateway.requestPermission;
+    });
 
 final sleepSafetyControllerProvider =
     NotifierProvider<SleepSafetyController, SleepSafetyViewState>(
-  SleepSafetyController.new,
-);
+      SleepSafetyController.new,
+    );

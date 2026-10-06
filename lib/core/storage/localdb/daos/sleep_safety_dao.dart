@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 
 import '../tables/sleep_safety_tables.dart';
@@ -168,5 +170,84 @@ class SleepSafetyDao {
       orderBy: 'priority ASC',
     );
     return rows.map(Map<String, Object?>.from).toList(growable: false);
+  }
+
+  Future<void> enqueueDispatchRetry({
+    required String userId,
+    required String eventId,
+    required String idempotencyKey,
+    required DateTime createdAt,
+  }) async {
+    final id = 'sleep-safety-retry-$eventId';
+    await db.insert(SleepSafetyTables.outbox, {
+      'id': id,
+      'user_id': userId,
+      'event_id': eventId,
+      'kind': 'sleep_safety_dispatch',
+      'payload_json': jsonEncode({
+        'event_id': eventId,
+        'idempotency_key': idempotencyKey,
+        'created_at': createdAt.toIso8601String(),
+      }),
+      'status': 'pending',
+      'attempt_count': 0,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': createdAt.toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
+
+  Future<List<Map<String, Object?>>> listPendingDispatches() async {
+    final rows = await db.query(
+      SleepSafetyTables.outbox,
+      where:
+          "kind = ? AND status IN ('pending', 'failed', 'sending') AND "
+          "attempt_count < 4 AND (status IN ('pending', 'sending') OR "
+          "last_error_code = 'network_unavailable')",
+      whereArgs: ['sleep_safety_dispatch'],
+      orderBy: 'created_at ASC',
+    );
+    return rows.map(Map<String, Object?>.from).toList(growable: false);
+  }
+
+  Future<void> markDispatchSending(String id, DateTime now) async {
+    await db.rawUpdate(
+      'UPDATE ${SleepSafetyTables.outbox} '
+      "SET status = 'sending', attempt_count = attempt_count + 1, "
+      'next_retry_at = NULL, updated_at = ? WHERE id = ?',
+      [now.toIso8601String(), id],
+    );
+  }
+
+  Future<void> markDispatchAcknowledged(String id, DateTime now) async {
+    await db.update(
+      SleepSafetyTables.outbox,
+      {
+        'status': 'acknowledged',
+        'last_error_code': null,
+        'next_retry_at': null,
+        'updated_at': now.toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> markDispatchFailed({
+    required String id,
+    required String errorCode,
+    required DateTime now,
+    DateTime? nextRetryAt,
+  }) async {
+    await db.update(
+      SleepSafetyTables.outbox,
+      {
+        'status': 'failed',
+        'last_error_code': errorCode,
+        'next_retry_at': nextRetryAt?.toIso8601String(),
+        'updated_at': now.toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

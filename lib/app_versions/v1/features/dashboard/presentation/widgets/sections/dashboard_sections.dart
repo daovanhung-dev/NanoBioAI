@@ -291,86 +291,89 @@ class DashboardHealthDetails extends StatelessWidget {
         border: Border.all(color: context.semanticColors.borderLight),
       ),
       clipBehavior: Clip.antiAlias,
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        childrenPadding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
-          0,
-          AppSpacing.md,
-          AppSpacing.md,
-        ),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: context.semanticColors.primarySoft,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Material(
+        type: MaterialType.transparency,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
           ),
-          child: const Icon(
-            Icons.health_and_safety_outlined,
-            color: AppColors.primary,
-            size: 22,
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md,
           ),
-        ),
-        title: Text(
-          'Mục tiêu và thông tin sức khỏe',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
-        ),
-        subtitle: Text(
-          summaryParts.isEmpty
-              ? 'Xem thông tin hồ sơ đã chia sẻ'
-              : summaryParts.join(' • '),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: context.semanticColors.textSecondary,
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: context.semanticColors.primarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: const Icon(
+              Icons.health_and_safety_outlined,
+              color: AppColors.primary,
+              size: 22,
+            ),
           ),
-        ),
-        children: [
-          const Divider(),
-          _DetailGroup(
-            title: 'Thông tin cơ bản',
-            children: [
-              _InfoChip(
-                label: bmi > 0 ? 'BMI ${bmi.toStringAsFixed(1)}' : 'BMI --',
+          title: Text(
+            'Mục tiêu và thông tin sức khỏe',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          subtitle: Text(
+            summaryParts.isEmpty
+                ? 'Xem thông tin hồ sơ đã chia sẻ'
+                : summaryParts.join(' • '),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: context.semanticColors.textSecondary,
+            ),
+          ),
+          children: [
+            const Divider(),
+            _DetailGroup(
+              title: 'Thông tin cơ bản',
+              children: [
+                _InfoChip(
+                  label: bmi > 0 ? 'BMI ${bmi.toStringAsFixed(1)}' : 'BMI --',
+                ),
+                _InfoChip(
+                  label: heightCm > 0
+                      ? '${heightCm.toStringAsFixed(0)} cm'
+                      : 'Chiều cao chưa có',
+                ),
+                _InfoChip(label: sleepQuality),
+                _InfoChip(label: activityLevel),
+                _InfoChip(label: waterPerDay),
+              ],
+            ),
+            if (goalProgress.isNotEmpty || fallbackGoals.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              _GoalsDetail(
+                progressItems: goalProgress,
+                fallbackGoals: fallbackGoals,
               ),
-              _InfoChip(
-                label: heightCm > 0
-                    ? '${heightCm.toStringAsFixed(0)} cm'
-                    : 'Chiều cao chưa có',
-              ),
-              _InfoChip(label: sleepQuality),
-              _InfoChip(label: activityLevel),
-              _InfoChip(label: waterPerDay),
             ],
-          ),
-          if (goalProgress.isNotEmpty || fallbackGoals.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            _GoalsDetail(
-              progressItems: goalProgress,
-              fallbackGoals: fallbackGoals,
-            ),
+            if (conditions.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              _DetailGroup(
+                title: 'Sức khỏe cần lưu ý',
+                children: conditions
+                    .map((item) => _InfoChip(label: item))
+                    .toList(),
+              ),
+            ],
+            if (habits.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              _DetailGroup(
+                title: 'Thói quen đã chia sẻ',
+                children: habits.map((item) => _InfoChip(label: item)).toList(),
+              ),
+            ],
           ],
-          if (conditions.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            _DetailGroup(
-              title: 'Sức khỏe cần lưu ý',
-              children: conditions
-                  .map((item) => _InfoChip(label: item))
-                  .toList(),
-            ),
-          ],
-          if (habits.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.md),
-            _DetailGroup(
-              title: 'Thói quen đã chia sẻ',
-              children: habits.map((item) => _InfoChip(label: item)).toList(),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/safety_contact.dart';
+import '../../providers/sleep_safety_controller.dart';
 import '../../providers/sleep_safety_providers.dart';
 
 class SleepSafetyContactsPage extends ConsumerWidget {
@@ -14,7 +15,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Người liên hệ an toàn')),
-      floatingActionButton: state.contacts.length >= 3
+      floatingActionButton: !state.contactsLoaded || state.contacts.length >= 3
           ? null
           : FloatingActionButton.extended(
               onPressed: () => _edit(context, controller, null, state.contacts),
@@ -27,11 +28,28 @@ class SleepSafetyContactsPage extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           children: [
             const Text(
-              'Bạn có thể thiết lập tối đa 3 người. Chỉ số điện thoại đã xác '
-              'minh mới được dùng khi Nabi cần gửi cảnh báo hỗ trợ.',
+              'Bạn có thể thiết lập tối đa 3 người. Có thể bật gọi thoại cho '
+              'số chưa xác minh; xác minh chỉ cần để gửi SMS.',
             ),
             const SizedBox(height: 16),
-            if (state.contacts.isEmpty)
+            if (!state.contactsLoaded)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(child: Text('Đang tải người liên hệ an toàn…')),
+                    ],
+                  ),
+                ),
+              )
+            else if (state.contacts.isEmpty)
               const Card(
                 child: Padding(
                   padding: EdgeInsets.all(20),
@@ -48,7 +66,8 @@ class SleepSafetyContactsPage extends ConsumerWidget {
                   title: Text(contact.name),
                   subtitle: Text(
                     '${contact.relationship} • ${contact.phoneE164}\n'
-                    '${_verificationText(contact.verificationStatus)}',
+                    '${_verificationText(contact.verificationStatus)}'
+                    '${!contact.isVerified && contact.allowUnverifiedVoiceAlert ? ' • Đã bật gọi thoại' : ''}',
                   ),
                   isThreeLine: true,
                   trailing: PopupMenuButton<String>(
@@ -98,106 +117,49 @@ class SleepSafetyContactsPage extends ConsumerWidget {
 
   static Future<void> _edit(
     BuildContext context,
-    dynamic controller,
+    SleepSafetyController controller,
     SafetyContact? contact,
     List<SafetyContact> contacts,
   ) async {
-    final name = TextEditingController(text: contact?.name);
-    final relation = TextEditingController(text: contact?.relationship);
-    final phone = TextEditingController(text: contact?.phoneE164);
-    var priority = contact?.priority ?? _firstAvailablePriority(contacts);
-
-    final ok = await showDialog<bool>(
+    final draft = await showDialog<_SafetyContactDraft>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setState) => AlertDialog(
-          title: Text(
-            contact == null ? 'Thêm người liên hệ' : 'Chỉnh sửa người liên hệ',
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: name,
-                  decoration: const InputDecoration(labelText: 'Tên'),
-                ),
-                TextField(
-                  controller: relation,
-                  decoration: const InputDecoration(labelText: 'Mối quan hệ'),
-                ),
-                TextField(
-                  controller: phone,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Số điện thoại (+84...)',
-                  ),
-                ),
-                DropdownButtonFormField<int>(
-                  initialValue: priority,
-                  decoration: const InputDecoration(labelText: 'Ưu tiên'),
-                  items: [1, 2, 3]
-                      .map(
-                        (value) => DropdownMenuItem(
-                          value: value,
-                          child: Text('Ưu tiên $value'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() => priority = value ?? priority);
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Hủy'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Lưu'),
-            ),
-          ],
-        ),
+      builder: (_) => _SafetyContactEditorDialog(
+        contact: contact,
+        initialPriority: contact?.priority ?? _firstAvailablePriority(contacts),
       ),
     );
 
-    var saved = false;
-    if (ok == true && context.mounted) {
-      try {
-        await controller.saveContact(
-          id: contact?.id,
-          name: name.text,
-          relationship: relation.text,
-          phoneE164: phone.text,
-          priority: priority,
-        );
-        saved = true;
-      } catch (error) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(_friendlyError(error))));
-        }
+    if (draft == null || !context.mounted) return;
+
+    try {
+      await controller.saveContact(
+        id: contact?.id,
+        name: draft.name,
+        relationship: draft.relationship,
+        phoneE164: draft.phoneE164,
+        priority: draft.priority,
+        allowPhoneFallback: draft.allowPhoneFallback,
+        allowUnverifiedVoiceAlert: draft.allowUnverifiedVoiceAlert,
+      );
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_friendlyError(error))));
       }
+      return;
     }
-    if (saved && context.mounted) {
+
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Đã lưu người liên hệ an toàn.')),
       );
     }
-
-    name.dispose();
-    relation.dispose();
-    phone.dispose();
   }
 
   static Future<void> _verify(
     BuildContext context,
-    dynamic controller,
+    SleepSafetyController controller,
     SafetyContact contact,
   ) async {
     try {
@@ -264,4 +226,152 @@ class SleepSafetyContactsPage extends ConsumerWidget {
         .replaceFirst(RegExp(r'^FormatException:\s*'), '')
         .replaceFirst(RegExp(r'^Bad state:\s*'), '');
   }
+}
+
+class _SafetyContactDraft {
+  const _SafetyContactDraft({
+    required this.name,
+    required this.relationship,
+    required this.phoneE164,
+    required this.priority,
+    required this.allowPhoneFallback,
+    required this.allowUnverifiedVoiceAlert,
+  });
+
+  final String name;
+  final String relationship;
+  final String phoneE164;
+  final int priority;
+  final bool allowPhoneFallback;
+  final bool allowUnverifiedVoiceAlert;
+}
+
+class _SafetyContactEditorDialog extends StatefulWidget {
+  const _SafetyContactEditorDialog({
+    required this.contact,
+    required this.initialPriority,
+  });
+
+  final SafetyContact? contact;
+  final int initialPriority;
+
+  @override
+  State<_SafetyContactEditorDialog> createState() =>
+      _SafetyContactEditorDialogState();
+}
+
+class _SafetyContactEditorDialogState
+    extends State<_SafetyContactEditorDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _relationshipController;
+  late final TextEditingController _phoneController;
+  late int _priority;
+  late bool _allowPhoneFallback;
+  late bool _allowUnverifiedVoiceAlert;
+
+  @override
+  void initState() {
+    super.initState();
+    final contact = widget.contact;
+    _nameController = TextEditingController(text: contact?.name);
+    _relationshipController = TextEditingController(
+      text: contact?.relationship,
+    );
+    _phoneController = TextEditingController(text: contact?.phoneE164);
+    _priority = widget.initialPriority;
+    _allowPhoneFallback = contact?.allowPhoneFallback ?? true;
+    _allowUnverifiedVoiceAlert = contact?.allowUnverifiedVoiceAlert ?? false;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _relationshipController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    Navigator.of(context).pop(
+      _SafetyContactDraft(
+        name: _nameController.text,
+        relationship: _relationshipController.text,
+        phoneE164: _phoneController.text,
+        priority: _priority,
+        allowPhoneFallback: _allowPhoneFallback,
+        allowUnverifiedVoiceAlert: _allowUnverifiedVoiceAlert,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text(
+      widget.contact == null ? 'Thêm người liên hệ' : 'Chỉnh sửa người liên hệ',
+    ),
+    content: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: 'Tên'),
+          ),
+          TextField(
+            controller: _relationshipController,
+            decoration: const InputDecoration(labelText: 'Mối quan hệ'),
+          ),
+          TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Số điện thoại (+84...)',
+            ),
+          ),
+          DropdownButtonFormField<int>(
+            initialValue: _priority,
+            decoration: const InputDecoration(labelText: 'Ưu tiên'),
+            items: [1, 2, 3]
+                .map(
+                  (value) => DropdownMenuItem(
+                    value: value,
+                    child: Text('Ưu tiên $value'),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              if (value != null) setState(() => _priority = value);
+            },
+          ),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Cho phép gọi thoại tự động khi chưa xác minh'),
+            subtitle: const Text(
+              'Mặc định tắt. Chỉ dùng cho cảnh báo tự động khi số chưa xác minh; không gửi SMS.',
+            ),
+            value: _allowUnverifiedVoiceAlert,
+            onChanged: (value) =>
+                setState(() => _allowUnverifiedVoiceAlert = value),
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Cho phép gọi trực tiếp đến số này'),
+            subtitle: const Text(
+              'Dùng khi bạn chọn “Tôi cần hỗ trợ”. Android có thể gọi trực tiếp sau khi cấp quyền; iPhone yêu cầu xác nhận.',
+            ),
+            value: _allowPhoneFallback,
+            onChanged: (value) => setState(() => _allowPhoneFallback = value),
+          ),
+        ],
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Hủy'),
+      ),
+      FilledButton(onPressed: _submit, child: const Text('Lưu')),
+    ],
+  );
 }

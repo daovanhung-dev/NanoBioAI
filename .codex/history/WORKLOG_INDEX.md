@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 176
+- Total worklogs: 187
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -185,3 +185,14 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-05 | release build và xác minh artifact | test | Android release signing, Android App Bundle | [Worklog - Xuất Android App Bundle Nabi](../../docs/worklog/2026-10-05/005-worklog-release-aab.md) |
 | 2026-10-05 | fix / coding / test / cập nhật DD và worklog. | test | M32 FITNESS_TRAINING. | [Worklog — M32 workout-only conflict guard](../../docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md) |
 | 2026-10-05 | coding. | coding | M32 FITNESS_TRAINING | [Worklog — M32 xin phép đổi giờ tập khi có xung đột](../../docs/worklog/2026-10-05/007-worklog-m32-workout-time-consent.md) |
+| 2026-10-06 | coding | coding | M31 SLEEP_SAFETY_MONITORING | [Worklog — M31 Zalo alert + offline phone fallback](../../docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md) |
+| 2026-10-06 | bugfix | bugfix | v1 dashboard / v2 cloud sync | [Worklog — Khôi phục trang chủ khi cloud sync lỗi](../../docs/worklog/2026-10-06/002-worklog-dashboard-cloud-recovery.md) |
+| 2026-10-06 | bugfix | bugfix | M31 SLEEP_SAFETY_MONITORING | [Worklog — M31 thêm liên hệ trước khi tải xong danh sách](../../docs/worklog/2026-10-06/003-worklog-m31-contact-priority-race.md) |
+| 2026-10-06 | bugfix | bugfix | M31 SLEEP_SAFETY_MONITORING | [Worklog — M31 khôi phục hỗ trợ khi thiếu liên hệ xác minh](../../docs/worklog/2026-10-06/004-worklog-m31-support-recovery.md) |
+| 2026-10-06 | coding / Supabase contract / DD cập nhật. | supabase-schema | M31 SLEEP_SAFETY_MONITORING. | [Worklog — M31 gọi cảnh báo cho liên hệ chưa xác minh](../../docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md) |
+| 2026-10-06 | bugfix / Supabase schema / Android QA. | supabase-schema | M31 SLEEP_SAFETY_MONITORING. | [Worklog — M31 thiếu migration RPC lưu liên hệ](../../docs/worklog/2026-10-06/006-worklog-m31-contact-save-rpc-migration-qa.md) |
+| 2026-10-06 | coding / Supabase schema / Android QA. | supabase-schema | unknown | [Worklog — M31 gọi trực tiếp khi cần trợ giúp và gỡ Zalo](../../docs/worklog/2026-10-06/007-worklog-m31-direct-help-call-zalo-removal.md) |
+| 2026-10-06 | bugfix. | bugfix | M31 SLEEP_SAFETY_MONITORING, app lifecycle Android. | [Worklog — M31 yêu cầu quyền runtime khi mở Nabi](../../docs/worklog/2026-10-06/008-worklog-m31-android-runtime-permissions-at-entry.md) |
+| 2026-10-06 | bugfix. | bugfix | unknown | [Worklog — M31 sửa loading của yêu cầu gọi hỗ trợ](../../docs/worklog/2026-10-06/009-worklog-m31-manual-help-loading.md) |
+| 2026-10-06 | bugfix. | bugfix | M31 SLEEP_SAFETY_MONITORING. | [Worklog — M31 sửa lỗi khi thoát chỉnh sửa liên hệ](../../docs/worklog/2026-10-06/010-worklog-m31-contact-editor-lifecycle.md) |
+| 2026-10-06 | bugfix / M31 SLEEP_SAFETY_MONITORING. | docs-context | unknown | [Worklog — M31 bàn giao gọi và hạn chờ 15 giây](../../docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md) |

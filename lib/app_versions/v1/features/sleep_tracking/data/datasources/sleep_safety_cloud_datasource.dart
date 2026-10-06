@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/safety_contact.dart';
+import '../../domain/entities/sleep_safety_runtime_config.dart';
+import '../../domain/entities/sleep_safety_dispatch_exception.dart';
+import '../../domain/entities/sleep_safety_dispatch_result.dart';
 import '../models/sleep_safety_models.dart';
 
-class SleepSafetyCloudException implements Exception {
-  const SleepSafetyCloudException(this.code);
-
-  final String code;
+class SleepSafetyCloudException extends SleepSafetyDispatchException {
+  const SleepSafetyCloudException(super.code);
 
   factory SleepSafetyCloudException.from(
     Object error, {
@@ -18,6 +21,7 @@ class SleepSafetyCloudException implements Exception {
       'sleep_safety_phone_invalid',
       'sleep_safety_contact_not_found',
       'verified_contact_required',
+      'eligible_contact_required',
       'paid_access_required',
       'sleep_safety_rollout_disabled',
       'event_not_eligible_for_escalation',
@@ -26,6 +30,8 @@ class SleepSafetyCloudException implements Exception {
       'authentication_required',
       'dispatch_rate_limited',
       'verification_provider_failed',
+      'network_unavailable',
+      'dispatch_sync_failed',
     ];
     for (final code in knownCodes) {
       if (raw.contains(code)) return SleepSafetyCloudException(code);
@@ -36,6 +42,22 @@ class SleepSafetyCloudException implements Exception {
       return const SleepSafetyCloudException('contact_duplicate');
     }
     return SleepSafetyCloudException(fallbackCode);
+  }
+
+  static bool isTransportError(Object error) {
+    if (error is SleepSafetyDispatchException) {
+      return error.isTransportFailure;
+    }
+    final raw = error.toString().toLowerCase();
+    return error is TimeoutException ||
+        raw.contains('socketexception') ||
+        raw.contains('clientexception') ||
+        raw.contains('failed host lookup') ||
+        raw.contains('network is unreachable') ||
+        raw.contains('connection reset') ||
+        raw.contains('connection refused') ||
+        raw.contains('timed out') ||
+        raw.contains('network request failed');
   }
 
   String get userMessage => switch (code) {
@@ -49,7 +71,9 @@ class SleepSafetyCloudException implements Exception {
     'contact_duplicate' =>
       'Số điện thoại hoặc mức ưu tiên này đã được dùng cho người liên hệ khác.',
     'verified_contact_required' =>
-      'Hãy xác minh ít nhất một người liên hệ trước khi gửi yêu cầu hỗ trợ.',
+      'Chưa có liên hệ đủ điều kiện nhận cuộc gọi cảnh báo.',
+    'eligible_contact_required' =>
+      'Hãy thêm liên hệ hoặc bật quyền nhận cuộc gọi cảnh báo cho số chưa xác minh.',
     'paid_access_required' =>
       'Tính năng liên hệ khẩn cấp dành cho gói Plus hoặc FamilyPlus.',
     'sleep_safety_rollout_disabled' =>
@@ -64,6 +88,10 @@ class SleepSafetyCloudException implements Exception {
       'Bạn đã dùng hết lượt liên hệ trong thời gian ngắn. Hãy thử lại sau.',
     'verification_provider_failed' =>
       'Nhà cung cấp SMS chưa phản hồi. Bạn thử gửi lại mã sau nhé.',
+    'network_unavailable' =>
+      'Chưa có kết nối mạng. Cảnh báo đã được xếp hàng để thử lại trong thời gian cho phép.',
+    'dispatch_sync_failed' =>
+      'Chưa thể đồng bộ cảnh báo. Bạn vẫn có thể gọi người liên hệ trực tiếp.',
     'contact_save_failed' => 'Chưa thể lưu người liên hệ. Bạn thử lại nhé.',
     'verification_request_failed' =>
       'Chưa thể gửi mã xác minh. Bạn kiểm tra số điện thoại rồi thử lại nhé.',
@@ -75,15 +103,6 @@ class SleepSafetyCloudException implements Exception {
 
   @override
   String toString() => userMessage;
-}
-
-class SleepSafetyRuntimeConfig {
-  const SleepSafetyRuntimeConfig({
-    required this.enabled,
-    required this.maxDispatchesPerHour,
-  });
-  final bool enabled;
-  final int maxDispatchesPerHour;
 }
 
 class SleepSafetyCloudDatasource {
@@ -108,13 +127,18 @@ class SleepSafetyCloudDatasource {
     }
     final row = await client
         .from('sleep_safety_runtime_config')
-        .select('enabled,max_dispatches_per_hour')
+        .select(
+          'enabled,max_dispatches_per_hour,event_freshness_seconds,phone_fallback_enabled',
+        )
         .eq('config_key', 'default')
         .maybeSingle();
     return SleepSafetyRuntimeConfig(
       enabled: row?['enabled'] == true,
       maxDispatchesPerHour:
           (row?['max_dispatches_per_hour'] as num?)?.toInt() ?? 0,
+      eventFreshnessSeconds:
+          (row?['event_freshness_seconds'] as num?)?.toInt() ?? 600,
+      phoneFallbackEnabled: row?['phone_fallback_enabled'] == true,
     );
   }
 
@@ -143,6 +167,8 @@ class SleepSafetyCloudDatasource {
     required String relationship,
     required String phoneE164,
     required int priority,
+    bool allowPhoneFallback = true,
+    bool allowUnverifiedVoiceAlert = false,
   }) async {
     final client = _requireClient();
     try {
@@ -154,6 +180,8 @@ class SleepSafetyCloudDatasource {
           'p_relationship': relationship,
           'p_phone_e164': phoneE164,
           'p_priority': priority,
+          'p_allow_phone_fallback': allowPhoneFallback,
+          'p_allow_unverified_voice_alert': allowUnverifiedVoiceAlert,
         },
       );
       if (row is List && row.isNotEmpty) {
@@ -233,9 +261,21 @@ class SleepSafetyCloudDatasource {
     }
   }
 
-  Future<void> syncRow(String table, Map<String, Object?> values) async =>
-      _requireClient().from(table).upsert(values);
-  Future<Map<String, Object?>> dispatchEvent({
+  Future<void> syncRow(String table, Map<String, Object?> values) async {
+    try {
+      await _requireClient().from(table).upsert(values);
+    } catch (error) {
+      if (error is SleepSafetyCloudException) rethrow;
+      throw SleepSafetyCloudException.from(
+        error,
+        fallbackCode: SleepSafetyCloudException.isTransportError(error)
+            ? 'network_unavailable'
+            : 'dispatch_sync_failed',
+      );
+    }
+  }
+
+  Future<SleepSafetyDispatchResult> dispatchEvent({
     required String eventId,
     required String idempotencyKey,
   }) async {
@@ -251,14 +291,26 @@ class SleepSafetyCloudDatasource {
         );
       }
       final data = response.data;
-      return data is Map
-          ? Map<String, Object?>.from(data)
-          : const <String, Object?>{};
+      final accepted = data is Map && data['accepted'] == true;
+      final route = accepted
+          ? SleepSafetyDispatchRoute.cloudAccepted
+          : SleepSafetyDispatchRoute.cloudFailed;
+      return SleepSafetyDispatchResult(
+        route: route,
+        idempotencyKey: idempotencyKey,
+        errorCode: accepted
+            ? null
+            : data is Map
+            ? data['error']?.toString() ?? 'dispatch_failed'
+            : 'dispatch_failed',
+      );
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
       throw SleepSafetyCloudException.from(
         error,
-        fallbackCode: 'dispatch_failed',
+        fallbackCode: SleepSafetyCloudException.isTransportError(error)
+            ? 'network_unavailable'
+            : 'dispatch_failed',
       );
     }
   }

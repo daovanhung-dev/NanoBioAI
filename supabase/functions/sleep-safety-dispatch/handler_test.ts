@@ -4,46 +4,235 @@ import { createSleepSafetyDispatchHandler } from "./handler.ts";
 Deno.test("dispatch fails closed when rollout is disabled", async () => {
   const handler = createSleepSafetyDispatchHandler({
     authenticate: async () => "u1",
-    getRuntimeConfig: async () => ({ enabled: false, maxPerHour: 3, freshnessSeconds: 600 }),
+    getRuntimeConfig: async () => ({
+      enabled: false,
+      maxPerHour: 3,
+      freshnessSeconds: 600,
+    }),
     hasPaidAccess: async () => true,
     getEvent: async () => null,
-    getVerifiedContacts: async () => [],
+    getContacts: async () => [],
     countRecentRequests: async () => 0,
     getExisting: async () => [],
     createDispatch: async () => {},
     provider: { send: async () => ({ id: "p1", status: "submitted" }) },
     now: () => new Date("2026-08-24T00:00:00Z"),
   });
-  const response = await handler(request({ event_id: "e1", idempotency_key: "k1" }));
+  const response = await handler(
+    request({ event_id: "e1", idempotency_key: "k1" }),
+  );
   assertEquals(response.status, 503);
+});
+
+Deno.test("unverified contact without voice consent is not eligible", async () => {
+  let sends = 0;
+  const handler = createSleepSafetyDispatchHandler({
+    authenticate: async () => "u1",
+    getRuntimeConfig: async () => ({
+      enabled: true,
+      maxPerHour: 3,
+      freshnessSeconds: 600,
+    }),
+    hasPaidAccess: async () => true,
+    getEvent: async () => ({
+      id: "e1",
+      userId: "u1",
+      detectedAt: "2026-08-24T00:00:00Z",
+      response: "noResponse",
+      escalationRequired: true,
+    }),
+    getContacts: async () => [{
+      id: "c1",
+      phoneE164: "+84901111111",
+      priority: 1,
+      isVerified: false,
+      allowUnverifiedVoiceAlert: false,
+    }],
+    countRecentRequests: async () => 0,
+    getExisting: async () => [],
+    createDispatch: async () => {},
+    provider: {
+      send: async () => {
+        sends += 1;
+        return { id: "p1", status: "submitted" };
+      },
+    },
+    now: () => new Date("2026-08-24T00:01:00Z"),
+  });
+
+  const response = await handler(
+    request({ event_id: "e1", idempotency_key: "k1" }),
+  );
+  const body = await response.json();
+  assertEquals(response.status, 409);
+  assertEquals(body.error, "eligible_contact_required");
+  assertEquals(sends, 0);
+});
+
+Deno.test("unverified voice consent sends voice only and continues after failure", async () => {
+  const attempts: string[] = [];
+  const handler = createSleepSafetyDispatchHandler({
+    authenticate: async () => "u1",
+    getRuntimeConfig: async () => ({
+      enabled: true,
+      maxPerHour: 3,
+      freshnessSeconds: 600,
+    }),
+    hasPaidAccess: async () => true,
+    getEvent: async () => ({
+      id: "e1",
+      userId: "u1",
+      detectedAt: "2026-08-24T00:00:00Z",
+      response: "noResponse",
+      escalationRequired: true,
+    }),
+    getContacts: async () => [
+      {
+        id: "c1",
+        phoneE164: "+84901111111",
+        priority: 1,
+        isVerified: false,
+        allowUnverifiedVoiceAlert: true,
+      },
+      {
+        id: "c2",
+        phoneE164: "+84902222222",
+        priority: 2,
+        isVerified: true,
+        allowUnverifiedVoiceAlert: false,
+      },
+    ],
+    countRecentRequests: async () => 0,
+    getExisting: async () => [],
+    createDispatch: async (value) => {
+      attempts.push(`${value.contactId}:${value.channel}:${value.status}`);
+    },
+    provider: {
+      send: async (channel, value) =>
+        value.to.endsWith("111111")
+          ? { id: "bad", status: channel === "voice" ? "no_answer" : "failed" }
+          : { id: "ok", status: "submitted" },
+    },
+    now: () => new Date("2026-08-24T00:01:00Z"),
+  });
+
+  const response = await handler(
+    request({ event_id: "e1", idempotency_key: "k1" }),
+  );
+  const body = await response.json();
+  assertEquals(response.status, 202);
+  assertEquals(body.priority, 2);
+  assertEquals(body.channel, "voice");
+  assertEquals(attempts, [
+    "c1:voice:noAnswer",
+    "c2:voice:submitted",
+  ]);
 });
 
 Deno.test("dispatch tries next contact after immediate voice and sms failure", async () => {
   const attempts: string[] = [];
   const handler = createSleepSafetyDispatchHandler({
     authenticate: async () => "u1",
-    getRuntimeConfig: async () => ({ enabled: true, maxPerHour: 3, freshnessSeconds: 600 }),
+    getRuntimeConfig: async () => ({
+      enabled: true,
+      maxPerHour: 3,
+      freshnessSeconds: 600,
+    }),
     hasPaidAccess: async () => true,
-    getEvent: async () => ({ id: "e1", userId: "u1", detectedAt: "2026-08-24T00:00:00Z", response: "noResponse", escalationRequired: true }),
-    getVerifiedContacts: async () => [
-      { id: "c1", phoneE164: "+84901111111", priority: 1 },
-      { id: "c2", phoneE164: "+84902222222", priority: 2 },
+    getEvent: async () => ({
+      id: "e1",
+      userId: "u1",
+      detectedAt: "2026-08-24T00:00:00Z",
+      response: "noResponse",
+      escalationRequired: true,
+    }),
+    getContacts: async () => [
+      {
+        id: "c1",
+        phoneE164: "+84901111111",
+        priority: 1,
+        isVerified: true,
+        allowUnverifiedVoiceAlert: false,
+      },
+      {
+        id: "c2",
+        phoneE164: "+84902222222",
+        priority: 2,
+        isVerified: true,
+        allowUnverifiedVoiceAlert: false,
+      },
     ],
     countRecentRequests: async () => 0,
     getExisting: async () => [],
-    createDispatch: async (value) => { attempts.push(`${value.contactId}:${value.channel}:${value.status}`); },
+    createDispatch: async (value) => {
+      attempts.push(`${value.contactId}:${value.channel}:${value.status}`);
+    },
     provider: {
-      send: async (channel, value) => value.to.endsWith("111111")
-        ? { id: "bad", status: channel === "voice" ? "no_answer" : "failed" }
-        : { id: "ok", status: "submitted" },
+      send: async (channel, value) =>
+        value.to.endsWith("111111")
+          ? { id: "bad", status: channel === "voice" ? "no_answer" : "failed" }
+          : { id: "ok", status: "submitted" },
     },
     now: () => new Date("2026-08-24T00:01:00Z"),
   });
-  const response = await handler(request({ event_id: "e1", idempotency_key: "k1" }));
+  const response = await handler(
+    request({ event_id: "e1", idempotency_key: "k1" }),
+  );
   const body = await response.json();
   assertEquals(response.status, 202);
   assertEquals(body.priority, 2);
-  assertEquals(attempts, ["c1:voice:noAnswer", "c1:sms:failed", "c2:voice:submitted"]);
+  assertEquals(attempts, [
+    "c1:voice:noAnswer",
+    "c1:sms:failed",
+    "c2:voice:submitted",
+  ]);
+});
+
+Deno.test("explicit help is never dispatched through the server", async () => {
+  let sends = 0;
+  const handler = createSleepSafetyDispatchHandler({
+    authenticate: async () => "u1",
+    getRuntimeConfig: async () => ({
+      enabled: true,
+      maxPerHour: 3,
+      freshnessSeconds: 600,
+    }),
+    hasPaidAccess: async () => true,
+    getEvent: async () => ({
+      id: "e1",
+      userId: "u1",
+      detectedAt: "2026-08-24T00:00:00Z",
+      response: "needHelp",
+      escalationRequired: true,
+    }),
+    getContacts: async () => [
+      {
+        id: "c1",
+        phoneE164: "+84901111111",
+        priority: 1,
+        isVerified: true,
+        allowUnverifiedVoiceAlert: false,
+      },
+    ],
+    countRecentRequests: async () => 0,
+    getExisting: async () => [],
+    createDispatch: async () => {},
+    provider: {
+      send: async () => {
+        sends += 1;
+        return { id: "p1", status: "submitted" };
+      },
+    },
+    now: () => new Date("2026-08-24T00:01:00Z"),
+  });
+
+  const response = await handler(
+    request({ event_id: "e1", idempotency_key: "k1" }),
+  );
+  const body = await response.json();
+  assertEquals(response.status, 409);
+  assertEquals(body.error, "event_not_eligible_for_escalation");
+  assertEquals(sends, 0);
 });
 
 function request(body: Record<string, unknown>): Request {

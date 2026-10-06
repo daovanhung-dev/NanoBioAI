@@ -4,10 +4,10 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 57 worklog(s)
-- coding - Coding: 31 worklog(s)
-- bugfix - Direct bugfix: 31 worklog(s)
-- supabase-schema - Supabase schema and RLS: 27 worklog(s)
+- docs-context - Context and docs update: 58 worklog(s)
+- bugfix - Direct bugfix: 37 worklog(s)
+- coding - Coding: 32 worklog(s)
+- supabase-schema - Supabase schema and RLS: 30 worklog(s)
 - test - Test and verification: 13 worklog(s)
 - find-issues - Review and find issues: 6 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
@@ -17,8 +17,10 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 43
+- unknown: 46
 - M32 FITNESS_TRAINING: 5
+- M31 SLEEP_SAFETY_MONITORING: 3
+- M31 SLEEP_SAFETY_MONITORING.: 3
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
@@ -27,8 +29,6 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - M05 AI / runtime configuration / onboarding: 2
 - M05 AI / AI Chat / runtime configuration: 2
 - UI / Theme / NabiCopy, toan bo app surfaces: 2
-- M07 AI_CHAT / Sequential Voice Plus: 2
-- Dashboard, AI service, lifestyle schedule: 1
 
 ## Reusable Project Skills
 

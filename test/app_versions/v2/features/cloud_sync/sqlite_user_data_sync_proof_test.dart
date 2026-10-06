@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/sqlite_user_data_sync_local_datasource.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/user_data_snapshot.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
+import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -119,6 +120,53 @@ void main() {
       expect(
         await db.query(
           SyncOutboxSchema.outboxTable,
+          where: 'user_id = ?',
+          whereArgs: ['auth-1'],
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test(
+    'omitted cloud table preserves local rows while explicit empty clears',
+    () async {
+      await SyncRuntimeState.setApplyingCloud(db, true);
+      await db.insert('users', {'id': 'auth-1', 'subscription_tier': 'free'});
+      await db.insert('fitness_training_programs', {
+        'id': 'local-program',
+        'user_id': 'auth-1',
+      });
+      await db.insert('health_profiles', {
+        'id': 'local-profile',
+        'user_id': 'auth-1',
+      });
+      await SyncRuntimeState.setApplyingCloud(db, false);
+
+      await SqliteUserDataSyncLocalDatasource(
+        databaseOverride: db,
+      ).replaceFromCloud(
+        userId: 'auth-1',
+        snapshot: const UserDataSnapshot(
+          user: {'id': 'auth-1'},
+          tables: {'health_profiles': []},
+        ),
+      );
+
+      expect(
+        await db.query(
+          'fitness_training_programs',
+          columns: ['id'],
+          where: 'user_id = ?',
+          whereArgs: ['auth-1'],
+        ),
+        [
+          {'id': 'local-program'},
+        ],
+      );
+      expect(
+        await db.query(
+          'health_profiles',
           where: 'user_id = ?',
           whereArgs: ['auth-1'],
         ),

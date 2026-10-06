@@ -28,6 +28,7 @@ void main() {
     final text = output.join('\n');
     expect(text, contains('[ERROR][UI]'));
     expect(text, contains('FRAMEWORK_ERROR'));
+    expect(text, contains('Flutter framework error (StateError)'));
     expect(text, contains('package:nano_app/lib/example.dart:12:3'));
     expect(text, isNot(contains('private framework payload')));
   });

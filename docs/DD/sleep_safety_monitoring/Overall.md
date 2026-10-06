@@ -8,7 +8,7 @@
 | Android+iOS | `Q-M31-01` |
 | Non-medical acoustic labels | `Q-M31-02`, `M31-BR05` |
 | On-device/no raw audio | `Q-M31-03`, `M31-BR04` |
-| 30/60 second state machine | `Q-M31-04`, `M31-BR06/07` |
+| 15 second response window | `Q-M31-04`, `M31-BR06/07` |
 | Edge Function + SMS/voice | `Q-M31-05`, `M31-BR09` |
 | SafetyContact max 3 | `Q-M31-06`, `M31-BR08` |
 | Manual + scheduled reminder | `Q-M31-08`, `M31-BR03` |
@@ -21,7 +21,7 @@
 SleepTrackingPage
   -> SleepSafetyController (Riverpod Notifier, non-auto-dispose)
     -> SleepSafetyRepository
-      -> SleepSafetyLocalDatasource -> SleepSafetyDao -> SQLite v21
+      -> SleepSafetyLocalDatasource -> SleepSafetyDao -> SQLite v28
       -> SleepSafetyCloudDatasource -> Supabase tables/RPC/Edge Functions
       -> SleepSafetyNativeGateway -> Method/EventChannel
         -> Android SleepSafetyForegroundService / AudioRecord
@@ -33,10 +33,9 @@ Native PCM frame (RAM only)
   -> confirmedSafetyEvent metadata
   -> Controller local-first event
   -> T0 alert
-  -> +30s reminder
-  -> +60s escalation or immediate needHelp
+  -> +15s escalation if no response, or immediate needHelp
   -> sleep-safety-dispatch Edge Function
-  -> verified SafetyContact priority cascade
+  -> verified or voice-opted-in SafetyContact priority cascade
 ```
 
 Dependency rule remains:
@@ -55,9 +54,8 @@ Presentation does not import SQLite DAO or Supabase client.
 | `arming` | permissions/session accepted | calibration or monitoring |
 | `calibrating` | no valid baseline/recalibration | calibration complete |
 | `monitoring` | detector active | confirmed event / stop / failure |
-| `awaitingResponse` | T0 confirmed event | user ok/help, +30s, +60s |
-| `reminder` | +30s no response | user ok/help, +60s |
-| `escalating` | needHelp or +60s | dispatch accepted/failed; native session remains active |
+| `awaitingResponse` | T0 confirmed event | user ok/help or +15s no response |
+| `escalating` | +15s no response | dispatch accepted/failed; native session remains active |
 | `cooldown` | user ok | cooldown elapsed -> monitoring |
 | `failed` | permission/native/runtime failure | explicit restart after problem fixed |
 
@@ -89,8 +87,9 @@ escalation_required, escalation_status, created_at, updated_at`.
 ### M31-E-safety-contact
 
 Server canonical: UUID id, owner user, name, relationship, E.164 phone, priority
-1..3, verification status, verified timestamp, active timestamps. Flutter stores
-only a local cache copy.
+1..3, verification status, verified timestamp, active timestamps, phone-call
+opt-in (default true), and unverified voice-alert opt-in (default false).
+Flutter stores only a local cache copy.
 
 ### M31-E-verification-challenge
 
@@ -98,8 +97,14 @@ Service-only OTP hash + expiry + attempts. No client select/write grant.
 
 ### M31-E-dispatch
 
-Event/contact/channel/provider delivery evidence + idempotency. Client may read
-own dispatch summary if needed but cannot write dispatch status.
+Event/contact/channel/provider delivery evidence + idempotency; server channels
+are voice and SMS. Client may read its own dispatch summary if needed but cannot
+write dispatch status.
+
+### M31-E-runtime-config
+
+`enabled, max_dispatches_per_hour, event_freshness_seconds,
+phone_fallback_enabled, updated_at`. The phone-call flag defaults false.
 
 ### Explicitly forbidden fields
 
@@ -164,6 +169,9 @@ low-overhead frame-level features instead.
 - `AVAudioSession.playAndRecord` + measurement mode
 - `AVAudioEngine` input tap -> in-memory feature extraction
 - native `UNNotificationCategory` actions for OK/Need help
+- user-selected `tel:` fallback action is available for any active contact
+  with phone fallback enabled, including pending contacts; a cold-start action
+  is handed back to Flutter after contact config loads
 - implementation kept in existing `AppDelegate.swift` in this delivery so no
   unsafe manual `project.pbxproj` mutation is required.
 
@@ -189,14 +197,16 @@ low-overhead frame-level features instead.
 2. `sleep_safety_runtime_config.enabled = true`.
 3. `effective_user_access.membership_plan in ('plus','family_plus')`.
 4. Event belongs to caller.
-5. Event is recent and has `escalation_required` plus `needHelp/noResponse`.
+5. Event is recent and has `escalation_required` plus `noResponse`; an explicit
+   `needHelp` response stays in the device's phone-call flow.
 6. Stable idempotency not already processed.
 7. Hourly request limit not exceeded.
-8. At least one verified active contact.
+8. At least one active verified contact or unverified contact explicitly opted
+   into voice alerts. Unverified contacts are voice-only; SMS requires verified.
 
 ## 8. Provider cascade
 
-Default transport order:
+Default no-response transport order:
 
 ```text
 P1 voice
@@ -204,6 +214,23 @@ P1 voice
  -> failed: P2 voice -> P2 SMS
  -> failed: P3 voice -> P3 SMS
 ```
+
+The diagram above describes verified contacts. A pending contact receives voice
+only when its separate default-off consent is enabled. If that call fails or is
+not answered, the cascade skips SMS for that number and moves to the next
+eligible priority. SMS remains verified-only.
+
+When a user selects `Tôi cần hỗ trợ`, Flutter calls the highest-priority active
+contact that allows phone calls and does not invoke server dispatch. Android
+requests `CALL_PHONE` before monitoring and uses `ACTION_CALL` when permission is
+granted; otherwise it opens a prefilled dialer. iOS opens `tel:` and may require
+system confirmation. The event records OS call initiation or dialer handoff,
+never a connected call. If the server phone-call flag is off or there is no
+eligible contact, the local alert remains active with guidance.
+
+The automatic +15-second no-response route remains voice/SMS and queues only
+event/idempotency metadata when offline. Retries use the same idempotency key and
+stop at the server-configured freshness limit.
 
 Provider callbacks carrying a valid webhook secret can continue this cascade
 when failure/no-answer is asynchronous. A submitted/delivered/answered result
@@ -227,7 +254,8 @@ No official emergency service number is part of this flow.
   Flutter sink was unavailable, metadata is reconstructed locally without raw
   audio.
 - Cloud dispatch key is stable `sleep-safety-<eventId>` so reconnect does not
-  create a new cascade for the same event.
+  create a new cascade for the same event. The SQLite v28 outbox stores no phone
+  or provider message data and has bounded retries.
 
 ## 11. Security/privacy
 
@@ -239,14 +267,18 @@ No official emergency service number is part of this flow.
 
 ## 12. Rollout
 
-`07_schema_sleep_safety.sql` creates the server config with `enabled=false` as a
-fail-safe baseline. `08_enable_sleep_safety_rollout.sql` is the approved current
-rollout decision and changes only `config_key=default` to `enabled=true`.
+M31 runtime config keeps phone calling disabled by default. Forward migrations
+through 12:00 and the changed Edge Functions are applied only to the confirmed
+QA project. One Xiaomi direct-call acceptance passed; the temporary contact was
+removed and the QA phone-call flag was restored to `false`. Production remains
+unchanged. Never run `01_build_system.sql` or `02_seed_data.sql` against
+staging/production.
 
 This does not grant membership: Flutter and Edge Functions still require trusted
 Plus/FamilyPlus access. The kill switch can be returned to `false` server-side
-without shipping a client update. Android/iOS physical-device, battery/thermal,
-acoustic, RLS/sandbox and provider callback evidence remain explicitly
+without shipping a client update. Phone calling requires Android/iOS acceptance.
+Android/iOS physical-device, battery/thermal, acoustic, RLS,
+Supabase and provider callback evidence remain explicitly
 `Runtime-unverified`/`Sandbox-unverified` until actually executed.
 
 

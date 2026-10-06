@@ -42,7 +42,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   final Set<String> _busyTimelineItems = <String>{};
 
   bool get _isVisibleInMainShell =>
-      widget.showStandaloneChatButton || ref.read(mainNavigationIndexProvider) == 0;
+      widget.showStandaloneChatButton ||
+      ref.read(mainNavigationIndexProvider) == 0;
 
   @override
   void initState() {
@@ -76,6 +77,47 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     await ref.read(dashboardDynamicProvider.future);
   }
 
+  Future<void> _retryDashboardLoad() async {
+    final syncController = ref.read(userDataSyncControllerProvider.notifier);
+    var syncState = ref.read(userDataSyncControllerProvider);
+
+    // A persisted pull retry can outlive an in-memory `syncing` state. Refresh
+    // the durable flags first; the repository coalesces active sync requests.
+    if (syncState.status != UserDataSyncStatus.awaitingConsent) {
+      try {
+        await syncController.refreshLocalStatus();
+        if (!mounted) return;
+        syncState = ref.read(userDataSyncControllerProvider);
+      } catch (_) {
+        // Continue to reload the local dashboard if sync status cannot be read.
+      }
+
+      if (syncState.status == UserDataSyncStatus.error ||
+          syncState.status == UserDataSyncStatus.pendingUpload) {
+        try {
+          await syncController.retry();
+        } catch (_) {
+          // The controller normally converts failures to an error state. Keep
+          // the dashboard retry usable if an unexpected error still escapes.
+        }
+      }
+    }
+
+    if (!mounted) return;
+    ref.invalidate(dashboardProvider);
+    ref.invalidate(dashboardDynamicProvider);
+    try {
+      await ref.read(dashboardProvider.future);
+    } catch (_) {
+      // The error provider state drives the recovery view below.
+    }
+    try {
+      await ref.read(dashboardDynamicProvider.future);
+    } catch (_) {
+      // Dashboard dynamic data is optional while the profile is recovering.
+    }
+  }
+
   Future<void> _generateAdditionalPlan() async {
     try {
       final result = await ref
@@ -89,7 +131,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         PlanGenerationSource.localFallback || PlanGenerationSource.unknown =>
           'Nabi đã thêm lịch gợi ý cơ bản 7 ngày. Khi dịch vụ sẵn sàng, bạn có thể tạo lại để nhận gợi ý cá nhân hơn nhé.',
       };
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
       if (!mounted) return;
       if (error is DailyRoutinePreferencesRequiredException) {
@@ -148,7 +192,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         _ =>
           'Nabi chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',
       };
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -254,12 +300,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       error: (error, _) => KeyedSubtree(
         key: const ValueKey('dashboard-error'),
         child: DashboardErrorView(
-          message:
+          message: switch (userDataSyncState.status) {
+            UserDataSyncStatus.error || UserDataSyncStatus.pendingUpload =>
+              'Chưa thể khôi phục dữ liệu tài khoản. Bạn kiểm tra kết nối rồi thử lại nhé.',
+            UserDataSyncStatus.awaitingConsent =>
+              'Hãy hoàn tất bước khôi phục dữ liệu tài khoản rồi thử mở lại trang chủ nhé.',
+            UserDataSyncStatus.syncing =>
+              'Nabi đang khôi phục dữ liệu tài khoản. Bạn chờ một chút rồi thử lại nhé.',
+            _ =>
               'Nabi chưa thể mở trang chủ lúc này. Mình thử lại sau một chút nhé.',
-          onRetry: () {
-            ref.invalidate(dashboardProvider);
-            ref.invalidate(dashboardDynamicProvider);
           },
+          onRetry: () => unawaited(_retryDashboardLoad()),
         ),
       ),
       data: (dashboard) {

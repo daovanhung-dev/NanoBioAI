@@ -9,7 +9,7 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-09-13 |
+| Ngay cap nhat | 2026-10-06 |
 | Lifecycle | Current |
 | Source-truth baseline | `25018e8` |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
@@ -54,17 +54,39 @@ phải đọc ở cột verification.
 | M29 `AI_HEALTH_TRENDS` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
 | M30 `NABI_COMPANION_NOTIFICATIONS` | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20, engine/repository/controller and SQL/RPC/RLS source exist; app-shell trigger/presentation wiring is absent. |
 
-## Current Module Addendum — 2026-10-05
+## Current Module Addendum — 2026-10-06
 
 | Module | DD decision | Implementation | Verification | Source boundary |
 |---|---|---|---|---|
-| M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | M31 source is documented; real-device/provider/Supabase acceptance remains separate. |
+| M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Focused Flutter 47/47; targeted analyzer clean; SQLite v28; Android debug APK built and installed with data retained; prior QA migrations/Edge verification and direct-call acceptance remain historical evidence | Manual help uses the on-device call gateway; automatic no-response remains voice/SMS. Current 15-second/call-handoff UI acceptance is pending because the fresh Xiaomi app screen remained black; no call or QA write was performed in this turn. iOS device acceptance is pending; production unchanged. |
 | M32 FITNESS_TRAINING | Draft | In Progress | Workout-only/conflict consent: 24 focused Flutter tests and targeted analyze pass; Android QA profile/device and Sandbox acceptance pending | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved. Earlier pilot test/build evidence is recorded in its dated worklog. |
 
 M32 exception: PO directed implementation to proceed on 2026-10-05. Do not fabricate
 reviewer approvals. Tech/Privacy, QA and Clinical sign-offs remain pending; the pilot
 must remain clearly labeled and is not release-approved. This addendum supersedes the
 older module-range metadata above.
+
+M31 remains QA-only after one direct-call acceptance and QA cleanup. Migration
+12:00 removed both Zalo columns, kept the existing contact, found zero
+historical Zalo dispatches, and leaves only the current seven-argument contact
+RPC. The dispatch and provider-callback Edge Functions are deployed to QA. The
+Xiaomi call rang and was answered; the temporary QA contact was removed and the
+phone-call flag is back to `false`. No production schema, function, or flag was
+changed. A successful test does not guarantee other calls will connect; they
+depend on device permission, SIM, network, carrier, and recipient availability.
+
+M31 2026-10-06 call-handoff/timing delta: Flutter, Android and iOS source now
+use a 15-second no-response deadline and no longer issue the +30-second
+reminder. Automatic voice/SMS behavior and priority/retry handling remain
+unchanged. The local alert tone/notification stop only after the OS accepts
+`ACTION_CALL`, `ACTION_DIAL` or `tel:`; failed handoff preserves the alert.
+Focused Flutter tests 47/47, targeted analyzer, Android debug build and
+`adb install -r` on Xiaomi 220333QPG/Android 11 pass. The freshly opened app
+showed a black screen, so manual call-handoff UI acceptance is pending; no call,
+contact write or QA/production configuration change was made. iOS was source
+checked only. `git diff --check` passes. Codex integrity validation remains
+blocked by the missing source-truth manifest and stale paths in older unrelated
+history/task-skill files.
 
 ## Historical Percentage Rubric — Superseded 2026-08-24
 

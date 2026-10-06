@@ -14830,6 +14830,7 @@ begin;
 create table if not exists public.sleep_safety_runtime_config (
   config_key text primary key,
   enabled boolean not null default false,
+  phone_fallback_enabled boolean not null default false,
   max_dispatches_per_hour integer not null default 3
     check (max_dispatches_per_hour between 1 and 12),
   event_freshness_seconds integer not null default 600
@@ -14842,10 +14843,11 @@ create table if not exists public.sleep_safety_runtime_config (
 insert into public.sleep_safety_runtime_config (
   config_key,
   enabled,
+  phone_fallback_enabled,
   max_dispatches_per_hour,
   event_freshness_seconds,
   contact_verification_ttl_seconds
-) values ('default', false, 3, 600, 600)
+) values ('default', false, false, 3, 600, 600)
 on conflict (config_key) do nothing;
 
 create table if not exists public.sleep_safety_preferences (
@@ -14964,12 +14966,14 @@ create table if not exists public.sleep_safety_contacts (
   user_id uuid not null references public.users(id) on delete cascade,
   name text not null check (char_length(btrim(name)) between 1 and 80),
   relationship text not null check (char_length(btrim(relationship)) between 1 and 60),
-  phone_e164 text not null check (phone_e164 ~ '^\\+[1-9][0-9]{7,14}$'),
+  phone_e164 text not null check (phone_e164 ~ '^[+][1-9][0-9]{7,14}$'),
   priority integer not null check (priority between 1 and 3),
   verification_status text not null default 'pending'
     check (verification_status in ('pending', 'verified', 'failed', 'revoked')),
   verified_at timestamptz,
   active boolean not null default true,
+  allow_phone_fallback boolean not null default true,
+  allow_unverified_voice_alert boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique(user_id, phone_e164),
@@ -15046,7 +15050,7 @@ begin
   if p_priority not between 1 and 3 then
     raise exception 'sleep_safety_priority_invalid';
   end if;
-  if p_phone_e164 !~ '^\\+[1-9][0-9]{7,14}$' then
+  if p_phone_e164 !~ '^[+][1-9][0-9]{7,14}$' then
     raise exception 'sleep_safety_phone_invalid';
   end if;
 
@@ -15096,6 +15100,57 @@ begin
       updated_at = now()
   where c.id = p_contact_id and c.user_id = v_uid
   returning c.*;
+end;
+$$;
+
+-- New clients can explicitly opt an unverified number into voice alerts.
+-- The original 5-argument overload remains available for compatibility.
+drop function if exists public.upsert_sleep_safety_contact(
+  uuid, text, text, text, integer, boolean, boolean, boolean
+);
+drop function if exists public.upsert_sleep_safety_contact(
+  uuid, text, text, text, integer, boolean, boolean
+);
+
+create function public.upsert_sleep_safety_contact(
+  p_contact_id uuid,
+  p_name text,
+  p_relationship text,
+  p_phone_e164 text,
+  p_priority integer,
+  p_allow_phone_fallback boolean,
+  p_allow_unverified_voice_alert boolean
+)
+returns setof public.sleep_safety_contacts
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_contact public.sleep_safety_contacts%rowtype;
+begin
+  select * into v_contact
+  from public.upsert_sleep_safety_contact(
+    p_contact_id,
+    p_name,
+    p_relationship,
+    p_phone_e164,
+    p_priority
+  );
+
+  update public.sleep_safety_contacts c
+  set allow_phone_fallback = coalesce(p_allow_phone_fallback, true),
+      allow_unverified_voice_alert = coalesce(
+        p_allow_unverified_voice_alert,
+        false
+      ),
+      active = true,
+      updated_at = now()
+  where c.id = v_contact.id
+    and c.user_id = (select auth.uid())
+  returning c.* into v_contact;
+
+  return next v_contact;
 end;
 $$;
 
@@ -15167,6 +15222,8 @@ grant select, insert, update, delete on public.sleep_safety_events to authentica
 grant select on public.sleep_safety_contacts to authenticated;
 grant select on public.sleep_safety_dispatches to authenticated;
 grant execute on function public.upsert_sleep_safety_contact(uuid, text, text, text, integer) to authenticated;
+revoke all on function public.upsert_sleep_safety_contact(uuid, text, text, text, integer, boolean, boolean) from public, anon;
+grant execute on function public.upsert_sleep_safety_contact(uuid, text, text, text, integer, boolean, boolean) to authenticated, service_role;
 grant execute on function public.delete_sleep_safety_contact(uuid) to authenticated;
 
 -- Keep updated_at deterministic on mutable cloud rows.
@@ -15790,6 +15847,14 @@ begin
     'EXECUTE'
   ) then
     raise exception 'RUNTIME_RPC_GRANT_MISSING_upsert_sleep_safety_contact';
+  end if;
+
+  if not has_function_privilege(
+    'authenticated',
+    'public.upsert_sleep_safety_contact(uuid,text,text,text,integer,boolean,boolean)'::regprocedure,
+    'EXECUTE'
+  ) then
+    raise exception 'RUNTIME_RPC_GRANT_MISSING_upsert_sleep_safety_contact_channels';
   end if;
 
   if not has_function_privilege(

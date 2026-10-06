@@ -1,7 +1,10 @@
 import '../../domain/entities/safety_contact.dart';
 import '../../domain/entities/sleep_night_analysis.dart';
 import '../../domain/entities/sleep_safety_event.dart';
+import '../../domain/entities/sleep_safety_dispatch_retry.dart';
+import '../../domain/entities/sleep_safety_dispatch_result.dart';
 import '../../domain/entities/sleep_safety_preference.dart';
+import '../../domain/entities/sleep_safety_runtime_config.dart';
 import '../../domain/entities/sleep_safety_session.dart';
 import '../../domain/repositories/sleep_safety_repository.dart';
 import '../datasources/sleep_safety_cloud_datasource.dart';
@@ -117,6 +120,8 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     required String relationship,
     required String phoneE164,
     required int priority,
+    bool allowPhoneFallback = true,
+    bool allowUnverifiedVoiceAlert = false,
   }) async {
     final saved = await cloud.upsertContact(
       id: id,
@@ -124,6 +129,8 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
       relationship: relationship,
       phoneE164: phoneE164,
       priority: priority,
+      allowPhoneFallback: allowPhoneFallback,
+      allowUnverifiedVoiceAlert: allowUnverifiedVoiceAlert,
     );
     try {
       await local.cacheContact(saved);
@@ -153,7 +160,7 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
   Future<void> confirmContactVerification(String id, String code) =>
       cloud.confirmVerification(id, code);
   @override
-  Future<Map<String, Object?>> dispatchEmergency(
+  Future<SleepSafetyDispatchResult> dispatchEmergency(
     String eventId,
     String idempotencyKey,
   ) async {
@@ -176,27 +183,69 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     );
   }
 
+  @override
+  Future<SleepSafetyRuntimeConfig> loadRuntimeConfig() =>
+      cloud.fetchRuntimeConfig();
+
+  @override
+  Future<void> enqueueEmergencyRetry({
+    required String userId,
+    required SleepSafetyEvent event,
+    required String idempotencyKey,
+  }) => local.enqueueDispatchRetry(
+    userId: userId,
+    event: event,
+    idempotencyKey: idempotencyKey,
+  );
+
+  @override
+  Future<List<SleepSafetyDispatchRetry>> listPendingEmergencyRetries() =>
+      local.listPendingDispatches();
+
+  @override
+  Future<void> markEmergencyRetrySending(String id) =>
+      local.markDispatchSending(id);
+
+  @override
+  Future<void> markEmergencyRetryAcknowledged(String id) =>
+      local.markDispatchAcknowledged(id);
+
+  @override
+  Future<void> markEmergencyRetryFailed({
+    required String id,
+    required String errorCode,
+    DateTime? nextRetryAt,
+  }) => local.markDispatchFailed(
+    id: id,
+    errorCode: errorCode,
+    nextRetryAt: nextRetryAt,
+  );
+
   Future<void> _syncForDispatch(
     String table,
     Map<String, Object?> values,
   ) async {
+    Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
       try {
         await cloud.syncRow(table, values);
         return;
-      } catch (_) {
+      } catch (error) {
+        lastError = error;
         if (attempt == 0) {
           await Future<void>.delayed(const Duration(milliseconds: 300));
         }
       }
     }
-    // Do not leak provider/PostgREST internals into the presentation layer.
-    throw StateError('sleep_safety_dispatch_sync_failed');
+    if (lastError != null &&
+        SleepSafetyCloudException.isTransportError(lastError)) {
+      throw const SleepSafetyCloudException('network_unavailable');
+    }
+    throw const SleepSafetyCloudException('dispatch_sync_failed');
   }
 
   @override
-  Future<bool> isRolloutEnabled() async =>
-      (await cloud.fetchRuntimeConfig()).enabled;
+  Future<bool> isRolloutEnabled() async => (await loadRuntimeConfig()).enabled;
 
   Map<String, Object?> _preferenceCloudMap(SleepSafetyPreference value) => {
     'user_id': value.userId,

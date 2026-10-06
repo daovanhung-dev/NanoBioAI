@@ -3,6 +3,7 @@ package com.nanobioai.app.sleep_safety
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
@@ -33,6 +34,16 @@ class SleepSafetyChannelHandler(
         events.setStreamHandler(this)
         control.setMethodCallHandler { call, result ->
             when (call.method) {
+                "callPhone" -> startCall(
+                    call.argument<String>("phoneE164"),
+                    call.argument<String>("eventId"),
+                    result,
+                )
+                "openDialer" -> openDialer(
+                    call.argument<String>("phoneE164"),
+                    call.argument<String>("eventId"),
+                    result,
+                )
                 "startMonitoring" -> safeCommand(result, isStart = true) {
                     start(call.arguments as? Map<*, *>)
                 }
@@ -73,6 +84,59 @@ class SleepSafetyChannelHandler(
                 )
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun startCall(
+        phoneE164: String?,
+        eventId: String?,
+        result: MethodChannel.Result,
+    ) {
+        if (phoneE164 == null || !phoneE164.matches(Regex("^\\+[1-9][0-9]{7,14}$"))) {
+            result.success(false)
+            return
+        }
+        if (
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CALL_PHONE,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            result.success(false)
+            return
+        }
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneE164"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+            SleepSafetyForegroundService.silenceAlertAfterCallHandoff(eventId)
+            result.success(true)
+        } catch (_: SecurityException) {
+            result.success(false)
+        } catch (_: RuntimeException) {
+            result.success(false)
+        }
+    }
+
+    private fun openDialer(
+        phoneE164: String?,
+        eventId: String?,
+        result: MethodChannel.Result,
+    ) {
+        if (phoneE164 == null || !phoneE164.matches(Regex("^\\+[1-9][0-9]{7,14}$"))) {
+            result.success(false)
+            return
+        }
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Uri.encode(phoneE164)}"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+            SleepSafetyForegroundService.silenceAlertAfterCallHandoff(eventId)
+            result.success(true)
+        } catch (_: RuntimeException) {
+            result.success(false)
         }
     }
 

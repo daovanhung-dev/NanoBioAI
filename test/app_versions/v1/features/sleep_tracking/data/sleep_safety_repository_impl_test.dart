@@ -5,6 +5,8 @@ import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/datasource
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/datasources/sleep_safety_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/gateways/sleep_safety_native_gateway.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/data/repositories/sleep_safety_repository_impl.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_dispatch_result.dart';
+import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_dispatch_exception.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_event.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/domain/entities/sleep_safety_session.dart';
 
@@ -43,7 +45,13 @@ void main() {
 
       await expectLater(
         repository.dispatchEmergency('event-1', 'sleep-safety-event-1'),
-        throwsA(isA<StateError>()),
+        throwsA(
+          isA<SleepSafetyDispatchException>().having(
+            (error) => error.code,
+            'code',
+            'dispatch_sync_failed',
+          ),
+        ),
       );
       expect(cloud.syncedTables, [
         'sleep_safety_sessions',
@@ -124,12 +132,15 @@ class _FakeCloudDatasource extends SleepSafetyCloudDatasource {
   }
 
   @override
-  Future<Map<String, Object?>> dispatchEvent({
+  Future<SleepSafetyDispatchResult> dispatchEvent({
     required String eventId,
     required String idempotencyKey,
   }) async {
     dispatchCalled = true;
-    return const {'accepted': true};
+    return SleepSafetyDispatchResult(
+      route: SleepSafetyDispatchRoute.cloudAccepted,
+      idempotencyKey: idempotencyKey,
+    );
   }
 }
 

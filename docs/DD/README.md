@@ -10,7 +10,7 @@
 | Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
 | Source-truth Baseline | `25018e8` |
-| Last Updated | 2026-10-05 |
+| Last Updated | 2026-10-06 |
 | Lifecycle | Current |
 | DD decision | M01-M19/M30-M31 Approved; M32 Draft; M20-M29 Draft without module DD |
 | Implementation | Partial aggregate; see module matrix |
@@ -64,11 +64,11 @@ The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_sy
 | M19 | [Audit, security, and support](./audit_security/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Auth/access/RLS/audit event surface exists; full support/ticket, retention and response scope is not end-to-end |
 | M30 | [Nabi companion notifications](./nabi_companion_notifications/README.md) | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20 tables, catalog/engine/local repository/controller and Supabase RPC/RLS source; no app-shell trigger/presentation wiring |
 
-## M31/M32 Module Registry Addendum — 2026-10-05
+## M31/M32 Module Registry Addendum — 2026-10-06
 
 | Module | DD | Decision | Implementation | Verification | Current boundary |
 |---|---|---|---|---|---|
-| M31 | [Sleep safety monitoring](./sleep_safety_monitoring/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | On-device monitoring, analysis and user-triggered AI source; device/provider/Supabase acceptance remains unverified |
+| M31 | [Sleep safety monitoring](./sleep_safety_monitoring/README.md) | Approved | Implemented | Flutter focused tests, analyzer, Android debug build, SQLite v28, QA migration/Edge deploy and one Xiaomi direct-call acceptance verified | Explicit help calls the highest-priority active opted-in contact from the device; automatic no-response remains voice/SMS. The call rang and was answered, the temporary QA contact was removed, and the QA call flag was restored to `false`. iOS device acceptance is pending; production unchanged. |
 | M32 | [Fitness training](./fitness_training/README.md) | Draft | In Progress | Targeted Flutter/Edge tests and Android debug build passed; device/Sandbox unverified | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved |
 
 M32 implementation is proceeding under an explicit PO direction; do not mark it Approved or release-ready until its listed reviewer gates close.

@@ -6,7 +6,8 @@ import { createSleepSafetyDispatchHandler } from "./handler.ts";
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const supabaseAnonKey = requiredEnvironment("SUPABASE_ANON_KEY");
 const supabaseServiceRoleKey = requiredEnvironment("SUPABASE_SERVICE_ROLE_KEY");
-const callbackToken = Deno.env.get("SLEEP_SAFETY_PROVIDER_WEBHOOK_SECRET")?.trim();
+const callbackToken = Deno.env.get("SLEEP_SAFETY_PROVIDER_WEBHOOK_SECRET")
+  ?.trim();
 const admin = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -16,7 +17,6 @@ const provider = createGenericHttpSleepSafetyProvider({
   callbackUrl: `${supabaseUrl}/functions/v1/sleep-safety-provider-webhook`,
   callbackToken,
 });
-
 const handler = createSleepSafetyDispatchHandler({
   authenticate: async (authorization) => {
     if (!authorization?.startsWith("Bearer ")) return null;
@@ -30,7 +30,9 @@ const handler = createSleepSafetyDispatchHandler({
   getRuntimeConfig: async () => {
     const { data, error } = await admin
       .from("sleep_safety_runtime_config")
-      .select("enabled,max_dispatches_per_hour,event_freshness_seconds")
+      .select(
+        "enabled,max_dispatches_per_hour,event_freshness_seconds",
+      )
       .eq("config_key", "default")
       .single();
     if (error) throw error;
@@ -47,7 +49,8 @@ const handler = createSleepSafetyDispatchHandler({
       .eq("user_id", userId)
       .maybeSingle();
     if (error || !data || data.is_anonymous === true) return false;
-    return data.membership_plan === "plus" || data.membership_plan === "family_plus";
+    return data.membership_plan === "plus" ||
+      data.membership_plan === "family_plus";
   },
   getEvent: async (userId, eventId) => {
     const { data, error } = await admin
@@ -65,19 +68,22 @@ const handler = createSleepSafetyDispatchHandler({
       escalationRequired: data.escalation_required === true,
     };
   },
-  getVerifiedContacts: async (userId) => {
+  getContacts: async (userId) => {
     const { data, error } = await admin
       .from("sleep_safety_contacts")
-      .select("id,phone_e164,priority")
+      .select(
+        "id,phone_e164,priority,verification_status,allow_unverified_voice_alert",
+      )
       .eq("user_id", userId)
       .eq("active", true)
-      .eq("verification_status", "verified")
       .order("priority", { ascending: true });
     if (error) throw error;
     return (data ?? []).map((row) => ({
       id: row.id,
       phoneE164: row.phone_e164,
       priority: row.priority,
+      isVerified: row.verification_status === "verified",
+      allowUnverifiedVoiceAlert: row.allow_unverified_voice_alert === true,
     }));
   },
   countRecentRequests: async (userId) => {
@@ -107,17 +113,18 @@ const handler = createSleepSafetyDispatchHandler({
     }));
   },
   createDispatch: async (input) => {
-    const { error } = await admin.from("sleep_safety_dispatches").insert({
+    const { error } = await admin.from("sleep_safety_dispatches").upsert({
       event_id: input.eventId,
       user_id: input.userId,
       contact_id: input.contactId,
       priority: input.priority,
       channel: input.channel,
-      provider: "generic_http",
+      provider: input.provider ?? "generic_http",
       provider_external_id: input.providerExternalId || null,
       status: input.status,
       idempotency_key: input.idempotencyKey,
-    });
+      failure_code: input.failureCode ?? null,
+    }, { onConflict: "user_id,idempotency_key,contact_id,channel" });
     if (error) throw error;
   },
   provider,

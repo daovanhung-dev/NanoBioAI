@@ -961,3 +961,36 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - Chưa fix: M32 vẫn là pilot/Draft; reviewer approvals, Android/iOS QA, sandbox/RLS, live Gemini và nội dung lâm sàng còn pending.
 - docs/worklog/2026-10-05/006-worklog-m32-workout-only-conflict-guard.md :: - Cần kiểm tra tiếp: cài đặt và xác nhận trên hồ sơ QA rời; không dùng hồ sơ cá nhân hiện tại.
 - docs/worklog/2026-10-05/007-worklog-m32-workout-time-consent.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: metadata retry với idempotency không đổi, timeout 8 giây, retry hữu hạn, xử lý
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: failed Zalo config hoặc API không chặn voice/SMS. Dispatch evidence không lộ
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: | Flutter tests | Focused controller, repository, phone fallback contract, migration v26 và M31 Supabase contract chạy lại sau regex fix — 21 passed, 0 failed. Lệnh dùng Flutter 3.47.1 với `--no-pub`; migration test dùng symlink tạm `/tmp/nanobio-m31-sqlite/libsqlite3.so` tới system `libsqlite3.so.0`. |
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: | Deno Edge | `deno test ...sleep_safety_zalo_provider_test.ts ...handler_test.ts` — 6 passed, 0 failed. |
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: - `validate_codex_integrity.ps1`: FAIL do missing `docs/audit/source_truth_manifest.json` và stale paths trong historical worklog/task-skill (unrelated to M31).
+- docs/worklog/2026-10-06/001-worklog-m31-zalo-phone-fallback.md :: - Muc do hoan thanh task: partial; coding, source tests, staging migrations và build xong; Android acceptance còn mở.
+- docs/worklog/2026-10-06/002-worklog-dashboard-cloud-recovery.md :: bằng shell. Không chạy Auth controller test timeout từ lượt chẩn đoán.
+- docs/worklog/2026-10-06/003-worklog-m31-contact-priority-race.md :: - Regression test trước sửa: FAIL đúng dự kiến với `sleep_safety_contact_priority_conflict`.
+- docs/worklog/2026-10-06/003-worklog-m31-contact-priority-race.md :: - `validate_codex_integrity.ps1`: FAIL vì thiếu
+- docs/worklog/2026-10-06/003-worklog-m31-contact-priority-race.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-06/003-worklog-m31-contact-priority-race.md :: - Cần kiểm tra tiếp: người vận hành thao tác UI trên QA account sau khi build/app source mới được đưa lên thiết bị.
+- docs/worklog/2026-10-06/004-worklog-m31-support-recovery.md :: — giữ dispatch failure typed, chặn retry thiếu điều kiện và mở recovery sau refresh.
+- docs/worklog/2026-10-06/004-worklog-m31-support-recovery.md :: - `validate_codex_integrity.ps1`: FAIL do thiếu
+- docs/worklog/2026-10-06/004-worklog-m31-support-recovery.md :: ## Rủi ro và phần còn lại
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: riêng; SMS/Zalo tiếp tục yêu cầu xác minh; manual dialer vẫn cần thao tác
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: RPC serialization và điều kiện manual dial.
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: manual-call contract, SQLite v26/v27 and Supabase contract), with
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: **FAIL on existing repository issues** — missing
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: dialer and real provider call: **SKIPPED**; no live acceptance was requested
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: tiếp. Manual call không còn phụ thuộc OTP.
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: - Chưa fix: không có lỗi source còn mở được phát hiện trong kiểm tra mục tiêu.
+- docs/worklog/2026-10-06/005-worklog-m31-unverified-voice-alert.md :: - Cần kiểm tra tiếp: staging migration/Edge acceptance, Android/iOS dialer
+- docs/worklog/2026-10-06/007-worklog-m31-direct-help-call-zalo-removal.md :: - Yêu cầu: cuộc gọi manual chạy từ thiết bị; tự động khi không phản hồi sau
+- docs/worklog/2026-10-06/007-worklog-m31-direct-help-call-zalo-removal.md :: ## Rủi ro được ghi nhận
+- docs/worklog/2026-10-06/008-worklog-m31-android-runtime-permissions-at-entry.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-06/009-worklog-m31-manual-help-loading.md :: - Tách pha `manualHelp` khỏi server dispatch `escalating`; pha thủ công không
+- docs/worklog/2026-10-06/009-worklog-m31-manual-help-loading.md :: - `docs/fixbug/sleep-safety-contact-dispatch/002-fixbug-m31-manual-help-loading.md`
+- docs/worklog/2026-10-06/009-worklog-m31-manual-help-loading.md :: ## Rủi ro còn lại
+- docs/worklog/2026-10-06/010-worklog-m31-contact-editor-lifecycle.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL do
+- docs/worklog/2026-10-06/010-worklog-m31-contact-editor-lifecycle.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL do
+- docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md :: ## Lỗi / rủi ro còn lại

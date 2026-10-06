@@ -169,3 +169,31 @@ chính user; và lặp lại callback thanh toán không tạo thêm entitlement
 
 Runtime/sandbox verification vẫn là gate riêng và phải được ghi vào
 `.codex/history/OPEN_RISKS.md` bằng evidence thực thi, không suy diễn từ source.
+
+## M31 forward migrations — phone calling and voice/SMS escalation
+
+M31 live environments must use reviewed additive migrations in filename order:
+
+1. `20261006090000` — initial M31 contact/dispatch options
+2. `20261006100000` — phone validation correction
+3. `20261006110000` — unverified voice consent
+4. `20261006120000` — remove the retired contact/runtime option and restrict
+   new dispatch channels to voice/SMS
+
+Apply them only after staging acceptance. Never run
+`docs/supabase/01_build_system.sql` or
+`docs/supabase/02_seed_data.sql` against staging or production: the first drops
+and rebuilds `public`, and the second seeds destructive fixtures.
+
+Before staging or production changes, verify the exact project ref/name,
+migration history, backup/PITR or recovery path, and linked CLI target. The
+final migration refuses to rewrite or delete historical dispatch rows; review
+and preserve any old-channel rows before applying it. QA confirmed zero such
+rows. The global phone-call flag defaults false. Per-contact
+`allow_unverified_voice_alert` defaults false; unverified contacts remain
+voice-only and never receive SMS. Smoke the migration and Edge Function with a
+consented QA contact before production rollout. Apply through Supabase's
+versioned migration workflow and verify resulting schema/functions read-only.
+
+Explicit user help stays on-device. Automatic no-response escalation uses only
+voice/SMS. Never print secret values or phone numbers in logs/worklogs.

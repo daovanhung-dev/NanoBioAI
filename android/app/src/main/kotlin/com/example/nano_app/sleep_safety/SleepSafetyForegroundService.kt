@@ -26,6 +26,17 @@ class SleepSafetyForegroundService : Service() {
 
         private const val METRICS_EMIT_INTERVAL_MS = 160L
         private const val CANDIDATE_EMIT_INTERVAL_MS = 300L
+
+        @Volatile
+        private var activeInstance: SleepSafetyForegroundService? = null
+
+        fun silenceAlertAfterCallHandoff(eventId: String?) {
+            try {
+                activeInstance?.silenceAlertAfterCallHandoff(eventId)
+            } catch (_: RuntimeException) {
+                // Do not report a failed phone handoff after Android accepted it.
+            }
+        }
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -37,10 +48,11 @@ class SleepSafetyForegroundService : Service() {
     private var detectionSuppressed = false
     private var cooldownSeconds = 120
     private var scheduledEndEpochMs: Long? = null
-    private var reminderRunnable: Runnable? = null
     private var escalationRunnable: Runnable? = null
     private var stopRunnable: Runnable? = null
     private var currentSensitivity: String = "balanced"
+    private var phoneFallbackEnabled = false
+    private var phoneFallbackE164: String? = null
     private var starting = false
     private var foregroundStarted = false
     private var lastMetricsEmitAt = 0L
@@ -48,6 +60,7 @@ class SleepSafetyForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        activeInstance = this
         notifications = SleepSafetyNotificationFactory(this)
         alertTone = SleepSafetyAlertTonePlayer(this)
     }
@@ -109,6 +122,9 @@ class SleepSafetyForegroundService : Service() {
             SleepSafetyRuntimeStatus.phase = "arming"
             cooldownSeconds = intent.getIntExtra("cooldownSeconds", 120).coerceIn(30, 900)
             currentSensitivity = intent.getStringExtra("sensitivity") ?: "balanced"
+            phoneFallbackEnabled = intent.getBooleanExtra("phoneFallbackEnabled", false)
+            phoneFallbackE164 = intent.getStringExtra("phoneFallbackE164")
+                ?.takeIf { phoneFallbackEnabled && it.matches(Regex("^\\+[1-9][0-9]{7,14}$")) }
             scheduledEndEpochMs = intent.getLongExtra(
                 "scheduledEndEpochMs",
                 -1L,
@@ -303,20 +319,8 @@ class SleepSafetyForegroundService : Service() {
         alertTone.start()
         manager.notify(
             SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
-            notifications.alert(eventId),
+            notifications.alert(eventId, fallbackPhone = phoneFallbackE164),
         )
-        reminderRunnable = Runnable {
-            if (currentEventId == eventId) {
-                manager.notify(
-                    SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
-                    notifications.alert(eventId, true),
-                )
-                SleepSafetyNativeEventBus.emit(
-                    "alertReminder",
-                    mapOf("eventId" to eventId),
-                )
-            }
-        }.also { handler.postDelayed(it, 30_000L) }
         escalationRunnable = Runnable {
             if (currentEventId == eventId) {
                 SleepSafetyRuntimeStatus.phase = "escalating"
@@ -325,14 +329,13 @@ class SleepSafetyForegroundService : Service() {
                     mapOf("eventId" to eventId),
                 )
             }
-        }.also { handler.postDelayed(it, 60_000L) }
+        }.also { handler.postDelayed(it, 15_000L) }
     }
 
     private fun handleResponse(eventId: String?, response: String) {
         val current = currentEventId ?: return
         if (eventId != null && eventId != current) return
         cancelAlertTimers()
-        stopPersistentAlert()
         SleepSafetyRuntimeStatus.currentEvent =
             SleepSafetyRuntimeStatus.currentEvent?.toMutableMap()?.apply {
                 this["response"] = response
@@ -343,12 +346,14 @@ class SleepSafetyForegroundService : Service() {
         )
         if (response == "need_help") {
             SleepSafetyRuntimeStatus.phase = "escalating"
-            SleepSafetyNativeEventBus.emit(
-                "escalationRequired",
-                mapOf("eventId" to current),
+            val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(
+                SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
+                notifications.alert(current, fallbackPhone = phoneFallbackE164),
             )
             return
         }
+        stopPersistentAlert()
         currentEventId = null
         SleepSafetyRuntimeStatus.currentEvent = null
         SleepSafetyRuntimeStatus.phase = "cooldown"
@@ -379,6 +384,13 @@ class SleepSafetyForegroundService : Service() {
         manager.cancel(SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID)
     }
 
+    private fun silenceAlertAfterCallHandoff(eventId: String?) {
+        val current = currentEventId ?: return
+        if (eventId != null && eventId != current) return
+        cancelAlertTimers()
+        stopPersistentAlert()
+    }
+
     private fun updateConfig(intent: Intent) {
         intent.getStringExtra("sensitivity")?.let {
             currentSensitivity = it
@@ -389,6 +401,20 @@ class SleepSafetyForegroundService : Service() {
                 "cooldownSeconds",
                 cooldownSeconds,
             ).coerceIn(30, 900)
+        }
+        if (intent.hasExtra("phoneFallbackEnabled")) {
+            phoneFallbackEnabled = intent.getBooleanExtra("phoneFallbackEnabled", false)
+        }
+        if (intent.hasExtra("phoneFallbackE164")) {
+            phoneFallbackE164 = intent.getStringExtra("phoneFallbackE164")
+                ?.takeIf { phoneFallbackEnabled && it.matches(Regex("^\\+[1-9][0-9]{7,14}$")) }
+        }
+        currentEventId?.let { eventId ->
+            val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(
+                SleepSafetyNotificationFactory.ALERT_NOTIFICATION_ID,
+                notifications.alert(eventId, fallbackPhone = phoneFallbackE164),
+            )
         }
     }
 
@@ -412,9 +438,7 @@ class SleepSafetyForegroundService : Service() {
     }
 
     private fun cancelAlertTimers() {
-        reminderRunnable?.let(handler::removeCallbacks)
         escalationRunnable?.let(handler::removeCallbacks)
-        reminderRunnable = null
         escalationRunnable = null
     }
 
@@ -427,6 +451,8 @@ class SleepSafetyForegroundService : Service() {
         capture = null
         detector = null
         currentEventId = null
+        phoneFallbackEnabled = false
+        phoneFallbackE164 = null
         detectionSuppressed = false
         lastMetricsEmitAt = 0L
         lastCandidateEmitAt = 0L
@@ -479,6 +505,7 @@ class SleepSafetyForegroundService : Service() {
                 mapOf("reason" to "service_destroyed"),
             )
         }
+        if (activeInstance === this) activeInstance = null
         super.onDestroy()
     }
 }

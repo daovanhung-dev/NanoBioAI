@@ -1,5 +1,57 @@
 # M31 DD Changelog
 
+## 1.6 — 2026-10-06
+
+- Shortened the no-response window to 15 seconds on Android and iOS and removed
+  the former +30-second reminder; automatic escalation still uses voice/SMS.
+- Added OS-accepted call handoff cleanup: silence the alert and clear its
+  notification after success, while preserving both if call/dialer launch fails.
+- Added Flutter state/countdown and native-platform regression coverage. No
+  schema, RPC, Edge Function or production configuration changed.
+
+## 1.5 — 2026-10-06
+
+- Explicit `Tôi cần hỗ trợ` now starts an on-device call to the highest-priority
+  active contact with phone opt-in; Android requests `CALL_PHONE` before
+  monitoring and falls back to a prefilled dialer after denial/launch failure.
+- Manual help never invokes server dispatch. The +60-second no-response flow
+  remains voice/SMS; current Edge dispatch and callback contain no Zalo route.
+- Added the forward Supabase migration and SQLite v28 migration to remove old
+  Zalo settings while retaining contact data. Historical migrations remain
+  unchanged.
+- Focused Flutter tests 36/36, analyzer, Android debug build, Deno 7/7 and QA
+  schema/Edge deployment pass. On Xiaomi 220333QPG, the user confirmed the QA
+  call rang and was answered; the temporary contact was removed and QA flag
+  restored to `false`. iOS physical-device acceptance remains pending.
+
+## 1.4 — 2026-10-06
+
+- Added explicit per-contact consent for voice calls while a phone number is
+  unverified; default is off.
+- Preserved legacy 5- and 7-argument contact RPCs and added an 8-argument
+  overload plus a forward migration.
+- Limited unverified contacts to voice-only alerts in immediate and provider
+  callback cascades; verified contacts keep existing SMS/Zalo paths.
+- Allowed explicit user-triggered dialer fallback for an active contact with
+  phone fallback enabled, regardless of verification status.
+- Added SQLite v27 and controller/widget/model/migration and Edge coverage. No
+  live migration or phone call was performed.
+
+## 1.3 — 2026-10-06
+
+- Added per-contact Zalo and phone fallback preferences, both behind runtime
+  kill switches defaulting off.
+- Added Edge-only ZBS phone-template adapter. Zalo failure leaves the existing
+  voice/SMS cascade available; `submitted` is not a delivery receipt.
+- Added explicit Android `ACTION_DIAL` and iOS user-selected `tel:` fallback;
+  dialer launch does not dismiss the persistent local alarm.
+- Added a minimal SQLite v26 dispatch outbox with the same idempotency key,
+  bounded retries and server freshness expiry.
+- Added an additive Supabase migration for staging/production. Canonical
+  build/seed scripts remain for disposable local/sandbox rebuilds only.
+- Deno Edge tests pass 6/6. Flutter/Dart, native builds/devices, iOS and live
+  Supabase acceptance remain unverified in the current environment.
+
 ## 1.2 — 2026-08-24
 
 - Replaced the original high-threshold frame detector with Detector v2:

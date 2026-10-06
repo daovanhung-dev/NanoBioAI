@@ -54,11 +54,27 @@ class SleepTrackingPage extends ConsumerWidget {
     final dispatchAccepted =
         state.currentEvent?.escalationStatus ==
         SleepSafetyEscalationStatus.accepted;
+    final phoneFallbackPaused =
+        state.runtimeConfig?.phoneFallbackEnabled == false;
+    final phoneFallbackMessage = phoneFallbackPaused
+        ? 'Gọi tự động khi bạn không phản hồi đang tạm dừng theo cài đặt hệ thống. Bạn vẫn có thể bấm “Tôi cần hỗ trợ” để gọi chủ động.'
+        : state.phoneFallbackContact == null
+        ? null
+        : state.notice;
     final alert =
         state.machine.phase == SleepSafetyPhase.awaitingResponse ||
-        state.machine.phase == SleepSafetyPhase.reminder ||
+        state.machine.phase == SleepSafetyPhase.manualHelp ||
         (state.machine.phase == SleepSafetyPhase.escalating &&
             !dispatchAccepted);
+    final event = state.currentEvent;
+    final manualHelpPending = event?.state == 'manual_call_starting';
+    final manualHelpFailed =
+        event?.response == SleepSafetyResponse.needHelp &&
+        !const {
+          'manual_call_starting',
+          'manual_call_started',
+          'manual_call_handoff',
+        }.contains(event?.state);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
@@ -96,12 +112,18 @@ class SleepTrackingPage extends ConsumerWidget {
               SleepSafetyStatusCard(
                 phase: state.machine.phase,
                 sensitivity: _sensitivity(pref?.sensitivity),
+                contactsLoaded: state.contactsLoaded,
                 verifiedContacts: state.contacts
                     .where((contact) => contact.isVerified)
                     .length,
+                callReadyContacts: state.contacts
+                    .where((contact) => contact.canReceiveSafetyCall)
+                    .length,
+                phoneFallbackEnabled: state.runtimeConfig?.phoneFallbackEnabled,
                 busy: state.isBusy,
                 onStart: () => controller.startMonitoring(source: startSource),
                 onStop: controller.stopMonitoring,
+                onManageContacts: () => _openSafetyContacts(context),
               ),
               if (state.monitoringActive) ...[
                 const SizedBox(height: 12),
@@ -249,18 +271,48 @@ class SleepTrackingPage extends ConsumerWidget {
                 startedAt: state.machine.alertStartedAt!,
                 dispatching:
                     state.machine.phase == SleepSafetyPhase.escalating &&
-                    !dispatchFailed,
+                    !dispatchFailed &&
+                    state.currentEvent?.response !=
+                        SleepSafetyResponse.needHelp,
                 dispatchFailed: dispatchFailed,
                 dispatchError: state.errorMessage,
+                manualHelpPending: manualHelpPending,
+                manualHelpFailed: manualHelpFailed,
+                manualHelpError: state.errorMessage,
+                onRetryHelp: controller.requestHelp,
+                requiresContactSetup: state.needsContactSetup,
                 onOk: controller.respondOk,
                 onNeedHelp: controller.requestHelp,
                 onRetry: controller.retryEmergencyDispatch,
+                onManageContacts: () => _openSafetyContacts(context),
+                onCallContact: state.phoneFallbackContact == null
+                    ? null
+                    : () => controller.callPhoneFallback(),
+                onNextContact:
+                    state.contacts
+                            .where((contact) => contact.allowPhoneFallback)
+                            .length >
+                        1
+                    ? () => controller.callPhoneFallback(next: true)
+                    : null,
+                phoneFallbackName: state.phoneFallbackContact?.name,
+                dispatchNotice: state.phoneFallbackContact == null
+                    ? state.notice
+                    : null,
+                phoneFallbackMessage: phoneFallbackMessage,
               ),
             ),
         ],
       ),
     );
   }
+
+  Future<void> _openSafetyContacts(BuildContext context) =>
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => const SleepSafetyContactsPage(),
+        ),
+      );
 
   static String _sensitivity(SleepSafetySensitivity? value) => switch (value) {
     SleepSafetySensitivity.low => 'Thấp',

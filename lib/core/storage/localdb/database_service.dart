@@ -45,6 +45,9 @@ import 'migrations/migration_v22.dart';
 import 'migrations/migration_v23.dart';
 import 'migrations/migration_v24.dart';
 import 'migrations/migration_v25.dart';
+import 'migrations/migration_v26.dart';
+import 'migrations/migration_v27.dart';
+import 'migrations/migration_v28.dart';
 import 'seeders/ai_catalog_seeder.dart';
 
 class DatabaseService {
@@ -154,6 +157,9 @@ class DatabaseService {
             if (oldVersion < 23 && newVersion >= 23) await MigrationV23.run(db);
             if (oldVersion < 24 && newVersion >= 24) await MigrationV24.run(db);
             if (oldVersion < 25 && newVersion >= 25) await MigrationV25.run(db);
+            if (oldVersion < 26 && newVersion >= 26) await MigrationV26.run(db);
+            if (oldVersion < 27 && newVersion >= 27) await MigrationV27.run(db);
+            if (oldVersion < 28 && newVersion >= 28) await MigrationV28.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -191,6 +197,13 @@ class DatabaseService {
             if (version >= 22) await MigrationV22.ensureSchema(db);
             if (version >= 23) await MigrationV23.ensureSchema(db);
             if (version >= 25) await MigrationV25.ensureSchema(db);
+            if (version >= 26 && version < 28) {
+              await MigrationV26.ensureSchema(db);
+            }
+            if (version >= 27 && version < 28) {
+              await MigrationV27.ensureSchema(db);
+            }
+            if (version >= 28) await MigrationV28.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,

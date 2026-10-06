@@ -2,7 +2,7 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 27 worklog(s).
+- Generated from 30 worklog(s).
 
 ## When To Read
 
@@ -31,17 +31,20 @@
 - Historical task type: Implement feature trên Admin Web và trusted Supabase backend. (1)
 - Historical task type: Implement feature tren canonical Supabase schema va tai lieu van hanh. (1)
 - Historical task type: Sửa bug runtime Flutter/native/Supabase integration và nghiệm thu Android máy thật. (1)
+- Historical task type: coding / Supabase contract / DD cập nhật. (1)
+- Historical task type: bugfix / Supabase schema / Android QA. (1)
+- Historical task type: coding / Supabase schema / Android QA. (1)
 
 ## Common Modules
 
-- unknown: 2
+- unknown: 3
+- M31 SLEEP_SAFETY_MONITORING.: 2
 - Supabase database, membership, quota, FamilyPlus, Sale/referral: 1
 - DB local, Supabase draft, lib/app_versions/v1, lib/app_versions/v2, lib/app_versions/v3, lib/sale_referral: 1
 - Admin app, Supabase Admin, Sale direct-only: 1
 - lib/sale_referral, lib/services/supabase/sale,: 1
 - M12 REFERRAL_DIRECT, M14 SALE_POINTS: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS, M17 RECONCILIATION, M18 REPORTING, M19 AUDIT_SECURITY: 1
-- M12 REFERRAL_DIRECT, M14 SALE_POINTS, Admin Sale conversion queue: 1
 
 ## Work Pattern
 

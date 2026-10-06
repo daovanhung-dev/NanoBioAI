@@ -16,6 +16,8 @@ export interface DispatchContact {
   id: string;
   phoneE164: string;
   priority: number;
+  isVerified: boolean;
+  allowUnverifiedVoiceAlert: boolean;
 }
 
 export interface DispatchRow {
@@ -29,10 +31,14 @@ export interface DispatchRow {
 
 export interface DispatchDependencies {
   authenticate(authorization: string | null): Promise<string | null>;
-  getRuntimeConfig(): Promise<{ enabled: boolean; maxPerHour: number; freshnessSeconds: number }>;
+  getRuntimeConfig(): Promise<{
+    enabled: boolean;
+    maxPerHour: number;
+    freshnessSeconds: number;
+  }>;
   hasPaidAccess(userId: string): Promise<boolean>;
   getEvent(userId: string, eventId: string): Promise<DispatchEvent | null>;
-  getVerifiedContacts(userId: string): Promise<DispatchContact[]>;
+  getContacts(userId: string): Promise<DispatchContact[]>;
   countRecentRequests(userId: string): Promise<number>;
   getExisting(userId: string, idempotencyKey: string): Promise<DispatchRow[]>;
   createDispatch(input: {
@@ -44,6 +50,8 @@ export interface DispatchDependencies {
     idempotencyKey: string;
     providerExternalId: string;
     status: string;
+    provider?: string;
+    failureCode?: string | null;
   }): Promise<void>;
   provider: SleepSafetyProvider;
   now(): Date;
@@ -55,8 +63,12 @@ export function createSleepSafetyDispatchHandler(
   deps: DispatchDependencies,
 ): (request: Request) => Promise<Response> {
   return async (request) => {
-    if (request.method !== "POST") return json(405, { error: "method_not_allowed" });
-    const userId = await deps.authenticate(request.headers.get("authorization"));
+    if (request.method !== "POST") {
+      return json(405, { error: "method_not_allowed" });
+    }
+    const userId = await deps.authenticate(
+      request.headers.get("authorization"),
+    );
     if (!userId) return json(401, { error: "authentication_required" });
 
     let body: Record<string, unknown>;
@@ -72,16 +84,30 @@ export function createSleepSafetyDispatchHandler(
     }
 
     const config = await deps.getRuntimeConfig();
-    if (!config.enabled) return json(503, { error: "sleep_safety_rollout_disabled" });
-    if (!(await deps.hasPaidAccess(userId))) return json(403, { error: "paid_access_required" });
+    if (!config.enabled) {
+      return json(503, { error: "sleep_safety_rollout_disabled" });
+    }
+    if (!(await deps.hasPaidAccess(userId))) {
+      return json(403, { error: "paid_access_required" });
+    }
 
     const existing = await deps.getExisting(userId, idempotencyKey);
-    if (existing.length > 0) {
-      return json(200, { accepted: true, reused: true, attempts: existing.length });
+    if (
+      existing.some((row) =>
+        ["submitted", "delivered", "answered"].includes(row.status)
+      )
+    ) {
+      return json(200, {
+        accepted: true,
+        reused: true,
+        attempts: existing.length,
+      });
     }
 
     const event = await deps.getEvent(userId, eventId);
-    if (!event || !isEligibleEvent(event, deps.now(), config.freshnessSeconds)) {
+    if (
+      !event || !isEligibleEvent(event, deps.now(), config.freshnessSeconds)
+    ) {
       return json(409, { error: "event_not_eligible_for_escalation" });
     }
 
@@ -89,10 +115,15 @@ export function createSleepSafetyDispatchHandler(
       return json(429, { error: "dispatch_rate_limited" });
     }
 
-    const contacts = (await deps.getVerifiedContacts(userId))
+    const contacts = (await deps.getContacts(userId))
       .filter((contact) => contact.priority >= 1 && contact.priority <= 3)
+      .filter((contact) =>
+        contact.isVerified || contact.allowUnverifiedVoiceAlert
+      )
       .sort((a, b) => a.priority - b.priority);
-    if (contacts.length === 0) return json(409, { error: "verified_contact_required" });
+    if (contacts.length === 0) {
+      return json(409, { error: "eligible_contact_required" });
+    }
 
     for (const contact of contacts) {
       const voice = await submit(
@@ -104,8 +135,16 @@ export function createSleepSafetyDispatchHandler(
         "NanoBio đang gửi cảnh báo an toàn giấc ngủ. Vui lòng kiểm tra tình trạng của người thân ngay khi có thể.",
       );
       if (!isTerminalFailure(voice)) {
-        return json(202, { accepted: true, reused: false, priority: contact.priority, channel: "voice" });
+        return json(202, {
+          accepted: true,
+          reused: false,
+          priority: contact.priority,
+          channel: "voice",
+        });
       }
+
+      // Unverified numbers receive voice only after explicit opt-in.
+      if (!contact.isVerified) continue;
 
       const sms = await submit(
         deps,
@@ -116,7 +155,12 @@ export function createSleepSafetyDispatchHandler(
         "NanoBio phát hiện một tình huống âm thanh cần chú ý trong phiên giám sát giấc ngủ và người dùng chưa xác nhận an toàn. Vui lòng liên hệ hoặc kiểm tra người thân.",
       );
       if (!isTerminalFailure(sms)) {
-        return json(202, { accepted: true, reused: false, priority: contact.priority, channel: "sms" });
+        return json(202, {
+          accepted: true,
+          reused: false,
+          priority: contact.priority,
+          channel: "sms",
+        });
       }
     }
 
@@ -152,9 +196,14 @@ async function submit(
   return result.status;
 }
 
-function isEligibleEvent(event: DispatchEvent, now: Date, freshnessSeconds: number): boolean {
-  if (!event.escalationRequired) return false;
-  if (event.response !== "needHelp" && event.response !== "noResponse") return false;
+function isEligibleEvent(
+  event: DispatchEvent,
+  now: Date,
+  freshnessSeconds: number,
+): boolean {
+  if (!event.escalationRequired || event.response !== "noResponse") {
+    return false;
+  }
   const detectedAt = new Date(event.detectedAt).getTime();
   if (!Number.isFinite(detectedAt)) return false;
   const ageMs = now.getTime() - detectedAt;

@@ -49,6 +49,77 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 
 ## Current Blocker Addendum — 2026-10-01
 
+- 2026-10-06 M31 call handoff + 15-second response deadline: Flutter, Android
+  and iOS source use 15 seconds, with the +30-second reminder removed. Automatic
+  no-response voice/SMS, contact order and retry policy remain unchanged.
+  Android stops its tone/alert notification only after `ACTION_CALL` or
+  `ACTION_DIAL` launches; iOS clears after successful `tel:` handoff. Failed
+  handoff leaves the alert active. Focused Flutter suite 47/47, targeted
+  analyzer, Android debug APK and `adb install -r` on Xiaomi 220333QPG/Android 11
+  pass. The current UI remains black after launch, so call-handoff device
+  acceptance is pending. No call, contact or QA/production setting was changed;
+  iOS was source checked only.
+
+- 2026-10-06 M31 direct help call and Zalo removal: explicit help uses the
+  highest-priority active phone-enabled contact and never calls server dispatch;
+  Android requests `CALL_PHONE` before monitoring and opens a prefilled dialer
+  after denial/failure. Automatic 60-second no-response remains voice/SMS. Zalo
+  was removed from current client/schema/RPC/Edge/provider source while applied
+  migrations remain unchanged; Supabase migration 12:00 and both Edge Functions
+  are deployed only to QA. Flutter focused tests 36/36, analyzer, SQLite v28,
+  Android debug APK, Deno 7/7 and `git diff --check` pass. The APK was installed
+  with `adb install -r` on Xiaomi 220333QPG. The user confirmed the QA call rang
+  and was answered, removed the temporary contact in the app, and the QA flag
+  was restored to `false`; read-only checks confirm the original one contact is
+  preserved. iOS device acceptance remains pending. Production was not changed.
+
+- 2026-10-06 M31 Zalo + offline phone fallback: source and two additive staging
+  migrations are applied on `feature/m31-zalo-phone-fallback`; focused Flutter
+  22/22, full analyzer, Android debug build, and Deno Edge 6/6 pass. A contact
+  form SQL validator defect was reproduced and fixed with a guarded forward
+  migration. Staging phone and Zalo flags are verified false; no contact/OTP,
+  Edge deploy/dispatch, or call occurred. The Flutter device integration runner
+  reset local session/cache before reaching the target page; normal APK restored.
+  Await QA re-login and operator-assisted consent/verification, then perform the
+  real Android call acceptance. Keep production flags false; Zalo needs durable
+  token rotation and approved template before enablement.
+
+- 2026-10-06 M31 contact-load race: reproduced locally by holding the initial
+  contact fetch while saving; the form selected priority 1 before existing
+  contacts loaded and the unique priority constraint rejected the save. The
+  controller now loads contacts before choosing a priority, and the form keeps
+  Add disabled until the list is ready. Regression is included in the 22/22
+  focused M31 suite; targeted analyzer passes. Android UI tap was denied by
+  `INJECT_EVENTS`, so no QA contact was created and on-device acceptance remains
+  pending.
+
+- 2026-10-06 M31 help recovery: `verified_contact_required` now leads to contact
+  verification instead of an ineffective retry. Monitoring remains available
+  locally with a warning when no contact is verified; a disabled phone fallback
+  is stated explicitly. Verified-only policy and staging/production flags remain
+  unchanged. Focused M31 tests 40/40, targeted analyze and Android debug build
+  pass; no OTP, QA write, dialer launch or call occurred.
+
+- 2026-10-06 M31 v1.3 unverified voice consent: this policy supersedes the
+  verified-only call eligibility described in the earlier recovery item above.
+  Pending contacts may receive voice only after per-contact default-off
+  consent; SMS/Zalo stay verified-only. Manual `ACTION_DIAL`/`tel:` is allowed
+  for active contacts with phone fallback enabled, after a user action. SQLite
+  v27 and the eight-argument RPC are implemented; migration 11:00 was applied
+  to confirmed QA on 2026-10-06 and its schema/default/grants passed read-only
+  verification. Edge deploy and device save/reload/delete acceptance remain
+  pending. Focused Flutter 33/33 and targeted analyzer pass. Production and
+  runtime flags are unchanged; no test contact, OTP or call was created.
+
+- 2026-10-06 M31 contact-save RPC rollout: remote history lacked migration
+  11:00 while the app used the eight-argument RPC. Applied only that additive
+  migration to QA; verified the column defaults false, the RPC exists, and
+  execute grants are limited to authenticated/service_role. Android showed 0/3
+  contacts, but `INJECT_EVENTS` blocked shell and UIAutomator input, so no
+  contact was saved. The integration runner failed and removed the package;
+  exact APK 1.0.1+4 was reinstalled, and local session/settings may need
+  rechecking. Production, flags, OTP and calls were untouched.
+
 - M32 runtime coding is proceeding under the PO's explicit direction dated
   2026-10-05; this does not represent Tech/Privacy, QA or Clinical approval.
 - Keep the pilot labeled as such, use the self-declared local DOB gate selected

@@ -33,7 +33,10 @@ guarantee safety.
 - list priority 1..3;
 - status verified/pending/failed/revoked;
 - add/edit/delete;
-- request OTP and confirm 6-digit code;
+- per-contact phone-call opt-in (default on) and unverified voice-call opt-in
+  (default off);
+- OTP remains optional for calls and required for SMS; request and confirm
+  the 6-digit code when those channels are needed;
 - no FamilyPlus-member inference;
 - user-visible errors must be friendly, not PostgREST/internal exception text.
 
@@ -59,11 +62,23 @@ guarantee safety.
 - primary safety actions:
   - `Tôi ổn`
   - `Tôi cần hỗ trợ`
-- at +30s copy indicates Nabi is asking again;
-- at +60s/needHelp indicates contact workflow is being requested;
-- no “đã gọi thành công” copy until trusted server returns acceptance.
+- at +15s without a response starts automatic voice/SMS escalation;
+- `Tôi cần hỗ trợ` starts a direct phone call to the highest-priority active
+  opted-in contact and never invokes server dispatch;
+- phone-call text reports OS initiation or dialer handoff only, never a
+  connected or answered call;
 - Android keeps the microphone foreground notification separate from the alert
-  notification and loops the alarm tone until OK/Need help/stop/failure.
+  notification and loops the alarm tone until OK, stop/failure, or a successful
+  phone handoff. Failed call/dialer handoff keeps the tone and alert active.
+- The global `phone_fallback_enabled` flag controls automatic no-response
+  calling. It does not block an explicit `Tôi cần hỗ trợ` action when an
+  eligible contact exists. If no eligible contact exists, keep the alert active
+  and show guidance without a server request.
+- Android requests `CALL_PHONE` before monitoring. Permission denial or call
+  launch failure opens the system dialer with the selected number filled in;
+  the user presses Call. iOS opens `tel:` and may ask for confirmation.
+- Only automatic no-response dispatch is queued locally with a stable
+  idempotency key and retried inside the server freshness window.
 
 ## M31-V06 — Night Analysis
 
@@ -83,7 +98,7 @@ Rules:
 
 - The page is available only for a completed session belonging to the current
   authenticated user.
-- Local formulas work offline and are persisted in SQLite v23.
+- Local formulas work offline and are persisted in SQLite v28.
 - Fewer than three nights shows a baseline-building state instead of a fake
   trend conclusion.
 - The morning check-in is self-reported. It may estimate sleep minutes and

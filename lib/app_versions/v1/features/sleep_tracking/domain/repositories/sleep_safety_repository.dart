@@ -2,7 +2,10 @@ import '../../data/gateways/sleep_safety_native_gateway.dart';
 import '../entities/safety_contact.dart';
 import '../entities/sleep_night_analysis.dart';
 import '../entities/sleep_safety_event.dart';
+import '../entities/sleep_safety_dispatch_retry.dart';
+import '../entities/sleep_safety_dispatch_result.dart';
 import '../entities/sleep_safety_preference.dart';
+import '../entities/sleep_safety_runtime_config.dart';
 import '../entities/sleep_safety_session.dart';
 
 abstract class SleepSafetyRepository {
@@ -39,14 +42,30 @@ abstract class SleepSafetyRepository {
     required String relationship,
     required String phoneE164,
     required int priority,
+    bool allowPhoneFallback = true,
+    bool allowUnverifiedVoiceAlert = false,
   });
   Future<void> cacheContact(SafetyContact value);
   Future<void> deleteContact(String id);
   Future<void> requestContactVerification(String id);
   Future<void> confirmContactVerification(String id, String code);
-  Future<Map<String, Object?>> dispatchEmergency(
+  Future<SleepSafetyDispatchResult> dispatchEmergency(
     String eventId,
     String idempotencyKey,
   );
+  Future<SleepSafetyRuntimeConfig> loadRuntimeConfig();
+  Future<void> enqueueEmergencyRetry({
+    required String userId,
+    required SleepSafetyEvent event,
+    required String idempotencyKey,
+  });
+  Future<List<SleepSafetyDispatchRetry>> listPendingEmergencyRetries();
+  Future<void> markEmergencyRetrySending(String id);
+  Future<void> markEmergencyRetryAcknowledged(String id);
+  Future<void> markEmergencyRetryFailed({
+    required String id,
+    required String errorCode,
+    DateTime? nextRetryAt,
+  });
   Future<bool> isRolloutEnabled();
 }

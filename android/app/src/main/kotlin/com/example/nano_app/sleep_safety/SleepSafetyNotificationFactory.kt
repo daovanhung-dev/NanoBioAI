@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.nanobioai.app.R
@@ -65,20 +66,17 @@ class SleepSafetyNotificationFactory(private val context: Context) {
             .build()
     }
 
-    fun alert(eventId: String, reminder: Boolean = false): Notification {
+    fun alert(
+        eventId: String,
+        fallbackPhone: String? = null,
+    ): Notification {
         ensureChannels()
         val ok = serviceIntent(SleepSafetyForegroundService.ACTION_RESPONSE_OK, eventId)
         val help = serviceIntent(SleepSafetyForegroundService.ACTION_RESPONSE_HELP, eventId)
         return NotificationCompat.Builder(context, ALERT_CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Bạn có ổn không?")
-            .setContentText(
-                if (reminder) {
-                    "Nabi vẫn đang chờ bạn xác nhận. Nếu không phản hồi, hệ thống sẽ liên hệ người hỗ trợ."
-                } else {
-                    "Nabi vừa nhận thấy một âm thanh bất thường cần chú ý."
-                },
-            )
+            .setContentText("Nabi vừa nhận thấy một âm thanh bất thường cần chú ý.")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(false)
@@ -87,6 +85,22 @@ class SleepSafetyNotificationFactory(private val context: Context) {
             .setVibrate(longArrayOf(0, 600, 250, 600, 250, 900))
             .addAction(0, "Tôi ổn", ok)
             .addAction(0, "Tôi cần hỗ trợ", help)
+            .apply {
+                if (!fallbackPhone.isNullOrBlank() &&
+                    fallbackPhone.matches(Regex("^\\+[1-9][0-9]{7,14}$"))) {
+                    val dialIntent = Intent(
+                        Intent.ACTION_DIAL,
+                        Uri.parse("tel:${Uri.encode(fallbackPhone)}"),
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    val dial = PendingIntent.getActivity(
+                        context,
+                        ("dial" + eventId).hashCode(),
+                        dialIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                    )
+                    addAction(0, "Gọi người liên hệ", dial)
+                }
+            }
             .build()
     }
 

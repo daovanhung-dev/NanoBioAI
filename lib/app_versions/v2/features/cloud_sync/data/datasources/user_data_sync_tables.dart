@@ -12,6 +12,10 @@ class UserDataSyncTables {
     ...SyncOutboxSchema.serverOwnedReadOnlyTables,
   ];
 
+  /// Optional projection not present in every deployed Supabase environment.
+  /// If it is absent remotely, a partial snapshot must preserve its local rows.
+  static const optionalCloudPullTables = <String>{'fitness_training_programs'};
+
   static const cloudCollectionTables = <String>[
     'health_goals',
     'health_conditions',

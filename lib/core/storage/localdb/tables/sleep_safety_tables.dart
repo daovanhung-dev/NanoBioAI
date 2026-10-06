@@ -50,6 +50,8 @@ abstract final class SleepSafetyTables {
       id TEXT PRIMARY KEY, user_id TEXT NOT NULL, name TEXT NOT NULL, relationship TEXT NOT NULL,
       phone_e164 TEXT NOT NULL, priority INTEGER NOT NULL CHECK (priority BETWEEN 1 AND 3),
       verification_status TEXT NOT NULL, verified_at TEXT, active INTEGER NOT NULL DEFAULT 1,
+      allow_phone_fallback INTEGER NOT NULL DEFAULT 1,
+      allow_unverified_voice_alert INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(user_id, priority), UNIQUE(user_id, phone_e164)
     )''',
     '''CREATE TABLE IF NOT EXISTS $outbox (

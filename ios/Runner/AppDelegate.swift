@@ -8,9 +8,11 @@ private enum SleepSafetyIOSConstants {
   static let controlChannel = "com.nanobioai.app/sleep_safety/control"
   static let eventChannel = "com.nanobioai.app/sleep_safety/events"
   static let notificationCategory = "nanobio_sleep_safety_alert"
+  static let notificationCategoryWithCall = "nanobio_sleep_safety_alert_with_call"
   static let notificationPrefix = "nanobio.sleep_safety."
   static let actionOK = "sleep_safety_ok"
   static let actionHelp = "sleep_safety_help"
+  static let actionCall = "sleep_safety_call"
 }
 
 private final class SleepSafetyIOSDetector {
@@ -406,8 +408,10 @@ private final class SleepSafetyIOSRuntime {
   private var detectionSuppressed = false
   private var sensitivity = "balanced"
   private var cooldownSeconds = 120
+  private var phoneFallbackEnabled = false
+  private var phoneFallbackE164: String?
+  private var pendingPhoneFallbackEventID: String?
   private var scheduledEndWork: DispatchWorkItem?
-  private var reminderWork: DispatchWorkItem?
   private var escalationWork: DispatchWorkItem?
   private var active = false
   private var phase = "idle"
@@ -420,6 +424,10 @@ private final class SleepSafetyIOSRuntime {
     eventSink = sink
     if sink != nil {
       emit("statusSnapshot", data: statusSnapshot())
+      if let eventID = pendingPhoneFallbackEventID {
+        pendingPhoneFallbackEventID = nil
+        emit("phoneFallbackRequested", data: ["eventId": eventID])
+      }
     }
   }
 
@@ -443,6 +451,9 @@ private final class SleepSafetyIOSRuntime {
 
     do {
       activeSessionID = arguments["sessionId"] as? String
+      phoneFallbackEnabled = (arguments["phoneFallbackEnabled"] as? Bool) ?? false
+      phoneFallbackE164 = (arguments["phoneFallbackE164"] as? String)
+        .flatMap { phoneFallbackEnabled && Self.isValidPhone($0) ? $0 : nil }
       sensitivity = (arguments["sensitivity"] as? String) ?? "balanced"
       cooldownSeconds = max(30, min((arguments["cooldownSeconds"] as? NSNumber)?.intValue ?? 120, 900))
       let calibrationSeconds = max(10, min((arguments["calibrationSeconds"] as? NSNumber)?.intValue ?? 30, 60))
@@ -497,6 +508,8 @@ private final class SleepSafetyIOSRuntime {
     currentEventID = nil
     currentEventData = nil
     activeSessionID = nil
+    phoneFallbackEnabled = false
+    phoneFallbackE164 = nil
     detectionSuppressed = false
     active = false
     phase = "idle"
@@ -519,6 +532,12 @@ private final class SleepSafetyIOSRuntime {
     if let seconds = (arguments["cooldownSeconds"] as? NSNumber)?.intValue {
       cooldownSeconds = max(30, min(seconds, 900))
     }
+    if let enabled = arguments["phoneFallbackEnabled"] as? Bool {
+      phoneFallbackEnabled = enabled
+    }
+    if let phone = arguments["phoneFallbackE164"] as? String {
+      phoneFallbackE164 = phoneFallbackEnabled && Self.isValidPhone(phone) ? phone : nil
+    }
   }
 
   func respond(eventID: String?, response: String) {
@@ -529,7 +548,6 @@ private final class SleepSafetyIOSRuntime {
     emit("userResponse", data: ["eventId": current, "response": response])
     if response == "need_help" {
       phase = "escalating"
-      emit("escalationRequired", data: ["eventId": current])
       return
     }
     currentEventID = nil
@@ -560,6 +578,19 @@ private final class SleepSafetyIOSRuntime {
     emit("monitoringReady")
   }
 
+  func silenceAlertAfterCallHandoff(eventID: String?) {
+    guard let current = currentEventID else { return }
+    if let eventID, eventID != current { return }
+    cancelAlertTimers()
+    let identifier = SleepSafetyIOSConstants.notificationPrefix + current
+    UNUserNotificationCenter.current().removePendingNotificationRequests(
+      withIdentifiers: [identifier]
+    )
+    UNUserNotificationCenter.current().removeDeliveredNotifications(
+      withIdentifiers: [identifier]
+    )
+  }
+
   func handlesNotificationResponse(_ response: UNNotificationResponse) -> Bool {
     guard response.notification.request.identifier.hasPrefix(SleepSafetyIOSConstants.notificationPrefix) else {
       return false
@@ -570,12 +601,35 @@ private final class SleepSafetyIOSRuntime {
       respond(eventID: eventID, response: "need_help")
     case SleepSafetyIOSConstants.actionOK:
       respond(eventID: eventID, response: "ok")
+    case SleepSafetyIOSConstants.actionCall:
+      guard phoneFallbackEnabled, let phone = phoneFallbackE164 else {
+        if let eventID {
+          if eventSink == nil {
+            pendingPhoneFallbackEventID = eventID
+          } else {
+            emit("phoneFallbackRequested", data: ["eventId": eventID])
+          }
+        }
+        return true
+      }
+      guard let url = URL(string: "tel:\(phone)") else { return true }
+      UIApplication.shared.open(url, options: [:]) { [weak self] opened in
+        if opened {
+          self?.silenceAlertAfterCallHandoff(eventID: eventID)
+        } else {
+          self?.emit("phoneFallbackUnavailable", data: ["eventId": eventID as Any])
+        }
+      }
     default:
       // Tapping the body intentionally leaves the safety timer active; Flutter
       // will present the in-app overlay from the already emitted event state.
       break
     }
     return true
+  }
+
+  private static func isValidPhone(_ phone: String) -> Bool {
+    phone.range(of: #"^\+[1-9][0-9]{7,14}$"#, options: .regularExpression) != nil
   }
 
   private func process(buffer: AVAudioPCMBuffer) {
@@ -641,15 +695,7 @@ private final class SleepSafetyIOSRuntime {
     ]
     currentEventData = eventData
     emit("confirmedSafetyEvent", data: eventData)
-    postAlertNotification(eventID: eventID, reminder: false)
-
-    let reminder = DispatchWorkItem { [weak self] in
-      guard let self, self.currentEventID == eventID else { return }
-      self.postAlertNotification(eventID: eventID, reminder: true)
-      self.emit("alertReminder", data: ["eventId": eventID])
-    }
-    reminderWork = reminder
-    DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: reminder)
+    postAlertNotification(eventID: eventID)
 
     let escalation = DispatchWorkItem { [weak self] in
       guard let self, self.currentEventID == eventID else { return }
@@ -657,17 +703,17 @@ private final class SleepSafetyIOSRuntime {
       self.emit("escalationRequired", data: ["eventId": eventID])
     }
     escalationWork = escalation
-    DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: escalation)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: escalation)
   }
 
-  private func postAlertNotification(eventID: String, reminder: Bool) {
+  private func postAlertNotification(eventID: String) {
     let content = UNMutableNotificationContent()
     content.title = "Bạn có ổn không?"
-    content.body = reminder
-      ? "Nabi vẫn chưa nhận được phản hồi. Hãy xác nhận nếu bạn ổn hoặc cần hỗ trợ."
-      : "Nabi vừa nhận thấy một âm thanh cần được chú ý."
+    content.body = "Nabi vừa nhận thấy một âm thanh cần được chú ý."
     content.sound = .default
-    content.categoryIdentifier = SleepSafetyIOSConstants.notificationCategory
+    content.categoryIdentifier = phoneFallbackEnabled && phoneFallbackE164 != nil
+      ? SleepSafetyIOSConstants.notificationCategoryWithCall
+      : SleepSafetyIOSConstants.notificationCategory
     content.userInfo = ["event_id": eventID]
     let request = UNNotificationRequest(
       identifier: SleepSafetyIOSConstants.notificationPrefix + eventID,
@@ -688,9 +734,7 @@ private final class SleepSafetyIOSRuntime {
   }
 
   private func cancelAlertTimers() {
-    reminderWork?.cancel()
     escalationWork?.cancel()
-    reminderWork = nil
     escalationWork = nil
   }
 
@@ -737,6 +781,23 @@ private final class SleepSafetyIOSChannelHandler: NSObject, FlutterStreamHandler
           response: arguments["response"] as? String ?? "ok"
         )
         result(nil)
+      case "openDialer":
+        guard
+          let phone = arguments["phoneE164"] as? String,
+          phone.range(of: #"^\+[1-9][0-9]{7,14}$"#, options: .regularExpression) != nil,
+          let url = URL(string: "tel:\(phone)")
+        else {
+          result(false)
+          return
+        }
+        UIApplication.shared.open(url, options: [:]) { opened in
+          if opened {
+            self.runtime.silenceAlertAfterCallHandoff(
+              eventID: arguments["eventId"] as? String
+            )
+          }
+          result(opened)
+        }
       case "dismissAlert":
         self.runtime.dismissAlert(eventID: arguments["eventId"] as? String)
         result(nil)
@@ -781,13 +842,24 @@ private final class SleepSafetyIOSChannelHandler: NSObject, FlutterStreamHandler
       title: "Tôi cần hỗ trợ",
       options: [.foreground]
     )
+    let callAction = UNNotificationAction(
+      identifier: SleepSafetyIOSConstants.actionCall,
+      title: "Gọi người liên hệ",
+      options: [.foreground]
+    )
     let category = UNNotificationCategory(
       identifier: SleepSafetyIOSConstants.notificationCategory,
       actions: [okAction, helpAction],
       intentIdentifiers: [],
       options: [.customDismissAction]
     )
-    UNUserNotificationCenter.current().setNotificationCategories([category])
+    let categoryWithCall = UNNotificationCategory(
+      identifier: SleepSafetyIOSConstants.notificationCategoryWithCall,
+      actions: [okAction, helpAction, callAction],
+      intentIdentifiers: [],
+      options: [.customDismissAction]
+    )
+    UNUserNotificationCenter.current().setNotificationCategories([category, categoryWithCall])
 
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate

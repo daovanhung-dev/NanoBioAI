@@ -66,6 +66,22 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
         throw LocalSyncPendingWriteException(pendingCount);
       }
 
+      // An absent key means the remote omitted that table; an explicit empty
+      // list still means cloud has no rows and should clear the local table.
+      final preservedMissingCloudTables =
+          <String, List<Map<String, Object?>>>{};
+      for (final table in UserDataSyncTables.cloudPullTables) {
+        if (snapshot.tables.containsKey(table) ||
+            !await _tableExists(txn, table)) {
+          continue;
+        }
+        preservedMissingCloudTables[table] = await txn.query(
+          table,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
+      }
+
       await SyncRuntimeState.setApplyingCloud(txn, true);
       try {
         if (removeLocalUserId != null &&
@@ -99,7 +115,10 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
         );
 
         for (final table in UserDataSyncTables.localUserOwnedTables) {
-          final rows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+          final rows =
+              snapshot.tables[table] ??
+              preservedMissingCloudTables[table] ??
+              const <Map<String, Object?>>[];
           for (final row in rows) {
             await txn.insert(
               table,
@@ -111,7 +130,10 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
 
         for (final table in SyncOutboxSchema.serverOwnedReadOnlyTables) {
           if (!await _tableExists(txn, table)) continue;
-          final rows = snapshot.tables[table] ?? const <Map<String, Object?>>[];
+          final rows =
+              snapshot.tables[table] ??
+              preservedMissingCloudTables[table] ??
+              const <Map<String, Object?>>[];
           for (final row in rows) {
             await txn.insert(
               table,

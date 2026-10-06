@@ -56,8 +56,18 @@ class SupabaseUserDataSyncRemoteDatasource
 
     final tables = <String, List<Map<String, Object?>>>{};
     for (final table in UserDataSyncTables.cloudPullTables) {
-      final response = await client.from(table).select().eq('user_id', userId);
-      tables[table] = _copyDynamicRows(response);
+      try {
+        final response = await client
+            .from(table)
+            .select()
+            .eq('user_id', userId);
+        tables[table] = _copyDynamicRows(response);
+      } on PostgrestException catch (error) {
+        final optionalTableIsMissing =
+            UserDataSyncTables.optionalCloudPullTables.contains(table) &&
+            error.code == 'PGRST205';
+        if (!optionalTableIsMissing) rethrow;
+      }
     }
 
     return UserDataSnapshot(user: user, tables: tables);
