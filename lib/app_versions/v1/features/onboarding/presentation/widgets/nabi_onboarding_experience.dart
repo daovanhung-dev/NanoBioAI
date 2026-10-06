@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/data/nabi_asset_catalog.dart';
 
-/// Visual foundation for the Nabi Green Wellness onboarding experience.
+/// Visual foundation for the Nabi Blue Wellness onboarding experience.
 class NabiPalette {
   const NabiPalette._();
 
@@ -22,7 +22,7 @@ class NabiPalette {
   static const Color focusRing = AppColors.primaryLight;
 
   static const Color energyYellow = AppColors.energyYellow;
-  static const Color calmBlue = AppColors.secondary;
+  static const Color calmBlue = AppColors.info;
   static const Color careCoral = AppColors.careCoral;
   static const Color personalPurple = AppColors.tertiary;
 
@@ -56,7 +56,7 @@ class NabiPalette {
   static const LinearGradient button = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [AppColors.success, AppColors.primaryLight],
+    colors: [AppColors.ctaStart, AppColors.ctaEnd],
   );
 
   static const LinearGradient selection = LinearGradient(
@@ -146,9 +146,8 @@ extension NabiOnboardingMoodVisual on NabiOnboardingMood {
 bool nabiReducedMotion(BuildContext context) =>
     MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
-/// Mint atmosphere with slow ambient drift. It automatically becomes static
-/// when the platform requests reduced motion.
-class NabiAmbientBackground extends StatefulWidget {
+/// Quiet, static onboarding atmosphere that stays behind the form content.
+class NabiAmbientBackground extends StatelessWidget {
   final Widget child;
   final bool strong;
 
@@ -159,119 +158,68 @@ class NabiAmbientBackground extends StatefulWidget {
   });
 
   @override
-  State<NabiAmbientBackground> createState() => _NabiAmbientBackgroundState();
-}
-
-class _NabiAmbientBackgroundState extends State<NabiAmbientBackground>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 8),
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (nabiReducedMotion(context)) {
-      _controller.stop();
-      _controller.value = 0.5;
-    } else if (!_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [colors.cardAlt, colors.primarySubtle, colors.background],
-          stops: const [0, 0.48, 1],
-        ),
-      ),
+      decoration: BoxDecoration(color: colors.background),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) => CustomPaint(
-              painter: _WellnessAtmospherePainter(
-                progress: _controller.value,
-                strong: widget.strong,
-              ),
+          Positioned(
+            top: -126,
+            right: -104,
+            child: _AtmosphereOrb(
+              size: 280,
+              color: colors.primary,
+              opacity: strong ? .085 : .05,
             ),
           ),
-          widget.child,
+          Positioned(
+            left: -128,
+            bottom: 48,
+            child: _AtmosphereOrb(
+              size: 240,
+              color: colors.secondary,
+              opacity: strong ? .055 : .035,
+            ),
+          ),
+          child,
         ],
       ),
     );
   }
 }
 
-class _WellnessAtmospherePainter extends CustomPainter {
-  final double progress;
-  final bool strong;
-
-  const _WellnessAtmospherePainter({
-    required this.progress,
-    required this.strong,
+class _AtmosphereOrb extends StatelessWidget {
+  const _AtmosphereOrb({
+    required this.size,
+    required this.color,
+    required this.opacity,
   });
 
+  final double size;
+  final Color color;
+  final double opacity;
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final drift = math.sin(progress * math.pi * 2) * 7;
-    final green = Paint()
-      ..color = NabiPalette.greenBright.withValues(alpha: strong ? 0.14 : 0.08);
-    final yellow = Paint()
-      ..color = NabiPalette.energyYellow.withValues(
-        alpha: strong ? 0.11 : 0.06,
-      );
-    final blue = Paint()
-      ..color = NabiPalette.calmBlue.withValues(alpha: strong ? 0.09 : 0.045);
-
-    canvas.drawCircle(Offset(size.width * 0.88 + drift, 90), 92, green);
-    canvas.drawCircle(
-      Offset(size.width * 0.08 - drift * 0.7, size.height * 0.42),
-      64,
-      yellow,
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: SizedBox.square(
+        dimension: size,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                color.withValues(alpha: opacity),
+                color.withValues(alpha: 0),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
-    canvas.drawCircle(
-      Offset(size.width * 0.83 - drift, size.height * 0.78),
-      78,
-      blue,
-    );
-
-    final dot = Paint()
-      ..color = NabiPalette.greenPrimary.withValues(alpha: 0.055);
-    for (var row = 0; row < 5; row++) {
-      for (var column = 0; column < 4; column++) {
-        canvas.drawCircle(
-          Offset(22 + column * 16, size.height - 92 + row * 14),
-          1.8,
-          dot,
-        );
-      }
-    }
   }
-
-  @override
-  bool shouldRepaint(covariant _WellnessAtmospherePainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.strong != strong;
 }
 
 class NabiGlassPanel extends StatelessWidget {
@@ -287,9 +235,9 @@ class NabiGlassPanel extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.cardPadding),
-    this.borderRadius = const BorderRadius.all(Radius.circular(20)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(AppRadius.card)),
     this.gradient,
-    this.elevated = true,
+    this.elevated = false,
     this.borderColor,
     this.shadowColor,
   });
@@ -300,23 +248,18 @@ class NabiGlassPanel extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        gradient:
-            gradient ??
-            LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colors.card, colors.inputBackground],
-            ),
+        color: gradient == null ? colors.card : null,
+        gradient: gradient,
         borderRadius: borderRadius,
-        border: Border.all(color: borderColor ?? colors.border),
+        border: Border.all(color: borderColor ?? colors.borderLight),
         boxShadow: elevated
             ? [
                 BoxShadow(
                   color: (shadowColor ?? colors.primaryDark).withValues(
-                    alpha: 0.08,
+                    alpha: 0.045,
                   ),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
                 ),
               ]
             : const [],

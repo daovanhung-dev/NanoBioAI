@@ -1,13 +1,13 @@
-# Route Matrix - working-tree snapshot 2026-08-08
+# Route Matrix — working-tree snapshot 2026-10-07
 
 ## Direct route counts
 
-- V1: **27** routes from `v1Routes`.
+- V1: **32** route entries from `v1Routes`, including `buildLifestyleScheduleRoute()`.
 - V2: **13** routes from `v2Routes`.
-- V3: **3** routes from `v3Routes`; the standalone router also reuses V1 Lifestyle Schedule.
+- V3: **5** routes from `v3Routes`; the standalone router also reuses V1 Lifestyle Schedule.
 - Admin: **12** routes (login plus 11 protected workspace destinations); `/admin` redirects to dashboard.
 
-## Green Wellness route deltas
+## Blue Wellness route notes
 
 - `/today-tasks` is an active V1 route backed by `TodayTasksPage` and real Lifestyle Schedule state.
 - `/water-tracking`, `/weekly-summary`, `/personal-goals`, `/quick-care` and `/gentle-care` now expose their existing V1 pages.
@@ -17,7 +17,7 @@
 ## Important drift classification
 
 - `/health-tracking` still delegates to Lifestyle Schedule: alias, not an independent wellness journal.
-- Sleep, Stress and Community remain development/coming-soon surfaces in current source.
+- Sleep Tracking is active behind the existing auth guard and M31 access gate; Stress and Community have active routes that render limited/placeholder capability.
 - FamilyPlus chat is not implied by the FamilyPlus page route and remains gated by DD/security/privacy approval.
 - Sale remains under `lib/sale_referral/` and enters from V2 `/sale`.
-- Admin protected routes share `AdminWorkspacePage` and the independent workspace theme.
+- Admin protected routes share `AdminWorkspacePage`, shared semantic foundation and operational density.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/sleep_morning_checkin.dart';
@@ -33,7 +34,7 @@ class _SleepNightAnalysisPageState
     final state = ref.watch(sleepNightAnalysisControllerProvider);
     final matchesSession = state.session?.id == widget.sessionId;
     final analysis = matchesSession ? state.analysis : null;
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Phân tích giấc ngủ')),
       body: (state.loading || !matchesSession) && analysis == null
           ? const Center(child: CircularProgressIndicator())

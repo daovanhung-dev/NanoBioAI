@@ -4,7 +4,7 @@ App composition, router, navigation, theme/motion scope and global feedback. Pre
 
 ## Blue Wellness foundation contract
 
-- Consumer/Sale seed: `#2F6FED`; wellness accent `#14A36F`; CTA `#245CC5 -> #4D8DF7`.
+- Consumer, Sale and Admin shared semantic roles: Blue `#285CC5`; health accent `#16845C`; CTA range `#234FA8 -> #3971D3`.
 - Light canvas `#F7FAFF`, text `#15253D`, soft blue surface `#F4F8FF`.
 - Blue owns brand/navigation/CTA; green owns leaf/health/success/nutrition/positive progress.
 - Roboto weights 400/500/600/700; page gutter 16; input/card/sheet radii 14/20/28.

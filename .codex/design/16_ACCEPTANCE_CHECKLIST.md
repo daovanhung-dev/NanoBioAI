@@ -1,4 +1,4 @@
-# Stitch Green Wellness UI Acceptance Checklist
+# NanoBio Blue Wellness UI Acceptance Checklist
 
 Unchecked means no acceptance claim. Evidence must identify the surface, state, viewport, theme and command or review record.
 
@@ -8,18 +8,20 @@ Unchecked means no acceptance claim. Evidence must identify the surface, state, 
 - [ ] Every Stitch pair has an owner, runtime route/invocation, state mapping and QA evidence link.
 - [ ] PNG governs layout and HTML governs typography/token intent; Approved DD/runtime governs business.
 - [ ] Repository registry count and route classifications match the working tree.
+- [ ] All 94 screen/subsurface specs map to source and a redesign/verification status.
+- [ ] Current 266-file UI source inventory can be regenerated and has no missing files.
 - [ ] `/today-tasks` has its own active-route spec and state evidence.
 - [ ] No placeholder or alias is described as an implemented business capability.
 
 ## Foundation
 
-- [ ] Primary `#006A46`, accent `#14A36F`, CTA `#0F8E62 -> #32C789`, background `#F5FAF7`, text `#12352A` and mint `#EAF9F1` resolve through semantic roles.
-- [ ] Page gutter 16 and input/card/sheet radii 14/20/28 are mapped through tokens.
+- [ ] Blue primary `#285CC5`, health accent `#16845C`, CTA range `#234FA8 -> #3971D3`, background `#F4F7FB` and text `#14243A` resolve through semantic roles.
+- [ ] Page gutter 16 and input/card/sheet radii 14/18/28 are mapped through tokens.
 - [ ] Roboto 400/500/600/700 is bundled and deterministic.
 - [ ] `AppSemanticColors` and `ColorScheme` provide light/dark parity; new UI does not depend on static light colors.
-- [ ] Dark scheme is a frozen M3 fidelity result from seed `#006A46` and passes contrast review.
+- [ ] Dark scheme uses frozen Blue Wellness semantic roles and passes contrast review.
 - [ ] Compatibility Blue aliases have an explicit removal gate after cutover.
-- [ ] Admin retains its independent workspace palette.
+- [ ] Admin uses shared semantic color roles with operational density and hierarchy.
 
 ## Assets
 

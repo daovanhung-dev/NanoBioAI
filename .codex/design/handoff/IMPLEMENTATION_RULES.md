@@ -1,4 +1,4 @@
-# Implementation Rules - Stitch Green Wellness
+# Implementation Rules — NanoBio Blue Wellness
 
 1. For a Stitch reference, PNG governs layout and HTML governs typography/token intent.
 2. Approved DD and runtime govern business, data, access, quota, payment and trusted state.

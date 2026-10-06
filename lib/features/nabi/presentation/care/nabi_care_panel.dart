@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../application/care/nabi_care_controller.dart';
 import '../../domain/care/nabi_care_models.dart';
@@ -47,7 +48,7 @@ class NabiCarePanel extends ConsumerWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: colors.outlineVariant,
-                  borderRadius: BorderRadius.circular(99),
+                  borderRadius: BorderRadius.circular(AppRadius.circular),
                 ),
               ),
             ),
@@ -66,7 +67,10 @@ class NabiCarePanel extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('NaBi Care hôm nay', style: theme.textTheme.titleLarge),
+                      Text(
+                        'NaBi Care hôm nay',
+                        style: theme.textTheme.titleLarge,
+                      ),
                       Text(
                         _statusLabel(analysis.overallStatus),
                         style: theme.textTheme.labelMedium?.copyWith(
@@ -78,7 +82,8 @@ class NabiCarePanel extends ConsumerWidget {
                 ),
                 if (result.fromCache)
                   Tooltip(
-                    message: 'Dữ liệu chưa thay đổi nên NaBi dùng lại phân tích gần nhất.',
+                    message:
+                        'Dữ liệu chưa thay đổi nên NaBi dùng lại phân tích gần nhất.',
                     child: Icon(Icons.bolt_rounded, color: colors.primary),
                   ),
               ],
@@ -111,8 +116,9 @@ class NabiCarePanel extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.chat_bubble_outline_rounded),
                   title: Text(question.text),
-                  subtitle:
-                      question.reason.isEmpty ? null : Text(question.reason),
+                  subtitle: question.reason.isEmpty
+                      ? null
+                      : Text(question.reason),
                 ),
             ],
             if (analysis.missingData.isNotEmpty) ...[

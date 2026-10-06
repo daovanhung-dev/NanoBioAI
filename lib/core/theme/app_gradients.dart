@@ -24,8 +24,8 @@ class AppGradients {
 
   static const LinearGradient primarySoft = LinearGradient(
     colors: [AppColors.surface, AppColors.primarySubtle],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 
   static const LinearGradient premium = LinearGradient(
@@ -145,8 +145,7 @@ class AppGradients {
   );
 
   static const LinearGradient hero = LinearGradient(
-    colors: [AppColors.primaryDark, AppColors.primary, AppColors.primary],
-    stops: [0, .56, 1],
+    colors: [AppColors.primaryDark, AppColors.primary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -164,8 +163,8 @@ class AppGradients {
   );
 
   static const LinearGradient medicalBackground = LinearGradient(
-    colors: [AppColors.background, AppColors.surface, AppColors.primarySubtle],
-    stops: [0, .58, 1],
+    colors: [AppColors.background, AppColors.background],
+    stops: [0, 1],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

@@ -1,8 +1,10 @@
 # Coding Wave File Manifest
 
+Current working-tree source count is **266 UI-affecting Dart files** and the screen registry is **94 surfaces**. The per-wave counts below remain historical; refresh current rows with `python3 tools/refresh_ui_design_inventory.py`.
+
 Exact file scope derived from the UI file matrix. W11 cleanup/certification spans all migrated files.
 
-## Green Wellness delta - 2026-08-08
+## Historical Green Wellness delta - 2026-08-08
 
 The counts below remain the historical 183-file inventory baseline. The working-tree Green migration also adds or newly exposes:
 

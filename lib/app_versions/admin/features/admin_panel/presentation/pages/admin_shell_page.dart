@@ -24,10 +24,6 @@ const _sidebarCompactWidth = 80.0;
 const _sidebarWideWidth = 244.0;
 const _contentBottomPadding = 52.0;
 const _cardHoverOffset = -2.0;
-const _ambientOrbLarge = 260.0;
-const _ambientOrbMedium = 190.0;
-const _ambientOrbSmall = 132.0;
-const _ambientMotionDuration = Duration(seconds: 12);
 
 class AdminShellPage extends ConsumerStatefulWidget {
   final AdminPanelSection initialSection;
@@ -132,133 +128,136 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
         error: (_, __) => _AdminStateScaffold(
           key: const ValueKey<String>('admin-shell-error'),
           child: _BlockingState(
-          icon: Icons.cloud_off_rounded,
-          title: 'Chưa tải được khu quản trị',
-          message:
-              'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
-          actionLabel: 'Thử lại',
-          onAction: _refreshCurrentSection,
+            icon: Icons.cloud_off_rounded,
+            title: 'Chưa tải được khu quản trị',
+            message:
+                'Nabi chưa lấy được phiên quản trị. Hãy thử lại sau ít phút.',
+            actionLabel: 'Thử lại',
+            onAction: _refreshCurrentSection,
+          ),
         ),
-      ),
-      data: (data) {
+        data: (data) {
           if (!data.session.isAdmin) {
             return _AdminStateScaffold(
               key: const ValueKey<String>('admin-shell-forbidden'),
               child: _BlockingState(
-              icon: Icons.lock_person_rounded,
-              title: 'Tài khoản chưa có quyền quản trị',
-              message:
-                  'Nabi đã đăng nhập, nhưng tài khoản này chưa có vai trò quản trị đang hoạt động.',
-              actionLabel: 'Đăng xuất',
-              onAction: _signOut,
-            ),
-          );
-        }
+                icon: Icons.lock_person_rounded,
+                title: 'Tài khoản chưa có quyền quản trị',
+                message:
+                    'Nabi đã đăng nhập, nhưng tài khoản này chưa có vai trò quản trị đang hoạt động.',
+                actionLabel: 'Đăng xuất',
+                onAction: _signOut,
+              ),
+            );
+          }
 
-        final sections = AdminPanelSection.values
-            .where(data.session.canAccessSection)
-            .toList(growable: false);
+          final sections = AdminPanelSection.values
+              .where(data.session.canAccessSection)
+              .toList(growable: false);
 
-        final hasHistory = context.canPop();
-        final isDashboard = data.section == AdminPanelSection.dashboard;
+          final hasHistory = context.canPop();
+          final isDashboard = data.section == AdminPanelSection.dashboard;
 
           return PopScope(
             key: ValueKey<String>('admin-shell-${data.section.value}'),
             canPop: isDashboard || hasHistory,
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop || isDashboard) return;
-            context.go(AdminRoutePaths.dashboard);
-          },
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < _desktopBreakpoint;
-              final isWide = constraints.maxWidth >= _wideBreakpoint;
-
-              return MedicalPageScaffold(
-                backgroundColor: AppColors.scaffold,
-                drawer: isCompact
-                    ? _AdminDrawer(
-                        selected: data.section,
-                        sections: sections,
-                        onSelected: _goToSection,
-                        onShowGuide: _showGuide,
-                        onSignOut: _signOut,
-                      )
-                    : null,
-                body: Stack(
-                  children: [
-                    const Positioned.fill(
-                      child: RepaintBoundary(child: _AdminAmbientBackdrop()),
-                    ),
-                    Builder(
-                      builder: (scaffoldContext) {
-                        return Row(
-                          children: [
-                            if (!isCompact)
-                              _AdminSideBar(
-                                selected: data.section,
-                                sections: sections,
-                                extended: isWide,
-                                onSelected: _goToSection,
-                                onShowGuide: _showGuide,
-                                onSignOut: _signOut,
-                              ),
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  _TopBar(
-                                    state: data,
-                                    search: _search,
-                                    isCompact: isCompact,
-                                    onMenuPressed: isCompact
-                                        ? () => Scaffold.of(
-                                            scaffoldContext,
-                                          ).openDrawer()
-                                        : null,
-                                    onSearch: (value) {
-                                      ref
-                                          .read(
-                                            adminControllerProvider.notifier,
-                                          )
-                                          .search(value);
-                                    },
-                                    onRefresh: _refreshCurrentSection,
-                                    onShowGuide: _showGuide,
-                                    onShowUserApp: data.session.canUseUserApp
-                                        ? _showUserApp
-                                        : null,
-                                    onSignOut: _signOut,
-                                  ),
-                                  if (data.session.hasPermission(
-                                        AdminPermissions.paymentsWrite,
-                                      ) &&
-                                      data.paymentReviewAlert.hasPendingReviews)
-                                    _PaymentReviewAlertBanner(
-                                      pendingReviewCount: data
-                                          .paymentReviewAlert
-                                          .pendingReviewCount,
-                                      onOpenPayments: () =>
-                                          context.go(AdminRoutePaths.payments),
-                                    ),
-                                  Expanded(
-                                    child: _AdminContent(
-                                      state: data,
-                                      onAction: _runAction,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop || isDashboard) return;
+              context.go(AdminRoutePaths.dashboard);
             },
-          ),
-        );
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < _desktopBreakpoint;
+                final isWide = constraints.maxWidth >= _wideBreakpoint;
+
+                return MedicalPageScaffold(
+                  backgroundColor: AppColors.scaffold,
+                  drawer: isCompact
+                      ? _AdminDrawer(
+                          selected: data.section,
+                          sections: sections,
+                          onSelected: _goToSection,
+                          onShowGuide: _showGuide,
+                          onSignOut: _signOut,
+                        )
+                      : null,
+                  body: Stack(
+                    children: [
+                      const Positioned.fill(
+                        child: RepaintBoundary(child: _AdminAmbientBackdrop()),
+                      ),
+                      Builder(
+                        builder: (scaffoldContext) {
+                          return Row(
+                            children: [
+                              if (!isCompact)
+                                _AdminSideBar(
+                                  selected: data.section,
+                                  sections: sections,
+                                  extended: isWide,
+                                  onSelected: _goToSection,
+                                  onShowGuide: _showGuide,
+                                  onSignOut: _signOut,
+                                ),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    _TopBar(
+                                      state: data,
+                                      search: _search,
+                                      isCompact: isCompact,
+                                      onMenuPressed: isCompact
+                                          ? () => Scaffold.of(
+                                              scaffoldContext,
+                                            ).openDrawer()
+                                          : null,
+                                      onSearch: (value) {
+                                        ref
+                                            .read(
+                                              adminControllerProvider.notifier,
+                                            )
+                                            .search(value);
+                                      },
+                                      onRefresh: _refreshCurrentSection,
+                                      onShowGuide: _showGuide,
+                                      onShowUserApp: data.session.canUseUserApp
+                                          ? _showUserApp
+                                          : null,
+                                      onSignOut: _signOut,
+                                    ),
+                                    if (data.session.hasPermission(
+                                          AdminPermissions.paymentsWrite,
+                                        ) &&
+                                        data
+                                            .paymentReviewAlert
+                                            .hasPendingReviews)
+                                      _PaymentReviewAlertBanner(
+                                        pendingReviewCount: data
+                                            .paymentReviewAlert
+                                            .pendingReviewCount,
+                                        onOpenPayments: () => context.go(
+                                          AdminRoutePaths.payments,
+                                        ),
+                                      ),
+                                    Expanded(
+                                      child: _AdminContent(
+                                        state: data,
+                                        onAction: _runAction,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
         },
       ),
     );
@@ -408,127 +407,12 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
   }
 }
 
-class _AdminAmbientBackdrop extends StatefulWidget {
+class _AdminAmbientBackdrop extends StatelessWidget {
   const _AdminAmbientBackdrop();
 
   @override
-  State<_AdminAmbientBackdrop> createState() => _AdminAmbientBackdropState();
-}
-
-class _AdminAmbientBackdropState extends State<_AdminAmbientBackdrop>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _suppressMotion = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: _ambientMotionDuration,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final policy = AppMotionScope.of(context);
-    final nextSuppressed = AppMotionScope.reduceMotionOf(context) ||
-        policy.performanceTier == AppPerformanceTier.economical;
-    if (_suppressMotion == nextSuppressed) return;
-    _suppressMotion = nextSuppressed;
-    if (_suppressMotion) {
-      _controller
-        ..stop()
-        ..value = .5;
-    } else if (!_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          final shift = Curves.easeInOutCubic.transform(_controller.value);
-
-          return DecoratedBox(
-            decoration: const BoxDecoration(gradient: AppGradients.surfaceAlt),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned(
-                  top: -_ambientOrbLarge * .38 + shift * 28,
-                  right: -_ambientOrbLarge * .28,
-                  child: _AmbientOrb(
-                    size: _ambientOrbLarge,
-                    color: AppColors.primary,
-                    opacity: .10,
-                  ),
-                ),
-                Positioned(
-                  top: 148 - shift * 34,
-                  left: -_ambientOrbMedium * .45,
-                  child: _AmbientOrb(
-                    size: _ambientOrbMedium,
-                    color: AppColors.secondary,
-                    opacity: .08,
-                  ),
-                ),
-                Positioned(
-                  right: AppSpacing.xxxl + shift * 20,
-                  bottom: -_ambientOrbSmall * .48,
-                  child: _AmbientOrb(
-                    size: _ambientOrbSmall,
-                    color: AppColors.tertiary,
-                    opacity: .07,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _AmbientOrb extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
-
-  const _AmbientOrb({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withValues(alpha: opacity),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: opacity * .52),
-            blurRadius: size * .30,
-            spreadRadius: size * .04,
-          ),
-        ],
-      ),
-    );
+    return ColoredBox(color: context.semanticColors.background);
   }
 }
 
@@ -1240,7 +1124,9 @@ class _TopBar extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? AppSpacing.pagePadding : AppSpacing.pagePaddingLarge,
+        horizontal: isCompact
+            ? AppSpacing.pagePadding
+            : AppSpacing.pagePaddingLarge,
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(

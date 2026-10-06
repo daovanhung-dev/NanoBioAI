@@ -4,15 +4,17 @@
 
 Giữ `app_*` làm facade để tránh refactor ồ ạt 90+ file, nhưng nguồn giá trị chuyển về `foundation/tokens`. Feature tiếp tục import facade/primitives trong wave đầu; cleanup sau khi test ổn định.
 
+The current Blue Wellness palette is active. Green values remain only in the explicit compatibility rollback branch and in health/success semantic roles. The 2026-10-06 source inventory/status files supersede historical row counts below.
+
 | File | Current role | Evidence | Target role | Action | Wave |
 | --- | --- | --- | --- | --- | --- |
 | lib/core/theme/app_animations.dart | AppAnimations | AnimatedContainer×1, AnimatedSwitcher×1, AnimatedOpacity×1, AnimatedScale×1, duration raw×1, motion token×6 | Deprecate/merge into app_motion.dart | Thu hẹp thành compatibility wrappers hoặc hợp nhất vào app_motion.dart; không duy trì hai API cạnh tranh. | W1 Foundation |
-| lib/core/theme/app_colors.dart | AppColors | Color raw×88 | Temporary compatibility facade | Freeze Green Wellness light aliases for migration; new presentation resolves `AppSemanticColors` from the active theme. Remove Blue-named aliases only after cutover and rollback release. | W1 Foundation |
-| lib/core/theme/app_semantic_colors.dart | AppSemanticColors | New Green Wellness contract | Canonical context-aware semantic color extension | Supply exact light tokens and a deterministic M3 fidelity dark snapshot from seed `#006A46`; presentation reads roles from `Theme.of(context)`. | W1 Foundation |
+| lib/core/theme/app_colors.dart | AppColors | Color raw×88 | Temporary compatibility facade | Blue Wellness defaults are active; new presentation resolves `AppSemanticColors` from the active theme. Retain Green only behind the explicit rollback flag and health/success roles. | W1 Foundation |
+| lib/core/theme/app_semantic_colors.dart | AppSemanticColors | Shared Blue Wellness contract | Canonical context-aware semantic color extension | Supply Blue light tokens and deterministic dark semantic roles; presentation reads roles from `Theme.of(context)`. | W1 Foundation |
 | lib/core/theme/app_decoration.dart | AppDecoration | Color raw×2, Colors.*×2 | Composition/helper aligned to canonical layers | Chuyển decoration thành composition từ token; tránh màu raw/Colors.*. | W1 Foundation |
 | lib/core/theme/app_duration.dart | AppDuration | duration raw×37, motion token×2 | Compatibility facade → semantic token | Giữ public facade nhưng map 1:1 sang motion token canonical; bỏ các duration chồng nghĩa. | W1 Foundation |
 | lib/core/theme/app_experience.dart | AppExperience / _NanoBioScrollBehavior | Chưa có motion/feedback đáng kể | Composition/helper aligned to canonical layers | Cấp AppExperienceScope cho motion, haptic, sound, text scale và performance tier; không đọc setting rải rác. | W1 Foundation |
-| lib/core/theme/app_gradients.dart | AppGradients | Color raw×58 | Compatibility facade → semantic token | Standardize Green Wellness CTA `#0F8E62 -> #32C789`; critical state does not use a decorative gradient as its only signal. | W1 Foundation |
+| lib/core/theme/app_gradients.dart | AppGradients | Color raw×58 | Compatibility facade → semantic token | Use Blue CTA range `#234FA8 -> #3971D3` sparingly; critical state never depends on a decorative gradient as its only signal. | W1 Foundation |
 | lib/core/theme/app_icons.dart | AppIcons | Chưa có motion/feedback đáng kể | Composition/helper aligned to canonical layers | Chuẩn hóa theme API và chuyển toàn bộ giá trị sang token canonical; giữ compatibility trong giai đoạn migration. | W1 Foundation |
 | lib/core/theme/app_motion.dart | AppPageTransitionsBuilder / AppViewMotion / _AppViewMotionState / AppPressScale | controller×2, AnimatedScale×1, motion token×2 | Canonical motion widget API | Trở thành entrypoint motion widget canonical: press, state switch, reveal, shared-axis và reduced motion. | W1 Foundation |
 | lib/core/theme/app_radius.dart | AppRadius | Chưa có motion/feedback đáng kể | Compatibility facade → semantic token | Chuẩn hóa theme API và chuyển toàn bộ giá trị sang token canonical; giữ compatibility trong giai đoạn migration. | W1 Foundation |

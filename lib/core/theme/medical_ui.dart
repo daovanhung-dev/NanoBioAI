@@ -33,7 +33,7 @@ class MedicalPageScaffold extends StatelessWidget {
     this.floatingActionButtonLocation,
     this.bottomNavigationBar,
     this.drawer,
-    this.ambientBackground = true,
+    this.ambientBackground = false,
     this.safeArea = false,
     this.extendBody = false,
     this.resizeToAvoidBottomInset = true,
@@ -87,7 +87,7 @@ class MedicalScrollPage extends StatelessWidget {
     required this.icon,
     required this.children,
     this.actions = const [],
-    this.gradient = AppGradients.hero,
+    this.gradient = AppGradients.primarySoft,
     this.maxContentWidth = 760,
     this.padding,
     this.bottomNavigationBar,
@@ -268,24 +268,37 @@ class MedicalPageHero extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.gradient = AppGradients.hero,
+    this.gradient = AppGradients.primarySoft,
     this.actions = const [],
   });
 
   @override
   Widget build(BuildContext context) {
-    final onBrand = context.semanticColors.onBrand;
+    final colors = context.semanticColors;
+    final isLightSurface =
+        gradient.colors
+                .map((color) => color.computeLuminance())
+                .fold<double>(0, (sum, luminance) => sum + luminance) /
+            gradient.colors.length >
+        .45;
+    final titleColor = isLightSurface ? colors.textPrimary : colors.onBrand;
+    final bodyColor = isLightSurface
+        ? colors.textSecondary
+        : colors.onBrand.withValues(alpha: .92);
     return Container(
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: AppShadows.primary,
+        border: Border.all(
+          color: isLightSurface ? colors.borderLight : Colors.transparent,
+        ),
+        boxShadow: isLightSurface ? null : AppShadows.primary,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppRadius.xxl),
         child: Stack(
           children: [
-            const Positioned.fill(child: _HeroPattern()),
+            Positioned.fill(child: _HeroPattern(color: titleColor)),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: LayoutBuilder(
@@ -298,16 +311,16 @@ class MedicalPageHero extends StatelessWidget {
                         MedicalStatusPill(
                           label: eyebrow!,
                           icon: Icons.verified_user_outlined,
-                          foregroundColor: onBrand,
-                          backgroundColor: onBrand.withValues(alpha: .14),
-                          borderColor: onBrand.withValues(alpha: .22),
+                          foregroundColor: titleColor,
+                          backgroundColor: titleColor.withValues(alpha: .10),
+                          borderColor: titleColor.withValues(alpha: .18),
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
                       Text(
                         title,
                         style: AppTextStyles.heading1.copyWith(
-                          color: onBrand,
+                          color: titleColor,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -315,8 +328,8 @@ class MedicalPageHero extends StatelessWidget {
                       Text(
                         subtitle,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: onBrand,
-                          height: 1.55,
+                          color: bodyColor,
+                          height: 1.48,
                         ),
                       ),
                       if (actions.isNotEmpty) ...[
@@ -336,8 +349,10 @@ class MedicalPageHero extends StatelessWidget {
                       children: [
                         MedicalIconBadge(
                           icon: icon,
-                          color: onBrand,
-                          backgroundColor: onBrand.withValues(alpha: .15),
+                          color: titleColor,
+                          backgroundColor: isLightSurface
+                              ? colors.primarySoft
+                              : titleColor.withValues(alpha: .15),
                           size: 58,
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -353,8 +368,10 @@ class MedicalPageHero extends StatelessWidget {
                       const SizedBox(width: AppSpacing.lg),
                       MedicalIconBadge(
                         icon: icon,
-                        color: onBrand,
-                        backgroundColor: onBrand.withValues(alpha: .15),
+                        color: titleColor,
+                        backgroundColor: isLightSurface
+                            ? colors.primarySoft
+                            : titleColor.withValues(alpha: .15),
                         size: 74,
                       ),
                     ],
@@ -370,7 +387,9 @@ class MedicalPageHero extends StatelessWidget {
 }
 
 class _HeroPattern extends StatelessWidget {
-  const _HeroPattern();
+  const _HeroPattern({required this.color});
+
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -386,7 +405,7 @@ class _HeroPattern extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: context.semanticColors.onBrand.withValues(alpha: .10),
+                  color: color.withValues(alpha: .075),
                   width: 24,
                 ),
               ),
@@ -400,7 +419,7 @@ class _HeroPattern extends StatelessWidget {
               height: 124,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: context.semanticColors.onBrand.withValues(alpha: .055),
+                color: color.withValues(alpha: .045),
               ),
             ),
           ),
@@ -443,12 +462,20 @@ class MedicalSurfaceCard extends StatelessWidget {
       gradient: gradient,
       borderRadius: borderRadius,
       border: Border.all(color: borderColor ?? colors.borderLight),
-      boxShadow: elevated ? AppShadows.cardRaised : AppShadows.card,
+      boxShadow: elevated ? AppShadows.cardRaised : null,
     );
     final paddedChild = Padding(padding: padding, child: child);
 
     final content = onTap == null
-        ? DecoratedBox(decoration: decoration, child: paddedChild)
+        ? DecoratedBox(
+            decoration: decoration,
+            child: Material(
+              type: MaterialType.transparency,
+              shape: RoundedRectangleBorder(borderRadius: borderRadius),
+              clipBehavior: Clip.antiAlias,
+              child: paddedChild,
+            ),
+          )
         : Material(
             color: Colors.transparent,
             child: Ink(

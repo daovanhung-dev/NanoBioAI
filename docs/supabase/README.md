@@ -94,6 +94,30 @@ AI runtime dùng Edge Function `nabi-ai-generate`. Gemini API key chỉ được
 không nhận/ghi credential nhà cung cấp. `report-ai-content` cho phép guest gửi
 phản hồi có giới hạn tốc độ và lưu qua service role.
 
+Website Admin Web dùng Edge Function `register-early-access` để nhận đăng ký
+NanoBio Early Access. Function tự xác thực consent/số điện thoại, ép promotion
+`EARLY_ACCESS_PLUS_30D` sang Plus 30 ngày ở server, trả phản hồi trùng số chung
+và không cập nhật lại lead đã tồn tại. Bảng `early_access_leads` không cấp quyền
+trực tiếp cho anon/authenticated; HMAC IP rate state nằm trong schema
+`early_access_private`, chỉ RPC rate-limit được gọi bằng service role. Rate
+state hết hạn sau 24 giờ và được dọn bởi cron mỗi 5 phút. APK chỉ được ký URL từ
+bucket riêng `early-access-apk`; thiếu APK không làm giả link tải.
+
+Forward migration cho môi trường cần nâng cấp là
+`supabase/migrations/20261007000000_nanobio_early_access.sql`. Không chạy
+`docs/supabase/01_build_system.sql` hoặc `02_seed_data.sql` trên staging/
+production. Function đặt `verify_jwt = false` vì khách website chưa đăng nhập;
+handler vẫn yêu cầu origin nằm trong `ALLOWED_ORIGINS`, kiểm tra dữ liệu và áp
+dụng rate limit.
+
+Trước khi triển khai function, đặt `ALLOWED_ORIGINS` bằng origin chính xác
+(`https://daovanhung-dev.github.io`; khi phát triển local dùng
+`http://localhost:5173`) và tạo secret `EARLY_ACCESS_RATE_LIMIT_HMAC_KEY` với
+ít nhất 32 ký tự ngẫu nhiên. Đặt thêm `APP_VERSION`, `EARLY_ACCESS_BUCKET`,
+`EARLY_ACCESS_APK_PATH` và `SIGNED_URL_SECONDS` nếu cần; không lưu giá trị secret
+trong repository. Nếu HMAC secret/RPC không khả dụng, endpoint từ chối submit
+thay vì bỏ qua giới hạn.
+
 Food Scan dùng Edge Function riêng `food-scan-analyze` cho hai operation
 `vision` và `health`. Function xác thực JWT, kiểm tra quyền Plus/FamilyPlus
 qua `effective_user_access`, giới hạn request theo user, rồi chuyển tiếp tạm
@@ -158,6 +182,7 @@ supabase functions deploy google-play-verify-purchase --project-ref "$SUPABASE_P
 supabase functions deploy nabi-ai-generate --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy food-scan-analyze --project-ref "$SUPABASE_PROJECT_REF"
 supabase functions deploy report-ai-content --project-ref "$SUPABASE_PROJECT_REF"
+supabase functions deploy register-early-access --project-ref "$SUPABASE_PROJECT_REF"
 ```
 
 ## Xác minh sau rebuild

@@ -37,13 +37,51 @@ class NotificationSettingsPage extends ConsumerWidget {
       body: SafeArea(
         top: false,
         child: state.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Đang tải cài đặt nhắc nhở…',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ],
+            ),
+          ),
           error: (_, __) => Center(
-            child: OutlinedButton.icon(
-              onPressed: () =>
-                  ref.invalidate(notificationSettingsControllerProvider),
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Thử lại'),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 32,
+                    color: context.semanticColors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Chưa tải được cài đặt nhắc nhở',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.heading3,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Bạn có thể thử lại ngay.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton.icon(
+                    onPressed: () =>
+                        ref.invalidate(notificationSettingsControllerProvider),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Thử lại'),
+                  ),
+                ],
+              ),
             ),
           ),
           data: (preferences) =>
@@ -64,215 +102,236 @@ class _NotificationSettingsBody extends ConsumerWidget {
     final controller = ref.read(
       notificationSettingsControllerProvider.notifier,
     );
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.pagePadding,
-        AppSpacing.md,
-        AppSpacing.pagePadding,
-        AppSpacing.xxxl,
-      ),
-      children: [
-        _SettingsCard(
-          children: [
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              secondary: const Icon(Icons.notifications_active_rounded),
-              title: const Text('Cho phép Nabi nhắc bạn'),
-              subtitle: const Text(
-                'Công tắc tổng. Tắt sẽ hủy các thông báo đang chờ nhưng giữ lựa chọn từng loại.',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final contentWidth = constraints.maxWidth >= 720
+            ? 640.0
+            : constraints.maxWidth;
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: contentWidth),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding,
+                AppSpacing.md,
+                AppSpacing.pagePadding,
+                AppSpacing.xxxl,
               ),
-              value: preferences.masterEnabled,
-              onChanged: (value) async {
-                final granted = await controller.setMasterEnabled(value);
-                if (!context.mounted || granted || !value) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Bạn cần cho phép thông báo trong cài đặt thiết bị để Nabi có thể nhắc.',
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _SectionTitle('Các loại nhắc nhở'),
-        const SizedBox(height: AppSpacing.sm),
-        _SettingsCard(
-          children: [
-            _SwitchRow(
-              icon: Icons.event_available_rounded,
-              title: 'Lịch trình cá nhân',
-              subtitle: 'Giữ nhắc bữa ăn, vận động và nhiệm vụ hiện có.',
-              value: preferences.scheduleEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setScheduleEnabled,
-            ),
-            const Divider(),
-            _SwitchRow(
-              icon: Icons.favorite_outline_rounded,
-              title: 'Hỏi thăm tình trạng sức khỏe',
-              subtitle: 'Mặc định mỗi 1 giờ trong khung giờ bạn chọn.',
-              value: preferences.healthCheckInEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setHealthCheckInEnabled,
-            ),
-            if (preferences.healthCheckInEnabled) ...[
-              _ChoiceRow<int>(
-                label: 'Tần suất hỏi thăm',
-                value: preferences.healthCheckInIntervalMinutes,
-                values: const [60, 120, 180, 240],
-                labelOf: (value) => '${value ~/ 60} giờ',
-                onChanged: controller.setHealthCheckInInterval,
-              ),
-              _TimeWindowRow(
-                label: 'Khung giờ hỏi thăm',
-                startMinutes: preferences.healthCheckInStartMinutes,
-                endMinutes: preferences.healthCheckInEndMinutes,
-                onChanged: controller.setHealthCheckInWindow,
-              ),
-            ],
-            const Divider(),
-            _SwitchRow(
-              icon: Icons.flag_outlined,
-              title: 'Xem lại mục tiêu',
-              subtitle: 'Hỏi vào ngày 01 và ngày 15 hằng tháng.',
-              value: preferences.goalReviewEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setGoalReviewEnabled,
-            ),
-            if (preferences.goalReviewEnabled)
-              _SingleTimeRow(
-                label: 'Giờ hỏi mục tiêu',
-                minutes: preferences.goalReviewMinutes,
-                onChanged: controller.setGoalReviewTime,
-              ),
-            const Divider(),
-            _SwitchRow(
-              icon: Icons.manage_accounts_outlined,
-              title: 'Cập nhật thông tin thay đổi',
-              subtitle:
-                  'Hỏi lại cân nặng, chiều cao, vận động, giấc ngủ và lượng nước.',
-              value: preferences.profileReviewEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setProfileReviewEnabled,
-            ),
-            if (preferences.profileReviewEnabled) ...[
-              _ChoiceRow<int>(
-                label: 'Chu kỳ hỏi lại',
-                value: preferences.profileReviewIntervalDays,
-                values: const [15, 30, 60, 90],
-                labelOf: (value) => '$value ngày',
-                onChanged: controller.setProfileReviewIntervalDays,
-              ),
-              _SingleTimeRow(
-                label: 'Giờ hỏi cập nhật',
-                minutes: preferences.profileReviewMinutes,
-                onChanged: controller.setProfileReviewTime,
-              ),
-            ],
-            const Divider(),
-            _SwitchRow(
-              icon: Icons.water_drop_outlined,
-              title: 'Nhắc uống nước',
-              subtitle: 'Tự dừng trong ngày khi mục tiêu nước đã hoàn thành.',
-              value: preferences.waterReminderEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setWaterReminderEnabled,
-            ),
-            if (preferences.waterReminderEnabled) ...[
-              _ChoiceRow<int>(
-                label: 'Tần suất uống nước',
-                value: preferences.waterReminderIntervalMinutes,
-                values: const [60, 90, 120, 180],
-                labelOf: (value) =>
-                    value == 90 ? '1 giờ 30 phút' : '${value ~/ 60} giờ',
-                onChanged: controller.setWaterReminderInterval,
-              ),
-              _TimeWindowRow(
-                label: 'Khung giờ uống nước',
-                startMinutes: preferences.waterReminderStartMinutes,
-                endMinutes: preferences.waterReminderEndMinutes,
-                onChanged: controller.setWaterReminderWindow,
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _SectionTitle('Âm thanh & thời gian yên tĩnh'),
-        const SizedBox(height: AppSpacing.sm),
-        _SettingsCard(
-          children: [
-            _SwitchRow(
-              icon: Icons.record_voice_over_rounded,
-              title: 'Nabi nhắc bằng giọng nói',
-              subtitle:
-                  'Mặc định tắt. Khi bật, notification dùng lời nhắc ngắn, không đọc bệnh lý hay dữ liệu nhạy cảm trên màn hình khóa.',
-              value: preferences.voiceEnabled,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setVoiceEnabled,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.play_circle_outline_rounded),
-              title: const Text('Nghe thử giọng nhắc'),
-              subtitle: const Text(
-                'Không dùng micro và không gửi nội dung sức khỏe.',
-              ),
-              onTap: () async {
-                final ok = await controller.previewVoice();
-                if (!context.mounted || ok) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Chưa thể phát giọng nhắc lúc này. Hãy dừng cuộc trò chuyện bằng giọng nói rồi thử lại.',
-                    ),
-                  ),
-                );
-              },
-            ),
-            const Divider(),
-            _SwitchRow(
-              icon: Icons.bedtime_outlined,
-              title: 'Theo giờ ngủ của bạn',
-              subtitle:
-                  'Ưu tiên khung ngủ/thức đã lưu trong lịch sinh hoạt cá nhân.',
-              value: preferences.usePersonalQuietHours,
-              enabled: preferences.masterEnabled,
-              onChanged: controller.setUsePersonalQuietHours,
-            ),
-            if (!preferences.usePersonalQuietHours)
-              _TimeWindowRow(
-                label: 'Không làm phiền',
-                startMinutes: preferences.fallbackQuietStartMinutes,
-                endMinutes: preferences.fallbackQuietEndMinutes,
-                onChanged: controller.setFallbackQuietHours,
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  color: context.semanticColors.primary,
+                _SettingsCard(
+                  children: [
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      secondary: _SettingIconBadge(
+                        icon: Icons.notifications_active_rounded,
+                        active: preferences.masterEnabled,
+                      ),
+                      title: const Text('Cho phép Nabi nhắc bạn'),
+                      subtitle: const Text(
+                        'Công tắc tổng. Tắt sẽ hủy các thông báo đang chờ nhưng giữ lựa chọn từng loại.',
+                      ),
+                      value: preferences.masterEnabled,
+                      onChanged: (value) async {
+                        final granted = await controller.setMasterEnabled(
+                          value,
+                        );
+                        if (!context.mounted || granted || !value) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Bạn cần cho phép thông báo trong cài đặt thiết bị để Nabi có thể nhắc.',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                const Expanded(
-                  child: Text(
-                    'Nabi chỉ hiện nội dung chung trên notification. Cập nhật bệnh lý, mục tiêu và hồ sơ chỉ được lưu sau khi bạn mở ứng dụng và xác nhận.',
+                const SizedBox(height: AppSpacing.md),
+                _SectionTitle('Các loại nhắc nhở'),
+                const SizedBox(height: AppSpacing.sm),
+                _SettingsCard(
+                  children: [
+                    _SwitchRow(
+                      icon: Icons.event_available_rounded,
+                      title: 'Lịch trình cá nhân',
+                      subtitle:
+                          'Giữ nhắc bữa ăn, vận động và nhiệm vụ hiện có.',
+                      value: preferences.scheduleEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setScheduleEnabled,
+                    ),
+                    const Divider(indent: 56),
+                    _SwitchRow(
+                      icon: Icons.favorite_outline_rounded,
+                      title: 'Hỏi thăm tình trạng sức khỏe',
+                      subtitle: 'Mặc định mỗi 1 giờ trong khung giờ bạn chọn.',
+                      value: preferences.healthCheckInEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setHealthCheckInEnabled,
+                    ),
+                    if (preferences.healthCheckInEnabled) ...[
+                      _ChoiceRow<int>(
+                        label: 'Tần suất hỏi thăm',
+                        value: preferences.healthCheckInIntervalMinutes,
+                        values: const [60, 120, 180, 240],
+                        labelOf: (value) => '${value ~/ 60} giờ',
+                        onChanged: controller.setHealthCheckInInterval,
+                      ),
+                      _TimeWindowRow(
+                        label: 'Khung giờ hỏi thăm',
+                        startMinutes: preferences.healthCheckInStartMinutes,
+                        endMinutes: preferences.healthCheckInEndMinutes,
+                        onChanged: controller.setHealthCheckInWindow,
+                      ),
+                    ],
+                    const Divider(indent: 56),
+                    _SwitchRow(
+                      icon: Icons.flag_outlined,
+                      title: 'Xem lại mục tiêu',
+                      subtitle: 'Hỏi vào ngày 01 và ngày 15 hằng tháng.',
+                      value: preferences.goalReviewEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setGoalReviewEnabled,
+                    ),
+                    if (preferences.goalReviewEnabled)
+                      _SingleTimeRow(
+                        label: 'Giờ hỏi mục tiêu',
+                        minutes: preferences.goalReviewMinutes,
+                        onChanged: controller.setGoalReviewTime,
+                      ),
+                    const Divider(indent: 56),
+                    _SwitchRow(
+                      icon: Icons.manage_accounts_outlined,
+                      title: 'Cập nhật thông tin thay đổi',
+                      subtitle:
+                          'Hỏi lại cân nặng, chiều cao, vận động, giấc ngủ và lượng nước.',
+                      value: preferences.profileReviewEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setProfileReviewEnabled,
+                    ),
+                    if (preferences.profileReviewEnabled) ...[
+                      _ChoiceRow<int>(
+                        label: 'Chu kỳ hỏi lại',
+                        value: preferences.profileReviewIntervalDays,
+                        values: const [15, 30, 60, 90],
+                        labelOf: (value) => '$value ngày',
+                        onChanged: controller.setProfileReviewIntervalDays,
+                      ),
+                      _SingleTimeRow(
+                        label: 'Giờ hỏi cập nhật',
+                        minutes: preferences.profileReviewMinutes,
+                        onChanged: controller.setProfileReviewTime,
+                      ),
+                    ],
+                    const Divider(indent: 56),
+                    _SwitchRow(
+                      icon: Icons.water_drop_outlined,
+                      title: 'Nhắc uống nước',
+                      subtitle:
+                          'Tự dừng trong ngày khi mục tiêu nước đã hoàn thành.',
+                      value: preferences.waterReminderEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setWaterReminderEnabled,
+                    ),
+                    if (preferences.waterReminderEnabled) ...[
+                      _ChoiceRow<int>(
+                        label: 'Tần suất uống nước',
+                        value: preferences.waterReminderIntervalMinutes,
+                        values: const [60, 90, 120, 180],
+                        labelOf: (value) => value == 90
+                            ? '1 giờ 30 phút'
+                            : '${value ~/ 60} giờ',
+                        onChanged: controller.setWaterReminderInterval,
+                      ),
+                      _TimeWindowRow(
+                        label: 'Khung giờ uống nước',
+                        startMinutes: preferences.waterReminderStartMinutes,
+                        endMinutes: preferences.waterReminderEndMinutes,
+                        onChanged: controller.setWaterReminderWindow,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _SectionTitle('Âm thanh & thời gian yên tĩnh'),
+                const SizedBox(height: AppSpacing.sm),
+                _SettingsCard(
+                  children: [
+                    _SwitchRow(
+                      icon: Icons.record_voice_over_rounded,
+                      title: 'Nabi nhắc bằng giọng nói',
+                      subtitle:
+                          'Mặc định tắt. Khi bật, notification dùng lời nhắc ngắn, không đọc bệnh lý hay dữ liệu nhạy cảm trên màn hình khóa.',
+                      value: preferences.voiceEnabled,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setVoiceEnabled,
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.play_circle_outline_rounded),
+                      title: const Text('Nghe thử giọng nhắc'),
+                      subtitle: const Text(
+                        'Không dùng micro và không gửi nội dung sức khỏe.',
+                      ),
+                      onTap: () async {
+                        final ok = await controller.previewVoice();
+                        if (!context.mounted || ok) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Chưa thể phát giọng nhắc lúc này. Hãy dừng cuộc trò chuyện bằng giọng nói rồi thử lại.',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    _SwitchRow(
+                      icon: Icons.bedtime_outlined,
+                      title: 'Theo giờ ngủ của bạn',
+                      subtitle:
+                          'Ưu tiên khung ngủ/thức đã lưu trong lịch sinh hoạt cá nhân.',
+                      value: preferences.usePersonalQuietHours,
+                      enabled: preferences.masterEnabled,
+                      onChanged: controller.setUsePersonalQuietHours,
+                    ),
+                    if (!preferences.usePersonalQuietHours)
+                      _TimeWindowRow(
+                        label: 'Không làm phiền',
+                        startMinutes: preferences.fallbackQuietStartMinutes,
+                        endMinutes: preferences.fallbackQuietEndMinutes,
+                        onChanged: controller.setFallbackQuietHours,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          color: context.semanticColors.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Expanded(
+                          child: Text(
+                            'Nabi chỉ hiện nội dung chung trên notification. Cập nhật bệnh lý, mục tiêu và hồ sơ chỉ được lưu sau khi bạn mở ứng dụng và xác nhận.',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -284,12 +343,48 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.cardPadding,
           vertical: AppSpacing.sm,
         ),
         child: Column(children: children),
+      ),
+    );
+  }
+}
+
+class _SettingIconBadge extends StatelessWidget {
+  const _SettingIconBadge({
+    required this.icon,
+    required this.active,
+    this.enabled = true,
+  });
+
+  final IconData icon;
+  final bool active;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: active ? colors.primarySoft : colors.surfaceSoft,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Icon(
+        icon,
+        size: 20,
+        color: !enabled
+            ? colors.textMuted
+            : active
+            ? colors.primaryDark
+            : colors.textSecondary,
       ),
     );
   }
@@ -325,7 +420,7 @@ class _SwitchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
       contentPadding: EdgeInsets.zero,
-      secondary: Icon(icon),
+      secondary: _SettingIconBadge(icon: icon, active: value, enabled: enabled),
       title: Text(title),
       subtitle: Text(subtitle),
       value: value,

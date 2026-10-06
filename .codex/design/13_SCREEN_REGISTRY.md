@@ -1,6 +1,6 @@
 # Screen Registry
 
-Working-tree snapshot 2026-08-08: **80 repository surface specs**. This count is separate from the **76 Stitch reference pairs** and is not a visual-acceptance claim.
+Working-tree snapshot 2026-10-07: **94 repository surface specs** mapped from current routes, source compositions, and embedded surfaces. This count is separate from the **76 Stitch reference pairs** and is not a visual-acceptance claim.
 
 - **V1-01 — Splash** · `active-route` · `V1RoutePaths.splash` · `lib/app_versions/v1/features/splash/presentation/pages/splash_page.dart`
 - **V1-02 — Đăng nhập V1 Entry** · `active-route` · `V1RoutePaths.login` · `lib/app_versions/v1/features/auth/presentation/pages/v1_auth_entry_page.dart`
@@ -14,15 +14,20 @@ Working-tree snapshot 2026-08-08: **80 repository surface specs**. This count is
 - **V1-10 — Body Metrics** · `active-route` · `V1RoutePaths.bodyMetrics` · `lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart`
 - **V1-11 — Lifestyle Schedule** · `active-route` · `V1RoutePaths.lifestyleSchedule` · `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart`
 - **V1-12 — Daily Routine Preferences** · `active-route` · `V1RoutePaths.dailyRoutinePreferences` · `lib/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart`
-- **V1-13 — Sleep Tracking Preview** · `coming-soon` · `V1RoutePaths.sleepTracking` · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart`
-- **V1-14 — Stress Tracking Preview** · `coming-soon` · `V1RoutePaths.stressTracking` · `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart`
+- **V1-13 — Sleep Tracking and Safety** · `active-route` · `V1RoutePaths.sleepTracking` · auth + membership/rollout gate · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart`
+- **V1-14 — Stress Tracking Preview** · `active-route` · `V1RoutePaths.stressTracking` · `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart` (limited preview)
 - **V1-15 — AI Chat** · `active-route` · `V1RoutePaths.aiChat` · `lib/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart`
 - **V1-16 — AI Voice** · `active-route` · `V1RoutePaths.aiVoice` · `lib/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart`
 - **V1-17 — Nutrition** · `active-route` · `V1RoutePaths.nutrition` · `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart`
 - **V1-18 — Nutrition Profile Editor** · `active-route` · `V1RoutePaths.nutritionProfile` · `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart`
 - **V1-19 — Profile** · `active-route` · `V1RoutePaths.profile` · `lib/app_versions/v1/features/profile/presentation/pages/profile_page.dart`
-- **V1-20 — Community Preview** · `coming-soon` · `V1RoutePaths.community` · `lib/app_versions/v1/features/community/presentation/pages/community_page.dart`
+- **V1-20 — Community Preview** · `active-route` · `V1RoutePaths.community` · `lib/app_versions/v1/features/community/presentation/pages/community_page.dart` (honest placeholder)
 - **V1-21 — Today Tasks** · `active-route` · `V1RoutePaths.todayTasks` · `lib/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart`
+- **V1-22 — Health Check-in** · `active-route` · `V1RoutePaths.healthCheckIn` · `lib/app_versions/v1/features/health_check_in/presentation/pages/health_check_in_page.dart`
+- **V1-23 — Goal Review** · `active-route` · `V1RoutePaths.goalReview` · `lib/app_versions/v1/features/goal_review/presentation/pages/goal_review_page.dart`
+- **V1-24 — Profile Review** · `active-route` · `V1RoutePaths.profileReview` · `lib/app_versions/v1/features/profile_review/presentation/pages/profile_review_page.dart`
+- **V1-25 — Fitness Training** · `active-route` · `V1RoutePaths.fitnessTraining` · `lib/app_versions/v1/features/fitness_training/presentation/pages/fitness_training_page.dart`
+- **V1-26 — Notification Settings** · `active-route` · `V1RoutePaths.notificationSettings` · `lib/app_versions/v1/features/settings/presentation/pages/notification_settings_page.dart`
 - **ONB-01 — Text Scale Setup** · `source-sub-surface` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart`
 - **ONB-02 — Welcome Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/welcome_step.dart`
 - **ONB-03 — Basic Info Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/basic_info_step.dart`
@@ -44,6 +49,13 @@ Working-tree snapshot 2026-08-08: **80 repository surface specs**. This count is
 - **V1-X08 — Gentle Care Mode** · `active-route` · `V1RoutePaths.gentleCare` · `lib/app_versions/v1/features/gentle_care_mode/presentation/pages/gentle_care_mode_page.dart`
 - **V1-X09 — Personal Goals** · `active-route` · `V1RoutePaths.personalGoals` · `lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart`
 - **V1-X10 — Nami Care Page** · `active-route` · `V1RoutePaths.namiCare` · `lib/app_versions/v1/features/features_hub/presentation/widgets/nami_care_page.dart`
+- **V1-X11 — Settings / Của bạn** · `source-sub-surface` · `MainNavigationPage tab: Của bạn` · `lib/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart + settings pages`
+- **V1-X12 — Sleep Safety Access Gate** · `gate` · `V1RoutePaths.sleepTracking` wrapper · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_access_gate.dart`
+- **V1-X13 — Sleep Night Analysis** · `source-sub-surface` · Sleep Tracking / Safety History session detail · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_night_analysis_page.dart`
+- **V1-X14 — Sleep Safety History** · `source-sub-surface` · Sleep Tracking history action · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_history_page.dart`
+- **V1-X15 — Sleep Safety Contacts** · `source-sub-surface` · Sleep Tracking contacts action · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_contacts_page.dart`
+- **V1-X16 — Sleep Safety Schedule** · `source-sub-surface` · Sleep Tracking schedule action · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_schedule_page.dart`
+- **V1-X17 — Sleep Safety Audio Meter** · `embedded-widget` · Sleep Tracking safety setup · `lib/app_versions/v1/features/sleep_tracking/presentation/widgets/sleep_safety_audio_level_meter.dart`
 - **V2-01 — Auth Gate** · `gate` · `V2RoutePaths.authGate` · `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart`
 - **V2-02 — Login** · `active-route` · `V2RoutePaths.login` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
 - **V2-03 — Register** · `active-route` · `V2RoutePaths.register` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
@@ -60,6 +72,8 @@ Working-tree snapshot 2026-08-08: **80 repository surface specs**. This count is
 - **V3-01 — V3 Home** · `active-route` · `V3RoutePaths.home` · `lib/app_versions/v3/features/home/presentation/pages/v3_home_page.dart`
 - **V3-02 — Advanced Tracking** · `active-route` · `V3RoutePaths.advancedTracking` · `lib/app_versions/v3/features/advanced_tracking/presentation/pages/advanced_tracking_page.dart`
 - **V3-03 — FamilyPlus** · `active-route` · `V3RoutePaths.familyPlus` · `lib/app_versions/v3/features/familyplus/presentation/pages/familyplus_page.dart`
+- **V3-04 — Food Scan** · `active-route` · `V3RoutePaths.foodScan` · `lib/app_versions/v3/features/food_scan/presentation/pages/food_scan_page.dart`
+- **V3-05 — Food Scan History** · `active-route` · `V3RoutePaths.foodScanHistory` · `lib/app_versions/v3/features/food_scan/presentation/pages/food_scan_history_page.dart`
 - **SALE-01 — Sale Participation** · `source-sub-surface` · `Settings / participation flow` · `lib/sale_referral/presentation/pages/sale_participation_page.dart`
 - **SALE-02 — Payout Profile Gate** · `internal-surface` · `SaleShellPage gate` · `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_SalePayoutProfileGate`)
 - **SALE-03 — Sale Overview** · `internal-surface` · `SaleShellPage tab 0` · `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_OverviewTab`)

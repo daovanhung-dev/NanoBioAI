@@ -10,8 +10,8 @@ void main() {
         (
           name: 'Blue',
           colors: AppSemanticColors.blueDark,
-          hero: const [Color(0xFF1746A2), Color(0xFF2F6FED)],
-          brandAccent: const Color(0xFF14A36F),
+          hero: const [Color(0xFF1C478F), Color(0xFF285CC5)],
+          brandAccent: const Color(0xFF16845C),
         ),
         (
           name: 'Green rollback',
@@ -43,13 +43,13 @@ void main() {
       }
     });
 
-    test('success remains green and readable in Blue Wellness', () {
+    test('health accent and success remain readable in both themes', () {
       final green = AppSemanticColors.greenDark;
       final blue = AppSemanticColors.blueDark;
 
       expect(green.success, const Color(0xFF82D8AB));
-      expect(blue.success, green.success);
-      expect(blue.successSoft, green.successSoft);
+      expect(blue.success, const Color(0xFF82D8AB));
+      expect(blue.brandAccent, const Color(0xFF16845C));
       expect(
         _contrast(green.success, green.successSoft),
         greaterThanOrEqualTo(4.5),
@@ -60,7 +60,7 @@ void main() {
       );
     });
 
-    test('active brand heroes use only dark on-brand endpoints', () {
+    test('brand hero endpoints keep white content readable', () {
       for (final gradient in [AppGradients.hero, AppGradients.dashboard]) {
         for (final background in gradient.colors) {
           expect(

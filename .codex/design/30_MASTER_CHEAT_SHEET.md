@@ -1,10 +1,10 @@
-# Master Cheat Sheet - Stitch Green Wellness
+# Master Cheat Sheet — NanoBio Blue Wellness
 
 **Authority:** PNG layout; HTML typography/tokens; Approved DD/runtime business. **Stitch refs:** 76, acceptance open. **Repo specs:** 80.
 
-**Brand:** primary `#006A46`; accent `#14A36F`; CTA `#0F8E62 -> #32C789`; background `#F5FAF7`; text `#12352A`; mint `#EAF9F1`.
+**Brand:** primary `#285CC5`; health accent `#16845C`; CTA `#234FA8 -> #3971D3`; background `#F4F7FB`; text `#14243A`; blue soft `#E7EEFC`; health soft `#E5F3EB`.
 
-**Type:** Roboto 400/500/600/700. **Layout:** page gutter 16. **Radius:** input 14, card 20, sheet 28. **Targets:** >=48 dp. **Dark:** frozen M3 fidelity from `#006A46`.
+**Type:** Roboto 400/500/600/700. **Layout:** page gutter 16. **Radius:** input 14, card 18, sheet 28. **Targets:** >=48 dp. **Dark:** frozen Blue Wellness semantic roles.
 
 **Motion:** 120-320 ms typical; progress up to 500 ms; Reduce Motion collapses translation/scale/loops. **Glass:** transient controls only. **Nabi:** contextual and non-obstructive.
 

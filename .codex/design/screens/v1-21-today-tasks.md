@@ -1,6 +1,6 @@
-# V1-21 - Today Tasks
+# V1-21 — Today Tasks
 
-> Working-tree evidence: 2026-08-08
+> Working-tree evidence: 2026-10-06
 > Classification: **active-route** - Group: `03_dashboard_health` - Archetype: `daily-task-list`
 
 ## 01. Purpose
@@ -31,13 +31,13 @@ The user understands current progress and can perform only the actions permitted
 Date and daily context -> completed/total progress -> open tasks -> upcoming -> completed -> locked -> details.
 
 ## 09. Page anatomy
-Stable app bar, Green Wellness hero, progress card, status-grouped task cards and a modal detail sheet.
+Stable app bar, restrained Blue Wellness hero, progress card, status-grouped task cards and a modal detail sheet.
 
 ## 10. Material 3 archetype
 Use a single expressive daily-progress focal point. Task rows remain stable, scannable and keyed by task identity.
 
 ## 11. Color
-- Green Wellness primary `#006A46`; accent `#14A36F`; background `#F5FAF7`; text `#12352A`; mint `#EAF9F1`.
+- Blue Wellness primary `#285CC5`; health accent `#16845C`; background `#F4F7FB`; text `#14243A`; blue soft surface `#E7EEFC`.
 - Open, upcoming, completed and locked states also carry icon and copy; color is never the only signal.
 - Read context-aware semantic roles so dark mode preserves the same meaning.
 

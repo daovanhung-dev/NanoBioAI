@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/sleep_safety_session.dart';
@@ -12,7 +13,8 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final events = ref.watch(sleepSafetyControllerProvider).history;
-    final sessions = ref.watch(recentSleepSessionsProvider).asData?.value ??
+    final sessions =
+        ref.watch(recentSleepSessionsProvider).asData?.value ??
         const <SleepSafetySession>[];
     final completedSessions = sessions
         .where((session) => session.endedAt != null)
@@ -22,7 +24,7 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
         .toSet();
 
     if (events.isEmpty && completedSessions.isEmpty) {
-      return Scaffold(
+      return MedicalPageScaffold(
         appBar: AppBar(title: const Text('Lịch sử giám sát')),
         body: const Center(
           child: Padding(
@@ -37,7 +39,7 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Lịch sử giám sát')),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -45,9 +47,9 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
           if (completedSessions.isNotEmpty) ...[
             Text(
               'Các đêm đã giám sát',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             for (final session in completedSessions.take(14)) ...[
@@ -63,7 +65,8 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute<void>(
-                      builder: (_) => SleepNightAnalysisPage(sessionId: session.id),
+                      builder: (_) =>
+                          SleepNightAnalysisPage(sessionId: session.id),
                     ),
                   ),
                 ),
@@ -75,9 +78,9 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
             const SizedBox(height: 12),
             Text(
               'Sự kiện cần chú ý',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             for (final event in events) ...[
@@ -98,13 +101,13 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
                   onTap: !completedSessionIds.contains(event.sessionId)
                       ? null
                       : () => Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => SleepNightAnalysisPage(
-                                sessionId: event.sessionId,
-                              ),
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => SleepNightAnalysisPage(
+                              sessionId: event.sessionId,
                             ),
                           ),
+                        ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -116,27 +119,27 @@ class SleepSafetyHistoryPage extends ConsumerWidget {
   }
 
   static String _label(String value) => switch (value) {
-        'strongImpact' => 'Va đập mạnh',
-        'suddenLoudSound' => 'Âm thanh lớn đột ngột',
-        'abnormalShout' => 'Mẫu giống tiếng la cần chú ý',
-        'abnormalScream' => 'Mẫu giống tiếng hét cần chú ý',
-        'repeatedSuspiciousPattern' => 'Âm thanh bất thường lặp lại',
-        _ => 'Âm thanh năng lượng cao cần chú ý',
-      };
+    'strongImpact' => 'Va đập mạnh',
+    'suddenLoudSound' => 'Âm thanh lớn đột ngột',
+    'abnormalShout' => 'Mẫu giống tiếng la cần chú ý',
+    'abnormalScream' => 'Mẫu giống tiếng hét cần chú ý',
+    'repeatedSuspiciousPattern' => 'Âm thanh bất thường lặp lại',
+    _ => 'Âm thanh năng lượng cao cần chú ý',
+  };
 
   static String _response(String value) => switch (value) {
-        'ok' => 'Tôi ổn',
-        'needHelp' => 'Cần hỗ trợ',
-        'noResponse' => 'Không phản hồi',
-        _ => 'Chưa có',
-      };
+    'ok' => 'Tôi ổn',
+    'needHelp' => 'Cần hỗ trợ',
+    'noResponse' => 'Không phản hồi',
+    _ => 'Chưa có',
+  };
 
   static String _escalation(String value) => switch (value) {
-        'accepted' => 'Đã gửi yêu cầu hỗ trợ',
-        'dispatching' => 'Đang gửi yêu cầu',
-        'failed' => 'Chưa gửi được',
-        _ => 'Không cần',
-      };
+    'accepted' => 'Đã gửi yêu cầu hỗ trợ',
+    'dispatching' => 'Đang gửi yêu cầu',
+    'failed' => 'Chưa gửi được',
+    _ => 'Không cần',
+  };
 
   static String _date(DateTime value) {
     final day = value.day.toString().padLeft(2, '0');

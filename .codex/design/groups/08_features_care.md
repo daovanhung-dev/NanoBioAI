@@ -1,5 +1,7 @@
 # Care views, community và shared loading
 
+- [V1-23 — Goal Review](../screens/v1-23-goal-review.md) — active-route
+
 ## Goal
 
 Đồng bộ trạng thái tính năng, care suggestion và AI generation surface, không giả lập tính năng chưa có.

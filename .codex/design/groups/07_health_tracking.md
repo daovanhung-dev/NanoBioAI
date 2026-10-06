@@ -6,9 +6,9 @@ Tạo tactile capture, trend reveal và progress feedback, ưu tiên khả năng
 
 ## Current evidence
 
-- Files: **11**.
-- Page/screen: **9**.
-- Files có motion: **0**.
+- Files: **23** (source refresh 2026-10-07).
+- Page/screen: **11**.
+- Files có motion marker: **2** (một `AnimatedContainer`, một `TweenAnimationBuilder`).
 - Files dùng duration raw: **0**.
 - Files dùng color trực tiếp: **0**.
 - Files gọi haptic trực tiếp: **1**.
@@ -22,12 +22,20 @@ Tạo tactile capture, trend reveal và progress feedback, ưu tiên khả năng
 
 ## Views
 
+- [V1-22 — Health Check-in](../screens/v1-22-health-check-in.md) — active-route
+- [V1-X12 — Sleep Safety Access Gate](../screens/v1-x12-sleep-access-gate.md) — gate
+- [V1-X13 — Sleep Night Analysis](../screens/v1-x13-sleep-night-analysis.md) — source-sub-surface
+- [V1-X14 — Sleep Safety History](../screens/v1-x14-sleep-safety-history.md) — source-sub-surface
+- [V1-X15 — Sleep Safety Contacts](../screens/v1-x15-sleep-safety-contacts.md) — source-sub-surface
+- [V1-X16 — Sleep Safety Schedule](../screens/v1-x16-sleep-safety-schedule.md) — source-sub-surface
+- [V1-X17 — Sleep Safety Audio Meter](../screens/v1-x17-sleep-audio-level-meter.md) — embedded-widget
+
 | View | Entrance | State transition | Feedback | Design intent |
 | --- | --- | --- | --- | --- |
 | lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Metric entry tactile, report card number tween và warning state rõ; không celebration cho chỉ số bất thường. |
 | lib/app_versions/v1/features/daily_health_tracking/presentation/pages/daily_health_tracking_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Thay shell nhỏ bằng metric hub chuẩn hoặc xác nhận chỉ là forwarder; không tạo animation giả khi chưa có UI thực. |
 | lib/app_versions/v1/features/personal_goals/presentation/pages/personal_goals_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Goal option selection morph, reorder/prioritize transition và save feedback. |
-| lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Thiết kế explicit planned/redirect state nếu còn shell; không trình bày như module hoàn chỉnh. |
+| lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart | Static/short state transition; no continuous ambient loop | Entitlement loading/error, auth gate, membership lock, rollout state, idle, calibrating, monitoring, alert, recovery | Selection feedback only at existing action boundaries; preserve opt-in microphone and trusted access gates | Put monitoring state and start/stop first, then sensitivity/schedule/contacts/history; explain local audio handling and keep warning/recovery states readable. |
 | lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Thiết kế explicit planned/redirect state nếu còn shell; copy không phán xét và motion rất nhẹ. |
 | lib/app_versions/v1/features/water_tracking/presentation/pages/water_tracking_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Water fill/progress animation có clamp, haptic theo mốc chứ không theo mỗi tap. |
 | lib/app_versions/v1/features/weekly_summary/presentation/pages/weekly_summary_page.dart | Metric fade-size, chart draw một lần | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Chart reveal theo thời gian, summary item count-up một lần, share/export transition nếu có. |

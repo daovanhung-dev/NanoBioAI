@@ -39,7 +39,7 @@ Use expressive typography, shape and motion to clarify hierarchy—not to decora
 
 ## 11. Color
 - Semantic tokens only from `lib/core/theme/`.
-- Blue Wellness primary `#2F6FED` owns brand/navigation hierarchy; green remains a supporting wellness/success accent.
+- Blue Wellness primary `#285CC5` owns brand/navigation hierarchy; green `#16845C` remains the health/success accent.
 - Pastel tonal surfaces may distinguish categories, but state/access must never rely on color alone.
 - Error/warning/success must carry icon/text, never color alone.
 

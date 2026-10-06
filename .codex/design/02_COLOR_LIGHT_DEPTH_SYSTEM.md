@@ -1,4 +1,4 @@
-# Color, Light and Depth System - Stitch Green Wellness
+# Color, Light and Depth System — NanoBio Blue Wellness
 
 Use semantic roles from the active theme, never raw colors in feature UI.
 
@@ -6,20 +6,21 @@ Use semantic roles from the active theme, never raw colors in feature UI.
 
 | Role | Value | Use |
 | --- | --- | --- |
-| Primary | `#006A46` | Navigation, focus, selected state and trusted primary action |
-| Accent | `#14A36F` | Supporting highlight; never a replacement for semantic status |
-| CTA start | `#0F8E62` | Start of primary CTA/hero gradient |
-| CTA end | `#32C789` | End of primary CTA/hero gradient |
-| Background | `#F5FAF7` | Consumer page canvas |
-| Text primary | `#12352A` | Main text on light surfaces |
-| Mint surface | `#EAF9F1` | Soft wellness container |
+| Primary | `#285CC5` | Brand, navigation, focus and primary action |
+| Primary dark | `#1C478F` | Pressed/strong emphasis and legible text on blue-tinted surfaces |
+| Health accent | `#16845C` | Nutrition, positive health progress and success |
+| CTA range | `#234FA8` → `#3971D3` | Subtle brand emphasis where a gradient clarifies hierarchy |
+| Background | `#F4F7FB` | Consumer page canvas |
+| Text primary | `#14243A` | Main text on light surfaces |
+| Blue soft surface | `#E7EEFC` | Selected or lightly emphasized container |
+| Health soft surface | `#E5F3EB` | Positive health container |
 
 Status success, warning, error and information remain separate semantic families and must include text/icon/shape, not color alone. Violet remains reserved for AI or premium differentiation where the runtime capability actually exists.
 
 ## Dark scheme
 
-Generate one deterministic Material 3 fidelity `ColorScheme` from seed `#006A46`, snapshot it into theme tokens and do not follow platform dynamic color. Presentation reads `AppSemanticColors` from `Theme.of(context)` so light and dark resolve the same semantic role. Record contrast evidence before acceptance.
+Use one deterministic Material 3 semantic system for Blue Wellness and do not follow platform dynamic color. Presentation reads `AppSemanticColors` from `Theme.of(context)` so light and dark resolve the same semantic role. Record contrast evidence before acceptance. Green is reserved for health/success meanings, not navigation or general primary action.
 
 ## Depth
 
-Content surfaces are opaque or tonal. Translucency is limited to floating navigation and transient controls and must remain readable when transparency is reduced. Prefer tonal separation, a 1 dp semantic border and a short soft shadow; avoid stacked blur and decorative glow on health, payment or Admin data.
+Content surfaces are opaque or tonal. Translucency is limited to transient controls and must remain readable when transparency is reduced. Prefer tonal separation and a 1 dp semantic border; reserve short shadows for raised interactive layers. Avoid ambient blur and decorative glow on health, payment, Sale or Admin data.

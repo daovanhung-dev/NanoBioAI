@@ -575,23 +575,28 @@ class _ScoreRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1).clamp(1.0, 1.5).toDouble();
+    final ringSize = 76 * textScale;
+    final strokeWidth = 8 * textScale.clamp(1.0, 1.3).toDouble();
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: progress.clamp(0, 1).toDouble()),
       duration: AppMotionScope.duration(context, AppDuration.progress),
       curve: AppAnimations.emphasizedCurve,
       builder: (context, value, _) {
         return SizedBox(
-          width: 76,
-          height: 76,
+          width: ringSize,
+          height: ringSize,
           child: Stack(
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 76,
-                height: 76,
+                width: ringSize,
+                height: ringSize,
                 child: CircularProgressIndicator(
                   value: value,
-                  strokeWidth: 8,
+                  strokeWidth: strokeWidth,
                   strokeCap: StrokeCap.round,
                   backgroundColor: context.semanticColors.primarySoft,
                   valueColor: const AlwaysStoppedAnimation<Color>(
@@ -906,18 +911,10 @@ class _DashboardSurface extends StatelessWidget {
   const _DashboardSurface({required this.child});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: context.semanticColors.borderLight),
-        boxShadow: AppShadows.sm,
-      ),
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => MedicalSurfaceCard(
+    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+    child: child,
+  );
 }
 
 class _SectionHeading extends StatelessWidget {

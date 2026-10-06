@@ -1,5 +1,9 @@
 # Auth, profile và settings
 
+- [V1-24 — Profile Review](../screens/v1-24-profile-review.md) — active-route
+- [V1-26 — Notification Settings](../screens/v1-26-notification-settings.md) — active-route
+- [V1-X11 — Settings Subsurfaces](../screens/v1-x11-settings.md) — source-sub-surface
+
 ## Goal
 
 Làm rõ focus/validation, auth state, profile edits và cài đặt motion/sound/haptic.

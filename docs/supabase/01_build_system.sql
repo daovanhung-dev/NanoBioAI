@@ -26,7 +26,10 @@ begin
   for v_job_id in
     select jobid
     from cron.job
-    where jobname = 'nanobio-expire-memberships'
+    where jobname in (
+      'nanobio-expire-memberships',
+      'nanobio-purge-early-access-rate-limits'
+    )
   loop
     perform cron.unschedule(v_job_id);
   end loop;
@@ -38,6 +41,9 @@ begin;
 drop schema if exists public cascade;
 
 create schema public;
+drop schema if exists early_access_private cascade;
+create schema early_access_private;
+revoke all on schema early_access_private from public, anon, authenticated, service_role;
 
 comment on schema public is 'NanoBio application schema rebuilt from docs/supabase/01_build_system.sql';
 
@@ -766,6 +772,61 @@ create index if not exists idx_ai_content_reports_user_created
   on public.ai_content_reports (user_id, created_at desc)
   where user_id is not null;
 
+-- Website Early Access stores contact requests only. Membership activation is
+-- still handled by a trusted Admin/membership flow, never by this public form.
+create table if not exists public.early_access_leads (
+    id uuid primary key default gen_random_uuid(),
+    phone_e164 text not null unique,
+    phone_display text,
+    source text not null default 'nanobio_web',
+    app_version text,
+    vip_support_requested boolean not null default true,
+    privacy_consent boolean not null default false,
+    promotion_code text not null default 'EARLY_ACCESS_PLUS_30D',
+    requested_plan text not null default 'plus',
+    vip_duration_days integer not null default 30,
+    vip_grant_status text not null default 'pending_account_link',
+    claimed_user_id uuid null references auth.users(id) on delete set null,
+    vip_granted_at timestamptz null,
+    vip_expires_at timestamptz null,
+    full_name text null,
+    status text not null default 'new',
+    utm_source text null,
+    utm_medium text null,
+    utm_campaign text null,
+    referrer text null,
+    landing_path text not null default '/nanobio',
+    user_agent text null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    constraint early_access_phone_e164_ck check (phone_e164 ~ '^\+84(3|5|7|8|9)[0-9]{8}$'),
+    constraint early_access_consent_ck check (privacy_consent = true),
+    constraint early_access_plan_ck check (requested_plan = 'plus'),
+    constraint early_access_vip_days_ck check (vip_duration_days = 30),
+    constraint early_access_vip_status_ck check (vip_grant_status in ('pending_account_link','pending_activation','active','expired','cancelled')),
+    constraint early_access_lead_status_ck check (status in ('new','contacted','registered','converted','rejected')),
+    constraint early_access_full_name_length_ck check (full_name is null or char_length(full_name) <= 120),
+    constraint early_access_utm_source_length_ck check (utm_source is null or char_length(utm_source) <= 100),
+    constraint early_access_utm_medium_length_ck check (utm_medium is null or char_length(utm_medium) <= 100),
+    constraint early_access_utm_campaign_length_ck check (utm_campaign is null or char_length(utm_campaign) <= 100),
+    constraint early_access_referrer_length_ck check (referrer is null or char_length(referrer) <= 512),
+    constraint early_access_landing_path_ck check (landing_path in ('/nanobio','/nanobio/privacy')),
+    constraint early_access_user_agent_length_ck check (user_agent is null or char_length(user_agent) <= 512)
+);
+
+create index if not exists early_access_vip_grant_status_idx
+  on public.early_access_leads (vip_grant_status, created_at desc);
+create index if not exists early_access_lead_status_created_idx
+  on public.early_access_leads (status, created_at desc);
+
+create table if not exists early_access_private.rate_limits (
+    ip_hash text not null check (ip_hash ~ '^[0-9a-f]{64}$'),
+    window_started_at timestamptz not null,
+    request_count integer not null check (request_count between 1 and 10),
+    expires_at timestamptz not null,
+    primary key (ip_hash, window_started_at)
+);
+
 create table if not exists public.personal_schedule_ai_requests (
     request_id text primary key,
     user_id uuid not null references public.users (id) on delete cascade,
@@ -1035,6 +1096,81 @@ drop trigger if exists trg_ai_content_reports_updated_at on public.ai_content_re
 create trigger trg_ai_content_reports_updated_at
   before update on public.ai_content_reports
   for each row execute function public.set_updated_at();
+
+alter table public.early_access_leads enable row level security;
+revoke all on public.early_access_leads from public, anon, authenticated;
+grant select, insert, update on public.early_access_leads to service_role;
+
+create or replace function public.set_early_access_updated_at()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+revoke all on function public.set_early_access_updated_at() from public, anon, authenticated, service_role;
+drop trigger if exists trg_early_access_updated_at on public.early_access_leads;
+create trigger trg_early_access_updated_at
+  before update on public.early_access_leads
+  for each row execute function public.set_early_access_updated_at();
+
+alter table early_access_private.rate_limits enable row level security;
+revoke all on early_access_private.rate_limits from public, anon, authenticated, service_role;
+
+create or replace function public.consume_early_access_rate_limit(
+  p_ip_hash text,
+  p_window_started_at timestamptz
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = pg_catalog
+as $$
+declare
+  v_request_count integer;
+begin
+  if p_ip_hash is null or p_ip_hash !~ '^[0-9a-f]{64}$'
+     or p_window_started_at is null
+     or mod(extract(epoch from p_window_started_at)::bigint, 3600) <> 0 then
+    raise exception 'INVALID_EARLY_ACCESS_RATE_LIMIT_KEY' using errcode = '22023';
+  end if;
+
+  insert into early_access_private.rate_limits as rate_limits (
+    ip_hash, window_started_at, request_count, expires_at
+  ) values (
+    p_ip_hash, p_window_started_at, 1, p_window_started_at + interval '23 hours 55 minutes'
+  )
+  on conflict (ip_hash, window_started_at) do update
+    set request_count = rate_limits.request_count + 1,
+        expires_at = excluded.expires_at
+    where rate_limits.request_count < 10
+  returning request_count into v_request_count;
+
+  return v_request_count is not null;
+end;
+$$;
+revoke all on function public.consume_early_access_rate_limit(text, timestamptz) from public, anon, authenticated;
+grant execute on function public.consume_early_access_rate_limit(text, timestamptz) to service_role;
+
+create or replace function public.purge_early_access_rate_limits()
+returns integer
+language plpgsql
+security definer
+set search_path = pg_catalog
+as $$
+declare
+  v_deleted integer;
+begin
+  delete from early_access_private.rate_limits where expires_at <= now();
+  get diagnostics v_deleted = row_count;
+  return v_deleted;
+end;
+$$;
+revoke all on function public.purge_early_access_rate_limits() from public, anon, authenticated, service_role;
 
 -- Account deletion keeps only non-reusable operational evidence. Purchase
 -- ledger rows remain for financial reconciliation with their user relation
@@ -13726,6 +13862,11 @@ begin
     '*/5 * * * *',
     'select public.expire_membership_subscriptions();'
   );
+  perform cron.schedule(
+    'nanobio-purge-early-access-rate-limits',
+    '*/5 * * * *',
+    'select public.purge_early_access_rate_limits();'
+  );
 end
 $cron$;
 
@@ -15293,6 +15434,13 @@ values
     false,
     5242880,
     array['image/jpeg']::text[]
+  ),
+  (
+    'early-access-apk',
+    'early-access-apk',
+    false,
+    314572800,
+    array['application/vnd.android.package-archive','application/octet-stream']::text[]
   )
 on conflict (id) do update
 set
@@ -15770,7 +15918,10 @@ begin
     'finalize_my_schedule_health_checkin',
     'get_my_wellness_reward_summary',
     'upsert_sleep_safety_contact',
-    'delete_sleep_safety_contact'
+    'delete_sleep_safety_contact',
+    'consume_early_access_rate_limit',
+    'purge_early_access_rate_limits',
+    'set_early_access_updated_at'
   ]) as v(name)
   where not exists (
     select 1
@@ -15819,18 +15970,74 @@ begin
 
   select array_agg(v.name order by v.name)
   into v_missing_buckets
-  from unnest(array['schedule-completion-proofs', 'sale-payout-proofs']) as v(name)
+  from unnest(array['schedule-completion-proofs', 'sale-payout-proofs', 'early-access-apk']) as v(name)
   where not exists (
     select 1
     from storage.buckets b
     where b.id = v.name
       and b.public = false
-      and b.file_size_limit = 5242880
-      and b.allowed_mime_types = array['image/jpeg']::text[]
+      and (
+        (v.name = 'early-access-apk'
+          and b.file_size_limit = 314572800
+          and b.allowed_mime_types = array['application/vnd.android.package-archive','application/octet-stream']::text[])
+        or (v.name <> 'early-access-apk'
+          and b.file_size_limit = 5242880
+          and b.allowed_mime_types = array['image/jpeg']::text[])
+      )
   );
 
   if v_missing_buckets is not null then
     raise exception 'RUNTIME_STORAGE_BUCKET_INVALID_%', array_to_string(v_missing_buckets, ',');
+  end if;
+
+  if not exists (
+    select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relname = 'early_access_leads' and c.relrowsecurity
+  ) or not exists (
+    select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'early_access_private' and c.relname = 'rate_limits' and c.relrowsecurity
+  ) then
+    raise exception 'EARLY_ACCESS_RLS_MISSING';
+  end if;
+
+  if exists (
+    select 1 from pg_policies
+    where (schemaname = 'public' and tablename = 'early_access_leads')
+       or (schemaname = 'early_access_private' and tablename = 'rate_limits')
+  ) then
+    raise exception 'EARLY_ACCESS_PUBLIC_POLICY_INVALID';
+  end if;
+
+  if has_table_privilege('anon', 'public.early_access_leads', 'SELECT')
+     or has_table_privilege('anon', 'public.early_access_leads', 'INSERT')
+     or has_table_privilege('anon', 'public.early_access_leads', 'UPDATE')
+     or has_table_privilege('anon', 'public.early_access_leads', 'DELETE')
+     or has_table_privilege('authenticated', 'public.early_access_leads', 'SELECT')
+     or has_table_privilege('authenticated', 'public.early_access_leads', 'INSERT')
+     or has_table_privilege('authenticated', 'public.early_access_leads', 'UPDATE')
+     or has_table_privilege('authenticated', 'public.early_access_leads', 'DELETE')
+     or has_table_privilege('anon', 'early_access_private.rate_limits', 'SELECT')
+     or has_table_privilege('authenticated', 'early_access_private.rate_limits', 'SELECT')
+     or has_schema_privilege('anon', 'early_access_private', 'USAGE')
+     or has_schema_privilege('authenticated', 'early_access_private', 'USAGE') then
+    raise exception 'EARLY_ACCESS_CLIENT_GRANT_INVALID';
+  end if;
+
+  if not has_table_privilege('service_role', 'public.early_access_leads', 'INSERT')
+     or not has_function_privilege('service_role', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE')
+     or has_function_privilege('anon', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.consume_early_access_rate_limit(text,timestamp with time zone)'::regprocedure, 'EXECUTE') then
+    raise exception 'EARLY_ACCESS_SERVICE_ROLE_GRANT_INVALID';
+  end if;
+
+  if not exists (
+    select 1 from cron.job
+    where jobname = 'nanobio-purge-early-access-rate-limits'
+      and schedule = '*/5 * * * *'
+      and command = 'select public.purge_early_access_rate_limits();'
+      and active
+  ) then
+    raise exception 'EARLY_ACCESS_RATE_LIMIT_CLEANUP_JOB_INVALID';
   end if;
 
   if not has_function_privilege(

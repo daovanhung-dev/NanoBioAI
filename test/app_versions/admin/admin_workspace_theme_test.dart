@@ -10,14 +10,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('AdminWorkspaceTheme', () {
-    test('light theme keeps the independent blue workspace identity', () {
+    test('light theme uses the shared Blue Wellness semantic roles', () {
       final theme = AdminWorkspaceTheme.light(AppTheme.lightTheme);
       final colors = theme.extension<AdminWorkspaceColors>();
 
       expect(theme.brightness, Brightness.light);
       expect(colors, isNotNull);
-      expect(colors!.blue, const Color(0xFF3478D4));
-      expect(colors.blue, isNot(AppSemanticColors.light.primary));
+      expect(colors!.blue, AppColors.primary);
+      expect(colors.blue, AppSemanticColors.light.primary);
       expect(theme.colorScheme.primary, colors.blue);
       expect(theme.scaffoldBackgroundColor, colors.canvas);
       expect(theme.textTheme.bodyMedium?.fontFamily, AppTextStyles.fontFamily);

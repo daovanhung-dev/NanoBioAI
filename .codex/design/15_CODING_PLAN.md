@@ -8,7 +8,7 @@ Fix contradictory contracts, refresh the canonical surface/route registry and re
 
 ## Wave 1 - Foundation, assets and shell
 
-Introduce context-aware semantic colors, deterministic light/dark Blue themes, Roboto, spacing/radius/elevation/focus/reduced-motion primitives and controlled Stitch asset provenance. Keep Green compatibility facades only for staged rollback. Admin remains an independent workspace theme.
+Introduce context-aware semantic colors, deterministic light/dark Blue themes, Roboto, spacing/radius/elevation/focus/reduced-motion primitives and controlled Stitch asset provenance. Keep Green compatibility facades only for staged rollback. Admin shares the semantic foundation and typography, with operational density and workspace hierarchy.
 
 ## Wave 2 - Existing Stitch-referenced UI
 

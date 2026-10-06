@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
@@ -92,9 +93,7 @@ class SleepSafetyAccessGate extends ConsumerWidget {
   }
 
   Future<void> _openUpgrade(BuildContext context, WidgetRef ref) async {
-    await context.push(
-      buildMembershipUpgradeRoute(MembershipUpgradePlan.plus),
-    );
+    await context.push(buildMembershipUpgradeRoute(MembershipUpgradePlan.plus));
     if (!context.mounted) return;
     ref.invalidate(effectiveAccessProvider);
     ref.invalidate(sleepSafetyRolloutProvider);
@@ -116,7 +115,7 @@ class _GateState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
       body: Center(
         child: ConstrainedBox(
@@ -139,10 +138,7 @@ class _GateState extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(message, textAlign: TextAlign.center),
-                if (action != null) ...[
-                  const SizedBox(height: 20),
-                  action!,
-                ],
+                if (action != null) ...[const SizedBox(height: 20), action!],
               ],
             ),
           ),

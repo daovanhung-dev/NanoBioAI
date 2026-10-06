@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -75,7 +76,7 @@ class SleepTrackingPage extends ConsumerWidget {
           'manual_call_handoff',
         }.contains(event?.state);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
       body: Stack(
         children: [

@@ -15,22 +15,22 @@ import 'package:nano_app/core/theme/primitives/states/loading_state.dart';
 void main() {
   group('Nabi Blue Wellness tokens', () {
     test('canonical palette matches the approved design source', () {
-      expect(AppColors.primary, const Color(0xFF2F6FED));
-      expect(AppColors.primaryDark, const Color(0xFF1746A2));
-      expect(AppColors.primaryLight, const Color(0xFF6EA8FE));
-      expect(AppColors.primarySoft, const Color(0xFFE8F1FF));
-      expect(AppColors.primarySubtle, const Color(0xFFF4F8FF));
-      expect(AppColors.brandAccent, const Color(0xFF14A36F));
-      expect(AppColors.secondary, const Color(0xFF14A36F));
-      expect(AppColors.wellnessGreen, const Color(0xFF14A36F));
-      expect(AppColors.background, const Color(0xFFF7FAFF));
-      expect(AppColors.textPrimary, const Color(0xFF15253D));
-      expect(AppColors.textSecondary, const Color(0xFF5B6B82));
-      expect(AppColors.border, const Color(0xFFDCE6F4));
-      expect(AppColors.focusRing, const Color(0xFF7DB2FF));
+      expect(AppColors.primary, const Color(0xFF285CC5));
+      expect(AppColors.primaryDark, const Color(0xFF1C478F));
+      expect(AppColors.primaryLight, const Color(0xFF9BB9F2));
+      expect(AppColors.primarySoft, const Color(0xFFE7EEFC));
+      expect(AppColors.primarySubtle, const Color(0xFFF2F6FC));
+      expect(AppColors.brandAccent, const Color(0xFF16845C));
+      expect(AppColors.secondary, const Color(0xFF16845C));
+      expect(AppColors.wellnessGreen, const Color(0xFF16845C));
+      expect(AppColors.background, const Color(0xFFF4F7FB));
+      expect(AppColors.textPrimary, const Color(0xFF14243A));
+      expect(AppColors.textSecondary, const Color(0xFF53657B));
+      expect(AppColors.border, const Color(0xFFD8E1EC));
+      expect(AppColors.focusRing, const Color(0xFF78A2EC));
       expect(AppGradients.primary.colors, const [
-        Color(0xFF245CC5),
-        Color(0xFF4D8DF7),
+        Color(0xFF234FA8),
+        Color(0xFF3971D3),
       ]);
     });
 
@@ -44,7 +44,7 @@ void main() {
       expect(lightSemantic, isNotNull);
       expect(lightSemantic!.primary, AppColors.primary);
       expect(lightSemantic.brandAccent, AppColors.brandAccent);
-      expect(lightSemantic.surfaceSoft, AppColors.primarySubtle);
+      expect(lightSemantic.surfaceSoft, AppColors.surfaceSoft);
       expect(dark.brightness, Brightness.dark);
       expect(darkSemantic, isNotNull);
       expect(darkSemantic!.primary, dark.colorScheme.primary);
@@ -55,18 +55,14 @@ void main() {
     });
 
     test('dark scheme is a deterministic Material 3 fidelity snapshot', () {
-      final expected = ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2F6FED),
-        brightness: Brightness.dark,
-        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-      );
       final actual = AppTheme.darkTheme.colorScheme;
 
-      expect(actual.primary, expected.primary);
-      expect(actual.onPrimary, expected.onPrimary);
-      expect(actual.primaryContainer, expected.primaryContainer);
-      expect(actual.surface, expected.surface);
-      expect(actual.onSurface, expected.onSurface);
+      expect(actual.primary, const Color(0xFFB8C9F4));
+      expect(actual.onPrimary, const Color(0xFF102B5C));
+      expect(actual.primaryContainer, const Color(0xFF285CC5));
+      expect(actual.surface, const Color(0xFF131F30));
+      expect(actual.surfaceDim, const Color(0xFF0B1422));
+      expect(actual.onSurface, const Color(0xFFEAF0F8));
       expect(
         _contrast(actual.primary, actual.onPrimary),
         greaterThanOrEqualTo(4.5),
@@ -82,7 +78,7 @@ void main() {
       expect(AppSpacing.sectionSpacing, 24);
       expect(AppSpacing.touchTargetMin, 48);
       expect(AppRadius.input, 14);
-      expect(AppRadius.card, 20);
+      expect(AppRadius.card, 18);
       expect(AppRadius.bottomSheet, 28);
     });
   });

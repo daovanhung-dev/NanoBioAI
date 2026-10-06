@@ -6,9 +6,9 @@ The filename remains stable for project links. The target language is **Blue Wel
 
 - Stitch `screen.png`: layout, hierarchy and composition.
 - Stitch `code.html`: typography and non-color token intent.
-- Blue Wellness tokens: brand, navigation, CTA and surface color authority.
+- Blue Wellness tokens: brand, navigation, primary action and surface color authority.
 - Approved DD and current runtime: business rules, access, data and state transitions.
-- Admin: independent operational workspace theme, not a Stitch redesign.
+- Admin: shared semantic foundation with operational density and workspace hierarchy.
 
 ## Experience formula
 
@@ -20,12 +20,12 @@ The filename remains stable for project links. The target language is **Blue Wel
 
 ## Signature tokens
 
-- Primary `#2F6FED`; supporting wellness accent `#14A36F`.
-- Primary CTA gradient `#245CC5` to `#4D8DF7`.
-- Light background `#F7FAFF`; primary text `#15253D`; blue surface `#F4F8FF`.
-- Compact page gutter 16 dp; input radius 14 dp; card radius 20 dp; sheet radius 28 dp.
+- Primary `#285CC5`; supporting health accent `#16845C`.
+- CTA `#234FA8` to `#3971D3`, used only where it improves action hierarchy.
+- Light background `#F4F7FB`; primary text `#14243A`; card surface `#FFFFFF`.
+- Compact page gutter 16 dp; input radius 14 dp; card radius 18 dp; sheet radius 28 dp.
 - Roboto 400/500/600/700 is bundled and deterministic.
-- Dark mode is a frozen Material 3 fidelity scheme derived from seed `#2F6FED`; it is not device dynamic color and requires contrast snapshots.
+- Dark mode uses the frozen Blue Wellness semantic snapshot; it does not follow device dynamic color and requires contrast snapshots.
 
 ## Experience principles
 

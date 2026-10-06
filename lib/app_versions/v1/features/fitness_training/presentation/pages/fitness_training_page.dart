@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/body_metrics/domain/entities/basic_health_calculator_models.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../application/fitness_training_controller.dart';
@@ -64,7 +65,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) => MedicalPageScaffold(
     appBar: AppBar(title: const Text('Chế độ luyện tập')),
     body: !_supportedPlatform
         ? const Center(
@@ -543,7 +544,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
                 selected: selected,
                 label: '${item.name}. ${item.description}',
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.control),
                   onTap: () => setState(
                     () => selected
                         ? _equipmentIds.remove(item.id)

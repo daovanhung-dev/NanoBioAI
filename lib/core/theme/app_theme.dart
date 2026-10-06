@@ -62,7 +62,7 @@ class AppTheme {
       focusColor: AppColors.focused,
       hoverColor: AppColors.hover,
       highlightColor: AppColors.pressed,
-      splashFactory: InkSparkle.splashFactory,
+      splashFactory: InkRipple.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: const VisualDensity(horizontal: -0.5, vertical: -0.5),
     );
@@ -539,7 +539,7 @@ class AppTheme {
       focusColor: colors.focused,
       hoverColor: colors.hover,
       highlightColor: colors.pressed,
-      splashFactory: InkSparkle.splashFactory,
+      splashFactory: InkRipple.splashFactory,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       visualDensity: const VisualDensity(horizontal: -0.5, vertical: -0.5),
     );

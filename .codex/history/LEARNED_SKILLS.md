@@ -7,8 +7,8 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - docs-context - Context and docs update: 60 worklog(s)
 - bugfix - Direct bugfix: 37 worklog(s)
 - coding - Coding: 32 worklog(s)
-- supabase-schema - Supabase schema and RLS: 30 worklog(s)
-- test - Test and verification: 13 worklog(s)
+- supabase-schema - Supabase schema and RLS: 31 worklog(s)
+- test - Test and verification: 14 worklog(s)
 - find-issues - Review and find issues: 6 worklog(s)
 - docs-dd - Design docs: 5 worklog(s)
 - fix-issues - Fix documented issue: 3 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 47
+- unknown: 48
 - M32 FITNESS_TRAINING: 5
 - M31 SLEEP_SAFETY_MONITORING: 3
 - M31 SLEEP_SAFETY_MONITORING.: 3

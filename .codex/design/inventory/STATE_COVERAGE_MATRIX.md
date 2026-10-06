@@ -16,14 +16,14 @@ Every active surface requires explicit Loading / Empty / Error / Ready / Disable
 | V1-10 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-11 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-12 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-13 | coming-soon | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-14 | coming-soon | required | required if meaningful | required | required/preview | required if meaningful |
+| V1-13 | active-route, auth/membership/rollout gated | required | required if meaningful | required | required when rollout is enabled | required for auth, plan and paused rollout |
+| V1-14 | active-route, limited preview | required if meaningful | availability explanation | required if meaningful | explicit preview/placeholder | unavailable capabilities stay absent |
 | V1-15 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-16 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-17 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-18 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
 | V1-19 | active-route | required | required if meaningful | required | required/preview | required if meaningful |
-| V1-20 | coming-soon | required | required if meaningful | required | required/preview | required if meaningful |
+| V1-20 | active-route, honest placeholder | not applicable | availability explanation | required if navigation fails | explicit placeholder only | unavailable capabilities stay absent |
 | V1-21 | active-route | required | required | required | required | required |
 | ONB-01 | source-sub-surface | required | required if meaningful | required | required/preview | required if meaningful |
 | ONB-02 | internal-step | required | required if meaningful | required | required/preview | required if meaningful |

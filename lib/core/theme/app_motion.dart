@@ -27,36 +27,19 @@ class AppPageTransitionsBuilder extends PageTransitionsBuilder {
       curve: MotionFoundation.decelerate,
       reverseCurve: MotionFoundation.accelerate,
     );
-    final outgoing = CurvedAnimation(
-      parent: secondaryAnimation,
-      curve: MotionFoundation.standard,
-      reverseCurve: MotionFoundation.standard,
-    );
     final distance = AppMotionScope.distance(
       context,
-      MotionFoundation.pageDistanceFraction,
+      MotionFoundation.pageDistanceFraction * .45,
     );
 
     return FadeTransition(
-      opacity: Tween<double>(begin: 1, end: 0.965).animate(outgoing),
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 1, end: 0.995).animate(outgoing),
-        child: FadeTransition(
-          opacity: incoming,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(distance, distance * 0.4),
-              end: Offset.zero,
-            ).animate(incoming),
-            child: ScaleTransition(
-              scale: Tween<double>(
-                begin: MotionFoundation.incomingPageScale,
-                end: 1,
-              ).animate(incoming),
-              child: child,
-            ),
-          ),
-        ),
+      opacity: incoming,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: Offset(distance, 0),
+          end: Offset.zero,
+        ).animate(incoming),
+        child: child,
       ),
     );
   }
@@ -68,7 +51,7 @@ class AppViewMotion extends StatefulWidget {
     super.key,
     required this.child,
     this.delay = Duration.zero,
-    this.offset = const Offset(0, 0.022),
+    this.offset = const Offset(0, 0.012),
     this.duration = AppDuration.normal,
   });
 

@@ -26,13 +26,13 @@ void main() {
       );
       final expectedPrimary = expectsGreen
           ? const Color(0xFF006A46)
-          : const Color(0xFF2F6FED);
+          : const Color(0xFF285CC5);
       final expectedCtaStart = expectsGreen
           ? const Color(0xFF0F8E62)
-          : const Color(0xFF245CC5);
+          : const Color(0xFF234FA8);
       final expectedCtaEnd = expectsGreen
           ? const Color(0xFF32C789)
-          : const Color(0xFF4D8DF7);
+          : const Color(0xFF3971D3);
 
       expect(AppTheme.stitchGreenUiEnabled, expectsGreen);
       expect(AppColors.primary, expectedPrimary);
@@ -40,12 +40,14 @@ void main() {
       expect(AppGradients.primary.colors, [expectedCtaStart, expectedCtaEnd]);
       expect(AppTheme.lightTheme.colorScheme.primary, expectedPrimary);
 
-      final expectedDark = ColorScheme.fromSeed(
-        seedColor: expectedPrimary,
-        brightness: Brightness.dark,
-        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-      );
-      expect(AppTheme.darkTheme.colorScheme.primary, expectedDark.primary);
+      final expectedDarkPrimary = expectsGreen
+          ? ColorScheme.fromSeed(
+              seedColor: expectedPrimary,
+              brightness: Brightness.dark,
+              dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+            ).primary
+          : const Color(0xFFB8C9F4);
+      expect(AppTheme.darkTheme.colorScheme.primary, expectedDarkPrimary);
     },
   );
 }

@@ -1,7 +1,7 @@
 # V1-X11 — Settings / Của bạn
 
-> Baseline audit: `daovanhung-dev/NanoBioAI` @ `30587ab9b04d95aa621e5412502aafd0d0ca4827`  
-> Classification: **source-sub-surface** · Group: `05_profile_settings` · Archetype: `settings-hub`
+> Working-tree route/surface mapping: 2026-10-06
+> Classification: **source-sub-surface** · Group: `09_auth_profile_settings` · Archetype: `settings-hub`
 
 ## Purpose
 

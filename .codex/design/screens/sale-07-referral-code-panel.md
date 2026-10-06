@@ -37,7 +37,7 @@ Use expressive typography, shape and motion to clarify hierarchy—not to decora
 
 ## 11. Color
 - Semantic tokens only from `lib/core/theme/`.
-- Green Wellness primary `#006A46` directs action/navigation; `#14A36F` is a supporting accent, `#EAF9F1` is the mint surface, and violet is reserved for AI/premium differentiation when relevant.
+- Blue Wellness primary `#285CC5` owns navigation and primary actions; health green `#16845C` marks positive health/success. Violet is reserved for AI/premium differentiation only when the runtime capability exists.
 - Error/warning/success must carry icon/text, never color alone.
 
 ## 12. Typography
@@ -46,7 +46,7 @@ Use expressive typography, shape and motion to clarify hierarchy—not to decora
 - Numeric health/business values use tabular/scannable treatment; labels remain readable at increased text scale.
 
 ## 13. Shape
-Use M3 expressive shape contrast: input/control 14 dp, card 20 dp and sheet 28 dp are the Green Wellness defaults; pills are reserved for status/chips.
+Use M3 expressive shape contrast: input/control 14 dp, card 20 dp and sheet 28 dp are the Blue Wellness defaults; pills are reserved for status/chips.
 
 ## 14. Spacing
 Base rhythm 4/8 with practical tokens: 8, 12, 16, 20, 24, 32. Maintain at least 16 px compact side padding and avoid stacking decorative gaps.

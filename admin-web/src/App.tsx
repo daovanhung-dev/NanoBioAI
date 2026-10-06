@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import { useAdminAuth } from './auth/AuthProvider';
+import { AuthProvider, useAdminAuth } from './auth/AuthProvider';
 import { AdminShell } from './components/AdminShell';
 import { ErrorState, LoadingState } from './components/Ui';
 import { AccountsPage } from './pages/AccountsPage';
@@ -7,37 +7,47 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { SectionPage } from './pages/SectionPage';
 import { WellnessRewardsPage } from './pages/WellnessRewardsPage';
+import { NanoBioLandingPage } from './pages/NanoBioLandingPage';
+import { NanoBioPrivacyPage } from './pages/NanoBioPrivacyPage';
 
 export function App() {
   return (
     <Routes>
-      <Route path="/admin/login" element={<LoginPage />} />
-      <Route path="/admin" element={<RequireAdmin />}>
-        <Route element={<ShellRoute />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<AccountsPage />} />
-          <Route path="accounts" element={<Navigate to="../users" replace />} />
-          <Route path="accounts/create" element={<Navigate to="../users?create=1" replace />} />
-          <Route path="accounts/upgrade" element={<Navigate to="../users?upgrade=1" replace />} />
-          <Route path="memberships/review" element={<SectionPage section="payments" />} />
-          <Route path="payments" element={<SectionPage section="payments" />} />
-          <Route path="sales" element={<SectionPage section="sales" />} />
-          <Route path="sales/review" element={<SectionPage section="sales" />} />
-          <Route path="sale-conversions" element={<SectionPage section="sale-conversions" />} />
-          <Route path="sales/payouts" element={<SectionPage section="sale-conversions" />} />
-          <Route path="wellness-rewards" element={<WellnessRewardsPage />} />
-          <Route path="reconciliation" element={<SectionPage section="reconciliation" />} />
-          <Route path="plans" element={<SectionPage section="plans" />} />
-          <Route path="reports" element={<SectionPage section="reports" />} />
-          <Route path="audit" element={<SectionPage section="audit" />} />
-          <Route path="config" element={<SectionPage section="config" />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
+      <Route path="/nanobio" element={<NanoBioLandingPage />} />
+      <Route path="/nanobio/privacy" element={<NanoBioPrivacyPage />} />
+      <Route element={<AdminAuthScope />}>
+        <Route path="/admin/login" element={<LoginPage />} />
+        <Route path="/admin" element={<RequireAdmin />}>
+          <Route element={<ShellRoute />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="users" element={<AccountsPage />} />
+            <Route path="accounts" element={<Navigate to="../users" replace />} />
+            <Route path="accounts/create" element={<Navigate to="../users?create=1" replace />} />
+            <Route path="accounts/upgrade" element={<Navigate to="../users?upgrade=1" replace />} />
+            <Route path="memberships/review" element={<SectionPage section="payments" />} />
+            <Route path="payments" element={<SectionPage section="payments" />} />
+            <Route path="sales" element={<SectionPage section="sales" />} />
+            <Route path="sales/review" element={<SectionPage section="sales" />} />
+            <Route path="sale-conversions" element={<SectionPage section="sale-conversions" />} />
+            <Route path="sales/payouts" element={<SectionPage section="sale-conversions" />} />
+            <Route path="wellness-rewards" element={<WellnessRewardsPage />} />
+            <Route path="reconciliation" element={<SectionPage section="reconciliation" />} />
+            <Route path="plans" element={<SectionPage section="plans" />} />
+            <Route path="reports" element={<SectionPage section="reports" />} />
+            <Route path="audit" element={<SectionPage section="audit" />} />
+            <Route path="config" element={<SectionPage section="config" />} />
+            <Route path="*" element={<Navigate to="dashboard" replace />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   );
+}
+
+function AdminAuthScope() {
+  return <AuthProvider><Outlet /></AuthProvider>;
 }
 
 function RequireAdmin() {

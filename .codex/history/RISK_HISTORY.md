@@ -1013,3 +1013,11 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: ## Loi/Rui ro
 - docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - Chua fix: current Codex conversation tool registry has not refreshed. Start a new Codex session and confirm Dart MCP tools become visible.
 - docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - Can kiem tra tiep: verify widget previews and MCP tools from the restarted Codex session.
+- docs/worklog/2026-10-07/001-worklog-ui-ux-redesign.md :: - `LD_LIBRARY_PATH=/tmp/nanobio-sqlite flutter test --no-pub`: chưa hoàn tất; báo 1,251 pass và 81 failure, gồm nhiều source/route/copy contract assertions không khớp source hiện tại ở các nhóm khác nhau. Tiến trình đứng hơn ba phút tại `auth_controller_sync_failure_test.dart` và được ngắt; không ghi đây là full-suite pass.
+- docs/worklog/2026-10-07/001-worklog-ui-ux-redesign.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL theo baseline repository vì thiếu `docs/audit/source_truth_manifest.json` và các path lịch sử cũ trong archived worklog/task-skill. Không tạo manifest khi việc reconcile toàn repo chưa hoàn thành.
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: FAIL do repo thiếu `docs/audit/source_truth_manifest.json` và các đường dẫn
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Browser responsive/screen-reader review: SKIPPED — không có browser surface
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Supabase migration/function deploy và luồng live: SKIPPED — chưa xác nhận
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Chua fix: browser visual/responsive/render QA không thực hiện được do browser
+- docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Can kiem tra tiep: Supabase project ref/migration history/recovery ngay trước

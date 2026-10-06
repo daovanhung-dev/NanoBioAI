@@ -1,4 +1,4 @@
-# QA Checklist - Stitch Green Wellness
+# QA Checklist — NanoBio Blue Wellness
 
 - Every accepted Stitch reference has classification, owner, route/state map and evidence.
 - Goldens: light/dark at 390 x 884; adaptive widths 320/360/412/600+.

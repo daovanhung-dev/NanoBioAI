@@ -70,8 +70,7 @@ class _BodyMetricsTrendCardState extends State<BodyMetricsTrendCard> {
           _Series(
             title: 'Nước',
             unit: 'ml',
-            values:
-                rows.map((row) => row.waterMl).whereType<double>().toList(),
+            values: rows.map((row) => row.waterMl).whereType<double>().toList(),
           ),
           _Series(
             title: 'Bước chân',
@@ -102,7 +101,7 @@ class _Series extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: NamiCareInfoTile(
           icon: Icons.show_chart_rounded,
-          color: AppColors.info,
+          color: context.semanticColors.info,
           title: title,
           subtitle: 'Cần thêm ít nhất 2 lần ghi nhận để xem xu hướng.',
         ),
@@ -133,13 +132,14 @@ class _Series extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 1),
                       child: FractionallySizedBox(
-                        heightFactor:
-                            .18 + .82 * ((value - minValue) / span),
+                        heightFactor: .18 + .82 * ((value - minValue) / span),
                         alignment: Alignment.bottomCenter,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: .60),
-                            borderRadius: BorderRadius.circular(3),
+                            color: context.semanticColors.primary.withValues(
+                              alpha: .60,
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadius.xxs),
                           ),
                         ),
                       ),

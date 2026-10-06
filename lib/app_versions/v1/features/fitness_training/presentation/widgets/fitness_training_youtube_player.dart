@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 class FitnessTrainingYoutubePlayer extends StatefulWidget {
@@ -32,7 +33,7 @@ class _FitnessTrainingYoutubePlayerState
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(16),
+    borderRadius: BorderRadius.circular(AppRadius.lg),
     child: YoutubePlayer(controller: _controller, aspectRatio: 16 / 9),
   );
 }

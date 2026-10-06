@@ -22,6 +22,8 @@ Dùng timeline liên tục, complete/skip rõ trạng thái, ảnh proof có sha
 
 ## Views
 
+- [V1-25 — Fitness Training](../screens/v1-25-fitness-training.md) — active-route
+
 | View | Entrance | State transition | Feedback | Design intent |
 | --- | --- | --- | --- | --- |
 | lib/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart | Timeline reveal theo trục dọc | Date/filter/timeline/complete/skip/proof | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Routine blocks reorder/expand có stable identity; time change color/number tween nhẹ. |

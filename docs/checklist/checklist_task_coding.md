@@ -141,6 +141,18 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 
 ## Historical Task Log — Superseded 2026-08-24
 
+## Current Addendum — 2026-10-07 · NanoBio website in Admin Web
+
+- Admin Web now exposes `/#/nanobio` and `/#/nanobio/privacy` outside the Admin
+  auth provider and adds a Website NanoBio sidebar route. Local validation:
+  Admin Web tests 46/46, typecheck/build PASS; Edge handler tests 8/8 and Deno
+  check PASS. These results are source/local evidence only.
+- Additive migration `20261007000000_nanobio_early_access.sql` and
+  `register-early-access` are not applied/deployed. Supabase runtime, private
+  APK availability, and fresh browser/device rendering remain unverified.
+- Detailed evidence and follow-up are in
+  `docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md`.
+
 The dated checkboxes and percentage claims below are retained as historical
 session evidence. They do not override the current coding handoff above.
 

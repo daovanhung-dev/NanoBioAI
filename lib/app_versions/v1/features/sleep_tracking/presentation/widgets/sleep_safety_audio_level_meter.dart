@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 /// Live, transient visualization of the on-device microphone signal.
 ///
@@ -44,12 +45,14 @@ class _SleepSafetyAudioLevelMeterState
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final level = widget.signalLevel.clamp(0.0, 1.0).toDouble();
     final peak = widget.peakLevel.clamp(0.0, 1.0).toDouble();
     final baseline = widget.baselineLevel.clamp(0.0, 1.0).toDouble();
     final status = _statusText();
-    final isLoud = widget.phase == 'candidate' ||
+    final isLoud =
+        widget.phase == 'candidate' ||
         widget.phase == 'alerting' ||
         level >= 0.82;
     final foreground = isLoud ? colors.error : colors.primary;
@@ -70,15 +73,14 @@ class _SleepSafetyAudioLevelMeterState
                     children: [
                       Text(
                         'Âm thanh môi trường',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       Text(
                         status,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: widget.signalStale ? colors.error : null,
-                            ),
+                          color: widget.signalStale ? colors.error : null,
+                        ),
                       ),
                     ],
                   ),
@@ -91,7 +93,8 @@ class _SleepSafetyAudioLevelMeterState
             ),
             const SizedBox(height: 14),
             Semantics(
-              label: 'Mức tín hiệu âm thanh ${(level * 100).round()} phần trăm. $status',
+              label:
+                  'Mức tín hiệu âm thanh ${(level * 100).round()} phần trăm. $status',
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
@@ -104,7 +107,9 @@ class _SleepSafetyAudioLevelMeterState
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: colors.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(999),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.circular,
+                              ),
                             ),
                           ),
                         ),
@@ -119,7 +124,9 @@ class _SleepSafetyAudioLevelMeterState
                             width: widget.hasSignal ? width * level : 0,
                             decoration: BoxDecoration(
                               color: foreground,
-                              borderRadius: BorderRadius.circular(999),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.circular,
+                              ),
                             ),
                           ),
                         ),
@@ -144,7 +151,9 @@ class _SleepSafetyAudioLevelMeterState
                               width: 3,
                               decoration: BoxDecoration(
                                 color: colors.onSurface,
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.xxs,
+                                ),
                               ),
                             ),
                           ),
@@ -174,9 +183,9 @@ class _SleepSafetyAudioLevelMeterState
             const SizedBox(height: 6),
             Text(
               'Mức hiển thị là tín hiệu tương đối từ micro, không phải phép đo dB SPL và không được lưu thành bản ghi âm.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
             ),
           ],
         ),

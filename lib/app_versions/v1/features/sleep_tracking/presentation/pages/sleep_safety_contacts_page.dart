@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/safety_contact.dart';
@@ -13,7 +14,7 @@ class SleepSafetyContactsPage extends ConsumerWidget {
     final state = ref.watch(sleepSafetyControllerProvider);
     final controller = ref.read(sleepSafetyControllerProvider.notifier);
 
-    return Scaffold(
+    return MedicalPageScaffold(
       appBar: AppBar(title: const Text('Người liên hệ an toàn')),
       floatingActionButton: !state.contactsLoaded || state.contacts.length >= 3
           ? null

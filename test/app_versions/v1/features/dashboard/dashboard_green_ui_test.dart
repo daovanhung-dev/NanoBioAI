@@ -8,7 +8,32 @@ import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 void main() {
-  group('Dashboard Green Wellness UI', () {
+  group('Dashboard Blue Wellness UI', () {
+    testWidgets(
+      'dashboard snapshot uses the canonical surface on compact text',
+      (tester) async {
+        await tester.pumpWidget(
+          _testApp(
+            width: 320,
+            textScale: 1.6,
+            child: DashboardSnapshotCard(
+              metrics: const DashboardDailyMetrics.empty(),
+              nextAction: null,
+              dailySummary: 'Mình bắt đầu bằng một việc nhỏ nhé.',
+              isSlowDay: false,
+              onScoreTap: () {},
+              onComplete: (_) async {},
+              onLater: () {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MedicalSurfaceCard), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('compact metrics remain readable on a narrow screen', (
       tester,
     ) async {

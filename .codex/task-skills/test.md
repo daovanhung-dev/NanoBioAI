@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 13 worklog(s).
+- Generated from 14 worklog(s).
 
 ## When To Read
 
@@ -17,10 +17,11 @@
 - Historical task type: test / Android runtime build. (1)
 - Historical task type: release build và xác minh artifact (1)
 - Historical task type: fix / coding / test / cập nhật DD và worklog. (1)
+- Historical task type: Flutter UI, theme, test và design inventory. (1)
 
 ## Common Modules
 
-- unknown: 2
+- unknown: 3
 - M08 HEALTH_SCORE_HABITS.: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 - lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1

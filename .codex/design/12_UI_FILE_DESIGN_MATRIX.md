@@ -1,6 +1,6 @@
 # UI File Design Matrix — Re-execution
 
-The repository carries a historical **183-file UI-affecting baseline matrix** plus a working-tree **81 surface registry**. The 81 repository surfaces are distinct from the Stitch reference pairs; neither count is permission to ignore supporting widgets/theme/router files or claim visual acceptance.
+The current source audit covers **266 UI-affecting Dart files** and the screen registry covers **94 repository surfaces**. Both are distinct from the 76 Stitch reference pairs; none of these counts claims rendered acceptance.
 
 Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 
@@ -18,15 +18,27 @@ Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 | V1-10 Body Metrics | 03_dashboard_health | `lib/app_versions/v1/features/body_metrics/presentation/pages/body_metrics_page.dart` | active-route | [open](screens/v1-10-body-metrics.md) |
 | V1-11 Lifestyle Schedule | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/lifestyle_schedule_page.dart` | active-route | [open](screens/v1-11-lifestyle-schedule.md) |
 | V1-12 Daily Routine Preferences | 05_profile_settings | `lib/app_versions/v1/features/daily_routine/presentation/pages/daily_routine_preferences_page.dart` | active-route | [open](screens/v1-12-daily-routine-preferences.md) |
-| V1-13 Sleep Tracking Preview | 03_dashboard_health | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart` | coming-soon | [open](screens/v1-13-sleep-tracking-preview.md) |
-| V1-14 Stress Tracking Preview | 03_dashboard_health | `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart` | coming-soon | [open](screens/v1-14-stress-tracking-preview.md) |
+| V1-13 Sleep Tracking and Safety | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart` | active-route + auth/access gate | [open](screens/v1-13-sleep-tracking-preview.md) |
+| V1-14 Stress Tracking Preview | 07_health_tracking | `lib/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart` | active-route; limited preview | [open](screens/v1-14-stress-tracking-preview.md) |
 | V1-15 AI Chat | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart` | active-route | [open](screens/v1-15-ai-chat.md) |
 | V1-16 AI Voice | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/ai_voice/presentation/pages/ai_voice_page.dart` | active-route | [open](screens/v1-16-ai-voice.md) |
 | V1-17 Nutrition | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_page.dart` | active-route | [open](screens/v1-17-nutrition.md) |
 | V1-18 Nutrition Profile Editor | 04_ai_nutrition_schedule | `lib/app_versions/v1/features/nutrition/presentation/pages/nutrition_profile_editor_page.dart` | active-route | [open](screens/v1-18-nutrition-profile-editor.md) |
 | V1-19 Profile | 05_profile_settings | `lib/app_versions/v1/features/profile/presentation/pages/profile_page.dart` | active-route | [open](screens/v1-19-profile.md) |
-| V1-20 Community Preview | 03_dashboard_health | `lib/app_versions/v1/features/community/presentation/pages/community_page.dart` | coming-soon | [open](screens/v1-20-community-preview.md) |
+| V1-20 Community Preview | 08_features_care | `lib/app_versions/v1/features/community/presentation/pages/community_page.dart` | active-route; honest placeholder | [open](screens/v1-20-community-preview.md) |
 | V1-21 Today Tasks | 03_dashboard_health | `lib/app_versions/v1/features/today_tasks/presentation/pages/today_tasks_page.dart` | active-route | [open](screens/v1-21-today-tasks.md) |
+| V1-22 Health Check-in | 07_health_tracking | `lib/app_versions/v1/features/health_check_in/presentation/pages/health_check_in_page.dart` | active-route | [open](screens/v1-22-health-check-in.md) |
+| V1-23 Goal Review | 08_features_care | `lib/app_versions/v1/features/goal_review/presentation/pages/goal_review_page.dart` | active-route | [open](screens/v1-23-goal-review.md) |
+| V1-24 Profile Review | 09_auth_profile_settings | `lib/app_versions/v1/features/profile_review/presentation/pages/profile_review_page.dart` | active-route | [open](screens/v1-24-profile-review.md) |
+| V1-25 Fitness Training | 06_schedule_proof | `lib/app_versions/v1/features/fitness_training/presentation/pages/fitness_training_page.dart` | active-route | [open](screens/v1-25-fitness-training.md) |
+| V1-26 Notification Settings | 09_auth_profile_settings | `lib/app_versions/v1/features/settings/presentation/pages/notification_settings_page.dart` | active-route | [open](screens/v1-26-notification-settings.md) |
+| V1-X11 Settings / Của bạn | 09_auth_profile_settings | `lib/app_versions/v1/features/dashboard/presentation/pages/menu_page.dart` + settings pages | source-sub-surface | [open](screens/v1-x11-settings.md) |
+| V1-X12 Sleep Safety Access Gate | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_access_gate.dart` | gate | [open](screens/v1-x12-sleep-access-gate.md) |
+| V1-X13 Sleep Night Analysis | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_night_analysis_page.dart` | source-sub-surface | [open](screens/v1-x13-sleep-night-analysis.md) |
+| V1-X14 Sleep Safety History | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_history_page.dart` | source-sub-surface | [open](screens/v1-x14-sleep-safety-history.md) |
+| V1-X15 Sleep Safety Contacts | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_contacts_page.dart` | source-sub-surface | [open](screens/v1-x15-sleep-safety-contacts.md) |
+| V1-X16 Sleep Safety Schedule | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_schedule_page.dart` | source-sub-surface | [open](screens/v1-x16-sleep-safety-schedule.md) |
+| V1-X17 Sleep Safety Audio Meter | 07_health_tracking | `lib/app_versions/v1/features/sleep_tracking/presentation/widgets/sleep_safety_audio_level_meter.dart` | embedded-widget | [open](screens/v1-x17-sleep-audio-level-meter.md) |
 | ONB-01 Text Scale Setup | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_text_scale_page.dart` | source-sub-surface | [open](screens/onb-01-text-scale-setup.md) |
 | ONB-02 Welcome Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/welcome_step.dart` | internal-step | [open](screens/onb-02-welcome-step.md) |
 | ONB-03 Basic Info Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/basic_info_step.dart` | internal-step | [open](screens/onb-03-basic-info-step.md) |
@@ -65,6 +77,8 @@ Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 | V3-01 V3 Home | 06_v2_v3_access | `lib/app_versions/v3/features/home/presentation/pages/v3_home_page.dart` | active-route | [open](screens/v3-01-v3-home.md) |
 | V3-02 Advanced Tracking | 06_v2_v3_access | `lib/app_versions/v3/features/advanced_tracking/presentation/pages/advanced_tracking_page.dart` | active-route | [open](screens/v3-02-advanced-tracking.md) |
 | V3-03 FamilyPlus | 06_v2_v3_access | `lib/app_versions/v3/features/familyplus/presentation/pages/familyplus_page.dart` | active-route | [open](screens/v3-03-familyplus.md) |
+| V3-04 Food Scan | 10_v2_v3_membership | `lib/app_versions/v3/features/food_scan/presentation/pages/food_scan_page.dart` | active-route | [open](screens/v3-04-food-scan.md) |
+| V3-05 Food Scan History | 10_v2_v3_membership | `lib/app_versions/v3/features/food_scan/presentation/pages/food_scan_history_page.dart` | active-route | [open](screens/v3-05-food-scan-history.md) |
 | SALE-01 Sale Participation | 07_sale | `lib/sale_referral/presentation/pages/sale_participation_page.dart` | source-sub-surface | [open](screens/sale-01-sale-participation.md) |
 | SALE-02 Payout Profile Gate | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_SalePayoutProfileGate`) | internal-surface | [open](screens/sale-02-payout-profile-gate.md) |
 | SALE-03 Sale Overview | 07_sale | `lib/sale_referral/presentation/pages/sale_shell_page.dart` (`_OverviewTab`) | internal-surface | [open](screens/sale-03-sale-overview.md) |
@@ -90,4 +104,4 @@ Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 
 ## Coding rule
 
-Before editing a Dart UI file, map it to one of the groups and exact screen/surface spec. Supporting theme/router/widget files remain governed by the existing 183-file baseline requirement and the relevant group contract.
+Before editing a Dart UI file, map it to one of the groups and exact screen/surface spec. Supporting theme/router/widget files are tracked in `inventory/ui_source_audit.csv` and follow the relevant group contract.

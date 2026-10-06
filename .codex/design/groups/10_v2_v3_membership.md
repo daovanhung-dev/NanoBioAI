@@ -22,6 +22,9 @@ Phân biệt locked/pending/active bằng semantic state, không dùng celebrati
 
 ## Views
 
+- [V3-04 — Food Scan](../screens/v3-04-food-scan.md) — active-route
+- [V3-05 — Food Scan History](../screens/v3-05-food-scan-history.md) — active-route
+
 | View | Entrance | State transition | Feedback | Design intent |
 | --- | --- | --- | --- | --- |
 | lib/app_versions/v2/features/health_modules/presentation/pages/health_module_access_page.dart | State fade-through theo trusted status | Loading/empty/error/ready và action result | Press visual; selection haptic; sound chỉ cho success/error/voice/milestone semantic | Forward/locked/support states rõ, route transition không lặp và access denial không celebration. |
