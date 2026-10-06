@@ -20,6 +20,7 @@ Do not read all group files by default. Use the matrix to select the exact group
 
 ## Rules
 
+- For Flutter widget previews, responsive layouts, layout diagnostics, widget/integration tests, and hot reload/restart, follow `Flutter UI Workflows` in `.codex/AGENTS.md`.
 - Prefer theme tokens: `AppColors`, `AppSpacing`, `AppRadius`, `AppTextStyles`, `AppDecoration`, `AppGradients`, `AppShadows`, `AppDuration`.
 - Avoid overflow with proper constraints, scroll views, `Flexible`, or `Expanded`.
 - Loading/error/empty/success states should be complete.

@@ -162,6 +162,14 @@ Access rules:
 - Do not expose internal terms: database, table, query, parser, exception, stack trace, log, tier, entitlement, gate, webhook.
 - Prefer tokens in `lib/core/theme/`.
 
+## Flutter UI Workflows
+
+- Use the installed `dart-flutter` plugin skills for widget previews, responsive layout, layout fixes, widget tests, and integration tests. Use `ui-ux-pro-max` alongside the canonical `.codex/design/` guidance for design work.
+- Widget previews use Flutter's built-in `package:flutter/widget_previews.dart`, `@Preview`, and `flutter widget-preview start`. Add preview annotations or preview-only files only when the task requests them. Keep preview trees isolated from native APIs/plugins and use package-qualified asset paths.
+- For responsive UI, use `flutter-build-responsive-layout`; validate representative phone/tablet constraints and text scaling instead of relying on fixed widths. For overflows or unbounded constraints, use `flutter-fix-layout-issues` and the Dart MCP widget inspector/runtime diagnostics.
+- Widget tests use the existing `flutter_test` dependency and focused `flutter test <path>` runs. Integration flows belong in `integration_test/`; run the relevant test on an explicitly selected emulator/device and do not treat widget tests as integration acceptance.
+- Hot reload applies only to changed `.dart` files under `lib/`: connect to a running app with Dart Tooling Daemon (DTD), then hot reload after widget/build/simple-method edits. Hot restart after changes to `main()`, initialization, global/static state, or fundamental state/logic. Skip reload for files outside `lib/` and comment/doc/whitespace-only changes. Source: `https://raw.githubusercontent.com/flutter/agent-plugins/main/rules/flutter-hot-reload.md`.
+
 ## Validation
 
 Docs/context-only recipe:

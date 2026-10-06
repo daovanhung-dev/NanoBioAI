@@ -2,12 +2,12 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 59 worklog(s).
+- Generated from 60 worklog(s).
 
 ## When To Read
 
 - Historical task type: unknown (36)
-- Historical task type: docs-context (9)
+- Historical task type: docs-context (10)
 - Historical task type: docs (5)
 - Historical task type: bugfix / M31 SLEEP_SAFETY_MONITORING. (2)
 - Historical task type: docs/context update (1)

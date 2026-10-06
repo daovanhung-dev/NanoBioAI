@@ -1008,3 +1008,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Chưa fix: không có xác nhận iOS physical-device; Android permission/dialer và
 - docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Cần kiểm tra tiếp: nghiệm thu trên thiết bị xác nhận OS handoff tắt chuông,
 - docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Chất lượng đầu ra: tốt — timeout và restore dùng cùng route, có dedupe lưu cục bộ và giữ alert khi lỗi.
+- docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - `bash -ic 'uipro init --ai universal --global --dry-run'`: FAIL, this CLI version rejects `--dry-run`; normal install succeeded.
+- docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL on existing baseline after history refresh: missing `docs/audit/source_truth_manifest.json`, historical stale Supabase/Nabi paths, and repository-wide source-truth validation; no new warning from this setup.
+- docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - Chua fix: current Codex conversation tool registry has not refreshed. Start a new Codex session and confirm Dart MCP tools become visible.
+- docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md :: - Can kiem tra tiep: verify widget previews and MCP tools from the restarted Codex session.
