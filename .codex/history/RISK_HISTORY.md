@@ -1024,3 +1024,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: - Chưa fix: không có.
 - docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: - Cần kiểm tra tiếp: xem giao diện trong phiên Chrome/Admin thực tế khi CUA/browser hoạt động trở lại.
+- docs/worklog/2026-10-07/004-worklog-nanobio-early-access-customer-admin.md :: - `validate_codex_integrity.ps1`: FAIL - repository validator bao thieu `docs/audit/source_truth_manifest.json` va cac stale path trong worklog meal nutrition cu cung task-skill Nabi; cac file nay khong thuoc thay doi phien.
+- docs/worklog/2026-10-07/004-worklog-nanobio-early-access-customer-admin.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-07/004-worklog-nanobio-early-access-customer-admin.md :: - Chua fix: khong tao lead dang ky hop le tren production theo gioi han cua smoke test; do do khong xac nhan live insert, danh sach Admin voi lead that, hoac tai APK thong qua response cua mot lead that.
+- docs/worklog/2026-10-07/004-worklog-nanobio-early-access-customer-admin.md :: - Can kiem tra tiep: sau khi co dang ky hop le duoc phep, doi chieu mot lead trong Admin va xac nhan qua trinh cap Plus rieng. URL GitHub Release la cong khai va co the duoc chia se truc tiep theo thiet ke.
