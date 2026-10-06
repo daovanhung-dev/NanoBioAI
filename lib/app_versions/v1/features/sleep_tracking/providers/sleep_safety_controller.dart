@@ -8,8 +8,6 @@ import '../data/gateways/sleep_safety_native_gateway.dart';
 import '../domain/entities/safety_contact.dart';
 import '../domain/entities/sleep_safety_event.dart';
 import '../domain/entities/sleep_safety_dispatch_exception.dart';
-import '../domain/entities/sleep_safety_dispatch_retry.dart';
-import '../domain/entities/sleep_safety_dispatch_result.dart';
 import '../domain/entities/sleep_safety_preference.dart';
 import '../domain/entities/sleep_safety_runtime_config.dart';
 import '../domain/entities/sleep_safety_session.dart';
@@ -84,7 +82,20 @@ class SleepSafetyViewState {
     SleepSafetyPhase.escalating,
     SleepSafetyPhase.cooldown,
   }.contains(machine.phase);
-  bool get phoneFallbackEnabled => runtimeConfig?.phoneFallbackEnabled == true;
+  List<SafetyContact> get phoneFallbackContacts =>
+      contacts
+          .where(
+            (contact) =>
+                contact.active &&
+                contact.allowPhoneFallback &&
+                RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(contact.phoneE164),
+          )
+          .toList()
+        ..sort((a, b) {
+          final priority = a.priority.compareTo(b.priority);
+          return priority != 0 ? priority : a.id.compareTo(b.id);
+        });
+  bool get phoneFallbackEnabled => phoneFallbackContacts.isNotEmpty;
   bool get needsContactSetup =>
       currentEvent?.escalationStatus == SleepSafetyEscalationStatus.failed &&
       const {
@@ -92,11 +103,8 @@ class SleepSafetyViewState {
         'verified_contact_required',
       }.contains(dispatchFailure?.code);
   SafetyContact? get phoneFallbackContact {
-    if (!phoneFallbackEnabled) return null;
-    for (final contact in contacts) {
-      if (contact.allowPhoneFallback) return contact;
-    }
-    return null;
+    final eligibleContacts = phoneFallbackContacts;
+    return eligibleContacts.isEmpty ? null : eligibleContacts.first;
   }
 
   SleepSafetyViewState copyWith({
@@ -149,12 +157,9 @@ class SleepSafetyViewState {
 class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   final _machine = const SleepSafetyStateMachine();
   StreamSubscription<SleepSafetyNativeEvent>? _nativeSubscription;
-  StreamSubscription<bool>? _connectivitySubscription;
   Timer? _audioMetricsWatchdog;
-  Timer? _dispatchRetryTimer;
-  DateTime? _dispatchRetryAt;
-  final Set<String> _dispatchingEvents = <String>{};
   final Set<String> _handlingManualHelpEvents = <String>{};
+  final Set<String> _handlingNoResponseCalls = <String>{};
   final Random _random = Random.secure();
   int _contactsRefreshGeneration = 0;
   int _lastPhoneFallbackPriority = 0;
@@ -166,9 +171,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   SleepSafetyViewState build() {
     ref.onDispose(() {
       _nativeSubscription?.cancel();
-      _connectivitySubscription?.cancel();
       _audioMetricsWatchdog?.cancel();
-      _dispatchRetryTimer?.cancel();
     });
     unawaited(_initialize());
     return SleepSafetyViewState.initial();
@@ -222,9 +225,8 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
           _stopAudioMetricsWatchdog();
         },
       );
-      _watchConnectivityReconnects();
       await _updateNativePhoneFallbackConfig();
-      unawaited(_drainDispatchOutbox());
+      unawaited(_retireLegacyNoResponseRetries());
     } catch (_) {
       state = state.copyWith(
         errorMessage: 'Nabi chưa tải được cài đặt giám sát. Bạn thử lại nhé.',
@@ -379,18 +381,14 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     await _applyResponse(event.id, 'need_help');
   }
 
-  Future<void> retryEmergencyDispatch() async {
+  Future<void> retryNoResponsePhoneCall() async {
     final event = state.currentEvent;
     if (event == null ||
-        event.escalationStatus != SleepSafetyEscalationStatus.failed ||
-        event.response != SleepSafetyResponse.noResponse) {
+        event.response != SleepSafetyResponse.noResponse ||
+        !_isNoResponseCallRetryable(event.state)) {
       return;
     }
-    if (state.needsContactSetup) return;
-    await _escalate(
-      event.id,
-      noResponse: event.response == SleepSafetyResponse.noResponse,
-    );
+    await _handleNoResponseTimeout(event.id, userRetry: true);
   }
 
   Future<void> savePreference(SleepSafetyPreference preference) async {
@@ -533,7 +531,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
       );
     }
     await _updateNativePhoneFallbackConfig();
-    unawaited(_drainDispatchOutbox());
+    unawaited(_retireLegacyNoResponseRetries());
   }
 
   void _mergeContact(SafetyContact saved) {
@@ -648,7 +646,7 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     }
     if (event.type == 'escalationRequired') {
       final eventId = event.data['eventId']?.toString();
-      if (eventId != null) await _escalate(eventId, noResponse: true);
+      if (eventId != null) await _handleNoResponseTimeout(eventId);
       return;
     }
     if (event.type == 'serviceStopped') {
@@ -700,13 +698,27 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         current = await _repository.getEvent(eventId);
         if (current == null) {
           current = _eventFromNativeData(data, session, DateTime.now());
-          await _repository.saveEvent(current);
+          await _repository.saveEventLocally(current);
         }
       }
     }
 
     final phase = native.data['phase']?.toString();
     var manualHelpInterrupted = false;
+    var noResponseCallInterrupted = false;
+    if (current?.state == 'no_response_call_starting' &&
+        current?.response == SleepSafetyResponse.noResponse &&
+        !_handlingNoResponseCalls.contains(current!.id)) {
+      current = _copyEvent(
+        current,
+        stateName: 'no_response_call_interrupted',
+        updatedAt: now,
+      );
+      try {
+        await _persistNoResponseCallEvent(current);
+      } catch (_) {}
+      noResponseCallInterrupted = true;
+    }
     SleepSafetyMachineState machine;
     if (current?.response == SleepSafetyResponse.needHelp) {
       if (current!.state == 'manual_call_started' ||
@@ -729,6 +741,19 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
           alertStartedAt: current.detectedAt,
         );
       }
+    } else if (current?.response == SleepSafetyResponse.noResponse &&
+        _isNoResponseCallHandedOff(current!.state)) {
+      machine = _machine.monitor();
+    } else if (current?.response == SleepSafetyResponse.noResponse &&
+        _isNoResponseCallRetryable(current!.state)) {
+      machine = SleepSafetyMachineState(
+        phase: SleepSafetyPhase.escalating,
+        eventId: current.id,
+        alertStartedAt: current.detectedAt,
+      );
+    } else if (current?.response == SleepSafetyResponse.noResponse &&
+        current?.escalationStatus == SleepSafetyEscalationStatus.accepted) {
+      machine = _machine.monitor();
     } else if (phase == 'calibrating') {
       machine = _machine.calibrate();
     } else if (phase == 'alerting' && current != null) {
@@ -753,15 +778,22 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         : state.history.any((item) => item.id == currentEvent.id)
         ? _replaceHistoryEvent(state.history, currentEvent)
         : <SleepSafetyEvent>[currentEvent, ...state.history];
+    final restorationError = manualHelpInterrupted
+        ? 'Nabi chưa xác định được kết quả khởi tạo cuộc gọi trước đó. Hãy thử gọi lại nếu cần.'
+        : noResponseCallInterrupted
+        ? 'Nabi chưa xác định được kết quả cuộc gọi tự động trước đó. Cảnh báo vẫn hoạt động; hãy kiểm tra điện thoại hoặc thử gọi lại.'
+        : currentEvent != null &&
+              currentEvent.response == SleepSafetyResponse.noResponse &&
+              _isNoResponseCallRetryable(currentEvent.state)
+        ? _noResponseCallErrorMessage(currentEvent.state)
+        : null;
     state = state.copyWith(
       session: session,
       currentEvent: current,
       machine: machine,
       history: restoredHistory,
-      errorMessage: manualHelpInterrupted
-          ? 'Nabi chưa xác định được kết quả khởi tạo cuộc gọi trước đó. Hãy thử gọi lại nếu cần.'
-          : null,
-      clearError: !manualHelpInterrupted,
+      errorMessage: restorationError,
+      clearError: restorationError == null,
       calibrationProgress:
           ((native.data['calibrationProgress'] as num?)?.toDouble() ?? 0)
               .clamp(0, 1)
@@ -773,11 +805,9 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         current != null &&
         current.response != SleepSafetyResponse.needHelp &&
         current.response != SleepSafetyResponse.ok &&
+        !_isNoResponseCallHandedOff(current.state) &&
         current.escalationStatus != SleepSafetyEscalationStatus.accepted) {
-      await _escalate(
-        current.id,
-        noResponse: current.response != SleepSafetyResponse.needHelp,
-      );
+      await _handleNoResponseTimeout(current.id);
     }
   }
 
@@ -1005,400 +1035,243 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     } catch (_) {}
   }
 
-  Future<void> _escalate(String eventId, {bool noResponse = false}) async {
-    if (_dispatchingEvents.contains(eventId)) return;
+  Future<void> _handleNoResponseTimeout(
+    String eventId, {
+    bool userRetry = false,
+  }) async {
+    if (!_handlingNoResponseCalls.add(eventId)) return;
     final current = state.currentEvent;
     if (current == null ||
         current.id != eventId ||
         current.response == SleepSafetyResponse.needHelp ||
-        current.response == SleepSafetyResponse.ok) {
+        current.response == SleepSafetyResponse.ok ||
+        userRetry &&
+            (current.response != SleepSafetyResponse.noResponse ||
+                !_isNoResponseCallRetryable(current.state)) ||
+        !userRetry &&
+            current.response == SleepSafetyResponse.noResponse &&
+            (_isNoResponseCallHandedOff(current.state) ||
+                _isNoResponseCallRetryable(current.state) ||
+                current.state == 'no_response_call_starting')) {
+      _handlingNoResponseCalls.remove(eventId);
       return;
     }
-    _dispatchingEvents.add(eventId);
     final now = DateTime.now();
-    var updated = _copyEvent(
+    final updated = _copyEvent(
       current,
-      response: noResponse ? SleepSafetyResponse.noResponse : current.response,
-      responseAt: noResponse ? now : current.responseAt,
-      stateName: 'dispatching',
-      escalationRequired: true,
-      escalationStatus: SleepSafetyEscalationStatus.dispatching,
+      response: SleepSafetyResponse.noResponse,
+      responseAt: current.responseAt ?? now,
+      stateName: 'no_response_call_starting',
+      escalationRequired: false,
+      escalationStatus: SleepSafetyEscalationStatus.notRequired,
       updatedAt: now,
     );
-    await _repository.saveEvent(updated);
     state = state.copyWith(
       currentEvent: updated,
+      history: _replaceHistoryEvent(state.history, updated),
       machine: SleepSafetyMachineState(
         phase: SleepSafetyPhase.escalating,
         eventId: eventId,
         alertStartedAt: state.machine.alertStartedAt,
       ),
       clearError: true,
+      clearNotice: true,
       clearDispatchFailure: true,
     );
     try {
-      await _dispatchWithRetry(eventId);
-      updated = _copyEvent(
-        updated,
-        stateName: 'escalated',
-        escalationStatus: SleepSafetyEscalationStatus.accepted,
-        updatedAt: DateTime.now(),
-      );
-      await _repository.saveEvent(updated);
+      await _retireLegacyNoResponseRetries(eventId: eventId);
       try {
-        await _repository.dismissAlert(eventId);
+        await _persistNoResponseCallEvent(updated);
       } catch (_) {
-        // Cloud acceptance must not be reported as a dispatch failure when a
-        // native notification channel is temporarily unavailable.
+        final failed = _copyEvent(
+          updated,
+          stateName: 'no_response_call_failed',
+          updatedAt: DateTime.now(),
+        );
+        state = state.copyWith(
+          currentEvent: failed,
+          history: _replaceHistoryEvent(state.history, failed),
+          errorMessage:
+              'Chưa thể lưu trạng thái cuộc gọi. Cảnh báo vẫn hoạt động; hãy bấm “Tôi cần hỗ trợ” để tiếp tục.',
+        );
+        return;
       }
-      state = state.copyWith(
-        currentEvent: updated,
-        machine: _machine.monitor(),
-        notice: 'Nabi đã gửi yêu cầu liên hệ người hỗ trợ đã thiết lập.',
-        clearError: true,
-        clearDispatchFailure: true,
-      );
-    } catch (error) {
-      final deferred =
-          error is SleepSafetyDispatchException && error.isTransportFailure;
-      updated = _copyEvent(
-        updated,
-        stateName: 'dispatch_failed',
-        escalationStatus: SleepSafetyEscalationStatus.failed,
-        updatedAt: DateTime.now(),
-      );
-      await _repository.saveEvent(updated);
-      state = state.copyWith(
-        currentEvent: updated,
-        errorMessage: _dispatchErrorMessage(error),
-        notice: deferred
-            ? 'Đã xếp cảnh báo để thử gửi lại trong thời gian cho phép.'
-            : null,
-        clearNotice: !deferred,
-        dispatchFailure: error is SleepSafetyDispatchException ? error : null,
-      );
+      if (!_isNoResponseCallStarting(eventId)) return;
+
+      final contact = _phoneFallbackForNative();
+      if (contact == null) {
+        await _finishNoResponseCall(
+          updated,
+          stateName: 'no_response_call_unavailable',
+          errorMessage:
+              'Chưa có người liên hệ an toàn đang hoạt động cho phép gọi. Cảnh báo vẫn hoạt động; hãy thêm liên hệ hoặc bấm “Tôi cần hỗ trợ”.',
+        );
+        return;
+      }
+
+      final phoneGateway = ref.read(sleepSafetyPhoneGatewayProvider);
+      var callStarted = false;
+      if (phoneGateway.supportsDirectCalling) {
+        try {
+          final permissionGranted = _directCallPermissionGranted ??=
+              await phoneGateway.ensureDirectCallPermission();
+          if (!_isNoResponseCallStarting(eventId)) return;
+          if (permissionGranted) {
+            callStarted = await phoneGateway
+                .startCall(contact.phoneE164, eventId: eventId)
+                .timeout(const Duration(seconds: 5));
+          }
+        } catch (_) {
+          _directCallPermissionGranted = false;
+          callStarted = false;
+        }
+      }
+      if (!_isNoResponseCallStarting(eventId)) return;
+
+      var dialerOpened = false;
+      if (!callStarted) {
+        try {
+          dialerOpened = await phoneGateway
+              .openDialer(contact.phoneE164, eventId: eventId)
+              .timeout(const Duration(seconds: 5));
+        } catch (_) {
+          dialerOpened = false;
+        }
+      }
+      if (!_isNoResponseCallStarting(eventId)) return;
+
+      if (callStarted || dialerOpened) {
+        final handedOff = _copyEvent(
+          updated,
+          stateName: callStarted
+              ? 'no_response_call_started'
+              : 'no_response_call_handoff',
+          updatedAt: DateTime.now(),
+        );
+        state = state.copyWith(
+          currentEvent: handedOff,
+          history: _replaceHistoryEvent(state.history, handedOff),
+          machine: _machine.monitor(),
+          notice: callStarted
+              ? 'Nabi đã yêu cầu điện thoại gọi ${contact.name}. Tình trạng kết nối chưa được xác nhận.'
+              : defaultTargetPlatform == TargetPlatform.iOS
+              ? 'Đã mở yêu cầu gọi ${contact.name}. iPhone có thể yêu cầu xác nhận; tình trạng kết nối chưa được xác nhận.'
+              : 'Đã mở ứng dụng Điện thoại cho ${contact.name}. Hãy kiểm tra số và bấm Gọi; cuộc gọi chưa được bắt đầu.',
+          clearError: true,
+          clearDispatchFailure: true,
+        );
+        try {
+          await _persistNoResponseCallEvent(handedOff);
+        } catch (_) {}
+      } else {
+        await _finishNoResponseCall(
+          updated,
+          stateName: 'no_response_call_failed',
+          errorMessage:
+              'Chưa thể mở cuộc gọi hoặc ứng dụng Điện thoại cho ${contact.name}. Cảnh báo vẫn hoạt động; hãy thử lại hoặc bấm “Tôi cần hỗ trợ”.',
+        );
+      }
     } finally {
-      _dispatchingEvents.remove(eventId);
+      _handlingNoResponseCalls.remove(eventId);
     }
   }
 
-  Future<void> _dispatchWithRetry(String eventId, {String? retryId}) async {
-    final event = await _repository.getEvent(eventId);
-    if (event == null) {
-      throw const SleepSafetyDispatchException('sleep_safety_event_missing');
-    }
-    if (event.response != SleepSafetyResponse.noResponse) {
-      throw const SleepSafetyDispatchException(
-        'event_not_eligible_for_escalation',
-      );
-    }
-    final contacts = state.contacts
-        .where((contact) => contact.canReceiveSafetyCall)
-        .toList(growable: false);
-    if (contacts.isEmpty) {
-      throw const SleepSafetyDispatchException('eligible_contact_required');
-    }
-    final idempotencyKey = 'sleep-safety-$eventId';
-    if (retryId == null) {
-      retryId = 'sleep-safety-retry-$eventId';
-      try {
-        await _repository.enqueueEmergencyRetry(
-          userId: event.userId,
-          event: event,
-          idempotencyKey: idempotencyKey,
-        );
-      } catch (_) {
-        // Keep the online cloud dispatch available if local persistence fails.
-      }
-    }
-    List<SleepSafetyDispatchRetry> retries = const [];
-    try {
-      retries = await _repository.listPendingEmergencyRetries();
-    } catch (_) {
-      // Retry metadata is best effort; it must not block a live dispatch.
-    }
-    var previousAttemptCount = 0;
-    for (final entry in retries) {
-      if (entry.id == retryId) {
-        previousAttemptCount = entry.attemptCount;
-        break;
-      }
-    }
-    final connectivity = ref.read(sleepSafetyConnectivityGatewayProvider);
-    bool networkAvailable;
-    try {
-      networkAvailable = await connectivity.hasNetworkTransport();
-    } catch (_) {
-      // Connectivity is only a hint. Try the bounded cloud request if the
-      // platform cannot determine the current transport.
-      networkAvailable = true;
-    }
-    if (!networkAvailable) {
-      try {
-        await _repository.markEmergencyRetryFailed(
-          id: retryId,
-          errorCode: 'network_unavailable',
-        );
-      } catch (_) {}
-      throw const SleepSafetyDispatchException('network_unavailable');
-    }
+  bool _isNoResponseCallHandedOff(String stateName) =>
+      stateName == 'no_response_call_started' ||
+      stateName == 'no_response_call_handoff';
 
-    final nextAttempt = previousAttemptCount + 1;
-    try {
-      await _repository.markEmergencyRetrySending(retryId);
-    } catch (_) {
-      // A local outbox write failure must not suppress the cloud attempt.
-    }
-    SleepSafetyRuntimeConfig runtimeConfig;
-    try {
-      runtimeConfig = await _repository.loadRuntimeConfig().timeout(
-        const Duration(seconds: 8),
-      );
-    } catch (error) {
-      if (error is TimeoutException ||
-          error is SleepSafetyDispatchException && error.isTransportFailure) {
-        final retryAt = _retryAtForAttempt(nextAttempt);
-        try {
-          await _repository.markEmergencyRetryFailed(
-            id: retryId,
-            errorCode: 'network_unavailable',
-            nextRetryAt: retryAt,
-          );
-        } catch (_) {}
-        if (retryAt != null) _scheduleDispatchRetry(retryAt);
-        throw const SleepSafetyDispatchException('network_unavailable');
-      }
-      try {
-        await _repository.markEmergencyRetryFailed(
-          id: retryId,
-          errorCode: error is SleepSafetyDispatchException
-              ? error.code
-              : 'runtime_config_unavailable',
-        );
-      } catch (_) {}
-      rethrow;
-    }
-    state = state.copyWith(runtimeConfig: runtimeConfig);
-    if (!runtimeConfig.enabled) {
-      await _repository.markEmergencyRetryFailed(
-        id: retryId,
-        errorCode: 'sleep_safety_rollout_disabled',
-      );
-      throw const SleepSafetyDispatchException('sleep_safety_rollout_disabled');
-    }
+  bool _isNoResponseCallRetryable(String stateName) => const {
+    'no_response_call_failed',
+    'no_response_call_unavailable',
+    'no_response_call_interrupted',
+  }.contains(stateName);
 
+  String _noResponseCallErrorMessage(String stateName) => switch (stateName) {
+    'no_response_call_unavailable' =>
+      'Chưa có người liên hệ an toàn đang hoạt động cho phép gọi. Cảnh báo vẫn hoạt động; hãy thêm liên hệ hoặc bấm “Tôi cần hỗ trợ”.',
+    'no_response_call_interrupted' =>
+      'Nabi chưa xác định được kết quả cuộc gọi tự động trước đó. Cảnh báo vẫn hoạt động; hãy kiểm tra điện thoại hoặc thử gọi lại.',
+    _ =>
+      'Chưa thể mở cuộc gọi người hỗ trợ. Cảnh báo vẫn hoạt động; hãy thử lại hoặc bấm “Tôi cần hỗ trợ”.',
+  };
+
+  bool _isNoResponseCallStarting(String eventId) =>
+      state.currentEvent?.id == eventId &&
+      state.currentEvent?.response == SleepSafetyResponse.noResponse &&
+      state.currentEvent?.state == 'no_response_call_starting';
+
+  Future<void> _finishNoResponseCall(
+    SleepSafetyEvent event, {
+    required String stateName,
+    required String errorMessage,
+  }) async {
+    final failed = _copyEvent(
+      event,
+      stateName: stateName,
+      updatedAt: DateTime.now(),
+    );
+    state = state.copyWith(
+      currentEvent: failed,
+      history: _replaceHistoryEvent(state.history, failed),
+      machine: SleepSafetyMachineState(
+        phase: SleepSafetyPhase.escalating,
+        eventId: failed.id,
+        alertStartedAt: state.machine.alertStartedAt,
+      ),
+      errorMessage: errorMessage,
+      clearNotice: true,
+    );
     try {
-      final response = await _repository
-          .dispatchEmergency(eventId, idempotencyKey)
-          .timeout(const Duration(seconds: 8));
-      if (response.route != SleepSafetyDispatchRoute.cloudAccepted) {
-        throw SleepSafetyDispatchException(
-          response.errorCode ?? 'dispatch_failed',
-        );
-      }
-      try {
-        await _repository.markEmergencyRetryAcknowledged(retryId);
-      } catch (_) {
-        // Server acceptance wins over a local outbox acknowledgement failure.
-      }
-    } catch (error) {
-      if (error is TimeoutException ||
-          error is SleepSafetyDispatchException && error.isTransportFailure) {
-        final retryAt = _retryAtForAttempt(nextAttempt);
-        try {
-          await _repository.markEmergencyRetryFailed(
-            id: retryId,
-            errorCode: 'network_unavailable',
-            nextRetryAt: retryAt,
-          );
-        } catch (_) {}
-        if (retryAt != null) _scheduleDispatchRetry(retryAt);
-        throw const SleepSafetyDispatchException('network_unavailable');
-      }
-      final errorCode = error is SleepSafetyDispatchException
-          ? error.code
-          : 'dispatch_failed';
-      try {
-        await _repository.markEmergencyRetryFailed(
-          id: retryId,
-          errorCode: errorCode,
-        );
-      } catch (_) {}
-      rethrow;
-    }
+      await _persistNoResponseCallEvent(failed);
+    } catch (_) {}
   }
 
-  DateTime? _retryAtForAttempt(int attempt) {
-    const delays = [5, 15, 30];
-    if (attempt < 1 || attempt > delays.length) return null;
-    return DateTime.now().add(Duration(seconds: delays[attempt - 1]));
-  }
+  Future<void> _persistNoResponseCallEvent(SleepSafetyEvent event) =>
+      _repository.updateEvent(event.id, {
+        'response': event.response.name,
+        'response_at': event.responseAt?.toIso8601String(),
+        'state': event.state,
+        'escalation_required': event.escalationRequired ? 1 : 0,
+        'escalation_status': event.escalationStatus.name,
+        'updated_at': event.updatedAt.toIso8601String(),
+      });
 
-  String _dispatchErrorMessage(Object error) {
-    if (error is! SleepSafetyDispatchException) {
-      return 'Nabi chưa thể liên hệ người hỗ trợ. Bạn có thể thử gửi lại.';
-    }
-    return switch (error.code) {
-      'network_unavailable' =>
-        'Chưa có kết nối mạng. Hãy gọi người liên hệ hoặc chờ Nabi thử gửi lại.',
-      'verified_contact_required' || 'eligible_contact_required' =>
-        'Chưa có liên hệ đủ điều kiện nhận cuộc gọi. Hãy thêm liên hệ hoặc bật quyền gọi thoại trong danh bạ.',
-      'paid_access_required' =>
-        'Tính năng liên hệ khẩn cấp dành cho gói Plus hoặc FamilyPlus.',
-      'sleep_safety_rollout_disabled' =>
-        'Tính năng liên hệ hỗ trợ đang tạm dừng từ hệ thống.',
-      'event_not_eligible_for_escalation' =>
-        'Sự kiện này đã hết thời gian gửi cảnh báo an toàn.',
-      'dispatch_rate_limited' =>
-        'Bạn đã dùng hết lượt liên hệ trong thời gian ngắn. Hãy thử lại sau.',
-      'all_contacts_failed' || 'provider_unavailable' =>
-        'Nhà cung cấp liên hệ chưa phản hồi. Bạn có thể thử gửi lại.',
-      'dispatch_sync_failed' =>
-        'Chưa thể đồng bộ cảnh báo. Bạn vẫn có thể gọi người liên hệ trực tiếp.',
-      _ => 'Nabi chưa thể liên hệ người hỗ trợ. Bạn có thể thử gửi lại.',
-    };
-  }
-
-  void _watchConnectivityReconnects() {
-    try {
-      _connectivitySubscription ??= ref
-          .read(sleepSafetyConnectivityGatewayProvider)
-          .networkAvailable
-          .listen((available) {
-            if (available) unawaited(_drainDispatchOutbox());
-          }, onError: (_) {});
-    } catch (_) {
-      // The next app initialization can still drain the outbox.
-    }
-  }
-
-  bool _drainingDispatchOutbox = false;
+  bool _pendingRetryCleanup = false;
   bool _pendingNativePhoneFallback = false;
 
-  void _scheduleDispatchRetry(DateTime retryAt) {
-    if (_dispatchRetryAt != null && !_dispatchRetryAt!.isAfter(retryAt)) return;
-    final delay = retryAt.difference(DateTime.now());
-    if (delay <= Duration.zero) {
-      unawaited(_drainDispatchOutbox());
+  Future<void> _retireLegacyNoResponseRetries({String? eventId}) async {
+    if (eventId != null) {
+      try {
+        await _repository.markEmergencyRetryFailed(
+          id: 'sleep-safety-retry-$eventId',
+          errorCode: 'no_response_local_phone_route',
+        );
+      } catch (_) {}
       return;
     }
-    _dispatchRetryTimer?.cancel();
-    _dispatchRetryAt = retryAt;
-    _dispatchRetryTimer = Timer(delay, () {
-      _dispatchRetryTimer = null;
-      _dispatchRetryAt = null;
-      unawaited(_drainDispatchOutbox());
-    });
-  }
-
-  Future<void> _drainDispatchOutbox() async {
-    if (_drainingDispatchOutbox) return;
-    _drainingDispatchOutbox = true;
+    if (_pendingRetryCleanup) return;
+    _pendingRetryCleanup = true;
     try {
       final entries = await _repository.listPendingEmergencyRetries();
-      DateTime? nextWake;
-      final currentUserId = ref.read(currentAuthUserIdProvider);
       for (final entry in entries) {
-        if (entry.userId != currentUserId) continue;
-        if (entry.nextRetryAt != null &&
-            entry.nextRetryAt!.isAfter(DateTime.now())) {
-          if (nextWake == null || entry.nextRetryAt!.isBefore(nextWake)) {
-            nextWake = entry.nextRetryAt;
-          }
-          continue;
-        }
-        final event = await _repository.getEvent(entry.eventId);
-        if (event == null) {
-          await _repository.markEmergencyRetryFailed(
-            id: entry.id,
-            errorCode: 'sleep_safety_event_missing',
-          );
-          continue;
-        }
-        if (event.response == SleepSafetyResponse.needHelp) {
-          await _repository.markEmergencyRetryFailed(
-            id: entry.id,
-            errorCode: 'manual_help_call_required',
-          );
-          continue;
-        }
-        SleepSafetyRuntimeConfig runtimeConfig;
         try {
-          runtimeConfig = await _repository.loadRuntimeConfig().timeout(
-            const Duration(seconds: 8),
-          );
-          state = state.copyWith(runtimeConfig: runtimeConfig);
-        } catch (_) {
-          continue;
-        }
-        final freshness = runtimeConfig.eventFreshnessSeconds < 60
-            ? 60
-            : runtimeConfig.eventFreshnessSeconds;
-        if (DateTime.now().difference(event.detectedAt).inSeconds > freshness) {
           await _repository.markEmergencyRetryFailed(
             id: entry.id,
-            errorCode: 'event_expired',
+            errorCode: 'no_response_local_phone_route',
           );
-          continue;
-        }
-        if (!runtimeConfig.enabled ||
-            !state.contacts.any((contact) => contact.canReceiveSafetyCall)) {
-          continue;
-        }
-        if (!_dispatchingEvents.add(entry.eventId)) continue;
-        try {
-          await _dispatchWithRetry(event.id, retryId: entry.id);
-          final accepted = _copyEvent(
-            event,
-            stateName: 'escalated',
-            escalationRequired: true,
-            escalationStatus: SleepSafetyEscalationStatus.accepted,
-            updatedAt: DateTime.now(),
-          );
-          await _repository.saveEvent(accepted);
-          try {
-            await _repository.dismissAlert(event.id);
-          } catch (_) {}
-          if (state.currentEvent?.id == event.id) {
-            state = state.copyWith(
-              currentEvent: accepted,
-              machine: _machine.monitor(),
-              notice: 'Nabi đã gửi yêu cầu liên hệ người hỗ trợ đã thiết lập.',
-              clearError: true,
-            );
-          }
-        } on SleepSafetyDispatchException {
-          // The row contains the retry time/error; the local alert stays active.
         } catch (_) {
-          // Keep the local event and alarm available after unexpected failures.
-        } finally {
-          _dispatchingEvents.remove(entry.eventId);
+          // A stale outbox row must never restart the old backend route.
         }
       }
-      if (nextWake != null) _scheduleDispatchRetry(nextWake);
     } catch (_) {
-      // Outbox failures must not stop native monitoring or the alert tone.
+      // Outbox cleanup must not stop native monitoring or local calling.
     } finally {
-      _drainingDispatchOutbox = false;
+      _pendingRetryCleanup = false;
     }
   }
 
   SafetyContact? _phoneFallbackForNative() {
-    if (state.runtimeConfig?.phoneFallbackEnabled != true) return null;
-    final contacts =
-        state.contacts
-            .where(
-              (contact) =>
-                  contact.active &&
-                  contact.allowPhoneFallback &&
-                  RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(contact.phoneE164),
-            )
-            .toList()
-          ..sort((a, b) {
-            final priority = a.priority.compareTo(b.priority);
-            return priority != 0 ? priority : a.id.compareTo(b.id);
-          });
-    return contacts.isEmpty ? null : contacts.first;
+    return state.phoneFallbackContact;
   }
 
   Future<void> _updateNativePhoneFallbackConfig() async {
@@ -1416,29 +1289,11 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
   }
 
   Future<void> callPhoneFallback({bool next = false}) async {
-    if (!state.phoneFallbackEnabled) {
-      state = state.copyWith(
-        errorMessage: 'Tùy chọn gọi người liên hệ đang tạm dừng từ hệ thống.',
-      );
-      return;
-    }
-    final contacts =
-        state.contacts
-            .where(
-              (contact) =>
-                  contact.active &&
-                  contact.allowPhoneFallback &&
-                  RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(contact.phoneE164),
-            )
-            .toList()
-          ..sort((a, b) {
-            final priority = a.priority.compareTo(b.priority);
-            return priority != 0 ? priority : a.id.compareTo(b.id);
-          });
+    final contacts = state.phoneFallbackContacts;
     if (contacts.isEmpty) {
       state = state.copyWith(
         errorMessage:
-            'Hãy bật quyền gọi trực tiếp cho ít nhất một người liên hệ.',
+            'Chưa có người liên hệ đang hoạt động cho phép gọi. Hãy thêm hoặc bật quyền nhận cuộc gọi cho một liên hệ.',
       );
       return;
     }

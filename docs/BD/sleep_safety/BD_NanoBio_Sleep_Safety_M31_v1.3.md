@@ -12,11 +12,19 @@
 - This amendment supersedes the M31-BR06/07, M31-AC06, and Q-M31-04 timing
   decisions from v1.2 only; all other inherited M31 requirements remain active.
 - Keep the alert open for 15 seconds. If the user has not responded by then,
-  start the existing automatic voice/SMS escalation flow.
+  call the highest-priority active contact who opted into phone calls, using
+  the device phone app. The local timeout route does not depend on a server
+  runtime flag.
 - Remove the former +30-second reminder. An explicit `OK` or `Need help`
   response cancels the no-response timer.
 - `Need help` continues to use the highest-priority active phone-enabled
   contact locally and never invokes server dispatch.
+- On Android, use `ACTION_CALL` when `CALL_PHONE` is granted; otherwise, or if
+  direct calling fails, open the prefilled dialer. On iOS, open `tel:` and let
+  the operating system request confirmation when required.
+- If no eligible contact exists or phone-app handoff fails, keep the alert
+  active and guide the user to respond or call manually. Do not dispatch to the
+  backend or enqueue a backend retry.
 - After Android accepts `ACTION_CALL` or `ACTION_DIAL`, or iOS accepts `tel:`,
   stop the alert tone and clear its notification without stopping the monitoring
   session. If the operating system rejects the handoff, keep the sound and
@@ -26,8 +34,9 @@
 
 ## 2. Compatibility and safety boundary
 
-- The change affects local response timers and phone handoff behavior only.
-- Voice/SMS routing, contact priority, server contracts, persistence schema,
-  permissions, call confirmation behavior, and iOS system confirmation remain
-  unchanged.
+- The timeout change affects local response and phone handoff behavior; it no
+  longer invokes the existing voice/SMS dispatch contract.
+- Backend APIs, contact priority, persistence schema, the existing
+  `escalation_status` enum, permissions, and iOS system confirmation remain
+  unchanged. No new API or schema value is introduced.
 - No automatic call to emergency services is introduced.

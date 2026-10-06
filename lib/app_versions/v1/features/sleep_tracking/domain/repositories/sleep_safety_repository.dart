@@ -26,6 +26,7 @@ abstract class SleepSafetyRepository {
   });
   Future<void> updateSession(String id, Map<String, Object?> values);
   Future<void> saveEvent(SleepSafetyEvent value);
+  Future<void> saveEventLocally(SleepSafetyEvent value);
   Future<SleepSafetyEvent?> getEvent(String id);
   Future<void> updateEvent(String id, Map<String, Object?> values);
   Future<List<SleepSafetyEvent>> listEvents(String userId);

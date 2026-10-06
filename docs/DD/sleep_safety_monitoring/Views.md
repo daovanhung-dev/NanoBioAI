@@ -62,7 +62,7 @@ guarantee safety.
 - primary safety actions:
   - `Tôi ổn`
   - `Tôi cần hỗ trợ`
-- at +15s without a response starts automatic voice/SMS escalation;
+- at +15s without a response, the enabled local phone route starts;
 - `Tôi cần hỗ trợ` starts a direct phone call to the highest-priority active
   opted-in contact and never invokes server dispatch;
 - phone-call text reports OS initiation or dialer handoff only, never a
@@ -70,15 +70,19 @@ guarantee safety.
 - Android keeps the microphone foreground notification separate from the alert
   notification and loops the alarm tone until OK, stop/failure, or a successful
   phone handoff. Failed call/dialer handoff keeps the tone and alert active.
-- The global `phone_fallback_enabled` flag controls automatic no-response
-  calling. It does not block an explicit `Tôi cần hỗ trợ` action when an
-  eligible contact exists. If no eligible contact exists, keep the alert active
-  and show guidance without a server request.
+- Automatic no-response calling and explicit `Tôi cần hỗ trợ` use the same
+  eligible contact and OS handoff rules; the legacy global
+  `phone_fallback_enabled` flag does not gate either local route. If no eligible
+  contact exists, keep the alert active and show manual guidance without a
+  server request.
 - Android requests `CALL_PHONE` before monitoring. Permission denial or call
   launch failure opens the system dialer with the selected number filled in;
   the user presses Call. iOS opens `tel:` and may ask for confirmation.
-- Only automatic no-response dispatch is queued locally with a stable
-  idempotency key and retried inside the server freshness window.
+- Automatic handoff success silences the alert and notification while keeping
+  monitoring active. Failed/unavailable handoff keeps the alert active and
+  offers a user-initiated retry; duplicate native events do not retry it.
+- The timeout creates no backend dispatch retry. Legacy no-response retry rows
+  are retired locally.
 
 ## M31-V06 — Night Analysis
 

@@ -37,7 +37,9 @@ void main() {
     expect(retryCount, 0);
   });
 
-  testWidgets('provider failure keeps the retry action', (tester) async {
+  testWidgets('phone handoff failure keeps the retry and response actions', (
+    tester,
+  ) async {
     var retryCount = 0;
 
     await tester.pumpWidget(
@@ -56,13 +58,15 @@ void main() {
       ),
     );
 
-    expect(find.text('Thử gửi lại'), findsOneWidget);
+    expect(find.text('Thử gọi lại'), findsOneWidget);
     expect(find.text('Mở danh bạ'), findsNothing);
-    await tester.tap(find.text('Thử gửi lại'));
+    expect(find.text('Tôi ổn'), findsOneWidget);
+    expect(find.text('Tôi cần hỗ trợ'), findsOneWidget);
+    await tester.tap(find.text('Thử gọi lại'));
     expect(retryCount, 1);
   });
 
-  testWidgets('automatic call pause explains that explicit help still works', (
+  testWidgets('alert does not show a system-config pause message', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -73,19 +77,12 @@ void main() {
             onOk: () {},
             onNeedHelp: () {},
             dispatching: false,
-            phoneFallbackMessage:
-                'Gọi tự động khi bạn không phản hồi đang tạm dừng theo cài đặt hệ thống. Bạn vẫn có thể bấm “Tôi cần hỗ trợ” để gọi chủ động.',
           ),
         ),
       ),
     );
 
-    expect(
-      find.text(
-        'Gọi tự động khi bạn không phản hồi đang tạm dừng theo cài đặt hệ thống. Bạn vẫn có thể bấm “Tôi cần hỗ trợ” để gọi chủ động.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('tạm dừng theo cài đặt hệ thống'), findsNothing);
     expect(find.textContaining('Gọi ngay'), findsNothing);
     expect(find.text('Tôi cần hỗ trợ'), findsOneWidget);
   });
@@ -159,7 +156,6 @@ void main() {
               contactsLoaded: true,
               verifiedContacts: 0,
               callReadyContacts: 0,
-              phoneFallbackEnabled: false,
               busy: false,
               onStart: () => started = true,
               onStop: () {},
@@ -173,12 +169,7 @@ void main() {
         find.textContaining('bật quyền nhận cuộc gọi thoại'),
         findsOneWidget,
       );
-      expect(
-        find.textContaining(
-          'Tự động gọi khi bạn không phản hồi đang tạm dừng.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.textContaining('đang tạm dừng'), findsNothing);
       expect(find.text('Bắt đầu giám sát đêm nay'), findsOneWidget);
 
       await tester.tap(find.text('Mở danh bạ'));

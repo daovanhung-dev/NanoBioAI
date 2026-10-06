@@ -11,23 +11,23 @@
 | M31-FN07 | Confirm event | Native/Controller | candidate | event + T0 alert | duplicate suppression |
 | M31-FN08 | No-response deadline | Native timer | event | emit automatic escalation at +15s | timer cancel on response |
 | M31-FN09 | `respondOk` | Controller/native | eventId | response ok + cooldown | no dispatch |
-| M31-FN10 | `requestHelp` / timeout | Controller/native | eventId | direct local phone request / no-response dispatch | help never enters cloud dispatch; timeout is +15s |
+| M31-FN10 | `requestHelp` / no-response timeout | Controller/native | eventId | direct local phone request / timeout phone handoff | neither route invokes server dispatch; timeout is +15s and flag-gated |
 | M31-FN11 | Upsert SafetyContact | Cloud RPC | name/relation/phone/priority | contact pending/verified preserved if phone same | max3/E164/priority conflict |
 | M31-FN12 | Delete SafetyContact | Cloud RPC | contact id | delete own contact | ownership |
 | M31-FN13 | Request OTP | Edge Function | contact id | accepted + expiry | auth/rate/provider/no OTP leak |
 | M31-FN14 | Confirm OTP | Edge Function | contact id + 6 digits | verified | hash/expiry/attempt limit |
-| M31-FN15 | Dispatch event | Edge Function | eventId + idempotency | accepted/reused | no-response only; paid/event/rate; server routes only voice/SMS |
+| M31-FN15 | Retained server dispatch contract | Edge Function | eventId + idempotency | accepted/reused | existing backend API; not invoked by the M31 timeout |
 | M31-FN16 | Provider submit | Shared Edge adapter | channel/to/message | provider id/status | generic HTTP contract |
 | M31-FN17 | Provider callback cascade | Edge webhook | provider id/status | status + next attempt | secret/idempotency/priority; no SMS fallback to unverified contact |
 | M31-FN18 | Save schedule | Controller/repository | preference | local/cloud preference | valid minutes/weekdays |
 | M31-FN19 | Schedule arming notifications | Reminder service | preference | local notifications | no mic auto-start |
 | M31-FN20 | List event history | Local datasource/DAO | user id | recent metadata | ownership/no raw audio |
-| M31-FN21 | Restore native status | EventChannel/Controller | snapshot | session/event/machine recovery | engine recreation/idempotent escalation |
+| M31-FN21 | Restore native status | EventChannel/Controller | snapshot | session/event/machine recovery | same local phone route; event-ID handoff dedupe; interrupted handoff is not auto-retried |
 | M31-FN22 | Live sound metrics | Native/EventChannel/Controller/UI | RMS/peak numeric features | 0..1 signal/peak/baseline meter state | throttled, RAM-only, stale-signal watchdog, no PCM payload |
 | M31-FN24 | Open dialer fallback | Flutter/Android/iOS | user help action + active phone-call contact | dialer opens with number | used after permission denial or call launch failure; handoff is not a connected call |
-| M31-FN25 | Queue and retry cloud dispatch | Controller/local datasource/DAO | network failure + event | same idempotency retry before freshness expiry | 8s request bound, limited backoff, no phone in outbox, stale event rejected |
+| M31-FN25 | Retire legacy no-response retry | Controller/local datasource/DAO | app start or timeout event | old retry marked failed locally | no new outbox rows or backend dispatch; schema unchanged |
 | M31-FN26 | Set unverified voice-alert consent | Contact form + 7-argument Cloud RPC | contact + explicit opt-in | preference saved; default off | does not enable SMS; legacy 5-argument RPC remains compatible |
-| M31-FN27 | Initiate direct help call | Controller + Android channel / iOS `tel:` | explicit `Tôi cần hỗ trợ` + highest-priority active opted-in contact | Android OS call request or dialer handoff | `CALL_PHONE` requested before monitoring; fallback after denial/failure; never report connected |
+| M31-FN27 | Initiate direct phone handoff | Controller + Android channel / iOS `tel:` | explicit help or enabled +15s timeout + highest-priority opted-in contact | Android OS call request or dialer handoff | `CALL_PHONE` requested before monitoring; fallback after denial/failure; never report connected |
 
 ## API / RPC contracts
 

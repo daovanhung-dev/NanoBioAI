@@ -9,7 +9,7 @@
 | Non-medical acoustic labels | `Q-M31-02`, `M31-BR05` |
 | On-device/no raw audio | `Q-M31-03`, `M31-BR04` |
 | 15 second response window | `Q-M31-04`, `M31-BR06/07` |
-| Edge Function + SMS/voice | `Q-M31-05`, `M31-BR09` |
+| Local phone handoff after 15s; retained Edge API contract | `Q-M31-05`, `M31-BR09`, BD v1.3 |
 | SafetyContact max 3 | `Q-M31-06`, `M31-BR08` |
 | Manual + scheduled reminder | `Q-M31-08`, `M31-BR03` |
 | Sensitivity/calibration/cooldown | `Q-M31-09`, `M31-BR11` |
@@ -33,10 +33,16 @@ Native PCM frame (RAM only)
   -> confirmedSafetyEvent metadata
   -> Controller local-first event
   -> T0 alert
-  -> +15s escalation if no response, or immediate needHelp
-  -> sleep-safety-dispatch Edge Function
-  -> verified or voice-opted-in SafetyContact priority cascade
+  -> +15s no response or immediate needHelp
+  -> local Phone Gateway -> Android call/dialer or iOS tel:
+  -> OS handoff silences alert; monitoring session remains active
 ```
+
+The no-response route uses the highest-priority eligible contact and local
+phone-call consent. It does not depend on `phone_fallback_enabled`, invoke the
+backend dispatcher, or create a dispatch retry. The existing Edge
+Function/provider cascade remains a separate server contract and is not used
+by the M31 timeout.
 
 Dependency rule remains:
 
@@ -55,7 +61,7 @@ Presentation does not import SQLite DAO or Supabase client.
 | `calibrating` | no valid baseline/recalibration | calibration complete |
 | `monitoring` | detector active | confirmed event / stop / failure |
 | `awaitingResponse` | T0 confirmed event | user ok/help or +15s no response |
-| `escalating` | +15s no response | dispatch accepted/failed; native session remains active |
+| `escalating` | +15s no response | phone handoff accepted, unavailable, or failed; native session remains active |
 | `cooldown` | user ok | cooldown elapsed -> monitoring |
 | `failed` | permission/native/runtime failure | explicit restart after problem fixed |
 
@@ -98,13 +104,15 @@ Service-only OTP hash + expiry + attempts. No client select/write grant.
 ### M31-E-dispatch
 
 Event/contact/channel/provider delivery evidence + idempotency; server channels
-are voice and SMS. Client may read its own dispatch summary if needed but cannot
-write dispatch status.
+are voice and SMS. This retained backend contract is not invoked by the
+15-second client timeout. Client may read its own dispatch summary if needed but
+cannot write dispatch status.
 
 ### M31-E-runtime-config
 
 `enabled, max_dispatches_per_hour, event_freshness_seconds,
-phone_fallback_enabled, updated_at`. The phone-call flag defaults false.
+phone_fallback_enabled, updated_at`. The legacy phone-call flag defaults false
+but does not gate the local timeout handoff.
 
 ### Explicitly forbidden fields
 
@@ -204,7 +212,11 @@ low-overhead frame-level features instead.
 8. At least one active verified contact or unverified contact explicitly opted
    into voice alerts. Unverified contacts are voice-only; SMS requires verified.
 
-## 8. Provider cascade
+## 8. Retained server provider contract
+
+The server-side contract below remains documented for compatibility, but the
+M31 no-response timer does not call it. The app timeout is local phone handoff
+only and uses saved contact opt-in; it is independent of server runtime flags.
 
 Default no-response transport order:
 
@@ -220,17 +232,15 @@ only when its separate default-off consent is enabled. If that call fails or is
 not answered, the cascade skips SMS for that number and moves to the next
 eligible priority. SMS remains verified-only.
 
-When a user selects `Tôi cần hỗ trợ`, Flutter calls the highest-priority active
-contact that allows phone calls and does not invoke server dispatch. Android
-requests `CALL_PHONE` before monitoring and uses `ACTION_CALL` when permission is
-granted; otherwise it opens a prefilled dialer. iOS opens `tel:` and may require
-system confirmation. The event records OS call initiation or dialer handoff,
-never a connected call. If the server phone-call flag is off or there is no
-eligible contact, the local alert remains active with guidance.
-
-The automatic +15-second no-response route remains voice/SMS and queues only
-event/idempotency metadata when offline. Retries use the same idempotency key and
-stop at the server-configured freshness limit.
+When a user selects `Tôi cần hỗ trợ`, or the native no-response timer expires,
+Flutter calls the highest-priority active contact that allows phone calls.
+Both routes use saved contact consent and OS permissions; neither depends on
+`phone_fallback_enabled`. Android requests `CALL_PHONE` before monitoring and
+uses `ACTION_CALL` when permission is granted; otherwise it opens a prefilled
+dialer. iOS opens `tel:` and may require system confirmation. The
+event records OS call initiation or dialer handoff, never a connected call. If
+no contact is eligible or handoff fails, the local alert remains active with
+guidance. No new dispatch outbox row is created.
 
 Provider callbacks carrying a valid webhook secret can continue this cascade
 when failure/no-answer is asynchronous. A submitted/delivered/answered result
@@ -253,9 +263,12 @@ No official emergency service number is part of this flow.
 - Controller reloads session/event from SQLite; if native event occurred while
   Flutter sink was unavailable, metadata is reconstructed locally without raw
   audio.
-- Cloud dispatch key is stable `sleep-safety-<eventId>` so reconnect does not
-  create a new cascade for the same event. The SQLite v28 outbox stores no phone
-  or provider message data and has bounded retries.
+- Native `statusSnapshot` and live `escalationRequired` use the same local call
+  handler. Event state prevents duplicate calls by event ID. A process restored
+  in `no_response_call_starting` becomes interrupted and is not auto-retried;
+  retry requires a user action.
+- Legacy no-response outbox rows are marked failed locally and never dispatched
+  after this contract change. The SQLite v28 outbox schema remains unchanged.
 
 ## 11. Security/privacy
 

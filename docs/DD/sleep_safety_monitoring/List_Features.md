@@ -8,13 +8,13 @@
 | M31-F04 | Acoustic anomaly detection | Native runtime | PCM frame | M31-FN06 | M31-V01/M31-V05 |
 | M31-F05 | 15s safety response | User/System | Confirmed event | M31-FN07..10 | M31-V05 |
 | M31-F06 | SafetyContact CRUD/verify | User | Contacts settings | M31-FN11..14 | M31-V02 |
-| M31-F07 | Automatic cloud escalation cascade | System | no response after 15s | M31-FN15..17 | M31-V05 |
+| M31-F07 | Automatic local phone handoff | System | no response after 15s + eligible contact | M31-FN10/FN27 | M31-V05 |
 | M31-F08 | Scheduled arming reminder | User/System | Saved schedule/time | M31-FN18..19 | M31-V03 |
 | M31-F09 | Metadata history | User | Open history | M31-FN20 | M31-V04 |
 | M31-F10 | Native state recovery | System | Flutter engine attach/reconnect | M31-FN21 | M31-V01/M31-V05 |
 | M31-F11 | Direct call on explicit help request | User | Tap `Tôi cần hỗ trợ` | M31-FN27 | M31-V05 |
 | M31-F12 | Prefilled dialer fallback | User | Permission denied or direct-call launch failure | M31-FN24 | M31-V05 |
-| M31-F13 | Bounded dispatch outbox retry | System | Reconnect/app foreground before event expiry | M31-FN25 | M31-V05 |
+| M31-F13 | Retire legacy no-response dispatch retries | System | App start or local timeout handoff | M31-FN25 | M31-V05 |
 | M31-F14 | Unverified voice-call consent | User | Contact settings | M31-FN26 | M31-V02 |
 
 ## M31-F01 — Paid access + rollout gate
@@ -23,7 +23,8 @@
 check → server rollout → mount feature.  
 **Errors:** auth missing, access unresolved, Free, rollout unavailable/off all
 fail closed before microphone runtime mounts. Server runtime configuration
-remains the authoritative rollout kill switch; direct phone calling defaults off globally.
+remains the authoritative rollout kill switch for monitoring entry. Local
+phone handoff uses saved contact consent and operating-system permissions.
 
 ## M31-F02 — Monitoring lifecycle
 
@@ -44,9 +45,10 @@ crosses Method/EventChannel.
 
 ## M31-F05 — Safety response
 
-T0 alert + OK/help buttons; automatic voice/SMS escalation starts after 15
-seconds without a response. There is no intermediate reminder. `OK` enters
-cooldown; `Need help` starts the local phone flow without cloud dispatch.
+T0 alert + OK/help buttons; the same local phone flow starts after 15 seconds
+without a response when an eligible contact is available. There is no intermediate
+reminder. `OK` enters cooldown; `Need help` calls immediately without cloud
+dispatch.
 
 ## M31-F06 — Safety contacts
 
@@ -55,13 +57,13 @@ verification. Verification Edge Function uses hashed OTP and provider SMS.
 Verification is required for SMS, not calls; automated voice to a pending
 number requires a separate default-off per-contact consent.
 
-## M31-F07 — Escalation
+## M31-F07 — Automatic local phone handoff
 
-Server revalidates paid access and event eligibility. Stable event idempotency.
-Verified contacts receive voice then SMS fallback by priority. An unverified
-contact with explicit voice consent receives voice only; after failure/no-answer
-the system skips SMS for that number and continues to the next eligible contact.
-Webhook can continue after async no-answer/failure.
+At +15 seconds, use the highest-priority active contact opted into phone calls
+without a server runtime-flag check. Android tries `ACTION_CALL` with permission
+and otherwise opens `ACTION_DIAL`; iOS hands off `tel:`. Missing consent/contact
+or failed handoff keeps the alert active with manual guidance. No backend
+dispatch or retry is created.
 
 ## M31-F08 — Schedule reminder
 
@@ -77,8 +79,9 @@ escalation status. No playback because no raw recording exists.
 
 Native runtime snapshot on Flutter attach protects overnight sessions from UI
 recreation. Current event metadata is enough to rebuild local event/state and
-retry only automatic no-response cloud escalation idempotently. A stored
-`needHelp` response is never sent to the server.
+route a pending +15-second event through the same phone handler. Event state
+prevents repeat handoff after success; an interrupted handoff is not retried
+automatically. A stored `needHelp` response is never sent to the server.
 
 ## M31-F11 — Direct call on explicit help request
 
@@ -86,9 +89,9 @@ Select the active contact with the lowest priority number that allows phone
 calling. Android requests `CALL_PHONE` before monitoring and uses `ACTION_CALL`
 after an explicit help action; iOS opens `tel:` and leaves confirmation to iOS.
 The app records only OS initiation or dialer handoff, never a connected call.
-The global `phone_fallback_enabled` flag controls automatic calling after
-no-response, not this explicit action. With no eligible contact, keep the alert
-and show guidance without attempting cloud dispatch.
+The legacy global `phone_fallback_enabled` flag does not control local timeout
+or explicit calling. With no eligible contact, keep the alert and show guidance
+without attempting cloud dispatch.
 
 ## M31-F12 — Prefilled dialer fallback
 
@@ -98,11 +101,11 @@ number and presses Call. If the dialer cannot open, the alert remains active and
 the app explains that another contact method is needed. No automatic
 emergency-service call is made.
 
-## M31-F13 — Bounded dispatch retry
+## M31-F13 — Retire legacy dispatch retry
 
-Network failures queue only event id, stable idempotency key and timestamps in
-the existing SQLite outbox. Retry is bounded and stops at the server event
-freshness limit; success is acknowledged only after cloud acceptance.
+The timeout path creates no retry. On startup and for the current timeout event,
+legacy no-response retry rows are marked failed locally so reconnect cannot
+restart the old voice/SMS path. No outbox schema change is required.
 
 ## M31-F14 — Unverified voice-call consent
 

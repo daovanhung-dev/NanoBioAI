@@ -10,9 +10,6 @@ sequenceDiagram
     participant N as Native Runtime
     participant G as Phone Gateway
     participant D as System Phone App
-    participant S as Supabase Edge
-    participant P as SMS/Voice Provider
-    participant K as SafetyContact
 
     U->>UI: Bắt đầu giám sát
     UI->>C: startMonitoring()
@@ -47,34 +44,37 @@ sequenceDiagram
     else Không phản hồi sau 15s
       N->>N: +15s escalation; no intermediate reminder
       N-->>C: escalationRequired
-      C->>S: dispatch(noResponse, stable idempotency)
-      S->>S: re-check paid + rollout + freshness + rate + contacts
-      loop contacts in priority order
-        S->>P: voice, then SMS only for verified number
-        P-->>S: submitted / callback
+      C->>C: select opted-in priority contact
+      alt Eligible contact exists
+        alt Android CALL_PHONE permission granted
+          C->>G: initiateCall(highest priority contact)
+          G->>D: ACTION_CALL
+        else Permission unavailable or iOS
+          C->>G: openDialer(prefilled number)
+          G->>D: ACTION_DIAL / tel:
+        end
+        alt OS accepts handoff
+          D-->>C: handoff accepted; silence alert, keep session
+          Note over C,D: Event ID prevents duplicate; connection is not confirmed
+        else Handoff fails
+          D-->>C: failure; keep alert and manual actions
+        end
+      else No eligible contact
+        C-->>U: Keep alert and show manual calling guidance
       end
-      S-->>C: voice/SMS acceptance summary
-      P-->>K: call / SMS
     end
 ```
 
-## Automatic no-response offline retry
+## Legacy no-response retry cleanup
 
 ```mermaid
 sequenceDiagram
     participant C as SleepSafetyController
     participant DB as SQLite outbox
-    participant S as Supabase Edge
-    participant U as User
-    participant G as Phone Gateway
 
-    C->>S: dispatch noResponse with stable event idempotency
-    S--xC: network failure / timeout
-    C->>DB: queue event id + idempotency + timestamps
-    C->>S: retry on reconnect before freshness expiry
-    U->>G: Tap Tôi cần hỗ trợ
-    G->>U: Direct OS call or prefilled dialer handoff
-    Note over U,G: Phone action is local and independent of the dispatch outbox
+    C->>DB: Find legacy no-response retry rows
+    C->>DB: Mark rows failed with local-phone-route reason
+    Note over C,DB: New timeouts create no dispatch row and never call Edge
 ```
 
 ## Contact verification
@@ -100,7 +100,7 @@ sequenceDiagram
     E-->>A: verified=true
 ```
 
-Pending contacts can receive automatic voice only when the owner enables the
-separate, default-off voice-alert consent. Verification remains required for
-SMS. Direct user-help calls use the per-contact phone opt-in and are never sent
-through the server dispatcher.
+The retained server dispatcher may route voice/SMS under its existing consent
+contract, but M31's +15-second timeout does not use it. Automatic local calls
+require the system phone-call flag and the contact's phone-call opt-in. Explicit
+user-help calls remain local and are never sent through the server dispatcher.

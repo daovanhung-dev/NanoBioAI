@@ -138,7 +138,7 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                     children: [
                       CircularProgressIndicator(),
                       SizedBox(height: 12),
-                      Text('Nabi đang liên hệ người hỗ trợ…'),
+                      Text('Nabi đang mở cuộc gọi người hỗ trợ…'),
                     ],
                   )
                 else if (widget.dispatchFailed) ...[
@@ -163,7 +163,7 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                     FilledButton.icon(
                       onPressed: widget.onRetry,
                       icon: const Icon(Icons.refresh_rounded),
-                      label: const Text('Thử gửi lại'),
+                      label: const Text('Thử gọi lại'),
                     ),
                   if (widget.dispatchNotice != null) ...[
                     const SizedBox(height: 8),
@@ -173,6 +173,24 @@ class _SleepSafetyAlertOverlayState extends State<SleepSafetyAlertOverlay> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: widget.onOk,
+                          child: const Text('Tôi ổn'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: widget.onNeedHelp,
+                          child: const Text('Tôi cần hỗ trợ'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ] else ...[
                   SleepSafetyCountdown(seconds: _seconds),
                   const SizedBox(height: 8),

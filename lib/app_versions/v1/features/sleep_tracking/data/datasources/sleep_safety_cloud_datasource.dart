@@ -127,9 +127,7 @@ class SleepSafetyCloudDatasource {
     }
     final row = await client
         .from('sleep_safety_runtime_config')
-        .select(
-          'enabled,max_dispatches_per_hour,event_freshness_seconds,phone_fallback_enabled',
-        )
+        .select('enabled,max_dispatches_per_hour,event_freshness_seconds')
         .eq('config_key', 'default')
         .maybeSingle();
     return SleepSafetyRuntimeConfig(
@@ -138,7 +136,6 @@ class SleepSafetyCloudDatasource {
           (row?['max_dispatches_per_hour'] as num?)?.toInt() ?? 0,
       eventFreshnessSeconds:
           (row?['event_freshness_seconds'] as num?)?.toInt() ?? 600,
-      phoneFallbackEnabled: row?['phone_fallback_enabled'] == true,
     );
   }
 

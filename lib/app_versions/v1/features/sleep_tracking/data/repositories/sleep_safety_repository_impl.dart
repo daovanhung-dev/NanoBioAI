@@ -84,6 +84,10 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
   }
 
   @override
+  Future<void> saveEventLocally(SleepSafetyEvent value) =>
+      local.saveEvent(value);
+
+  @override
   Future<void> updateEvent(String id, Map<String, Object?> values) =>
       local.updateEvent(id, values);
   @override

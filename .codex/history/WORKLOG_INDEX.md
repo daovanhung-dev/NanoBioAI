@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 187
+- Total worklogs: 188
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -196,3 +196,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-06 | bugfix. | bugfix | unknown | [Worklog — M31 sửa loading của yêu cầu gọi hỗ trợ](../../docs/worklog/2026-10-06/009-worklog-m31-manual-help-loading.md) |
 | 2026-10-06 | bugfix. | bugfix | M31 SLEEP_SAFETY_MONITORING. | [Worklog — M31 sửa lỗi khi thoát chỉnh sửa liên hệ](../../docs/worklog/2026-10-06/010-worklog-m31-contact-editor-lifecycle.md) |
 | 2026-10-06 | bugfix / M31 SLEEP_SAFETY_MONITORING. | docs-context | unknown | [Worklog — M31 bàn giao gọi và hạn chờ 15 giây](../../docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md) |
+| 2026-10-06 | bugfix / M31 SLEEP_SAFETY_MONITORING. | docs-context | unknown | [Worklog — M31 gọi liên hệ tại máy sau 15 giây](../../docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md) |

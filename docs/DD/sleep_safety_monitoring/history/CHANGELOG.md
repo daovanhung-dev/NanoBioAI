@@ -1,5 +1,24 @@
 # M31 DD Changelog
 
+## 1.8 — 2026-10-06
+
+- Removed the server `phone_fallback_enabled` gate from local automatic
+  no-response calling. The native timer receives an eligible saved contact
+  whenever one has phone-call consent.
+- Removed system-paused messaging; no-response still never invokes backend
+  dispatch or creates a backend retry. No API or schema changed.
+
+## 1.7 — 2026-10-06
+
+- Replaced the +15-second no-response voice/SMS backend dispatch with a
+  flag-gated local phone handoff to the highest-priority opted-in contact.
+- Android uses `ACTION_CALL` with permission and otherwise opens the dialer;
+  iOS hands off `tel:`. Failed/unavailable handoff keeps the alert actionable.
+- Live timeout and restored native snapshots share event-ID dedupe; legacy
+  no-response retry rows are retired instead of dispatched.
+- No API, `escalation_status` enum, database schema, or production setting
+  changed. Device and Flutter verification are tracked separately.
+
 ## 1.6 — 2026-10-06
 
 - Shortened the no-response window to 15 seconds on Android and iOS and removed

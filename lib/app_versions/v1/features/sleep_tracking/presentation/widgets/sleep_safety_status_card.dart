@@ -10,7 +10,6 @@ class SleepSafetyStatusCard extends StatelessWidget {
     required this.contactsLoaded,
     required this.verifiedContacts,
     required this.callReadyContacts,
-    required this.phoneFallbackEnabled,
     required this.onStart,
     required this.onStop,
     required this.onManageContacts,
@@ -22,7 +21,6 @@ class SleepSafetyStatusCard extends StatelessWidget {
   final bool contactsLoaded;
   final int verifiedContacts;
   final int callReadyContacts;
-  final bool? phoneFallbackEnabled;
   final VoidCallback onStart;
   final VoidCallback onStop;
   final VoidCallback onManageContacts;
@@ -110,12 +108,6 @@ class SleepSafetyStatusCard extends StatelessWidget {
               const SizedBox(height: 12),
               const Text(
                 'Đã sẵn sàng gọi thoại. Xác minh số nếu bạn muốn bật SMS.',
-              ),
-            ],
-            if (phoneFallbackEnabled == false) ...[
-              const SizedBox(height: 8),
-              const Text(
-                'Tự động gọi khi bạn không phản hồi đang tạm dừng. Bạn vẫn có thể yêu cầu Nabi gọi chủ động.',
               ),
             ],
             const SizedBox(height: 8),

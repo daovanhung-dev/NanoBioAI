@@ -48,25 +48,24 @@ class SleepTrackingPage extends ConsumerWidget {
             'scheduled_reminder'
         ? 'scheduled_reminder'
         : 'manual';
-    final dispatchFailed =
-        state.currentEvent?.escalationStatus ==
-        SleepSafetyEscalationStatus.failed;
-    final dispatchAccepted =
-        state.currentEvent?.escalationStatus ==
-        SleepSafetyEscalationStatus.accepted;
-    final phoneFallbackPaused =
-        state.runtimeConfig?.phoneFallbackEnabled == false;
-    final phoneFallbackMessage = phoneFallbackPaused
-        ? 'Gọi tự động khi bạn không phản hồi đang tạm dừng theo cài đặt hệ thống. Bạn vẫn có thể bấm “Tôi cần hỗ trợ” để gọi chủ động.'
-        : state.phoneFallbackContact == null
+    final event = state.currentEvent;
+    final dispatchingNoResponseCall =
+        state.machine.phase == SleepSafetyPhase.escalating &&
+        event?.state == 'no_response_call_starting';
+    final noResponseCallFailed =
+        event?.response == SleepSafetyResponse.noResponse &&
+        const {
+          'no_response_call_failed',
+          'no_response_call_unavailable',
+          'no_response_call_interrupted',
+        }.contains(event?.state);
+    final phoneFallbackMessage = state.phoneFallbackContact == null
         ? null
         : state.notice;
     final alert =
         state.machine.phase == SleepSafetyPhase.awaitingResponse ||
         state.machine.phase == SleepSafetyPhase.manualHelp ||
-        (state.machine.phase == SleepSafetyPhase.escalating &&
-            !dispatchAccepted);
-    final event = state.currentEvent;
+        state.machine.phase == SleepSafetyPhase.escalating;
     final manualHelpPending = event?.state == 'manual_call_starting';
     final manualHelpFailed =
         event?.response == SleepSafetyResponse.needHelp &&
@@ -119,7 +118,6 @@ class SleepTrackingPage extends ConsumerWidget {
                 callReadyContacts: state.contacts
                     .where((contact) => contact.canReceiveSafetyCall)
                     .length,
-                phoneFallbackEnabled: state.runtimeConfig?.phoneFallbackEnabled,
                 busy: state.isBusy,
                 onStart: () => controller.startMonitoring(source: startSource),
                 onStop: controller.stopMonitoring,
@@ -269,30 +267,26 @@ class SleepTrackingPage extends ConsumerWidget {
             Positioned.fill(
               child: SleepSafetyAlertOverlay(
                 startedAt: state.machine.alertStartedAt!,
-                dispatching:
-                    state.machine.phase == SleepSafetyPhase.escalating &&
-                    !dispatchFailed &&
-                    state.currentEvent?.response !=
-                        SleepSafetyResponse.needHelp,
-                dispatchFailed: dispatchFailed,
+                dispatching: dispatchingNoResponseCall,
+                dispatchFailed: noResponseCallFailed,
                 dispatchError: state.errorMessage,
                 manualHelpPending: manualHelpPending,
                 manualHelpFailed: manualHelpFailed,
                 manualHelpError: state.errorMessage,
                 onRetryHelp: controller.requestHelp,
-                requiresContactSetup: state.needsContactSetup,
+                requiresContactSetup:
+                    noResponseCallFailed &&
+                    event?.state == 'no_response_call_unavailable' &&
+                    state.contactsLoaded &&
+                    state.phoneFallbackContact == null,
                 onOk: controller.respondOk,
                 onNeedHelp: controller.requestHelp,
-                onRetry: controller.retryEmergencyDispatch,
+                onRetry: controller.retryNoResponsePhoneCall,
                 onManageContacts: () => _openSafetyContacts(context),
                 onCallContact: state.phoneFallbackContact == null
                     ? null
                     : () => controller.callPhoneFallback(),
-                onNextContact:
-                    state.contacts
-                            .where((contact) => contact.allowPhoneFallback)
-                            .length >
-                        1
+                onNextContact: state.phoneFallbackContacts.length > 1
                     ? () => controller.callPhoneFallback(next: true)
                     : null,
                 phoneFallbackName: state.phoneFallbackContact?.name,

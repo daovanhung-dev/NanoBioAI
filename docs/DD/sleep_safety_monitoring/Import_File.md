@@ -6,6 +6,8 @@
 - `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart`
 - `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_access_gate.dart`
 - `lib/app_versions/v1/features/sleep_tracking/providers/sleep_safety_controller.dart`
+- `lib/app_versions/v1/features/sleep_tracking/domain/repositories/sleep_safety_repository.dart`
+- `lib/app_versions/v1/features/sleep_tracking/data/repositories/sleep_safety_repository_impl.dart`
 - `lib/app_versions/v1/features/sleep_tracking/providers/sleep_safety_providers.dart`
 - `lib/app_versions/v1/router/v1_router.dart`
 - `lib/app_versions/v1/services/notifications/notification_bootstrap.dart`
@@ -44,14 +46,15 @@ GoRouter, sqflite and Supabase are used.
 
 - Domain: dispatch retry/result/exception and runtime configuration entities.
 - Data: connectivity and phone gateways; cloud runtime/contact preference
-  mapping; minimal SQLite outbox retry operations.
+  mapping; local-only event recovery writes and legacy SQLite outbox cleanup.
 - Presentation: direct help-call selection, alert action and bounded automatic
-  no-response retry in `SleepSafetyController`.
+  no-response phone handoff in `SleepSafetyController`.
 - Android: `CALL_PHONE` permission and explicit `ACTION_CALL`; permission or
   native launch failure falls back to `ACTION_DIAL`. iOS uses `tel:`.
 - Supabase: canonical contract plus forward channel-removal migration
   `20261006120000_m31_remove_zalo_channel.sql`.
-- Edge: dispatch and callback contain only voice/SMS for automatic no-response.
+- Edge: dispatch and callback retain their existing server voice/SMS contract;
+  the M31 no-response timeout no longer invokes them.
 - Local database targets SQLite v28 and preserves cached contacts while
   removing the obsolete preference column.
 - QA: migrations 09:00–12:00 and both changed Edge Functions are applied to
@@ -70,6 +73,19 @@ GoRouter, sqflite and Supabase are used.
 - SQLite v27 added this consent; SQLite v28 preserves it while removing the
   retired Zalo preference. Forward migrations `20261006110000` and
   `20261006120000` are applied on QA; earlier applied migrations remain intact.
+
+## v1.3 15-second phone handoff delta
+
+- The native +15-second timeout and restored `escalating` snapshot share one
+  local controller route. It uses active-contact phone opt-in, Android
+  permission and the Android/iOS phone gateway; the runtime flag does not gate
+  this local handoff.
+- Successful OS handoff silences the alert while monitoring continues; failures
+  retain the alert and allow a user-triggered retry or explicit help response.
+- Event state deduplicates live/restored signals. A stale `starting` state is
+  marked interrupted and is never auto-retried. Timeout state is persisted
+  locally only, and legacy no-response backend retry rows are retired.
+- No API, escalation enum or database schema was added or changed.
 
 ## New Android source
 

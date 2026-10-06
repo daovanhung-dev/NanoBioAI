@@ -2,8 +2,9 @@
 
 > **Source BD:** `docs/BD/sleep_safety/BD_NanoBio_Sleep_Safety_M31_v1.3.md`
 > **BD ID:** `BD-NANOBIO-SLEEP-SAFETY-001`
-> **Current decision:** Explicit help requests use an on-device phone call.
-> Automatic escalation after 15 seconds without a response uses voice/SMS.
+> **Current decision:** Explicit help and the 15-second no-response timeout use
+> an on-device phone handoff to an eligible, opted-in contact; it does not
+> depend on a server flag or invoke server dispatch.
 > **Verification:** Source tests, QA migration, and physical-device call evidence
 > are tracked separately. Production remains unchanged.
 > **Route:** `/sleep-tracking`
@@ -17,12 +18,14 @@ alarm, and post-session analysis that works offline. AI analysis is optional and
 user-triggered; local analysis never depends on a network response.
 
 The `Tôi cần hỗ trợ` action calls the highest-priority active contact that
-allows phone calling. This explicit help action does not invoke server dispatch.
-The +15-second no-response route uses the authenticated voice/SMS dispatch flow.
-After the operating system accepts a manual call or dialer handoff, the alert
-sound and notification are silenced while the monitoring session remains active.
-If handoff fails, the alert remains audible and actionable. The app records OS
-call initiation or dialer handoff, never a connected call.
+allows phone calling. After 15 seconds without a response, M31 uses the same
+local phone gateway whenever an eligible contact exists. This timeout never
+invokes server dispatch or queues a backend retry. After the operating system
+accepts a call or dialer handoff, the alert sound and notification are silenced
+while the monitoring session remains active.
+If no eligible contact exists or handoff fails, the alert remains actionable
+and guides the user to continue manually. The app records OS call initiation or
+dialer handoff, never a connected call.
 
 ## Read order
 
@@ -53,16 +56,17 @@ call initiation or dialer handoff, never a connected call.
 
 ## Direct help-call behavior
 
-- `phone_fallback_enabled` defaults to false and gates automatic calling after
-  no-response. It does not block an explicit `Tôi cần hỗ trợ` action.
-- Android requests `CALL_PHONE` before monitoring if an eligible contact and the
-  automatic-call flag are present. With permission, help uses `ACTION_CALL`;
+- The legacy `phone_fallback_enabled` runtime field does not gate the local
+  timeout route. Automatic and explicit calls use the same eligible-contact
+  consent and OS permission rules.
+- Android requests `CALL_PHONE` before monitoring if an eligible contact is
+  present. With permission, help uses `ACTION_CALL`;
   denial or call-launch failure opens the system dialer with the number prefilled.
 - Android silences its looping tone and clears the alert notification only after
   the OS accepts a call/dialer handoff; failed handoff keeps the alert active.
 - iOS opens `tel:` and may require operating-system confirmation.
 - No eligible contact leaves the local alert active and shows the user how to
-  continue. A disabled automatic-call flag does not block a manual call.
+  continue.
 - The OS result only confirms that a call action or dialer handoff was started;
   the app cannot confirm that the other person answered.
 
@@ -70,11 +74,14 @@ call initiation or dialer handoff, never a connected call.
 
 - The native response timer emits automatic escalation at 15 seconds only if
   the user has not answered; there is no intermediate reminder.
-- The Edge Function accepts `noResponse` events only and routes voice/SMS by
-  contact priority. Unverified contacts need separate default-off voice consent;
-  SMS requires verification.
-- Offline retries store event/idempotency metadata only and stop at the
-  server-configured freshness limit.
+- The controller routes that event through the local phone gateway, using
+  `ACTION_CALL` when Android permission is granted and otherwise a dialer/
+  `tel:` handoff. Contacts must be active and opted into phone calls.
+- The timeout writes only local event state. It does not invoke the Edge
+  dispatcher or enqueue a new retry; legacy no-response outbox rows are retired
+  so they cannot trigger duplicate backend calls.
+- The existing server voice/SMS API and provider cascade remain separate
+  backend contracts and are not used by this timeout flow.
 - QA migrations and temporary phone-call settings are scoped to the confirmed
   QA project. Production remains unchanged.
 

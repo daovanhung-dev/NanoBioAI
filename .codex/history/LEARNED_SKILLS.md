@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 58 worklog(s)
+- docs-context - Context and docs update: 59 worklog(s)
 - bugfix - Direct bugfix: 37 worklog(s)
 - coding - Coding: 32 worklog(s)
 - supabase-schema - Supabase schema and RLS: 30 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 46
+- unknown: 47
 - M32 FITNESS_TRAINING: 5
 - M31 SLEEP_SAFETY_MONITORING: 3
 - M31 SLEEP_SAFETY_MONITORING.: 3

@@ -994,3 +994,17 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-06/010-worklog-m31-contact-editor-lifecycle.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL do
 - docs/worklog/2026-10-06/011-worklog-m31-call-handoff-15s.md :: ## Lỗi / rủi ro còn lại
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Yêu cầu: thay timeout no-response 15 giây từ voice/SMS backend dispatch sang
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Lưu trạng thái timeout/handoff cục bộ, khử trùng lặp theo event ID, không xác
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: nhận cuộc gọi đã kết nối. Retry cũ no-response được dừng tại máy; timeout mới
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - `lib/app_versions/v1/features/sleep_tracking/providers/sleep_safety_controller.dart` — gọi timeout cục bộ, recovery/dedupe và dừng retry cũ.
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart` — nối trạng thái timeout/retry vào cảnh báo.
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - `docs/BD/sleep_safety/BD_NanoBio_Sleep_Safety_M31_v1.3.md`, `docs/DD/sleep_safety_monitoring/` — hợp đồng timeout local phone, giữ API/schema cũ.
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Flutter 3.35.2 / Dart 3.9.0 test attempt: FAIL trước khi nạp test vì package cache yêu cầu Dart 3.10/3.11; chạy lại với Flutter 3.47.1 / Dart 3.13.1: PASS.
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và stale paths có sẵn trong `.codex/history/WORKLOG_2026-08-16_meal_nutrition_estimation.md` cùng `.codex/task-skills/nabi-character/SKILL.md`; không liên quan đến M31.
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu manifest nguồn và
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: ## Lỗi / rủi ro
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Đã fix: timeout gửi backend và retry có thể tạo cuộc gọi voice/SMS thay vì
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Chưa fix: không có xác nhận iOS physical-device; Android permission/dialer và
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Cần kiểm tra tiếp: nghiệm thu trên thiết bị xác nhận OS handoff tắt chuông,
+- docs/worklog/2026-10-06/012-worklog-m31-no-response-phone-call.md :: - Chất lượng đầu ra: tốt — timeout và restore dùng cùng route, có dedupe lưu cục bộ và giữ alert khi lỗi.

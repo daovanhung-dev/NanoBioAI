@@ -2,6 +2,11 @@ Commit de xuat: fix(m31): tat chuong sau khi ban giao goi va cho 15 giay
 
 # Fixbug — Chuông M31 sau bàn giao cuộc gọi và thời hạn phản hồi
 
+> Cập nhật 2026-10-06: timeout 15 giây bàn giao cuộc gọi cục bộ cho liên hệ đã
+> lưu, không phụ thuộc cờ runtime phía server. Kết quả kiểm chứng gốc phía dưới
+> là lịch sử của lần sửa handoff trước; bằng chứng hiện tại nằm trong worklog
+> M31 mới nhất.
+
 ## Hiện tượng / yêu cầu
 
 - Sau khi người dùng chọn **Tôi cần hỗ trợ**, cảnh báo âm thanh và notification
@@ -21,10 +26,36 @@ Commit de xuat: fix(m31): tat chuong sau khi ban giao goi va cho 15 giay
   notification hoặc âm báo hiện có.
 - Giữ phiên giám sát và event hiện tại sau handoff; state chỉ ghi nhận yêu cầu
   gọi được khởi tạo/bàn giao, không xác nhận đã kết nối hoặc có người bắt máy.
-- Thao tác **Tôi cần hỗ trợ** tiếp tục gọi contact ưu tiên cao nhất đủ điều
-  kiện và không gọi server dispatch. Cờ `phone_fallback_enabled` chỉ kiểm soát
-  luồng gọi tự động khi không phản hồi.
+- Thao tác **Tôi cần hỗ trợ** và timeout 15 giây đều dùng contact ưu tiên cao
+  nhất đủ điều kiện, không gọi server dispatch và không phụ thuộc
+  `phone_fallback_enabled`.
 - Cập nhật BD M31 v1.3, DD hiện hành, changelog, checklist và worklog.
+
+## Cập nhật hợp đồng timeout 15 giây — 2026-10-06
+
+- Timeout native và trạng thái snapshot `escalating` dùng chung luồng gọi local
+  qua gateway; chọn liên hệ đang hoạt động có quyền nhận cuộc gọi theo ưu tiên.
+- Tự gọi khi không phản hồi sau 15 giây nếu có liên hệ đã lưu đang hoạt động và
+  đồng ý nhận cuộc gọi. Android ưu tiên `ACTION_CALL` khi có quyền, nếu không
+  thì mở trình gọi; iOS bàn giao `tel:`. Thiếu liên hệ hoặc lỗi handoff giữ
+  cảnh báo và hướng dẫn thao tác thủ công.
+- Thành công bàn giao chỉ ghi nhận hệ điều hành nhận yêu cầu, giữ phiên giám sát
+  và tắt chuông/thông báo. Event ID cùng trạng thái local ngăn timeout hoặc
+  snapshot lặp gọi lần hai; trạng thái `starting` sau khôi phục không tự retry.
+- Timeout không gọi Edge dispatch, không tạo retry backend, không thêm API,
+  enum `escalation_status` hay thay đổi schema. Retry cũ no-response được đánh
+  dấu dừng tại máy.
+- Test hiện tại: controller 23/23 và UI/native contract 16/16 PASS; analyze
+  đang được chạy lại sau khi dọn import. Không thực hiện cuộc gọi thật; iOS
+  physical-device acceptance chưa có.
+
+## Điều chỉnh sau ảnh kiểm thử — 2026-10-06
+
+- Ảnh thiết bị cho thấy runtime flag mặc định tắt đang chặn luồng timeout.
+- Bỏ flag khỏi chọn liên hệ, cấu hình timer native và copy giao diện; liên hệ
+  ưu tiên có consent vẫn được gửi cho bộ đếm local.
+- Không thay đổi schema/API hoặc cấu hình server. Controller regression test
+  xác nhận timeout gọi local dù fake runtime flag là `false`.
 
 ## Kiểm chứng
 
