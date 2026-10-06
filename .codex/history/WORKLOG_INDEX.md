@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 191
+- Total worklogs: 192
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -200,3 +200,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-06 | docs-context | docs-context | Codex global plugins/skills, .codex, docs audit. | [Worklog - Cai dat Flutter Agent va UI UX Pro Max](../../docs/worklog/2026-10-06/013-worklog-flutter-agent-environment.md) |
 | 2026-10-07. | Flutter UI, theme, test và design inventory. | test | unknown | [Worklog — NanoBioAI UI/UX redesign foundation](../../docs/worklog/2026-10-07/001-worklog-ui-ux-redesign.md) |
 | 2026-10-07 | feature/coding/test/docs | supabase-schema | Admin Web public website, Early Access Supabase contract | [Worklog - Tích hợp NanoBio Website vào Admin Web và Supabase](../../docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md) |
+| 2026-10-07 | coding, test, phát hành Admin Web | test | sidebar Admin Web | [Worklog - Đưa lối tắt Website NanoBio lên footer sidebar](../../docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md) |

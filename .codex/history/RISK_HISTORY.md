@@ -1021,3 +1021,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: ## Loi/Rui ro
 - docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Chua fix: browser visual/responsive/render QA không thực hiện được do browser
 - docs/worklog/2026-10-07/002-worklog-nanobio-website-integration.md :: - Can kiem tra tiep: Supabase project ref/migration history/recovery ngay trước
+- docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: - Chưa fix: không có.
+- docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md :: - Cần kiểm tra tiếp: xem giao diện trong phiên Chrome/Admin thực tế khi CUA/browser hoạt động trở lại.
