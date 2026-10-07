@@ -1039,3 +1039,7 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: - Automated tests/typecheck/build: SKIPPED - lượt này chỉ yêu cầu thay ảnh, không yêu cầu chạy bộ kiểm tra.
 - docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: - Chưa fix: không có lỗi hiển thị thuộc phạm vi.
+- docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md :: - Kiem tra browser desktop/mobile: SKIPPED - khong mo route Admin co the tai du lieu khach hang; CSS giu cuon ngang va test UI xac nhan gia tri.
+- docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md :: - Chua fix: khong co.
+- docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md :: - Can kiem tra tiep: neu can bang chung layout thuc te tren viewport mobile, kiem tra trong moi truong Admin co du lieu test duoc phep su dung.

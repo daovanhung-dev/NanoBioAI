@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 197
+- Total worklogs: 198
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -206,3 +206,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-07 | coding/test/docs. | coding | admin-web / landing NanoBio / gallery. | [Worklog - Gallery NanoBio bằng điện thoại thật](../../docs/worklog/2026-10-07/006-worklog-nanobio-gallery-real-device.md) |
 | 2026-10-07 | coding/test/docs. | coding | admin-web / landing NanoBio. | [Worklog - Rút gọn nội dung landing NanoBio](../../docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md) |
 | 2026-10-07 | coding/review/docs. | find-issues | admin-web / gallery landing NanoBio. | [Worklog - Thay ảnh gallery NanoBio theo ảnh người dùng cung cấp](../../docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md) |
+| 2026-10-07 | coding | coding | NanoBio Early Access - Thong tin su kien | [Worklog - Them STT cho danh sach thong tin su kien](../../docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md) |

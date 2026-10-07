@@ -143,6 +143,7 @@ export function EventInfoPage() {
             <table>
               <thead>
                 <tr>
+                  <th className="event-info-index">STT</th>
                   <th>Số điện thoại</th>
                   <th>Họ tên</th>
                   <th>Tuổi</th>
@@ -154,8 +155,9 @@ export function EventInfoPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((lead) => (
+                {rows.map((lead, index) => (
                   <tr key={lead.id}>
+                    <td className="event-info-index">{page * PAGE_SIZE + index + 1}</td>
                     <td className="nowrap"><strong className="item-title">{lead.phoneDisplay ?? lead.phoneE164}</strong></td>
                     <td>{lead.fullName ?? '—'}</td>
                     <td>{lead.age ?? '—'}</td>
