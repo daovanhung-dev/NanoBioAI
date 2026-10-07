@@ -32,7 +32,7 @@ export function NanoBioLandingPage() {
     const previousDescription = document.querySelector<HTMLMetaElement>('meta[name="description"]')?.content;
     document.title = 'NanoBio | Chăm sóc sức khỏe chủ động cùng Nabi';
     const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    if (description) description.content = 'Theo dõi sức khỏe, ăn uống, vận động và lịch sinh hoạt trong một trải nghiệm cá nhân hóa cùng Nabi.';
+    if (description) description.content = 'Theo dõi thói quen sức khỏe và lịch sinh hoạt cùng Nabi.';
 
     const cleanup = mountNanoBioLanding(shadow, host, navigate);
     return () => {

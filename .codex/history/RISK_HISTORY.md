@@ -1031,3 +1031,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-07/005-worklog-nanobio-website-blue-wellness.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-07/005-worklog-nanobio-website-blue-wellness.md :: - Chưa fix: không có lỗi thuộc phạm vi đổi màu.
 - docs/worklog/2026-10-07/005-worklog-nanobio-website-blue-wellness.md :: - Cần kiểm tra tiếp: cảnh báo bundle JavaScript lớn hơn 500 kB đã được build báo lại, không thuộc phạm vi thay màu.
+- docs/worklog/2026-10-07/006-worklog-nanobio-gallery-real-device.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-07/006-worklog-nanobio-gallery-real-device.md :: - Chưa fix: năm màn còn lại không được đưa lên website do chứa thông tin tài khoản hoặc số liệu/tiến độ sức khỏe. Giữ asset cũ đúng theo tiêu chí riêng tư.
+- docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: - Chưa fix: không có lỗi thuộc phạm vi copy.
+- docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: - Cần kiểm tra tiếp: cảnh báo bundle JavaScript lớn hơn 500 kB tồn tại sau build; không thuộc phạm vi nội dung landing.

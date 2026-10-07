@@ -8,7 +8,7 @@ import teamMinh from '../../assets/nanobio/team-minh.jpg';
 import teamThanh from '../../assets/nanobio/team-thanh.jpg';
 import teamTien from '../../assets/nanobio/team-tien.jpg';
 import galleryDashboard from '../../assets/nanobio/gallery-dashboard.png';
-import galleryFeatures from '../../assets/nanobio/gallery-features.png';
+import galleryNabiCare from '../../assets/nanobio/gallery-nabi-care.png';
 import galleryScore from '../../assets/nanobio/gallery-score.png';
 import galleryChat from '../../assets/nanobio/gallery-chat.png';
 import galleryWater from '../../assets/nanobio/gallery-water.png';
@@ -25,7 +25,7 @@ export const websiteAssetUrls = {
   teamThanh,
   teamTien,
   galleryDashboard,
-  galleryFeatures,
+  galleryNabiCare,
   galleryScore,
   galleryChat,
   galleryWater,

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 194
+- Total worklogs: 196
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -203,3 +203,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-07 | coding, test, phát hành Admin Web | test | sidebar Admin Web | [Worklog - Đưa lối tắt Website NanoBio lên footer sidebar](../../docs/worklog/2026-10-07/003-worklog-admin-sidebar-website-shortcut.md) |
 | 2026-10-07 | web, Supabase, Edge Functions, migration, production deploy va smoke test | supabase-schema | Admin Web NanoBio Early Access | [Worklog - NanoBio Early Access va Admin thong tin su kien](../../docs/worklog/2026-10-07/004-worklog-nanobio-early-access-customer-admin.md) |
 | 2026-10-07 | coding | coding | landing page và trang quyền riêng tư NanoBio | [Worklog - Đổi màu website NanoBio sang Blue Wellness](../../docs/worklog/2026-10-07/005-worklog-nanobio-website-blue-wellness.md) |
+| 2026-10-07 | coding/test/docs. | coding | admin-web / landing NanoBio / gallery. | [Worklog - Gallery NanoBio bằng điện thoại thật](../../docs/worklog/2026-10-07/006-worklog-nanobio-gallery-real-device.md) |
+| 2026-10-07 | coding/test/docs. | coding | admin-web / landing NanoBio. | [Worklog - Rút gọn nội dung landing NanoBio](../../docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md) |

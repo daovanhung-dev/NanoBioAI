@@ -42,9 +42,9 @@ describe('NanoBio public routes', () => {
   it('renders the NanoBio landing page while signed out', async () => {
     await act(async () => root.render(<MemoryRouter initialEntries={['/nanobio']}><App /></MemoryRouter>));
     const site = container.querySelector('.nanobio-landing-host')?.shadowRoot;
-    expect(site?.textContent).toContain('Sống khỏe chủ động hơn mỗi ngày');
-    expect(site?.textContent).toContain('Tải ứng dụng hoàn toàn miễn phí');
-    expect(site?.textContent).toContain('Đang phát triển mạnh');
+    expect(site?.textContent).toContain('Sống khỏe, bắt đầu từ thói quen nhỏ');
+    expect(site?.textContent).toContain('Tải NanoBio cho Android miễn phí');
+    expect(site?.textContent).toContain('Một phần · cần kết nối');
     expect(container.querySelector('[data-admin-auth-provider]')).toBeNull();
   });
 

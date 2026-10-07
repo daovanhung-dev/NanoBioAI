@@ -23,9 +23,9 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
   const teamGrid = query<HTMLElement>('#teamGrid');
   if (teamGrid) {
     teamGrid.innerHTML = websitePeople.map((person, index) => `
-      <article class="team-card reveal" style="--delay:${(index % 3) * 80}ms">
-        <div class="team-photo asset-card"><div class="asset-fallback">${escapeHtml(person.name.split(' ').slice(-2).join(' '))}</div><img data-team-image="${person.image}" alt="Ảnh ${escapeHtml(person.name)}" loading="lazy" /></div>
-        <div class="team-body"><span>${escapeHtml(person.role)}</span><h3>${escapeHtml(person.name)}</h3><p>${escapeHtml(person.story)}</p><small>Nguồn: ${escapeHtml(person.source)}</small></div>
+      <article class="person-card reveal" style="--delay:${(index % 3) * 60}ms">
+        <div class="person-avatar asset-card" aria-hidden="true"><div class="asset-fallback">${escapeHtml(person.initials)}</div>${person.image ? `<img data-team-image="${escapeHtml(person.image)}" alt="" loading="lazy" />` : ''}</div>
+        <div class="person-copy"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.role)}</span><a href="${escapeHtml(person.sourceUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Nguồn hồ sơ ${escapeHtml(person.name)}: ${escapeHtml(person.sourceLabel)}">${escapeHtml(person.sourceLabel)}</a></div>
       </article>`).join('');
   }
 
@@ -65,11 +65,23 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
 
   const menuButton = query<HTMLButtonElement>('#menuButton');
   const nav = query<HTMLElement>('#mainNav');
+  const downloadFloat = query<HTMLButtonElement>('#downloadFloat');
+  const heroSection = query<HTMLElement>('#top');
+  const downloadSection = query<HTMLElement>('#early-access');
+  const syncDownloadFloat = () => {
+    if (!downloadFloat) return;
+    const mobile = window.matchMedia?.('(max-width: 760px)').matches ?? window.innerWidth <= 760;
+    const pastHero = (heroSection?.getBoundingClientRect().bottom ?? 1) <= 0;
+    const beforeDownload = (downloadSection?.getBoundingClientRect().top ?? 0) > window.innerHeight * 0.88;
+    const overlayOpen = host.classList.contains('vip-modal-open') || host.classList.contains('menu-open');
+    downloadFloat.hidden = !(mobile && pastHero && beforeDownload && !overlayOpen);
+  };
   const onMenuClick = () => {
     if (!menuButton || !nav) return;
     const open = nav.classList.toggle('open');
     menuButton.setAttribute('aria-expanded', String(open));
     host.classList.toggle('menu-open', open);
+    syncDownloadFloat();
   };
   menuButton?.addEventListener('click', onMenuClick);
   cleanup.push(() => menuButton?.removeEventListener('click', onMenuClick));
@@ -94,6 +106,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
       nav?.classList.remove('open');
       host.classList.remove('menu-open');
       menuButton?.setAttribute('aria-expanded', 'false');
+      syncDownloadFloat();
       destination.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
   };
@@ -115,10 +128,19 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
   cleanup.push(() => galleryNext?.removeEventListener('click', onNext));
 
   const header = query<HTMLElement>('#siteHeader');
-  const syncHeader = () => header?.classList.toggle('scrolled', window.scrollY > 12);
-  syncHeader();
+  const syncHeader = () => {
+    header?.classList.toggle('scrolled', window.scrollY > 12);
+    syncDownloadFloat();
+  };
+  const syncViewport = () => {
+    syncHeader();
+    syncDownloadFloat();
+  };
+  syncViewport();
   window.addEventListener('scroll', syncHeader, { passive: true });
+  window.addEventListener('resize', syncViewport, { passive: true });
   cleanup.push(() => window.removeEventListener('scroll', syncHeader));
+  cleanup.push(() => window.removeEventListener('resize', syncViewport));
 
   const revealElements = queryAll<HTMLElement>('.reveal');
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -185,6 +207,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
     vipModal.setAttribute('aria-hidden', 'true');
     host.classList.remove('vip-modal-open');
     document.body.style.overflow = previousBodyOverflow;
+    syncDownloadFloat();
     lastFocused?.focus();
   };
   const openModal = (trigger: HTMLElement) => {
@@ -195,6 +218,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
     host.classList.add('vip-modal-open');
     previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    syncDownloadFloat();
     window.setTimeout(() => phone?.focus(), 30);
   };
   queryAll<HTMLElement>('[data-open-vip-modal]').forEach((button) => {
@@ -240,7 +264,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
     phone.removeAttribute('aria-invalid');
     if (errorBox) errorBox.textContent = '';
     const label = submitButton?.querySelector('span');
-    if (label && !submissionInFlight) label.textContent = 'Nhận VIP 1 tháng & tải ứng dụng';
+    if (label && !submissionInFlight) label.textContent = 'Gửi thông tin & nhận link tải';
   };
   phone?.addEventListener('input', onPhoneInput);
   cleanup.push(() => phone?.removeEventListener('input', onPhoneInput));
@@ -255,7 +279,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
     if (field instanceof HTMLElement) field.removeAttribute('aria-invalid');
     if (errorBox) errorBox.textContent = '';
     const label = submitButton?.querySelector('span');
-    if (label && !submissionInFlight) label.textContent = 'Nhận VIP 1 tháng & tải ứng dụng';
+    if (label && !submissionInFlight) label.textContent = 'Gửi thông tin & nhận link tải';
   };
   customerInputs.forEach((field) => {
     field.addEventListener('input', onCustomerInput);
@@ -270,7 +294,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
     consent.removeAttribute('aria-invalid');
     if (errorBox) errorBox.textContent = '';
     const label = submitButton?.querySelector('span');
-    if (label && !submissionInFlight) label.textContent = 'Nhận VIP 1 tháng & tải ứng dụng';
+    if (label && !submissionInFlight) label.textContent = 'Gửi thông tin & nhận link tải';
   };
   consent?.addEventListener('change', onConsentChange);
   cleanup.push(() => consent?.removeEventListener('change', onConsentChange));
@@ -364,7 +388,7 @@ export function mountNanoBioLanding(root: ShadowRoot, host: HTMLElement, navigat
       submitButton.disabled = false;
       submitButton.classList.remove('loading');
       if (buttonLabel && !formState?.hidden && !errorBox?.textContent) {
-        buttonLabel.textContent = 'Nhận VIP 1 tháng & tải ứng dụng';
+        buttonLabel.textContent = 'Gửi thông tin & nhận link tải';
       }
     }
   };
