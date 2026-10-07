@@ -1036,3 +1036,6 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: - Chưa fix: không có lỗi thuộc phạm vi copy.
 - docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md :: - Cần kiểm tra tiếp: cảnh báo bundle JavaScript lớn hơn 500 kB tồn tại sau build; không thuộc phạm vi nội dung landing.
+- docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: - Automated tests/typecheck/build: SKIPPED - lượt này chỉ yêu cầu thay ảnh, không yêu cầu chạy bộ kiểm tra.
+- docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md :: - Chưa fix: không có lỗi hiển thị thuộc phạm vi.

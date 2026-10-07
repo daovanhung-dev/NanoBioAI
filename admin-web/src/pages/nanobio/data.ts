@@ -65,12 +65,12 @@ export const websitePeople: WebsitePerson[] = [
 ];
 
 export const websiteGallery: WebsiteGalleryItem[] = [
-  { title: 'Dashboard hôm nay', image: 'galleryDashboard' },
-  { title: 'Nabi Care', image: 'galleryNabiCare' },
-  { title: 'Health Score', image: 'galleryScore' },
-  { title: 'Trò chuyện với Nabi', image: 'galleryChat' },
-  { title: 'Theo dõi nước', image: 'galleryWater' },
-  { title: 'Tổng kết tuần', image: 'galleryWeekly' },
+  { title: 'Dashboard hôm nay', image: 'galleryToday' },
+  { title: 'Tiện ích sức khỏe', image: 'galleryWellnessTools' },
+  { title: 'Ngày của tôi', image: 'galleryMyDay' },
+  { title: 'Thực đơn', image: 'galleryMeals' },
+  { title: 'Sức khỏe của bạn', image: 'galleryHealthOverview' },
+  { title: 'Uống nước hôm nay', image: 'galleryWaterToday' },
 ];
 
 export const websiteFaq = [
@@ -90,10 +90,10 @@ export const websiteAssets = {
   teamMinh: 'team-minh.jpg',
   teamThanh: 'team-thanh.jpg',
   teamTien: 'team-tien.jpg',
-  galleryDashboard: 'gallery-dashboard.png',
-  galleryNabiCare: 'gallery-nabi-care.png',
-  galleryScore: 'gallery-score.png',
-  galleryChat: 'gallery-chat.png',
-  galleryWater: 'gallery-water.png',
-  galleryWeekly: 'gallery-weekly.png',
+  galleryToday: 'gallery-today.jpg',
+  galleryWellnessTools: 'gallery-wellness-tools.jpg',
+  galleryMyDay: 'gallery-my-day.jpg',
+  galleryMeals: 'gallery-meals.jpg',
+  galleryHealthOverview: 'gallery-health-overview.jpg',
+  galleryWaterToday: 'gallery-water-today.jpg',
 } as const;

@@ -2,7 +2,7 @@
 
 - Canonical key: find-issues
 - Workflow: .codex/workflows/find-issues.md
-- Generated from 6 worklog(s).
+- Generated from 7 worklog(s).
 
 ## When To Read
 
@@ -12,6 +12,7 @@
 - Historical task type: M32 implementation readiness review (1)
 - Historical task type: docs-dd / implementation readiness (1)
 - Historical task type: coding / test / cập nhật BD-DD-handoff (1)
+- Historical task type: coding/review/docs. (1)
 
 ## Common Modules
 
@@ -19,6 +20,7 @@
 - toàn dự án, trọng tâm AI, Features Hub, route guard, onboarding logging, release checks: 1
 - UI, Theme, Motion, Sound, Haptic, Nabi, toàn bộ presentation layer: 1
 - toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen: 1
+- admin-web / gallery landing NanoBio.: 1
 
 ## Work Pattern
 
@@ -42,3 +44,4 @@
 - [Worklog — M32 continuation and approval follow-up](../../docs/worklog/2026-10-05/001-worklog-m32-continuation.md) - M32 FITNESS_TRAINING
 - [Worklog — M32 PO directions and review packet](../../docs/worklog/2026-10-05/002-worklog-m32-po-directions-review-packet.md) - M32 FITNESS_TRAINING
 - [Worklog — M32 fitness-training runtime pilot](../../docs/worklog/2026-10-05/003-worklog-m32-runtime.md) - M32 FITNESS_TRAINING
+- [Worklog - Thay ảnh gallery NanoBio theo ảnh người dùng cung cấp](../../docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md) - admin-web / gallery landing NanoBio.

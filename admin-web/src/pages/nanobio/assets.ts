@@ -7,12 +7,12 @@ import nabiStreak from '../../assets/nanobio/nabi-streak.png';
 import teamMinh from '../../assets/nanobio/team-minh.jpg';
 import teamThanh from '../../assets/nanobio/team-thanh.jpg';
 import teamTien from '../../assets/nanobio/team-tien.jpg';
-import galleryDashboard from '../../assets/nanobio/gallery-dashboard.png';
-import galleryNabiCare from '../../assets/nanobio/gallery-nabi-care.png';
-import galleryScore from '../../assets/nanobio/gallery-score.png';
-import galleryChat from '../../assets/nanobio/gallery-chat.png';
-import galleryWater from '../../assets/nanobio/gallery-water.png';
-import galleryWeekly from '../../assets/nanobio/gallery-weekly.png';
+import galleryToday from '../../assets/nanobio/gallery-today.jpg';
+import galleryWellnessTools from '../../assets/nanobio/gallery-wellness-tools.jpg';
+import galleryMyDay from '../../assets/nanobio/gallery-my-day.jpg';
+import galleryMeals from '../../assets/nanobio/gallery-meals.jpg';
+import galleryHealthOverview from '../../assets/nanobio/gallery-health-overview.jpg';
+import galleryWaterToday from '../../assets/nanobio/gallery-water-today.jpg';
 
 export const websiteAssetUrls = {
   logo,
@@ -24,10 +24,10 @@ export const websiteAssetUrls = {
   teamMinh,
   teamThanh,
   teamTien,
-  galleryDashboard,
-  galleryNabiCare,
-  galleryScore,
-  galleryChat,
-  galleryWater,
-  galleryWeekly,
+  galleryToday,
+  galleryWellnessTools,
+  galleryMyDay,
+  galleryMeals,
+  galleryHealthOverview,
+  galleryWaterToday,
 } as const;
