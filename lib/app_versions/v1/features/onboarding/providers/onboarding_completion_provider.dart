@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 
 class OnboardingInitialPlanException implements Exception {
   static const userMessage =
@@ -32,9 +33,11 @@ class OnboardingCompletionResult {
 }
 
 typedef OnboardingCompletionCallback =
-    Future<OnboardingCompletionResult> Function();
+    Future<OnboardingCompletionResult> Function({
+      GeneratedPlanProgressCallback? onProgress,
+    });
 
 final onboardingCompletionCallbackProvider =
     Provider<OnboardingCompletionCallback>((ref) {
-      return () async => const OnboardingCompletionResult.skipped();
+      return ({onProgress}) async => const OnboardingCompletionResult.skipped();
     });

@@ -27,7 +27,6 @@ import 'core/utils/logger/logging_http_client.dart';
 import 'services/health_orchestration/health_domain_event_sink.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox.dart';
 import 'services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart';
-import 'services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
 
 const _bootstrapTag = 'APP_BOOTSTRAP';
 
@@ -74,11 +73,10 @@ Future<void> _bootstrapApplication() async {
           authBackendAvailability,
         ),
         onboardingCompletionCallbackProvider.overrideWith((ref) {
-          return () async {
-            await _prepareMealCatalogForOnboarding(authBackendAvailability);
+          return ({onProgress}) async {
             final result = await ref
                 .read(generatedPlanServiceProvider)
-                .generateInitialGuestPlan(days: 7);
+                .generateInitialGuestPlan(days: 7, onProgress: onProgress);
             return OnboardingCompletionResult.generatedInitialPlan(
               generationSource: result.generationSource,
             );
@@ -157,68 +155,9 @@ Future<void> _startPostLaunchServices(
 ) async {
   if (authBackendAvailability.isReady) {
     _startCloudSync();
-    await _refreshMealCatalogSafely();
   }
 
   await _startNotificationsSafely();
-}
-
-Future<void> _prepareMealCatalogForOnboarding(
-  AuthBackendAvailability authBackendAvailability,
-) async {
-  if (authBackendAvailability.isReady) {
-    try {
-      final refreshed =
-          await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-      if (refreshed > 0) return;
-    } catch (error, stackTrace) {
-      AppLogger.captureError(
-        category: AppLogCategory.supabase,
-        scope: _bootstrapTag,
-        operation: 'ONBOARDING_MEAL_CATALOG_REFRESH',
-        message: 'Onboarding meal catalog refresh deferred',
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  if (await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
-    return;
-  }
-
-  throw StateError(
-    'Nabi chưa có dữ liệu thực đơn phù hợp để tạo lịch đầu tiên.',
-  );
-}
-
-Future<void> _refreshMealCatalogSafely() async {
-  final stopwatch = Stopwatch()..start();
-  try {
-    final refreshed =
-        await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-    stopwatch.stop();
-    AppLogger.event(
-      level: AppLogLevel.info,
-      category: AppLogCategory.supabase,
-      scope: _bootstrapTag,
-      operation: 'MEAL_CATALOG_REFRESH',
-      message: 'Meal catalog cache refreshed',
-      duration: stopwatch.elapsed,
-      metadata: {'rows': refreshed},
-    );
-  } catch (error, stackTrace) {
-    stopwatch.stop();
-    AppLogger.captureError(
-      category: AppLogCategory.supabase,
-      scope: _bootstrapTag,
-      operation: 'MEAL_CATALOG_REFRESH',
-      message: 'Meal catalog refresh skipped',
-      error: error,
-      stackTrace: stackTrace,
-      duration: stopwatch.elapsed,
-    );
-  }
 }
 
 void _startCloudSync() {

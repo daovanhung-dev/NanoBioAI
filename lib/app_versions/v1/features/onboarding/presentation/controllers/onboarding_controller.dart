@@ -18,6 +18,7 @@ class OnboardingState {
   final bool isSaving;
   final String? savedLog;
   final PlanGenerationSource initialPlanGenerationSource;
+  final GeneratedPlanProgress initialPlanProgress;
 
   final String email;
   final String phone;
@@ -56,6 +57,7 @@ class OnboardingState {
     this.isSaving = false,
     this.savedLog,
     this.initialPlanGenerationSource = PlanGenerationSource.unknown,
+    this.initialPlanProgress = const GeneratedPlanProgress(totalDays: 7),
     this.email = '',
     this.phone = '',
     this.fullName = '',
@@ -150,6 +152,7 @@ class OnboardingState {
     bool? isSaving,
     String? savedLog,
     PlanGenerationSource? initialPlanGenerationSource,
+    GeneratedPlanProgress? initialPlanProgress,
     String? email,
     String? phone,
     String? fullName,
@@ -182,6 +185,7 @@ class OnboardingState {
       savedLog: savedLog ?? this.savedLog,
       initialPlanGenerationSource:
           initialPlanGenerationSource ?? this.initialPlanGenerationSource,
+      initialPlanProgress: initialPlanProgress ?? this.initialPlanProgress,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       fullName: fullName ?? this.fullName,
@@ -222,7 +226,8 @@ class OnboardingController extends Notifier<OnboardingState> {
     return const OnboardingState();
   }
 
-  OnboardingRepository get _repository => ref.read(onboardingRepositoryProvider);
+  OnboardingRepository get _repository =>
+      ref.read(onboardingRepositoryProvider);
 
   void nextStep() {
     if (!state.canContinueCurrentStep) {
@@ -523,7 +528,10 @@ class OnboardingController extends Notifier<OnboardingState> {
       if (state.gender.trim().isEmpty) missingFields.add('gender');
       if (state.birthYear <= 1900) missingFields.add('birthYear');
       if (state.occupation.trim().isEmpty) missingFields.add('occupation');
-      AppLogger.info(_tag, 'Missing required field count=${missingFields.length}');
+      AppLogger.info(
+        _tag,
+        'Missing required field count=${missingFields.length}',
+      );
 
       AppLogger.error(
         _tag,
@@ -548,13 +556,17 @@ class OnboardingController extends Notifier<OnboardingState> {
     }
 
     AppLogger.info(_tag, 'Starting onboarding save process');
-    state = state.copyWith(isSaving: true);
+    state = state.copyWith(
+      isSaving: true,
+      initialPlanProgress: const GeneratedPlanProgress(totalDays: 7),
+    );
 
     var profileSaved = false;
     var preferencesSaved = false;
     var planGenerated = false;
     var completionMarked = false;
     var completionPreferenceSaved = false;
+    var failureStage = 'profile_save';
 
     try {
       final entity = state.toEntity();
@@ -570,6 +582,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       profileSaved = true;
       AppLogger.success(_tag, 'Onboarding profile saved successfully');
 
+      failureStage = 'routine_preferences_save';
       await ref
           .read(dailyRoutinePreferencesRepositoryProvider)
           .saveForCurrentUser(state.routinePreferences);
@@ -577,28 +590,66 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.success(_tag, 'Daily routine preferences saved successfully');
 
       AppLogger.info(_tag, 'Generating onboarding meal plan and daily tasks');
-      final onCompletionCallback = ref.read(onboardingCompletionCallbackProvider);
+      final onCompletionCallback = ref.read(
+        onboardingCompletionCallbackProvider,
+      );
       var generatedPlan = false;
       var generationSource = PlanGenerationSource.unknown;
+      failureStage = 'initial_plan_generation';
       try {
-        final completionResult = await onCompletionCallback();
+        final completionResult = await onCompletionCallback(
+          onProgress: (progress) {
+            state = state.copyWith(initialPlanProgress: progress);
+          },
+        );
         generatedPlan = completionResult.generatedInitialPlan;
         planGenerated = generatedPlan;
         generationSource = completionResult.generationSource;
-      } on AIOverloadedException {
+      } on AIOverloadedException catch (error, stackTrace) {
+        AppLogger.error(
+          _tag,
+          'Initial plan generation failed at stage=$failureStage',
+          error,
+          stackTrace,
+        );
         rethrow;
-      } catch (error) {
+      } catch (error, stackTrace) {
+        AppLogger.error(
+          _tag,
+          'Initial plan generation failed at stage=$failureStage',
+          error,
+          stackTrace,
+        );
         if (AIAuthenticationException.matches(error)) {
           AppLogger.error(
             _tag,
             'Initial plan generation authentication failed',
             error,
+            stackTrace,
           );
           throw const OnboardingInitialPlanException(
             AIAuthenticationException.userMessage,
           );
         }
-        AppLogger.error(_tag, 'Initial plan generation failed', error);
+        if (AIModelContextLimitException.matches(error)) {
+          throw const OnboardingInitialPlanException(
+            AIModelContextLimitException.userMessage,
+          );
+        }
+        if (AIRequestTooLargeException.matches(error)) {
+          throw const OnboardingInitialPlanException(
+            AIRequestTooLargeException.userMessage,
+          );
+        }
+        if (error is ScheduleCandidatesUnavailableException) {
+          throw OnboardingInitialPlanException(error.userMessage);
+        }
+        AppLogger.error(
+          _tag,
+          'Initial plan generation failed at stage=$failureStage',
+          error,
+          stackTrace,
+        );
         throw const OnboardingInitialPlanException();
       }
 
@@ -608,10 +659,12 @@ class OnboardingController extends Notifier<OnboardingState> {
       }
 
       AppLogger.info(_tag, 'Marking local onboarding record complete');
+      failureStage = 'mark_onboarding_complete';
       await _repository.markCompleted();
       completionMarked = true;
 
       AppLogger.info(_tag, 'Setting onboarding completed flag');
+      failureStage = 'save_completion_preference';
       await AppPrefs.setOnboardingCompleted(true);
       completionPreferenceSaved = true;
       AppLogger.success(_tag, 'Onboarding completed flag set');
@@ -643,12 +696,15 @@ class OnboardingController extends Notifier<OnboardingState> {
         'Plan Generation Source': generationSource.storageValue,
       });
       AppLogger.separator(_tag);
-    } catch (error) {
+    } catch (error, stackTrace) {
       final expectedError = _isExpectedSaveError(error);
       AppLogger.error(
         _tag,
-        expectedError ? 'Expected onboarding save failure' : 'Onboarding save failure',
+        expectedError
+            ? 'Expected onboarding save failure at stage=$failureStage'
+            : 'Onboarding save failure at stage=$failureStage',
         error,
+        stackTrace,
       );
 
       final message = error is AIOverloadedException
@@ -656,7 +712,7 @@ class OnboardingController extends Notifier<OnboardingState> {
           : error is GuestInitialPlanAlreadyUsedException
           ? GuestInitialPlanAlreadyUsedException.userMessage
           : error is OnboardingInitialPlanException
-          ? OnboardingInitialPlanException.userMessage
+          ? error.message
           : 'Mình chưa thể lưu hồ sơ lúc này. Bạn thử lại sau một chút nhé.';
 
       state = state.copyWith(isSaving: false, savedLog: message);
@@ -666,6 +722,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         _tag,
         'Onboarding Completed With Error',
         error,
+        stackTrace,
       );
       AppLogger.summary(_tag, 'ONBOARDING_SUMMARY', {
         'Status': 'Failed',

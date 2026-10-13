@@ -4,11 +4,13 @@ class AiCatalogBundle {
   final List<MealCatalogItemModel> meals;
   final List<ExerciseCatalogItemModel> exercises;
   final List<ScheduleTaskCatalogItemModel> scheduleTasks;
+  final Map<String, FoodIngredientEvidence> ingredientEvidenceByName;
 
   const AiCatalogBundle({
     required this.meals,
     required this.exercises,
     required this.scheduleTasks,
+    this.ingredientEvidenceByName = const {},
   });
 
   Map<String, MealCatalogItemModel> get mealsByCode => {
@@ -22,14 +24,79 @@ class AiCatalogBundle {
   };
 
   List<MealCatalogItemModel> mealsForType(String mealType) {
-    final type = mealType.trim().toLowerCase();
+    final type = normalizeMealCatalogType(mealType);
     return meals
         .where(
-          (item) => item.mealType == type || item.mealType == 'unclassified',
+          (item) =>
+              normalizeMealCatalogType(item.mealType) == type ||
+              normalizeMealCatalogType(item.mealType) == 'unclassified',
         )
         .toList(growable: false);
   }
 }
+
+String normalizeMealCatalogType(String value) =>
+    value.trim().toLowerCase().replaceAll(RegExp(r'[\s-]+'), '_');
+
+class FoodIngredientEvidence {
+  final String normalizedName;
+  final String queriedName;
+  final String sourceFoodId;
+  final String description;
+  final String dataType;
+  final Map<String, Object?>? nutrients;
+  final String sourceName;
+  final String sourceUrl;
+  final String datasetVersion;
+  final String retrievedAt;
+  final String evidenceStatus;
+
+  const FoodIngredientEvidence({
+    required this.normalizedName,
+    required this.queriedName,
+    required this.sourceFoodId,
+    required this.description,
+    required this.dataType,
+    required this.nutrients,
+    required this.sourceName,
+    required this.sourceUrl,
+    required this.datasetVersion,
+    required this.retrievedAt,
+    required this.evidenceStatus,
+  });
+
+  factory FoodIngredientEvidence.fromMap(Map<String, Object?> map) =>
+      FoodIngredientEvidence(
+        normalizedName: _readString(map['normalized_name']),
+        queriedName: _readString(map['queried_name']),
+        sourceFoodId: _readString(map['source_food_id'] ?? map['fdc_id']),
+        description: _readString(map['description']),
+        dataType: _readString(map['data_type']),
+        nutrients: _readNullableMap(map['nutrients_json'] ?? map['nutrients']),
+        sourceName: _readString(map['source_name']),
+        sourceUrl: _readString(map['source_url']),
+        datasetVersion: _readString(map['dataset_version']),
+        retrievedAt: _readString(map['retrieved_at']),
+        evidenceStatus: _readStringOr(map['evidence_status'], 'unknown'),
+      );
+
+  Map<String, Object?> toMap() => {
+    'normalized_name': normalizedName,
+    'queried_name': queriedName,
+    'source_food_id': sourceFoodId,
+    'description': description,
+    'data_type': dataType,
+    'nutrients_json': nutrients == null ? null : jsonEncode(nutrients),
+    'source_name': sourceName,
+    'source_url': sourceUrl,
+    'dataset_version': datasetVersion,
+    'retrieved_at': retrievedAt,
+    'evidence_status': evidenceStatus,
+  };
+}
+
+String normalizeFoodEvidenceName(String value) =>
+    value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
 class MealCatalogItemModel {
   final String code;
@@ -59,7 +126,17 @@ class MealCatalogItemModel {
   final List<String> cookingSteps;
   final String benefits;
   final String servingSize;
+  final double? servingQuantity;
+  final String servingUnit;
+  final List<MealIngredientQuantity> ingredientQuantities;
+  final Map<String, Object?>? verifiedNutrients;
+  final String nutritionEvidenceSource;
+  final List<String> nutritionFoodIds;
+  final String nutritionEvidenceDate;
+  final String nutritionEvidenceVersion;
   final List<String> allergenTags;
+  final String allergenVerificationStatus;
+  final String allergenEvidenceSource;
   final List<String> avoidConditionTags;
   final String nutritionStatus;
   final String constraintMetadataStatus;
@@ -104,7 +181,17 @@ class MealCatalogItemModel {
     this.cookingSteps = const [],
     this.benefits = '',
     this.servingSize = '',
+    this.servingQuantity,
+    this.servingUnit = '',
+    this.ingredientQuantities = const [],
+    this.verifiedNutrients,
+    this.nutritionEvidenceSource = '',
+    this.nutritionFoodIds = const [],
+    this.nutritionEvidenceDate = '',
+    this.nutritionEvidenceVersion = '',
     this.allergenTags = const [],
+    this.allergenVerificationStatus = 'unknown',
+    this.allergenEvidenceSource = '',
     this.avoidConditionTags = const [],
     this.nutritionStatus = 'approved',
     this.constraintMetadataStatus = 'approved',
@@ -159,7 +246,22 @@ class MealCatalogItemModel {
           : parsedSteps,
       benefits: _readString(map['benefits']),
       servingSize: _readString(map['serving_size']),
+      servingQuantity: _readNullableDouble(map['serving_quantity']),
+      servingUnit: _readString(map['serving_unit']),
+      ingredientQuantities: _readIngredientQuantities(
+        map['ingredient_quantities_json'],
+      ),
+      verifiedNutrients: _readNullableMap(map['verified_nutrients_json']),
+      nutritionEvidenceSource: _readString(map['nutrition_evidence_source']),
+      nutritionFoodIds: _readStringList(map['nutrition_food_ids_json']),
+      nutritionEvidenceDate: _readString(map['nutrition_evidence_date']),
+      nutritionEvidenceVersion: _readString(map['nutrition_evidence_version']),
       allergenTags: _readStringList(map['allergen_tags_json']),
+      allergenVerificationStatus: _readStringOr(
+        map['allergen_verification_status'],
+        'unknown',
+      ),
+      allergenEvidenceSource: _readString(map['allergen_evidence_source']),
       avoidConditionTags: _readStringList(map['avoid_condition_tags_json']),
       nutritionStatus: _readStringOr(map['nutrition_status'], 'approved'),
       constraintMetadataStatus: _readStringOr(
@@ -216,7 +318,22 @@ class MealCatalogItemModel {
       cookingSteps: steps,
       benefits: _readString(json['benefits']),
       servingSize: _readString(json['serving_size']),
+      servingQuantity: _readNullableDouble(json['serving_quantity']),
+      servingUnit: _readString(json['serving_unit']),
+      ingredientQuantities: _readIngredientQuantities(
+        json['ingredient_quantities'] ?? json['ingredients'],
+      ),
+      verifiedNutrients: _readNullableMap(json['verified_nutrients']),
+      nutritionEvidenceSource: _readString(json['nutrition_evidence_source']),
+      nutritionFoodIds: _readStringList(json['nutrition_food_ids']),
+      nutritionEvidenceDate: _readString(json['nutrition_evidence_date']),
+      nutritionEvidenceVersion: _readString(json['nutrition_evidence_version']),
       allergenTags: _readStringList(json['allergen_tags']),
+      allergenVerificationStatus: _readStringOr(
+        json['allergen_verification_status'],
+        'unknown',
+      ),
+      allergenEvidenceSource: _readString(json['allergen_evidence_source']),
       avoidConditionTags: _readStringList(json['avoid_condition_tags']),
       nutritionStatus: _readStringOr(
         json['nutrition_status'],
@@ -256,6 +373,16 @@ class MealCatalogItemModel {
     double? calciumMg,
     double? ironMg,
     String? servingSize,
+    double? servingQuantity,
+    String? servingUnit,
+    List<MealIngredientQuantity>? ingredientQuantities,
+    Map<String, Object?>? verifiedNutrients,
+    String? nutritionEvidenceSource,
+    List<String>? nutritionFoodIds,
+    String? nutritionEvidenceDate,
+    String? nutritionEvidenceVersion,
+    String? allergenVerificationStatus,
+    String? allergenEvidenceSource,
     String? nutritionStatus,
   }) {
     return MealCatalogItemModel(
@@ -286,7 +413,22 @@ class MealCatalogItemModel {
       cookingSteps: cookingSteps,
       benefits: benefits,
       servingSize: servingSize ?? this.servingSize,
+      servingQuantity: servingQuantity ?? this.servingQuantity,
+      servingUnit: servingUnit ?? this.servingUnit,
+      ingredientQuantities: ingredientQuantities ?? this.ingredientQuantities,
+      verifiedNutrients: verifiedNutrients ?? this.verifiedNutrients,
+      nutritionEvidenceSource:
+          nutritionEvidenceSource ?? this.nutritionEvidenceSource,
+      nutritionFoodIds: nutritionFoodIds ?? this.nutritionFoodIds,
+      nutritionEvidenceDate:
+          nutritionEvidenceDate ?? this.nutritionEvidenceDate,
+      nutritionEvidenceVersion:
+          nutritionEvidenceVersion ?? this.nutritionEvidenceVersion,
       allergenTags: allergenTags,
+      allergenVerificationStatus:
+          allergenVerificationStatus ?? this.allergenVerificationStatus,
+      allergenEvidenceSource:
+          allergenEvidenceSource ?? this.allergenEvidenceSource,
       avoidConditionTags: avoidConditionTags,
       nutritionStatus: nutritionStatus ?? this.nutritionStatus,
       constraintMetadataStatus: constraintMetadataStatus,
@@ -333,7 +475,19 @@ class MealCatalogItemModel {
     'cooking_steps_json': jsonEncode(cookingSteps),
     'benefits': benefits,
     'serving_size': servingSize,
+    'serving_quantity': servingQuantity,
+    'serving_unit': servingUnit,
+    'ingredient_quantities_json': jsonEncode(ingredientQuantities),
+    'verified_nutrients_json': verifiedNutrients == null
+        ? null
+        : jsonEncode(verifiedNutrients),
+    'nutrition_evidence_source': nutritionEvidenceSource,
+    'nutrition_food_ids_json': jsonEncode(nutritionFoodIds),
+    'nutrition_evidence_date': nutritionEvidenceDate,
+    'nutrition_evidence_version': nutritionEvidenceVersion,
     'allergen_tags_json': jsonEncode(allergenTags),
+    'allergen_verification_status': allergenVerificationStatus,
+    'allergen_evidence_source': allergenEvidenceSource,
     'avoid_condition_tags_json': jsonEncode(avoidConditionTags),
     'nutrition_status': nutritionStatus,
     'constraint_metadata_status': constraintMetadataStatus,
@@ -352,6 +506,35 @@ class MealCatalogItemModel {
   };
 }
 
+class MealIngredientQuantity {
+  final String sourceText;
+  final String name;
+  final double? quantity;
+  final String unit;
+
+  const MealIngredientQuantity({
+    required this.sourceText,
+    required this.name,
+    required this.quantity,
+    required this.unit,
+  });
+
+  factory MealIngredientQuantity.fromJson(Map<String, Object?> json) =>
+      MealIngredientQuantity(
+        sourceText: _readString(json['source_text']),
+        name: _readString(json['name']),
+        quantity: _readNullableDouble(json['quantity']),
+        unit: _readString(json['unit']),
+      );
+
+  Map<String, Object?> toJson() => {
+    'source_text': sourceText,
+    'name': name,
+    'quantity': quantity,
+    'unit': unit,
+  };
+}
+
 class ExerciseCatalogItemModel {
   final String code;
   final String category;
@@ -363,6 +546,18 @@ class ExerciseCatalogItemModel {
   final double maxTarget;
   final double defaultTarget;
   final String intensityLevel;
+  final List<String> equipment;
+  final List<String> movementAreas;
+  final List<String> limitationTags;
+  final List<String> conditionContraindications;
+  final String safetyStatus;
+  final String safetySource;
+  final String safetyVerifiedAt;
+  final String sourceCatalog;
+  final String sourceProvenance;
+  final String sourceHash;
+  final String reviewStatus;
+  final String sourcePayloadJson;
   final bool isActive;
   final String createdAt;
   final String updatedAt;
@@ -378,6 +573,18 @@ class ExerciseCatalogItemModel {
     required this.maxTarget,
     required this.defaultTarget,
     required this.intensityLevel,
+    this.equipment = const [],
+    this.movementAreas = const [],
+    this.limitationTags = const [],
+    this.conditionContraindications = const [],
+    this.safetyStatus = 'unreviewed',
+    this.safetySource = '',
+    this.safetyVerifiedAt = '',
+    this.sourceCatalog = 'legacy_m02',
+    this.sourceProvenance = '',
+    this.sourceHash = '',
+    this.reviewStatus = 'active_legacy',
+    this.sourcePayloadJson = '{}',
     this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
@@ -395,6 +602,20 @@ class ExerciseCatalogItemModel {
         maxTarget: _readDouble(map['max_target']),
         defaultTarget: _readDouble(map['default_target']),
         intensityLevel: _readString(map['intensity_level']),
+        equipment: _readStringList(map['equipment_json']),
+        movementAreas: _readStringList(map['movement_areas_json']),
+        limitationTags: _readStringList(map['limitation_tags_json']),
+        conditionContraindications: _readStringList(
+          map['condition_contraindications_json'],
+        ),
+        safetyStatus: _readStringOr(map['safety_status'], 'unreviewed'),
+        safetySource: _readString(map['safety_source']),
+        safetyVerifiedAt: _readString(map['safety_verified_at']),
+        sourceCatalog: _readStringOr(map['source_catalog'], 'legacy_m02'),
+        sourceProvenance: _readString(map['source_provenance']),
+        sourceHash: _readString(map['source_hash']),
+        reviewStatus: _readStringOr(map['review_status'], 'active_legacy'),
+        sourcePayloadJson: _readStringOr(map['source_payload_json'], '{}'),
         isActive: _readBool(map['is_active'], fallback: true),
         createdAt: _readString(map['created_at']),
         updatedAt: _readString(map['updated_at']),
@@ -411,6 +632,18 @@ class ExerciseCatalogItemModel {
     'max_target': maxTarget,
     'default_target': defaultTarget,
     'intensity_level': intensityLevel,
+    'equipment_json': jsonEncode(equipment),
+    'movement_areas_json': jsonEncode(movementAreas),
+    'limitation_tags_json': jsonEncode(limitationTags),
+    'condition_contraindications_json': jsonEncode(conditionContraindications),
+    'safety_status': safetyStatus,
+    'safety_source': safetySource,
+    'safety_verified_at': safetyVerifiedAt,
+    'source_catalog': sourceCatalog,
+    'source_provenance': sourceProvenance,
+    'source_hash': sourceHash,
+    'review_status': reviewStatus,
+    'source_payload_json': sourcePayloadJson,
     'is_active': isActive ? 1 : 0,
     'created_at': createdAt,
     'updated_at': updatedAt,
@@ -532,6 +765,83 @@ List<String> _readStringList(Object? value) {
       .map((item) => item.trim())
       .where((item) => item.isNotEmpty)
       .toList(growable: false);
+}
+
+Map<String, Object?>? _readNullableMap(Object? value) {
+  if (value == null) return null;
+  Object? decoded = value;
+  if (value is String) {
+    if (value.trim().isEmpty) return null;
+    try {
+      decoded = jsonDecode(value);
+    } catch (_) {
+      return null;
+    }
+  }
+  if (decoded is! Map) return null;
+  return Map<String, Object?>.from(decoded);
+}
+
+List<MealIngredientQuantity> _readIngredientQuantities(Object? value) {
+  if (value == null) return const [];
+  Object? decoded = value;
+  if (value is String) {
+    try {
+      decoded = jsonDecode(value);
+    } catch (_) {
+      return const [];
+    }
+  }
+  if (decoded is! List) return const [];
+  return decoded
+      .map((entry) {
+        if (entry is Map) {
+          return MealIngredientQuantity.fromJson(
+            Map<String, Object?>.from(entry),
+          );
+        }
+        final sourceText = entry?.toString().trim() ?? '';
+        return _parseIngredientQuantity(sourceText);
+      })
+      .where((item) => item.sourceText.isNotEmpty)
+      .toList(growable: false);
+}
+
+MealIngredientQuantity _parseIngredientQuantity(String sourceText) {
+  const units =
+      r'muỗng cà phê|muỗng canh|kg|mg|ml|quả|nhánh|miếng|thìa|muỗng|củ|bó|con|g|l';
+  final prefixMatch = RegExp(
+    r'^\s*(\d+(?:[.,]\d+)?)\s*(' + units + r')\s*(.*)$',
+    caseSensitive: false,
+  ).firstMatch(sourceText);
+  final suffixMatch = RegExp(
+    r'^\s*(.+?)\s+(\d+(?:[.,]\d+)?)\s*(' + units + r')\s*$',
+    caseSensitive: false,
+  ).firstMatch(sourceText);
+  final match = prefixMatch ?? suffixMatch;
+  if (match == null) {
+    return MealIngredientQuantity(
+      sourceText: sourceText,
+      name: sourceText,
+      quantity: null,
+      unit: '',
+    );
+  }
+  final quantity = double.tryParse(
+    (prefixMatch != null ? match.group(1)! : match.group(2)!).replaceAll(
+      ',',
+      '.',
+    ),
+  );
+  final unit = (prefixMatch != null ? match.group(2)! : match.group(3)!)
+      .toLowerCase();
+  final name = (prefixMatch != null ? match.group(3)! : match.group(1)!).trim();
+  return MealIngredientQuantity(
+    sourceText: sourceText,
+    name: name.isEmpty ? sourceText : name,
+    quantity: quantity,
+    unit: unit,
+  );
 }
 
 int _readInt(Object? value) {

@@ -79,27 +79,36 @@ void main() {
     );
   });
 
-  test('fallback creates a complete valid chunk from catalog', () {
-    final fallback = const MealPlanAiNormalizer().fallbackCodeItems(
-      catalog: catalog,
-      startDay: 3,
-      days: 2,
-      usedCodeCounts: const {'br_oat_egg': 1, 'ms_banana_yogurt': 1},
-    );
-
-    final valid = const MealPlanAiNormalizer().validateCodeItems(
-      items: fallback,
-      catalog: catalog,
-      startDay: 3,
-      days: 2,
-      usedCodeCounts: const {},
-    );
-
-    expect(valid, hasLength(10));
-    expect(valid.map((item) => item['day']).toSet(), {3, 4});
+  test('rejects meal codes already used earlier in the week', () {
+    final eligibleByType = {
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        slot.type: {
+          AiCatalogSeedData.meals
+              .firstWhere((meal) => meal.mealType == slot.type)
+              .code,
+        },
+    };
+    final fallback = [
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        {
+          'day': 3,
+          'meal_type': slot.type,
+          'meal_code': eligibleByType[slot.type]!.single,
+        },
+    ];
     expect(
-      valid.where((item) => item['meal_type'] == 'breakfast'),
-      hasLength(2),
+      () => const MealPlanAiNormalizer().validateCodeItems(
+        items: fallback,
+        catalog: catalog,
+        startDay: 3,
+        days: 1,
+        usedCodeCounts: {
+          for (final codes in eligibleByType.values)
+            for (final code in codes) code: 2,
+        },
+        eligibleCodesByType: eligibleByType,
+      ),
+      throwsFormatException,
     );
   });
 }
@@ -121,8 +130,6 @@ List<Map<String, Object?>> _items() {
           'meal_type': slot.type,
           'meal_code':
               byType[slot.type]![(day - 1) % byType[slot.type]!.length],
-          'portion_level': 'standard',
-          'priority': slot.order,
         },
   ];
 }

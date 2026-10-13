@@ -69,6 +69,8 @@ Preserve current GoRouter/Navigator behavior. Push/back transitions must be symm
 ## 20. Loading state
 Use skeleton/progress only for regions actually loading. Preserve stable page chrome where possible; do not blank a usable page for additive/background refresh.
 
+For initial AI schedule generation, show the percentage and count of days confirmed saved, plus a label for each saved day. Advance only after that day is persisted; on resume, report previously persisted complete days before generating the remaining days. Do not estimate progress from elapsed time or from AI output that has not been saved.
+
 ## 21. Empty state
 Explain **what is empty, why that is normal, and the next real action**. Never populate production UI with mock/sample health or financial data.
 
@@ -112,6 +114,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 ## 32. Acceptance criteria
 - [ ] Visual hierarchy matches this spec and group rules.
 - [ ] Loading/empty/error/ready/disabled state coverage is explicit.
+- [x] Initial schedule generation shows a percentage and the names of confirmed saved days.
 - [ ] No business/access/persistence behavior changed by styling.
 - [ ] No overflow at compact width and increased text scale.
 - [ ] Reduced-motion behavior is usable.

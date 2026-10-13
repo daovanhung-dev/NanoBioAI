@@ -65,10 +65,48 @@ class AIModelUnavailableException implements Exception {
   String toString() => userMessage;
 }
 
+class AIModelContextLimitException implements Exception {
+  static const userMessage =
+      'Danh mục vượt quá giới hạn token của model AI đang cấu hình. Cần cập nhật model hoặc dung lượng context trước khi tạo lịch.';
+
+  const AIModelContextLimitException();
+
+  static bool matches(Object error) {
+    return error is GeminiApiException &&
+        error.status?.trim().toLowerCase() == 'model_context_limit_exceeded';
+  }
+
+  @override
+  String toString() => userMessage;
+}
+
+class AIRequestTooLargeException implements Exception {
+  static const userMessage =
+      'Danh sách gửi đến AI vượt quá giới hạn dung lượng request. Cần điều chỉnh model hoặc cấu hình request trước khi tạo lịch.';
+
+  const AIRequestTooLargeException();
+
+  static bool matches(Object error) {
+    return error is GeminiApiException &&
+        error.status?.trim().toLowerCase() == 'request_too_large';
+  }
+
+  @override
+  String toString() => userMessage;
+}
+
 class AIOverloadedException implements Exception {
   static const userMessage = 'Nabi đang bận. Bạn thử lại sau nhé.';
 
-  const AIOverloadedException();
+  final int? providerStatusCode;
+  final String? providerStatus;
+  final String? providerErrorCode;
+
+  const AIOverloadedException({
+    this.providerStatusCode,
+    this.providerStatus,
+    this.providerErrorCode,
+  });
 
   static bool matches(Object error) {
     if (error is TimeoutException) {
@@ -90,6 +128,29 @@ class AIOverloadedException implements Exception {
         normalized.contains('quota') ||
         normalized.contains('rate limit') ||
         normalized.contains('too many requests');
+  }
+
+  @override
+  String toString() => userMessage;
+}
+
+class AIRateLimitedException implements Exception {
+  static const userMessage =
+      'Nabi đang bận xử lý nhiều yêu cầu. Lịch của bạn đã được lưu tạm; hãy tiếp tục sau.';
+
+  const AIRateLimitedException();
+
+  static bool matches(Object error) {
+    if (error is GeminiApiException) {
+      final status = error.status?.trim().toLowerCase();
+      return error.statusCode == 429 ||
+          status == 'resource_exhausted' ||
+          status == 'rate_limit_exceeded';
+    }
+    final text = error.toString().toLowerCase();
+    return text.contains('too many requests') ||
+        text.contains('rate limit') ||
+        text.contains('resource_exhausted');
   }
 
   @override

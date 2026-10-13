@@ -65,6 +65,6 @@ void main() {
       columns.map((column) => column['name']),
       isNot(contains('allow_zalo_alert')),
     );
-    expect(DatabaseVersion.currentVersion, 28);
+    expect(DatabaseVersion.currentVersion, 31);
   });
 }

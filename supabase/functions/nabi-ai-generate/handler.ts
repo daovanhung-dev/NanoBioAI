@@ -53,16 +53,14 @@ export function normalizeGenerationConfigForModel(
 
 const MAX_REQUEST_BYTES = 1_500_000;
 const MAX_CONTENTS = 24;
-const MAX_TEXT = 40_000;
-const MAX_SYSTEM_INSTRUCTION = 12_000;
 const MAX_RESPONSE = 40_000;
 const MAX_TRACE_ID = 100;
 const TRACE_ID_PATTERN = /^[A-Za-z0-9._:-]+$/;
 const SAFE_PROVIDER_ERROR_PATTERN =
-  /^provider_(?:[1-5]\d{2}|network_error|empty_response|invalid_response|max_tokens)$/;
+  /^provider_(?:[1-5]\d{2}|network_error|timeout|empty_response|invalid_response|max_tokens|input_token_limit|output_token_limit|invalid_model_metadata|invalid_token_count)$/;
 const ALLOWED_OPERATIONS = new Set([
-  'fitness_training_generate',
-  'fitness_training_replan',
+  "fitness_training_generate",
+  "fitness_training_replan",
 ]);
 
 export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
@@ -114,14 +112,16 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
           "REQUEST_BODY_READ_FAILED",
         );
       }
-      if (raw.length > MAX_REQUEST_BYTES) {
+      const requestBytes = new TextEncoder().encode(raw).byteLength;
+      if (requestBytes > MAX_REQUEST_BYTES) {
         return failure(
           413,
           "Yêu cầu AI vượt quá giới hạn an toàn.",
           traceId,
           startedAt,
           "REQUEST_TOO_LARGE",
-          { requestBytes: raw.length },
+          { requestBytes },
+          "REQUEST_TOO_LARGE",
         );
       }
 
@@ -154,14 +154,14 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
       const operation = body.operation == null ? null : body.operation;
       if (
         operation != null &&
-        (typeof operation !== 'string' || !ALLOWED_OPERATIONS.has(operation))
+        (typeof operation !== "string" || !ALLOWED_OPERATIONS.has(operation))
       ) {
         return failure(
           400,
-          'Thao tác AI chưa được hỗ trợ.',
+          "Thao tác AI chưa được hỗ trợ.",
           traceId,
           startedAt,
-          'UNSUPPORTED_OPERATION',
+          "UNSUPPORTED_OPERATION",
         );
       }
       if (
@@ -180,18 +180,6 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
         );
       }
       if (
-        systemInstruction != null &&
-        systemInstruction.length > MAX_SYSTEM_INSTRUCTION
-      ) {
-        return failure(
-          400,
-          "Chỉ dẫn AI vượt quá giới hạn an toàn.",
-          traceId,
-          startedAt,
-          "SYSTEM_INSTRUCTION_TOO_LARGE",
-        );
-      }
-      if (
         generationConfig == null ||
         typeof generationConfig !== "object" ||
         Array.isArray(generationConfig)
@@ -204,16 +192,6 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
           "INVALID_GENERATION_CONFIG",
         );
       }
-      if (JSON.stringify(contents).length > MAX_TEXT) {
-        return failure(
-          413,
-          "Nội dung AI vượt quá giới hạn an toàn.",
-          traceId,
-          startedAt,
-          "CONTENT_TOO_LARGE",
-        );
-      }
-
       try {
         const generated = (await deps.generate({
           model,
@@ -243,19 +221,63 @@ export function createNabiAiGenerateHandler(deps: NabiAiGenerateDeps) {
         return json(200, { success: true, text: generated }, traceId);
       } catch (error) {
         const errorCode = safeProviderErrorCode(error);
+        const contextLimitExceeded =
+          errorCode === "provider_input_token_limit" ||
+          errorCode === "provider_output_token_limit";
+        const providerRateLimited = errorCode === "provider_429";
+        const providerUnavailable = /^provider_5\d\d$/.test(errorCode);
+        const providerTimedOut = errorCode === "provider_timeout";
+        const providerNetworkFailed = errorCode === "provider_network_error";
+        const statusCode = contextLimitExceeded
+          ? 413
+          : providerRateLimited
+          ? 429
+          : providerTimedOut
+          ? 504
+          : providerUnavailable || providerNetworkFailed
+          ? 503
+          : 502;
+        const responseCode = contextLimitExceeded
+          ? "MODEL_CONTEXT_LIMIT_EXCEEDED"
+          : errorCode === "provider_max_tokens"
+          ? "OUTPUT_TRUNCATED"
+          : providerRateLimited
+          ? "PROVIDER_RATE_LIMITED"
+          : providerTimedOut
+          ? "PROVIDER_TIMEOUT"
+          : providerNetworkFailed
+          ? "PROVIDER_NETWORK_ERROR"
+          : providerUnavailable
+          ? "PROVIDER_TEMPORARY_FAILURE"
+          : "AI_UNAVAILABLE";
         logEvent("error", traceId, "PROVIDER_FAILURE", startedAt, {
-          statusCode: 502,
+          statusCode,
           model,
           errorCode,
         });
         return json(
-          502,
+          statusCode,
           {
             success: false,
-            code: errorCode === "provider_max_tokens"
-              ? "OUTPUT_TRUNCATED"
-              : "AI_UNAVAILABLE",
-            message: "Dịch vụ AI tạm thời chưa sẵn sàng.",
+            code: responseCode,
+            // The value is restricted to SAFE_PROVIDER_ERROR_PATTERN above;
+            // include only a stable code, never the provider's raw response.
+            providerErrorCode: errorCode,
+            ...(safeProviderPhase(error) != null
+              ? { providerPhase: safeProviderPhase(error) }
+              : {}),
+            ...(safeProviderStatus(error) != null
+              ? { providerStatus: safeProviderStatus(error) }
+              : {}),
+            message: contextLimitExceeded
+              ? "Nội dung vượt quá giới hạn token của model AI."
+              : providerRateLimited
+              ? "Dịch vụ AI đang giới hạn số yêu cầu."
+              : providerTimedOut
+              ? "Dịch vụ AI phản hồi quá thời gian chờ."
+              : providerNetworkFailed || providerUnavailable
+              ? "Dịch vụ AI tạm thời chưa sẵn sàng."
+              : "Dịch vụ AI tạm thời chưa sẵn sàng.",
           },
           traceId,
         );
@@ -281,12 +303,21 @@ function failure(
   startedAt: number,
   event: string,
   data: Record<string, unknown> = {},
+  responseCode?: string,
 ): Response {
   logEvent(status >= 500 ? "error" : "warning", traceId, event, startedAt, {
     statusCode: status,
     ...data,
   });
-  return json(status, { success: false, message }, traceId);
+  return json(
+    status,
+    {
+      success: false,
+      ...(responseCode ? { code: responseCode } : {}),
+      message,
+    },
+    traceId,
+  );
 }
 
 function resolveTraceId(request: Request): string {
@@ -307,6 +338,23 @@ function safeProviderErrorCode(error: unknown): string {
     if (SAFE_PROVIDER_ERROR_PATTERN.test(code)) return code;
   }
   return "provider_unknown_error";
+}
+
+function safeProviderPhase(error: unknown): string | null {
+  if (!(error instanceof Error)) return null;
+  const phase = (error as Error & { providerPhase?: unknown }).providerPhase;
+  return phase === "model_metadata" || phase === "count_tokens" ||
+      phase === "generate_content"
+    ? phase
+    : null;
+}
+
+function safeProviderStatus(error: unknown): string | null {
+  if (!(error instanceof Error)) return null;
+  const status = (error as Error & { providerStatus?: unknown }).providerStatus;
+  return typeof status === "string" && /^[A-Z][A-Z0-9_]{0,63}$/.test(status)
+    ? status
+    : null;
 }
 
 function safeUnexpectedErrorCode(error: unknown): string {

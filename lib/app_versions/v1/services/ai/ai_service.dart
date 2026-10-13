@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/core/config/app_env.dart';
@@ -46,6 +47,7 @@ typedef AITextGenerator =
     });
 
 typedef AiCatalogLoader = Future<AiCatalogBundle> Function();
+typedef AiBackendInvocationCallback = Future<void> Function();
 
 final aiServiceProvider = Provider<AIService>((ref) {
   return AIService();
@@ -108,10 +110,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     _now = now ?? DateTime.now;
     _modelCooldown = modelCooldown ?? AIRetryPolicy.modelCooldown;
     _catalogLoader =
-        catalogLoader ?? const AiCatalogLocalDatasource().loadActiveBundle;
+        catalogLoader ??
+        const AiCatalogLocalDatasource().loadScheduleCatalogBundle;
 
-    // A test may pass an empty override to exercise the local fallback. Normal
-    // app construction always routes through the trusted backend client.
+    // Tests may pass an empty override to assert the unavailable-provider
+    // path. Production app construction always routes through the trusted
+    // backend client.
     _aiClient = _textGenerator == null
         ? aiClient ??
               geminiClient ??
@@ -125,8 +129,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         AITraceLogger.nextTraceId('ai-service-init'),
         'AIService.constructor',
         'MISSING_API_KEY',
-        'AI plan generation will use local fallback because the provider credential is missing.',
-        data: {'source': AITraceLogger.localGen},
+        'AI plan generation is unavailable because the provider is not configured.',
+        data: {'source': 'unavailable'},
         location: StackTrace.current,
       );
     }
@@ -161,6 +165,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       for (final modelName in resolvedModelNames)
         _AIModelEntry(name: modelName),
     ];
+  }
+
+  /// Clears cooldowns before a user explicitly resumes a failed plan request.
+  void resetTransientModelCooldowns() {
+    _modelCooldownUntil.clear();
   }
 
   Future<AIConnectionCheckResult> checkConnection({
@@ -334,6 +343,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     );
 
     final catalog = catalogOverride ?? await _catalogLoader();
+    _ensureMealCatalogAvailable(catalog);
     AITraceLogger.info(
       _tag,
       traceId,
@@ -361,12 +371,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     for (final chunk in chunks) {
       final prompt = MealPlanPrompt.generate(
-        healthData: healthData,
         startDate: startDate,
         startDay: chunk.startDay,
         days: chunk.days,
         catalog: catalog.meals,
-        usedMealCodes: _usedCodes(usedCodeCounts),
+        usedMealCodeCounts: usedCodeCounts,
+        ingredientEvidenceByName: catalog.ingredientEvidenceByName,
       );
       final chunkResult = await _generateMealChunk(
         normalizer: normalizer,
@@ -424,11 +434,15 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     final result = await generateExerciseTasksWithSource(
       profile: profile,
       startDate: startDate,
       days: days,
+      catalogOverride: catalogOverride,
+      availableTimeWindows: availableTimeWindows,
     );
     return result.value;
   }
@@ -438,6 +452,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     final traceId = AITraceLogger.nextTraceId('exercise-tasks');
     const method = 'generateExerciseTasks';
@@ -449,7 +465,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       location: StackTrace.current,
     );
 
-    final catalog = await _catalogLoader();
+    final catalog = catalogOverride ?? await _catalogLoader();
+    _ensureExerciseCatalogAvailable(catalog);
     AITraceLogger.info(
       _tag,
       traceId,
@@ -477,12 +494,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     for (final chunk in chunks) {
       final prompt = ExerciseTasksPrompt.generate(
-        profile: profile,
         startDate: startDate,
         startDay: chunk.startDay,
         days: chunk.days,
         catalog: catalog.exercises,
-        usedExerciseCodes: _usedCodes(usedCodeCounts),
+        usedExerciseCodeCounts: usedCodeCounts,
+        availableTimeWindows: availableTimeWindows,
       );
       final chunkResult = await _generateExerciseChunk(
         normalizer: normalizer,
@@ -536,6 +553,450 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     return AIGenerationResult(value: exercises, source: source);
   }
 
+  Future<List<Map<String, dynamic>>> generateMealDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    _ensureMealCatalogAvailable(catalog);
+    final traceId = AITraceLogger.nextTraceId('meal-day-$day');
+    final prompt = MealPlanPrompt.generate(
+      startDate: startDate,
+      startDay: day,
+      days: 1,
+      catalog: catalog.meals,
+      usedMealCodeCounts: usedCodeCounts,
+      personalization: personalization,
+    );
+    final result = await _generateMealChunk(
+      normalizer: const MealPlanAiNormalizer(),
+      catalog: catalog,
+      prompt: prompt,
+      chunk: _AIChunk(startDay: day, days: 1),
+      usedCodeCounts: usedCodeCounts,
+      traceId: traceId,
+      onBackendInvocation: onBackendInvocation,
+    );
+    return result.items;
+  }
+
+  Future<List<Map<String, dynamic>>> generateExerciseDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    _ensureExerciseCatalogAvailable(catalog);
+    final traceId = AITraceLogger.nextTraceId('exercise-day-$day');
+    final prompt = ExerciseTasksPrompt.generate(
+      startDate: startDate,
+      startDay: day,
+      days: 1,
+      catalog: catalog.exercises,
+      usedExerciseCodeCounts: usedCodeCounts,
+      personalization: personalization,
+    );
+    final result = await _generateExerciseChunk(
+      normalizer: const ExerciseTasksAiNormalizer(),
+      catalog: catalog,
+      prompt: prompt,
+      chunk: _AIChunk(startDay: day, days: 1),
+      usedCodeCounts: usedCodeCounts,
+      traceId: traceId,
+      onBackendInvocation: onBackendInvocation,
+    );
+    return result.items;
+  }
+
+  Future<AIGenerationResult<List<Map<String, dynamic>>>>
+  generateMealDayCodeItemsWithSource({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleFallbackCodesByType,
+    bool allowLocalFallback = true,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    _ensureMealCatalogAvailable(catalog);
+    try {
+      return AIGenerationResult(
+        value: await generateMealDayCodeItems(
+          startDate: startDate,
+          day: day,
+          catalog: catalog,
+          usedCodeCounts: usedCodeCounts,
+          personalization: personalization,
+          onBackendInvocation: onBackendInvocation,
+        ),
+        source: PlanGenerationSource.ai,
+      );
+    } catch (error, stackTrace) {
+      if (!allowLocalFallback) {
+        Error.throwWithStackTrace(error, stackTrace);
+      }
+      final fallback = _fallbackMealDayCodeItems(
+        day: day,
+        catalog: catalog,
+        usedCodeCounts: usedCodeCounts,
+        eligibleCodesByType: eligibleFallbackCodesByType,
+      );
+      AITraceLogger.info(
+        _tag,
+        AITraceLogger.nextTraceId('meal-local-fallback-$day'),
+        'generateMealDayCodeItemsWithSource',
+        'LOCAL_CATALOG_FALLBACK',
+        'Using validated local meal choices after AI generation failed.',
+        data: {'errorType': error.runtimeType.toString(), 'day': day},
+        location: StackTrace.current,
+      );
+      return AIGenerationResult(
+        value: fallback,
+        source: PlanGenerationSource.localFallback,
+      );
+    }
+  }
+
+  Future<AIGenerationResult<List<Map<String, dynamic>>>>
+  generateMealSlotCodeItemWithSource({
+    required DateTime startDate,
+    required int day,
+    required String mealType,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    required Set<String> dayMealCodes,
+    Map<String, Set<String>>? eligibleFallbackCodesByType,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    _ensureMealCatalogAvailable(catalog);
+    final slotIndex = MealPlanAiNormalizer.mealSlots.indexWhere(
+      (candidate) => candidate.type == mealType.trim().toLowerCase(),
+    );
+    if (slotIndex < 0) {
+      throw ArgumentError.value(mealType, 'mealType');
+    }
+    final slot = MealPlanAiNormalizer.mealSlots[slotIndex];
+    final traceId = AITraceLogger.nextTraceId('meal-slot-$day-${slot.type}');
+    final prompt = MealPlanPrompt.generate(
+      startDate: startDate,
+      startDay: day,
+      days: 1,
+      onlyMealType: slot.type,
+      catalog: catalog.meals,
+      usedMealCodeCounts: usedCodeCounts,
+      personalization: personalization,
+    );
+    try {
+      final items = await _runWithRetry<List<Map<String, dynamic>>>(
+        traceId: traceId,
+        method: 'generateMealSlotCodeItem',
+        label: 'LỖI TẠO BỮA ĂN AI',
+        onBackendInvocation: onBackendInvocation,
+        operation: (entry) async {
+          final decoded = await _generateJsonArray(
+            entry,
+            prompt,
+            traceId: traceId,
+            method: 'generateMealSlotCodeItem',
+            step: 'MEAL_SLOT day=$day type=${slot.type}',
+          );
+          if (decoded.length != 1) {
+            throw const FormatException(
+              'Meal AI slot response must contain exactly one meal.',
+            );
+          }
+          return const MealPlanAiNormalizer().validateCodeItemForSlot(
+            item: decoded.single,
+            catalog: catalog,
+            day: day,
+            mealType: slot.type,
+            usedCodeCounts: usedCodeCounts,
+            dayMealCodes: dayMealCodes,
+          );
+        },
+      );
+      return AIGenerationResult(value: items, source: PlanGenerationSource.ai);
+    } catch (error) {
+      try {
+        final fallback = _fallbackMealSlotCodeItem(
+          day: day,
+          mealType: slot.type,
+          catalog: catalog,
+          usedCodeCounts: usedCodeCounts,
+          dayMealCodes: dayMealCodes,
+          eligibleCodesByType: eligibleFallbackCodesByType,
+        );
+        AITraceLogger.info(
+          _tag,
+          traceId,
+          'generateMealSlotCodeItem',
+          'LOCAL_SLOT_FALLBACK',
+          'Using a validated local meal choice after split AI generation failed.',
+          data: {'errorType': error.runtimeType.toString(), 'day': day},
+          location: StackTrace.current,
+        );
+        return AIGenerationResult(
+          value: fallback,
+          source: PlanGenerationSource.localFallback,
+        );
+      } catch (fallbackError, fallbackStackTrace) {
+        Error.throwWithStackTrace(fallbackError, fallbackStackTrace);
+      }
+    }
+  }
+
+  Future<AIGenerationResult<List<Map<String, dynamic>>>>
+  generateExerciseDayCodeItemsWithSource({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Set<String>? eligibleFallbackCodes,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    _ensureExerciseCatalogAvailable(catalog);
+    try {
+      return AIGenerationResult(
+        value: await generateExerciseDayCodeItems(
+          startDate: startDate,
+          day: day,
+          catalog: catalog,
+          usedCodeCounts: usedCodeCounts,
+          personalization: personalization,
+          onBackendInvocation: onBackendInvocation,
+        ),
+        source: PlanGenerationSource.ai,
+      );
+    } catch (error) {
+      final fallback = _fallbackExerciseDayCodeItems(
+        day: day,
+        catalog: catalog,
+        usedCodeCounts: usedCodeCounts,
+        eligibleCodes: eligibleFallbackCodes,
+      );
+      AITraceLogger.info(
+        _tag,
+        AITraceLogger.nextTraceId('exercise-local-fallback-$day'),
+        'generateExerciseDayCodeItemsWithSource',
+        'LOCAL_CATALOG_FALLBACK',
+        'Using validated local exercise choices after AI generation failed.',
+        data: {'errorType': error.runtimeType.toString(), 'day': day},
+        location: StackTrace.current,
+      );
+      return AIGenerationResult(
+        value: fallback,
+        source: PlanGenerationSource.localFallback,
+      );
+    }
+  }
+
+  List<Map<String, dynamic>> _fallbackMealDayCodeItems({
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
+  }) {
+    final counts = Map<String, int>.from(usedCodeCounts);
+    final candidatesBySlot = {
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        slot.type: catalog
+            .mealsForType(slot.type)
+            .where(
+              (meal) =>
+                  meal.isActive &&
+                  meal.code.trim().isNotEmpty &&
+                  meal.mealName.trim().isNotEmpty &&
+                  (eligibleCodesByType == null ||
+                      eligibleCodesByType[slot.type]?.contains(meal.code) ==
+                          true),
+            )
+            .toList(growable: false),
+    };
+    final slots = [...MealPlanAiNormalizer.mealSlots]
+      ..sort(
+        (left, right) => candidatesBySlot[left.type]!.length.compareTo(
+          candidatesBySlot[right.type]!.length,
+        ),
+      );
+    final selectedCodes = <String>{};
+    final selectedNames = MealPlanAiNormalizer.mealNameKeysForCodes(
+      catalog.meals,
+      usedCodeCounts.entries
+          .where((entry) => entry.value > 0)
+          .map((entry) => entry.key),
+    );
+    final selectedByType = <String, MealCatalogItemModel>{};
+
+    bool assignSlot(int index) {
+      if (index == slots.length) return true;
+      final slot = slots[index];
+      final candidates = [...candidatesBySlot[slot.type]!]
+        ..sort((left, right) {
+          final count = (counts[left.code] ?? 0).compareTo(
+            counts[right.code] ?? 0,
+          );
+          return count != 0 ? count : left.code.compareTo(right.code);
+        });
+      for (final candidate in candidates) {
+        final nameKey = MealPlanAiNormalizer.mealNameUniquenessKey(
+          candidate.mealName,
+        );
+        if ((usedCodeCounts[candidate.code] ?? 0) > 0 ||
+            !selectedCodes.add(candidate.code)) {
+          continue;
+        }
+        if (nameKey.isNotEmpty && !selectedNames.add(nameKey)) {
+          selectedCodes.remove(candidate.code);
+          continue;
+        }
+        selectedByType[slot.type] = candidate;
+        counts.update(candidate.code, (value) => value + 1, ifAbsent: () => 1);
+        if (assignSlot(index + 1)) return true;
+        counts.update(candidate.code, (value) => value - 1);
+        selectedByType.remove(slot.type);
+        selectedCodes.remove(candidate.code);
+        if (nameKey.isNotEmpty) selectedNames.remove(nameKey);
+      }
+      return false;
+    }
+
+    if (!assignSlot(0)) {
+      throw StateError('Insufficient unique eligible meal catalog choices.');
+    }
+    final items = [
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        {
+          'day': day,
+          'meal_type': slot.type,
+          'meal_code': selectedByType[slot.type]!.code,
+        },
+    ];
+    return const MealPlanAiNormalizer().validateCodeItems(
+      items: items,
+      catalog: catalog,
+      startDay: day,
+      days: 1,
+      usedCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleCodesByType,
+    );
+  }
+
+  List<Map<String, dynamic>> _fallbackMealSlotCodeItem({
+    required int day,
+    required String mealType,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    required Set<String> dayMealCodes,
+    Map<String, Set<String>>? eligibleCodesByType,
+  }) {
+    final slotIndex = MealPlanAiNormalizer.mealSlots.indexWhere(
+      (candidate) => candidate.type == mealType,
+    );
+    if (slotIndex < 0) {
+      throw ArgumentError.value(mealType, 'mealType');
+    }
+    final slot = MealPlanAiNormalizer.mealSlots[slotIndex];
+    final candidates =
+        catalog
+            .mealsForType(slot.type)
+            .where(
+              (meal) =>
+                  meal.isActive &&
+                  meal.code.trim().isNotEmpty &&
+                  meal.mealName.trim().isNotEmpty &&
+                  !dayMealCodes.contains(meal.code) &&
+                  (eligibleCodesByType == null ||
+                      eligibleCodesByType[slot.type]?.contains(meal.code) ==
+                          true),
+            )
+            .toList(growable: false)
+          ..sort((left, right) {
+            final count = (usedCodeCounts[left.code] ?? 0).compareTo(
+              usedCodeCounts[right.code] ?? 0,
+            );
+            return count != 0 ? count : left.code.compareTo(right.code);
+          });
+    for (final candidate in candidates) {
+      try {
+        return const MealPlanAiNormalizer().validateCodeItemForSlot(
+          item: {
+            'day': day,
+            'meal_type': slot.type,
+            'meal_code': candidate.code,
+          },
+          catalog: catalog,
+          day: day,
+          mealType: slot.type,
+          usedCodeCounts: usedCodeCounts,
+          dayMealCodes: dayMealCodes,
+          eligibleCodesByType: eligibleCodesByType,
+        );
+      } on FormatException {
+        continue;
+      }
+    }
+    throw StateError('Insufficient eligible meal choices for ${slot.type}.');
+  }
+
+  List<Map<String, dynamic>> _fallbackExerciseDayCodeItems({
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Set<String>? eligibleCodes,
+  }) {
+    final candidates =
+        catalog.exercises
+            .where(
+              (item) =>
+                  item.isActive &&
+                  item.code.trim().isNotEmpty &&
+                  item.title.trim().isNotEmpty &&
+                  (eligibleCodes == null || eligibleCodes.contains(item.code)),
+            )
+            .toList(growable: false)
+          ..sort((left, right) {
+            final count = (usedCodeCounts[left.code] ?? 0).compareTo(
+              usedCodeCounts[right.code] ?? 0,
+            );
+            return count != 0 ? count : left.code.compareTo(right.code);
+          });
+    final items = [
+      for (final exercise in candidates.take(2))
+        {'day': day, 'exercise_code': exercise.code},
+    ];
+    return const ExerciseTasksAiNormalizer().validateCodeItems(
+      items: items,
+      catalog: catalog,
+      startDay: day,
+      days: 1,
+      usedCodeCounts: usedCodeCounts,
+      eligibleCodes: eligibleCodes,
+    );
+  }
+
   Future<_GeneratedPlanChunk> _generateMealChunk({
     required MealPlanAiNormalizer normalizer,
     required AiCatalogBundle catalog,
@@ -543,6 +1004,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
     required String traceId,
+    AiBackendInvocationCallback? onBackendInvocation,
   }) async {
     const method = 'generateMealPlan';
     try {
@@ -550,6 +1012,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         traceId: traceId,
         method: method,
         label: 'LỖI TẠO THỰC ĐƠN AI',
+        onBackendInvocation: onBackendInvocation,
         operation: (entry) async {
           final decoded = await _generateJsonArray(
             entry,
@@ -615,40 +1078,46 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         _tag,
         traceId,
         method,
-        'MEAL_CHUNK_LOCAL_FALLBACK',
-        'Chunk thực đơn chuyển sang local fallback.',
+        'MEAL_CHUNK_FAILED',
+        'Chunk thực đơn không được tạo.',
         error,
         stackTrace,
-        data: {
-          'source': AITraceLogger.localGen,
-          'chunkStartDay': chunk.startDay,
-          'chunkDays': chunk.days,
-        },
+        data: {'chunkStartDay': chunk.startDay, 'chunkDays': chunk.days},
         location: StackTrace.current,
       );
-      final fallbackItems = normalizer.fallbackCodeItems(
-        catalog: catalog,
-        startDay: chunk.startDay,
-        days: chunk.days,
-        usedCodeCounts: usedCodeCounts,
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  void _ensureMealCatalogAvailable(AiCatalogBundle catalog) {
+    for (final slot in MealPlanAiNormalizer.mealSlots) {
+      final hasCandidate = catalog.meals.any(
+        (item) =>
+            item.isActive &&
+            item.code.trim().isNotEmpty &&
+            item.mealName.trim().isNotEmpty &&
+            (item.mealType == slot.type || item.mealType == 'unclassified'),
       );
-      AITraceLogger.info(
-        _tag,
-        traceId,
-        method,
-        'MEAL_LOCAL_FALLBACK_READY',
-        'Meal local fallback prepared.',
-        data: {
-          'source': AITraceLogger.localGen,
-          'chunkStartDay': chunk.startDay,
-          'itemCount': fallbackItems.length,
-        },
-        location: StackTrace.current,
-      );
-      return _GeneratedPlanChunk(
-        items: fallbackItems,
-        source: PlanGenerationSource.localFallback,
-      );
+      if (!hasCandidate) {
+        throw StateError(
+          'No active local meal catalog candidate for ${slot.type}.',
+        );
+      }
+    }
+  }
+
+  void _ensureExerciseCatalogAvailable(AiCatalogBundle catalog) {
+    final candidateCodes = catalog.exercises
+        .where(
+          (item) =>
+              item.isActive &&
+              item.code.trim().isNotEmpty &&
+              item.title.trim().isNotEmpty,
+        )
+        .map((item) => item.code)
+        .toSet();
+    if (candidateCodes.length < ExerciseTasksAiNormalizer.exercisesPerDay) {
+      throw StateError('Insufficient active local exercise catalog choices.');
     }
   }
 
@@ -659,6 +1128,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
     required String traceId,
+    AiBackendInvocationCallback? onBackendInvocation,
   }) async {
     const method = 'generateExerciseTasks';
     try {
@@ -666,6 +1136,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         traceId: traceId,
         method: method,
         label: 'LỖI TẠO BÀI TẬP AI',
+        onBackendInvocation: onBackendInvocation,
         operation: (entry) async {
           final decoded = await _generateJsonArray(
             entry,
@@ -731,40 +1202,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         _tag,
         traceId,
         method,
-        'EXERCISE_CHUNK_LOCAL_FALLBACK',
-        'Chunk bài tập chuyển sang local fallback.',
+        'EXERCISE_CHUNK_FAILED',
+        'Chunk bài tập không được tạo.',
         error,
         stackTrace,
-        data: {
-          'source': AITraceLogger.localGen,
-          'chunkStartDay': chunk.startDay,
-          'chunkDays': chunk.days,
-        },
+        data: {'chunkStartDay': chunk.startDay, 'chunkDays': chunk.days},
         location: StackTrace.current,
       );
-      final fallbackItems = normalizer.fallbackCodeItems(
-        catalog: catalog,
-        startDay: chunk.startDay,
-        days: chunk.days,
-        usedCodeCounts: usedCodeCounts,
-      );
-      AITraceLogger.info(
-        _tag,
-        traceId,
-        method,
-        'EXERCISE_LOCAL_FALLBACK_READY',
-        'Exercise local fallback prepared.',
-        data: {
-          'source': AITraceLogger.localGen,
-          'chunkStartDay': chunk.startDay,
-          'itemCount': fallbackItems.length,
-        },
-        location: StackTrace.current,
-      );
-      return _GeneratedPlanChunk(
-        items: fallbackItems,
-        source: PlanGenerationSource.localFallback,
-      );
+      Error.throwWithStackTrace(error, stackTrace);
     }
   }
 
@@ -773,14 +1218,21 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String method,
     required String label,
     required Future<T> Function(_AIModelEntry entry) operation,
+    AiBackendInvocationCallback? onBackendInvocation,
   }) async {
     var totalAttempts = 0;
     var cooldownSkips = 0;
+    var modelCursor = 0;
+    Object? lastError;
+    StackTrace? lastStackTrace;
 
-    for (var modelIndex = 0; modelIndex < _models.length; modelIndex++) {
+    while (totalAttempts < AIRetryPolicy.maxAttemptsPerRequest) {
+      final modelIndex = modelCursor < _models.length
+          ? modelCursor++
+          : _models.length - 1;
       final entry = _models[modelIndex];
       final cooldownUntil = _activeCooldownUntil(entry.name);
-      if (cooldownUntil != null) {
+      if (modelIndex < _models.length - 1 && cooldownUntil != null) {
         cooldownSkips++;
         AITraceLogger.info(
           _tag,
@@ -797,92 +1249,90 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         continue;
       }
 
-      for (
-        var modelAttempt = 1;
-        modelAttempt <= AIRetryPolicy.maxAttemptsPerModel;
-        modelAttempt++
-      ) {
-        totalAttempts++;
+      totalAttempts++;
+      AITraceLogger.info(
+        _tag,
+        traceId,
+        method,
+        'RETRY_ATTEMPT_START',
+        label,
+        data: {
+          'model': entry.name,
+          'modelAttempt': totalAttempts,
+          'totalAttempt': totalAttempts,
+        },
+        location: StackTrace.current,
+      );
+      await onBackendInvocation?.call();
 
-        try {
-          AITraceLogger.info(
-            _tag,
-            traceId,
-            method,
-            'RETRY_ATTEMPT_START',
-            label,
-            data: {
-              'model': entry.name,
-              'modelAttempt': modelAttempt,
-              'totalAttempt': totalAttempts,
-            },
-            location: StackTrace.current,
-          );
-          final result = await operation(entry);
-          AITraceLogger.success(
-            _tag,
-            traceId,
-            method,
-            'RETRY_ATTEMPT_SUCCESS',
-            label,
-            data: {
-              'model': entry.name,
-              'modelAttempt': modelAttempt,
-              'totalAttempt': totalAttempts,
-            },
-            location: StackTrace.current,
-          );
-          return result;
-        } catch (error, stackTrace) {
-          final transient = AIRetryPolicy.isTransient(error);
-          AITraceLogger.error(
-            _tag,
-            traceId,
-            method,
-            'RETRY_ATTEMPT_FAILED',
-            label,
-            error,
-            stackTrace,
-            data: {
-              'model': entry.name,
-              'modelAttempt': modelAttempt,
-              'totalAttempt': totalAttempts,
-              'transient': transient,
-            },
-            location: StackTrace.current,
-          );
+      try {
+        final result = await operation(entry);
+        AITraceLogger.success(
+          _tag,
+          traceId,
+          method,
+          'RETRY_ATTEMPT_SUCCESS',
+          label,
+          data: {
+            'model': entry.name,
+            'modelAttempt': totalAttempts,
+            'totalAttempt': totalAttempts,
+          },
+          location: StackTrace.current,
+        );
+        return result;
+      } catch (error, stackTrace) {
+        final transient = AIRetryPolicy.isTransient(error);
+        lastError = error;
+        lastStackTrace = stackTrace;
+        _printScheduleFailure(
+          traceId: traceId,
+          method: method,
+          stage: 'RETRY_ATTEMPT_FAILED',
+          model: entry.name,
+          error: error,
+          stackTrace: stackTrace,
+          transient: transient,
+        );
+        AITraceLogger.error(
+          _tag,
+          traceId,
+          method,
+          'RETRY_ATTEMPT_FAILED',
+          label,
+          error,
+          stackTrace,
+          data: {
+            'model': entry.name,
+            'modelAttempt': totalAttempts,
+            'totalAttempt': totalAttempts,
+            'transient': transient,
+          },
+          location: StackTrace.current,
+        );
 
-          if (!transient) {
-            rethrow;
-          }
-
+        if (transient) {
           _cooldownModel(entry.name);
-
-          final hasMoreAttempts =
-              modelAttempt < AIRetryPolicy.maxAttemptsPerModel ||
-              _hasAvailableModelAfter(modelIndex);
-          if (!hasMoreAttempts) {
-            break;
+          if (totalAttempts < AIRetryPolicy.maxAttemptsPerRequest) {
+            final delay = AIRetryPolicy.delayForFailureNumber(
+              totalAttempts,
+              random: _random,
+            );
+            AITraceLogger.info(
+              _tag,
+              traceId,
+              method,
+              'RETRY_DELAY',
+              'Chờ trước khi thử lại.',
+              data: {
+                'model': entry.name,
+                'nextTotalAttempt': totalAttempts + 1,
+                'delayMs': delay.inMilliseconds,
+              },
+              location: StackTrace.current,
+            );
+            await _delay(delay);
           }
-
-          final delay = AIRetryPolicy.delayForFailureNumber(
-            totalAttempts,
-            random: _random,
-          );
-          AITraceLogger.info(
-            _tag,
-            traceId,
-            method,
-            'RETRY_DELAY',
-            'Chờ trước khi thử lại.',
-            data: {
-              'model': entry.name,
-              'nextTotalAttempt': totalAttempts + 1,
-              'delayMs': delay.inMilliseconds,
-            },
-            location: StackTrace.current,
-          );
-          await _delay(delay);
         }
       }
     }
@@ -900,7 +1350,67 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       },
       location: StackTrace.current,
     );
-    throw const AIOverloadedException();
+    final failure = lastError;
+    if (failure == null) {
+      throw StateError('AI generation ended without an attempt result.');
+    }
+    if (!AIRetryPolicy.isTransient(failure)) {
+      final stackTrace = lastStackTrace;
+      if (stackTrace == null) {
+        throw StateError('AI failure did not include a stack trace.');
+      }
+      Error.throwWithStackTrace(failure, stackTrace);
+    }
+    final providerStatus = failure is GeminiApiException
+        ? failure.status?.trim()
+        : null;
+    throw AIOverloadedException(
+      providerStatusCode: failure is GeminiApiException
+          ? failure.statusCode
+          : null,
+      providerStatus:
+          providerStatus != null &&
+              RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(providerStatus)
+          ? providerStatus
+          : null,
+      providerErrorCode:
+          failure is GeminiApiException &&
+              failure.backendErrorCode != null &&
+              RegExp(
+                r'^[A-Za-z0-9_.-]{1,64}$',
+              ).hasMatch(failure.backendErrorCode!)
+          ? failure.backendErrorCode
+          : null,
+    );
+  }
+
+  void _printScheduleFailure({
+    required String traceId,
+    required String method,
+    required String stage,
+    required String model,
+    required Object error,
+    required StackTrace stackTrace,
+    required bool transient,
+  }) {
+    if (!kDebugMode) return;
+    final status = error is GeminiApiException ? error.status : null;
+    final safeStatus =
+        status != null && RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(status)
+        ? status
+        : 'none';
+    final safeModel = model.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
+    // ignore: avoid_print
+    print(
+      '[NABI_AI_SCHEDULE] component=AI_SERVICE traceId=$traceId '
+      'method=$method stage=$stage model=$safeModel '
+      'errorType=${error.runtimeType} status=$safeStatus transient=$transient',
+    );
+    for (final line in stackTrace.toString().split('\n').take(8)) {
+      if (line.trim().isEmpty) continue;
+      // ignore: avoid_print
+      print('[NABI_AI_SCHEDULE] stack=$line');
+    }
   }
 
   void _cooldownModel(String modelName) {
@@ -920,15 +1430,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
     _modelCooldownUntil.remove(modelName);
     return null;
-  }
-
-  bool _hasAvailableModelAfter(int modelIndex) {
-    for (var index = modelIndex + 1; index < _models.length; index++) {
-      if (_activeCooldownUntil(_models[index].name) == null) {
-        return true;
-      }
-    }
-    return false;
   }
 
   Future<List<dynamic>> _generateJsonArray(
@@ -1004,7 +1505,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 
     final client = _aiClient;
     if (client == null) {
-      throw StateError('Missing Gemini REST client for ${entry.name}');
+      throw const AIConfigurationUnavailableException();
     }
 
     final text = await client.generateText(
@@ -1064,11 +1565,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
   }
 
-  List<String> _usedCodes(Map<String, int> counts) {
-    final codes = counts.keys.toList()..sort();
-    return codes;
-  }
-
   List<String> _modelNames() {
     return _models.map((entry) => entry.name).toList(growable: false);
   }
@@ -1102,6 +1598,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return AIAuthenticationException.userMessage;
     }
 
+    if (AIModelContextLimitException.matches(error)) {
+      return AIModelContextLimitException.userMessage;
+    }
+
+    if (error is AIConfigurationUnavailableException) {
+      return 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
+    }
+
     final text = error.toString();
     if (text.contains('Missing Gemini REST client')) {
       return 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
@@ -1120,7 +1624,7 @@ class AIModelCandidates {
   // model verified against the deployed Edge Function with the full plan
   // output budget.
   static const defaultPrimaryModel = 'gemini-2.5-flash';
-  static const defaultFallbackModels = <String>[];
+  static const defaultFallbackModels = <String>['gemini-3.8-flash'];
 
   const AIModelCandidates._();
 
@@ -1135,6 +1639,7 @@ class AIModelCandidates {
       _clean(primaryModel) ?? defaultPrimaryModel,
       ...(fallbackModels.isEmpty ? defaultFallbackModels : fallbackModels),
       ...overflowModels,
+      'gemini-3.8-flash',
     ];
 
     final models = <String>[];
@@ -1174,7 +1679,9 @@ class AIModelCandidates {
 }
 
 class AIRetryPolicy {
-  static const maxAttemptsPerModel = 1;
+  // One initial request plus five retries before the caller falls back to a
+  // smaller generation unit (a single meal slot for schedule generation).
+  static const maxAttemptsPerRequest = 6;
   static const maxDelay = Duration(milliseconds: 3750);
   static const modelCooldown = Duration(minutes: 3);
 

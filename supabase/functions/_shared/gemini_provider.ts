@@ -31,16 +31,17 @@ export function resolveGeminiProviderRequest(
 }
 
 /**
- * Removes only the Gemini 3 thinking-level setting when the final provider
- * model is Gemini 2.5. Generic generation fields and a compatible
- * thinkingBudget remain intact.
+ * Normalizes thinking settings for the selected model family. Gemini 2.5
+ * uses thinkingBudget; Gemini 3 uses thinkingLevel.
  */
 export function normalizeGenerationConfigForModel(
   model: string,
   generationConfig: Record<string, unknown>,
 ): Record<string, unknown> {
   const normalizedModel = model.trim().replace(/^models\//, "");
-  if (!normalizedModel.startsWith("gemini-2.5-")) return generationConfig;
+  const isGemini25 = normalizedModel.startsWith("gemini-2.5-");
+  const isGemini3 = normalizedModel.startsWith("gemini-3.");
+  if (!isGemini25 && !isGemini3) return generationConfig;
 
   const thinkingConfig = generationConfig.thinkingConfig;
   if (thinkingConfig == null) return generationConfig;
@@ -49,10 +50,21 @@ export function normalizeGenerationConfigForModel(
     delete normalized.thinkingConfig;
     return normalized;
   }
-  if (!("thinkingLevel" in thinkingConfig)) return generationConfig;
-
   const normalizedThinkingConfig = { ...thinkingConfig };
-  delete normalizedThinkingConfig.thinkingLevel;
+  if (isGemini25) delete normalizedThinkingConfig.thinkingLevel;
+  if (isGemini3) {
+    delete normalizedThinkingConfig.thinkingBudget;
+    if (!normalizedThinkingConfig.thinkingLevel) {
+      normalizedThinkingConfig.thinkingLevel = "medium";
+    }
+  }
+  if (
+    Object.keys(normalizedThinkingConfig).length ===
+    Object.keys(thinkingConfig).length &&
+    Object.keys(normalizedThinkingConfig).every((key) => key in thinkingConfig)
+  ) {
+    return generationConfig;
+  }
   const normalized = { ...generationConfig };
   if (Object.keys(normalizedThinkingConfig).length === 0) {
     delete normalized.thinkingConfig;

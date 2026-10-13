@@ -12,6 +12,7 @@ import 'package:nano_app/app_versions/v1/features/onboarding/presentation/contro
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
@@ -85,8 +86,11 @@ void main() {
             _FakeRoutinePreferencesRepository(),
           ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
-            return () async {
+            return ({GeneratedPlanProgressCallback? onProgress}) async {
               callbackCalls++;
+              onProgress?.call(
+                const GeneratedPlanProgress(totalDays: 2, savedDays: [1, 2]),
+              );
               return const OnboardingCompletionResult.generatedInitialPlan();
             };
           }),
@@ -104,6 +108,10 @@ void main() {
       expect(callbackCalls, 1);
       expect(await AppPrefs.isOnboardingCompleted(), isTrue);
       expect(container.read(onboardingProvider).isSaving, isFalse);
+      expect(
+        container.read(onboardingProvider).initialPlanProgress.percentComplete,
+        100,
+      );
     });
 
     test('does not set completed when initial plan callback skips', () async {
@@ -115,7 +123,8 @@ void main() {
             _FakeRoutinePreferencesRepository(),
           ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
-            return () async => const OnboardingCompletionResult.skipped();
+            return ({GeneratedPlanProgressCallback? onProgress}) async =>
+                const OnboardingCompletionResult.skipped();
           }),
         ],
       );
@@ -140,6 +149,46 @@ void main() {
     });
 
     test(
+      'preserves safe candidate failure message without completing onboarding',
+      () async {
+        const message = 'Danh mục hiện chưa đủ dữ liệu đã xác minh.';
+        final repository = _FakeOnboardingRepository();
+        final container = ProviderContainer(
+          overrides: [
+            onboardingRepositoryProvider.overrideWithValue(repository),
+            dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+              _FakeRoutinePreferencesRepository(),
+            ),
+            onboardingCompletionCallbackProvider.overrideWith((ref) {
+              return ({GeneratedPlanProgressCallback? onProgress}) async =>
+                  throw const ScheduleCandidatesUnavailableException(message);
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final controller = container.read(onboardingProvider.notifier);
+        _seedValidState(controller);
+
+        await expectLater(
+          controller.saveOnboarding(),
+          throwsA(
+            isA<OnboardingInitialPlanException>().having(
+              (error) => error.message,
+              'message',
+              message,
+            ),
+          ),
+        );
+
+        expect(repository.saveCalls, 1);
+        expect(repository.markCompletedCalls, 0);
+        expect(await AppPrefs.isOnboardingCompleted(), isFalse);
+        expect(container.read(onboardingProvider).savedLog, message);
+      },
+    );
+
+    test(
       'ignores duplicate submit while save is already in progress',
       () async {
         final saveBlocker = Completer<void>();
@@ -152,7 +201,7 @@ void main() {
               _FakeRoutinePreferencesRepository(),
             ),
             onboardingCompletionCallbackProvider.overrideWith((ref) {
-              return () async {
+              return ({GeneratedPlanProgressCallback? onProgress}) async {
                 callbackCalls++;
                 return const OnboardingCompletionResult.generatedInitialPlan();
               };
@@ -189,7 +238,7 @@ void main() {
             _FakeRoutinePreferencesRepository(),
           ),
           onboardingCompletionCallbackProvider.overrideWith((ref) {
-            return () async =>
+            return ({GeneratedPlanProgressCallback? onProgress}) async =>
                 const OnboardingCompletionResult.generatedInitialPlan();
           }),
         ],

@@ -48,7 +48,11 @@ import 'migrations/migration_v25.dart';
 import 'migrations/migration_v26.dart';
 import 'migrations/migration_v27.dart';
 import 'migrations/migration_v28.dart';
+import 'migrations/migration_v29.dart';
+import 'migrations/migration_v30.dart';
+import 'migrations/migration_v31.dart';
 import 'seeders/ai_catalog_seeder.dart';
+import 'seeders/meal_catalog_seeder.dart';
 
 class DatabaseService {
   DatabaseService._();
@@ -160,6 +164,12 @@ class DatabaseService {
             if (oldVersion < 26 && newVersion >= 26) await MigrationV26.run(db);
             if (oldVersion < 27 && newVersion >= 27) await MigrationV27.run(db);
             if (oldVersion < 28 && newVersion >= 28) await MigrationV28.run(db);
+            if (oldVersion < 29 && newVersion >= 30) {
+              await MigrationV30.ensureSchema(db);
+            }
+            if (oldVersion < 29 && newVersion >= 29) await MigrationV29.run(db);
+            if (oldVersion < 30 && newVersion >= 30) await MigrationV30.run(db);
+            if (oldVersion < 31 && newVersion >= 31) await MigrationV31.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -204,6 +214,8 @@ class DatabaseService {
               await MigrationV27.ensureSchema(db);
             }
             if (version >= 28) await MigrationV28.ensureSchema(db);
+            if (version >= 30) await MigrationV30.ensureSchema(db);
+            if (version >= 31) await MigrationV31.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -306,9 +318,14 @@ class DatabaseService {
     await db.execute(ExerciseCatalogTable.createCategoryIndex);
     await db.execute(ScheduleTaskCatalogTable.createTable);
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
+    await MigrationV30.ensureSchema(db);
+    await MigrationV31.ensureSchema(db);
     await MigrationV22.ensureSchema(db);
     await MigrationV23.ensureSchema(db);
     await AiCatalogSeeder.seed(db);
+    await MigrationV30.seedBootstrapExerciseMetadata(db);
+    await MealCatalogSeeder.seed(db);
+    await MigrationV31.run(db);
     await SyncOutboxSchema.create(db);
   }
 

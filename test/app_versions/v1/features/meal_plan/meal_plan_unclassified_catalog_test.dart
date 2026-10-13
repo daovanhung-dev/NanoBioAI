@@ -1,66 +1,72 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 
 void main() {
-  test('unclassified Supabase meals are valid candidates for every meal slot', () {
-    final meals = List<MealCatalogItemModel>.generate(
-      5,
-      (index) => _meal('src_${index + 1}'),
-    );
-    final catalog = AiCatalogBundle(
-      meals: meals,
-      exercises: const [],
-      scheduleTasks: const [],
-    );
-
-    for (final slot in MealPlanAiNormalizer.mealSlots) {
-      expect(
-        catalog.mealsForType(slot.type).map((item) => item.code).toSet(),
-        equals(meals.map((item) => item.code).toSet()),
-      );
-    }
-  });
-
-  test('normalizer accepts AI assignment of unclassified meals to five slots', () {
-    final catalog = AiCatalogBundle(
-      meals: List<MealCatalogItemModel>.generate(
+  test(
+    'unclassified Supabase meals are valid candidates for every meal slot',
+    () {
+      final meals = List<MealCatalogItemModel>.generate(
         5,
         (index) => _meal('src_${index + 1}'),
-      ),
-      exercises: const [],
-      scheduleTasks: const [],
-    );
-    const normalizer = MealPlanAiNormalizer();
+      );
+      final catalog = AiCatalogBundle(
+        meals: meals,
+        exercises: const [],
+        scheduleTasks: const [],
+      );
 
-    final items = <Map<String, Object?>>[
-      for (var i = 0; i < MealPlanAiNormalizer.mealSlots.length; i++)
-        {
-          'day': 1,
-          'meal_type': MealPlanAiNormalizer.mealSlots[i].type,
-          'meal_code': 'src_${i + 1}',
-          'portion_level': 'standard',
-          'priority': i + 1,
-        },
-    ];
+      for (final slot in MealPlanAiNormalizer.mealSlots) {
+        expect(
+          catalog.mealsForType(slot.type).map((item) => item.code).toSet(),
+          equals(meals.map((item) => item.code).toSet()),
+        );
+      }
+    },
+  );
 
-    final validated = normalizer.validateCodeItems(
-      items: items,
-      catalog: catalog,
-      startDay: 1,
-      days: 1,
-      usedCodeCounts: const {},
-    );
+  test(
+    'normalizer accepts AI assignment of unclassified meals to five slots',
+    () {
+      final catalog = AiCatalogBundle(
+        meals: List<MealCatalogItemModel>.generate(
+          5,
+          (index) => _meal('src_${index + 1}'),
+        ),
+        exercises: const [],
+        scheduleTasks: const [],
+      );
+      const normalizer = MealPlanAiNormalizer();
 
-    expect(validated, hasLength(5));
-    expect(validated.map((item) => item['meal_code']), [
-      'src_1',
-      'src_2',
-      'src_3',
-      'src_4',
-      'src_5',
-    ]);
-  });
+      final items = <Map<String, Object?>>[
+        for (var i = 0; i < MealPlanAiNormalizer.mealSlots.length; i++)
+          {
+            'day': 1,
+            'meal_type': MealPlanAiNormalizer.mealSlots[i].type,
+            'meal_code': 'src_${i + 1}',
+          },
+      ];
+
+      final validated = normalizer.validateCodeItems(
+        items: items,
+        catalog: catalog,
+        startDay: 1,
+        days: 1,
+        usedCodeCounts: const {},
+      );
+
+      expect(validated, hasLength(5));
+      expect(validated.map((item) => item['meal_code']), [
+        'src_1',
+        'src_2',
+        'src_3',
+        'src_4',
+        'src_5',
+      ]);
+    },
+  );
 
   test('normalizer still rejects a code that is not in Supabase catalog', () {
     final catalog = AiCatalogBundle(
@@ -79,8 +85,6 @@ void main() {
           'day': 1,
           'meal_type': MealPlanAiNormalizer.mealSlots[i].type,
           'meal_code': i == 0 ? 'not_on_supabase' : 'src_${i + 1}',
-          'portion_level': 'standard',
-          'priority': i + 1,
         },
     ];
 
@@ -96,27 +100,38 @@ void main() {
     );
   });
 
-  test('local fallback can build a day using only unclassified Supabase meals', () {
-    final catalog = AiCatalogBundle(
-      meals: List<MealCatalogItemModel>.generate(
-        5,
-        (index) => _meal('src_${index + 1}'),
-      ),
-      exercises: const [],
-      scheduleTasks: const [],
-    );
-    const normalizer = MealPlanAiNormalizer();
+  test(
+    'local fallback can build a day using only unclassified Supabase meals',
+    () async {
+      final catalog = AiCatalogBundle(
+        meals: List<MealCatalogItemModel>.generate(
+          5,
+          (index) => _meal('src_${index + 1}'),
+        ),
+        exercises: const [],
+        scheduleTasks: const [],
+      );
+      final ai = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async => '[]',
+      );
 
-    final fallback = normalizer.fallbackCodeItems(
-      catalog: catalog,
-      startDay: 1,
-      days: 1,
-      usedCodeCounts: const {},
-    );
-
-    expect(fallback, hasLength(5));
-    expect(fallback.map((item) => item['meal_code']).toSet(), hasLength(5));
-  });
+      final fallback = await ai.generateMealDayCodeItemsWithSource(
+        startDate: DateTime(2026, 8, 16),
+        day: 1,
+        catalog: catalog,
+        usedCodeCounts: const {},
+        onBackendInvocation: () async {},
+      );
+      expect(fallback.source, PlanGenerationSource.localFallback);
+      expect(fallback.value, hasLength(5));
+      expect(
+        fallback.value.map((item) => item['meal_code']).toSet(),
+        hasLength(5),
+      );
+    },
+  );
 }
 
 MealCatalogItemModel _meal(String code) {

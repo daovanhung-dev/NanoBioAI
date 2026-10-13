@@ -45,7 +45,11 @@ void main() {
   test('throws when a day does not have exactly two exercises', () {
     final startDate = DateTime(2026, 6, 17);
     final items = _items()
-      ..removeWhere((item) => item['day'] == 1 && item['priority'] == 2);
+      ..removeWhere(
+        (item) =>
+            item['day'] == 1 &&
+            item['exercise_code'] == AiCatalogSeedData.exercises[1].code,
+      );
 
     expect(
       () => const ExerciseTasksAiNormalizer().normalize(
@@ -89,24 +93,43 @@ void main() {
     );
   });
 
-  test('fallback creates a complete valid exercise chunk', () {
-    final fallback = const ExerciseTasksAiNormalizer().fallbackCodeItems(
-      catalog: catalog,
-      startDay: 5,
-      days: 3,
-      usedCodeCounts: const {'ex_walk_relaxed': 1},
+  test('rejects an inactive context-only exercise code', () {
+    final inactiveCatalog = AiCatalogBundle(
+      meals: catalog.meals,
+      exercises: [
+        ExerciseCatalogItemModel(
+          code: 'ex_draft_context_only',
+          category: 'cardio',
+          title: 'Bài đang chờ rà soát',
+          description: '',
+          unit: 'minutes',
+          encouragement: '',
+          minTarget: 1,
+          maxTarget: 10,
+          defaultTarget: 5,
+          intensityLevel: 'light',
+          isActive: false,
+          createdAt: '2026-06-16T08:00:00',
+          updatedAt: '2026-06-16T08:00:00',
+        ),
+      ],
+      scheduleTasks: catalog.scheduleTasks,
     );
 
-    final valid = const ExerciseTasksAiNormalizer().validateCodeItems(
-      items: fallback,
-      catalog: catalog,
-      startDay: 5,
-      days: 3,
-      usedCodeCounts: const {},
+    expect(
+      () => const ExerciseTasksAiNormalizer().validateCodeItems(
+        items: [
+          for (var day = 1; day <= 2; day++)
+            for (var index = 0; index < 2; index++)
+              {'day': day, 'exercise_code': 'ex_draft_context_only'},
+        ],
+        catalog: inactiveCatalog,
+        startDay: 1,
+        days: 2,
+        usedCodeCounts: const {},
+      ),
+      throwsFormatException,
     );
-
-    expect(valid, hasLength(6));
-    expect(valid.map((item) => item['day']).toSet(), {5, 6, 7});
   });
 }
 
@@ -116,20 +139,10 @@ List<Map<String, Object?>> _items() {
       {
         'day': day,
         'exercise_code': AiCatalogSeedData.exercises[(day - 1) * 2].code,
-        'start_time': '08:00',
-        'end_time': '08:25',
-        'intensity': 'light',
-        'target_value': 1,
-        'priority': 1,
       },
       {
         'day': day,
         'exercise_code': AiCatalogSeedData.exercises[((day - 1) * 2) + 1].code,
-        'start_time': '17:30',
-        'end_time': '18:00',
-        'intensity': 'moderate',
-        'target_value': 1,
-        'priority': 2,
       },
     ],
   ];

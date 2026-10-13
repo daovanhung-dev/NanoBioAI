@@ -21,6 +21,27 @@ class AiCatalogDao {
     );
   }
 
+  /// Loads every meal and exercise row for AI catalog context.
+  /// Selection eligibility is enforced later by the schedule normalizers.
+  Future<AiCatalogBundle> loadScheduleCatalogBundle() async {
+    final meals = await getAllMeals();
+    final exercises = await getAllExercises();
+    final scheduleTasks = await getActiveScheduleTasks();
+    return AiCatalogBundle(
+      meals: meals,
+      exercises: exercises,
+      scheduleTasks: scheduleTasks,
+    );
+  }
+
+  Future<List<MealCatalogItemModel>> getAllMeals() async {
+    final maps = await db.query(
+      MealCatalogTable.tableName,
+      orderBy: 'meal_type ASC, code ASC',
+    );
+    return maps.map(MealCatalogItemModel.fromMap).toList(growable: false);
+  }
+
   Future<List<MealCatalogItemModel>> getActiveMeals({
     String? mealType,
     bool planEligibleOnly = false,
@@ -78,6 +99,14 @@ class AiCatalogDao {
       orderBy: 'code ASC',
     );
     return maps.map(ExerciseCatalogItemModel.fromMap).toList();
+  }
+
+  Future<List<ExerciseCatalogItemModel>> getAllExercises() async {
+    final maps = await db.query(
+      ExerciseCatalogTable.tableName,
+      orderBy: 'code ASC',
+    );
+    return maps.map(ExerciseCatalogItemModel.fromMap).toList(growable: false);
   }
 
   Future<List<ScheduleTaskCatalogItemModel>> getActiveScheduleTasks() async {

@@ -34,6 +34,9 @@ verify_jwt = true
 [functions.nabi-ai-generate]
 verify_jwt = false
 
+[functions.nabi-food-evidence]
+verify_jwt = false
+
 [functions.food-scan-analyze]
 verify_jwt = true
 

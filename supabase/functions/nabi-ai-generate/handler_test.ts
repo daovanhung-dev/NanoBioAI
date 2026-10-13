@@ -84,6 +84,30 @@ Deno.test("preserves thinking level for a model family that supports it", () => 
   }
 });
 
+Deno.test("normalizes thinking budget when escalating to Gemini 3.8 Flash", () => {
+  const resolved = resolveGeminiProviderRequest(
+    {
+      ...providerInput,
+      model: "gemini-3.8-flash",
+      generationConfig: {
+        maxOutputTokens: 65_536,
+        thinkingConfig: { thinkingBudget: 1024 },
+      },
+    },
+    new Set(["gemini-3.8-flash"]),
+    "gemini-2.5-flash",
+  );
+  const thinkingConfig = resolved.generationConfig.thinkingConfig;
+  if (
+    resolved.model !== "gemini-3.8-flash" ||
+    !isRecord(thinkingConfig) ||
+    thinkingConfig.thinkingBudget !== undefined ||
+    thinkingConfig.thinkingLevel !== "medium"
+  ) {
+    throw new Error("Gemini 3.8 did not receive its compatible thinking level");
+  }
+});
+
 Deno.test("keeps compatible thinking budget while stripping thinking level", () => {
   const resolved = resolveGeminiProviderRequest(
     {
@@ -144,14 +168,16 @@ Deno.test("accepts only the two M32 operations", async () => {
     rateLimit: async () => true,
     generate: async (input) => {
       seenOperation = input.operation;
-      return "{\"days\":[]}";
+      return '{"days":[]}';
     },
   });
   const response = await handler(request({
     ...validBody,
     operation: "fitness_training_generate",
   }));
-  if (response.status !== 200 || seenOperation !== "fitness_training_generate") {
+  if (
+    response.status !== 200 || seenOperation !== "fitness_training_generate"
+  ) {
     throw new Error("M32 generation operation was not forwarded");
   }
 
@@ -189,26 +215,61 @@ Deno.test("allows guest generation but applies the same rate-limit gate", async 
   }
 });
 
-Deno.test("rejects malformed or oversized requests without invoking provider", async () => {
-  let invoked = false;
+Deno.test("allows content above 32k and rejects requests above the byte cap", async () => {
+  let receivedTextLength = 0;
   const handler = createNabiAiGenerateHandler({
     authenticate: async () => null,
     rateLimit: async () => true,
-    generate: async () => {
-      invoked = true;
-      return "unexpected";
+    generate: async (input) => {
+      const contents = input.contents as Array<{
+        parts?: Array<{ text?: string }>;
+      }>;
+      receivedTextLength = contents[0]?.parts?.[0]?.text?.length ?? 0;
+      return "accepted";
     },
   });
   const malformed = await handler(request({ ...validBody, contents: [] }));
   if (malformed.status !== 400) {
     throw new Error(`expected 400, got ${malformed.status}`);
   }
-  const oversized = await handler(request({
+  const overCharacterLimit = await handler(request({
     ...validBody,
     contents: [{ role: "user", parts: [{ text: "x".repeat(50_000) }] }],
   }));
-  if (oversized.status !== 413 || invoked) {
-    throw new Error("unsafe request reached provider");
+  if (overCharacterLimit.status !== 200 || receivedTextLength !== 50_000) {
+    throw new Error("content above the old 32k cap was not delegated intact");
+  }
+  const overByteLimit = await handler(request({
+    ...validBody,
+    contents: [{ role: "user", parts: [{ text: "x".repeat(1_500_000) }] }],
+  }));
+  const overByteLimitBody = await overByteLimit.json();
+  if (
+    overByteLimit.status !== 413 ||
+    overByteLimitBody.code !== "REQUEST_TOO_LARGE" ||
+    !String(overByteLimitBody.message).includes("giới hạn an toàn") ||
+    receivedTextLength !== 50_000
+  ) {
+    throw new Error("request above the finite byte cap reached provider");
+  }
+});
+
+Deno.test("maps Gemini token limit failures to a clear 413 response", async () => {
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      throw new Error("provider_input_token_limit");
+    },
+  });
+  const response = await handler(request(validBody));
+  const body = await response.json();
+  if (
+    response.status !== 413 ||
+    body.code !== "MODEL_CONTEXT_LIMIT_EXCEEDED" ||
+    !String(body.message).includes("giới hạn token")
+  ) {
+    throw new Error("model token limit did not return a clear response");
   }
 });
 
@@ -229,6 +290,51 @@ Deno.test("does not return false success when provider fails", async () => {
   }
 });
 
+Deno.test("returns only safe provider failure phase and status metadata", async () => {
+  const handler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      const error = new Error("provider_400") as Error & {
+        providerPhase: string;
+        providerStatus: string;
+      };
+      error.providerPhase = "count_tokens";
+      error.providerStatus = "INVALID_ARGUMENT";
+      throw error;
+    },
+  });
+  const response = await handler(request(validBody));
+  const body = await response.json();
+  if (
+    body.providerErrorCode !== "provider_400" ||
+    body.providerPhase !== "count_tokens" ||
+    body.providerStatus !== "INVALID_ARGUMENT"
+  ) {
+    throw new Error("safe provider diagnostics were not returned");
+  }
+
+  const unsafeHandler = createNabiAiGenerateHandler({
+    authenticate: async () => "user-a",
+    rateLimit: async () => true,
+    generate: async () => {
+      const error = new Error("provider_400") as Error & {
+        providerPhase: string;
+        providerStatus: string;
+      };
+      error.providerPhase = "user_prompt";
+      error.providerStatus = "invalid argument with user text";
+      throw error;
+    },
+  });
+  const unsafeBody = await (await unsafeHandler(request(validBody))).json();
+  if (
+    "providerPhase" in unsafeBody || "providerStatus" in unsafeBody
+  ) {
+    throw new Error("unsafe provider metadata was returned");
+  }
+});
+
 Deno.test("normalizes provider status classes without exposing provider details", async () => {
   for (
     const providerCode of [
@@ -238,6 +344,7 @@ Deno.test("normalizes provider status classes without exposing provider details"
       "provider_429",
       "provider_500",
       "provider_network_error",
+      "provider_timeout",
       "provider_empty_response",
     ]
   ) {
@@ -251,14 +358,35 @@ Deno.test("normalizes provider status classes without exposing provider details"
     const response = await handler(request(validBody, {
       "x-ai-trace-id": `trace-${providerCode}`,
     }));
-    if (response.status !== 502) {
-      throw new Error(`${providerCode} did not map to 502`);
-    }
     const body = await response.json();
+    const expectedStatus = providerCode === "provider_429"
+      ? 429
+      : providerCode === "provider_500" ||
+          providerCode === "provider_network_error"
+      ? 503
+      : providerCode === "provider_timeout"
+      ? 504
+      : 502;
+    const expectedCode = providerCode === "provider_429"
+      ? "PROVIDER_RATE_LIMITED"
+      : providerCode === "provider_500"
+      ? "PROVIDER_TEMPORARY_FAILURE"
+      : providerCode === "provider_network_error"
+      ? "PROVIDER_NETWORK_ERROR"
+      : providerCode === "provider_timeout"
+      ? "PROVIDER_TIMEOUT"
+      : "AI_UNAVAILABLE";
+    if (response.status !== expectedStatus) {
+      throw new Error(
+        `${providerCode} mapped to ${response.status}, expected ${expectedStatus}`,
+      );
+    }
     if (
       body.success !== false ||
-      body.code !== "AI_UNAVAILABLE" ||
-      body.message !== "Dịch vụ AI tạm thời chưa sẵn sàng."
+      body.code !== expectedCode ||
+      body.providerErrorCode !== providerCode ||
+      typeof body.message !== "string" ||
+      body.message.includes(providerCode)
     ) {
       throw new Error(`${providerCode} leaked or changed the safe error body`);
     }

@@ -17,7 +17,6 @@ import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
-import 'package:nano_app/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart';
 
 final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
   return GeneratedPlanService(
@@ -44,7 +43,6 @@ class DashboardController extends AsyncNotifier<void> {
   }) async {
     AppLogger.action(_tag, 'Generate weekly meal plan');
     requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
-    await _refreshRequiredSupabaseMealCatalog();
 
     final repository = ref.read(dashboardRepositoryProvider);
     final resolvedStartDate = startDate ?? _tomorrow();
@@ -95,7 +93,6 @@ class DashboardController extends AsyncNotifier<void> {
 
     state = const AsyncLoading<void>();
     try {
-      await _refreshRequiredSupabaseMealCatalog();
       final result = await ref
           .read(generatedPlanServiceProvider)
           .generateNextPlan(
@@ -125,25 +122,6 @@ class DashboardController extends AsyncNotifier<void> {
       state = AsyncError<void>(error, stackTrace);
       rethrow;
     }
-  }
-
-  Future<void> _refreshRequiredSupabaseMealCatalog() async {
-    try {
-      final count =
-          await MealCatalogCacheRefreshService.refreshFromInitializedSupabase();
-      if (count > 0 ||
-          await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
-        return;
-      }
-    } catch (_) {
-      if (await MealCatalogCacheRefreshService.hasUsableLocalCatalog()) {
-        return;
-      }
-    }
-
-    throw StateError(
-      'Nabi chưa có dữ liệu thực đơn để tạo lịch mới.',
-    );
   }
 
   String _memberPlanRequestId(String userId) {
@@ -217,7 +195,9 @@ class DashboardController extends AsyncNotifier<void> {
       final resolved = (subjectId ?? await resolveActiveNotificationSubject())
           ?.trim();
       if (resolved == null || resolved.isEmpty) return;
-      await ref.read(healthDomainEventSinkProvider).publish(
+      await ref
+          .read(healthDomainEventSinkProvider)
+          .publish(
             HealthDomainEvent.create(
               type: type,
               subjectId: resolved,

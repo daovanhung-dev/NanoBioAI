@@ -1,16 +1,117 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
-class OnboardingEntryPage extends StatelessWidget {
+final _retryableInitialPlanProvider = FutureProvider<bool>((ref) async {
+  try {
+    return await ref
+        .read(generatedPlanServiceProvider)
+        .hasRetryableInitialGuestPlan();
+  } catch (_) {
+    return false;
+  }
+});
+
+class OnboardingEntryPage extends ConsumerStatefulWidget {
   const OnboardingEntryPage({super.key});
+
+  @override
+  ConsumerState<OnboardingEntryPage> createState() =>
+      _OnboardingEntryPageState();
+}
+
+class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
+  bool _retrying = false;
+  String? _retryFailureDetails;
+
+  Future<void> _retrySavedPlan() async {
+    if (_retrying) return;
+    setState(() {
+      _retrying = true;
+      _retryFailureDetails = null;
+    });
+
+    try {
+      final result = await ref.read(onboardingCompletionCallbackProvider)();
+      if (!result.generatedInitialPlan) {
+        throw const _SavedPlanRetryException();
+      }
+      await ref.read(onboardingRepositoryProvider).markCompleted();
+      await AppPrefs.setOnboardingCompleted(true);
+      if (!mounted) return;
+      context.go(V1RoutePaths.dashboard);
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        final providerStatus = switch (error) {
+          AIOverloadedException(:final providerStatus) => providerStatus,
+          GeminiApiException(:final status) => status,
+          _ => null,
+        };
+        final safeProviderStatus =
+            providerStatus != null &&
+                RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(providerStatus)
+            ? providerStatus
+            : 'none';
+        final providerStatusCode = switch (error) {
+          AIOverloadedException(:final providerStatusCode) =>
+            providerStatusCode,
+          GeminiApiException(:final statusCode) => statusCode,
+          _ => null,
+        };
+        final providerErrorCode = switch (error) {
+          AIOverloadedException(:final providerErrorCode) => providerErrorCode,
+          GeminiApiException(:final backendErrorCode) => backendErrorCode,
+          _ => null,
+        };
+        final debugDetails =
+            'type=${error.runtimeType}; http=${providerStatusCode ?? 'none'}; '
+            'status=$safeProviderStatus; code=${providerErrorCode ?? 'none'}';
+        setState(() => _retryFailureDetails = debugDetails);
+        debugPrint(
+          '[NABI_AI_SCHEDULE] component=ONBOARDING_RETRY '
+          'stage=initial_plan_retry errorType=${error.runtimeType} '
+          'statusCode=${providerStatusCode ?? 'none'} '
+          'status=$safeProviderStatus '
+          'errorCode=${providerErrorCode ?? 'none'}',
+        );
+        for (final line in stackTrace.toString().split('\n').take(8)) {
+          if (line.trim().isNotEmpty) {
+            debugPrint('[NABI_AI_SCHEDULE] stack=$line');
+          }
+        }
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 30),
+            content: Text(
+              'Hồ sơ vẫn được lưu. Chưa tạo được lịch; bạn có thể thử lại sau.',
+            ),
+          ),
+        );
+      ref.invalidate(_retryableInitialPlanProvider);
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
+    final canRetryPlan = ref.watch(_retryableInitialPlanProvider);
     return MedicalPageScaffold(
       ambientBackground: false,
       backgroundColor: colors.background,
@@ -34,6 +135,46 @@ class OnboardingEntryPage extends StatelessWidget {
                       const SizedBox(height: AppSpacing.large),
                       const _GreenHero(),
                       const SizedBox(height: AppSpacing.md),
+                      if (canRetryPlan.asData?.value == true) ...[
+                        _EntryActionCard(
+                          key: const Key('onboarding_entry_retry_plan_card'),
+                          icon: Icons.refresh_rounded,
+                          title: 'Tiếp tục tạo lịch đã lưu',
+                          description:
+                              'Dùng hồ sơ hiện có và tiếp tục các phần còn thiếu.',
+                          accent: NabiPalette.calmBlue,
+                          action: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              NabiPrimaryButton(
+                                key: const Key(
+                                  'onboarding_entry_retry_plan_cta',
+                                ),
+                                onPressed: _retrying ? null : _retrySavedPlan,
+                                label: 'Thử tạo lịch',
+                                icon: Icons.auto_awesome_rounded,
+                                isLoading: _retrying,
+                              ),
+                              if (kDebugMode && _retryFailureDetails != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: AppSpacing.xs,
+                                  ),
+                                  child: Text(
+                                    _retryFailureDetails!,
+                                    key: const Key(
+                                      'onboarding_retry_failure_details',
+                                    ),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: colors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                      ],
                       _EntryActionCard(
                         key: const Key('onboarding_entry_guest_card'),
                         icon: Icons.auto_awesome_rounded,
@@ -75,6 +216,10 @@ class OnboardingEntryPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SavedPlanRetryException implements Exception {
+  const _SavedPlanRetryException();
 }
 
 class _BrandBar extends StatelessWidget {

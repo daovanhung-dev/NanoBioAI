@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-09-13 |
+| Ngay cap nhat | 2026-10-13 |
 | Lifecycle | Current |
 | Source-truth baseline | `25018e8` |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
@@ -22,8 +22,17 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Placeholder | M20-M29 | Chỉ catalog, access gate và trang đang phát triển; không persistence/API/AI/notification nghiệp vụ. |
 | Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
 
+### M02 Implementation Addendum — 2026-10-13
+
+- Cập nhật prompt theo feature `docs/features/ai-generated-plan/005-feature-full-catalog-ai-context.md`: mỗi lượt bữa gửi đủ 163 cặp mã/tên từ SQLite; mỗi lượt vận động gửi đủ 40 cặp, tách 16 mã active/selectable và 24 mã inactive/context-only. Normalizer vẫn từ chối mã bài tập inactive.
+- Prompt chỉ truyền `code`/`name` hoặc `code`/`title`; không gửi chi tiết y tế của hồ sơ. Không còn ngưỡng 32.000 ký tự; Supabase Edge Function gọi Gemini `models.get` và `models.countTokens` để so input/output với giới hạn model, đồng thời giữ trần request body 1.500.000 byte.
+- Giữ 14 lượt theo ngày, staging SQLite v31, giới hạn 18 lượt backend, resume/429, xác thực mã và commit nguyên tử 35 bữa/14 hoạt động. Kiểm thử prompt, DAO, mã context-only, luồng 14 phần, token preflight và Edge Function đạt; Gemini thật, deploy/device và Supabase quota acceptance chưa xác minh.
+- Retry lịch hiện có một lượt đầu và tối đa năm lần thử lại trên chuỗi model đã cấu hình. Mỗi lỗi/response rỗng/JSON sai đều qua retry; sau sáu lượt lỗi cho một ngày bữa, ngày đó tách thành 5 slot. Slot resume từ staging, mỗi slot có cùng retry rồi mới dùng local fallback đã lọc; ngày sau vẫn tạo bữa theo lượt ngày. Giới hạn staging/backend tăng lên 300 (worst case 294 lượt cho 7 ngày); Gemini/device và deploy Supabase chưa xác minh. Chi tiết: `docs/features/ai-generated-plan/006-feature-model-escalation-meal-slot-split.md`.
+- M02 weekly meal uniqueness: prompt gửi cả mã và tên món đã dùng; normalizer và cả hai nhánh local fallback từ chối lặp code/name; staging đổi sang `personal_schedule_v8_weekly_meal_uniqueness`. Thiếu lựa chọn eligible duy nhất thì generation fail closed. Test suite và fresh device QA còn cần chạy trước khi nâng verification status; targeted analyzer đã PASS. Chi tiết: `docs/features/ai-generated-plan/008-feature-weekly-meal-uniqueness.md`.
+
 ### Next implementation tasks
 
+- [ ] M02: chạy test prompt/normalizer/fallback/generated-plan đã cập nhật; sau đó QA lịch 7 ngày bằng hồ sơ tổng hợp, xác minh 35 món khác nhau và trạng thái tiếp tục khi catalog eligible không đủ.
 - [ ] M30: wire typed business snapshots/time ticks into
   `nabiNotificationControllerProvider`, render the M30 presentation state in the
   user app shell, and replace no-op navigation/native gateways with the existing

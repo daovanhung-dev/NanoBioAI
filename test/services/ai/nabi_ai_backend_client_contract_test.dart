@@ -17,9 +17,20 @@ void main() {
       expect(client, contains('functions.invoke'));
       expect(client, contains('jsonDecode'));
       expect(client, contains("'OUTPUT_TRUNCATED'"));
+      expect(client, contains("'MODEL_CONTEXT_LIMIT_EXCEEDED'"));
+      expect(client, contains("'REQUEST_TOO_LARGE'"));
       expect(client, isNot(contains('GEMINI_API_KEY')));
       expect(backend, contains('requiredEnvironment("GEMINI_API_KEY")'));
       expect(backend, contains('generativelanguage.googleapis.com'));
+      expect(backend, contains('inspectGeminiRequestContext'));
+      expect(backend, contains('assertGeminiContextWithinLimits'));
+      expect(backend, contains('PROVIDER_CONTEXT_PREFLIGHT'));
+
+      final handler = File(
+        'supabase/functions/nabi-ai-generate/handler.ts',
+      ).readAsStringSync();
+      expect(handler, contains('MAX_REQUEST_BYTES = 1_500_000'));
+      expect(handler, isNot(contains('MAX_TEXT')));
     },
   );
 
@@ -36,7 +47,10 @@ void main() {
     ];
 
     for (final path in productionFiles) {
-      expect(File(path).readAsStringSync(), isNot(contains('maxOutputTokens:')));
+      expect(
+        File(path).readAsStringSync(),
+        isNot(contains('maxOutputTokens:')),
+      );
     }
   });
 }

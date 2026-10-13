@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
@@ -22,6 +24,8 @@ import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prom
 import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test(
     'AI authentication failures are recognized without exposing credentials',
     () {
@@ -36,6 +40,32 @@ void main() {
       expect(AIAuthenticationException.userMessage, isNot(contains('AIza')));
     },
   );
+
+  test('model token limit failures map to a clear user-facing error', () {
+    const error = GeminiApiException(
+      statusCode: 413,
+      status: 'model_context_limit_exceeded',
+      message: 'AI request exceeds the configured model context limit.',
+    );
+    expect(AIModelContextLimitException.matches(error), isTrue);
+    expect(
+      AIModelContextLimitException.userMessage,
+      contains('giới hạn token của model'),
+    );
+  });
+
+  test('request byte limit failures map to a clear user-facing error', () {
+    const error = GeminiApiException(
+      statusCode: 413,
+      status: 'request_too_large',
+      message: 'Request is above the transport size limit.',
+    );
+    expect(AIRequestTooLargeException.matches(error), isTrue);
+    expect(
+      AIRequestTooLargeException.userMessage,
+      contains('giới hạn dung lượng request'),
+    );
+  });
 
   const catalog = AiCatalogBundle(
     meals: AiCatalogSeedData.meals,
@@ -116,7 +146,7 @@ void main() {
     test('has user-facing Vietnamese message', () {
       expect(
         const AIOverloadedException().toString(),
-        'AI đang quá tải. Bạn thử lại sau nhé.',
+        'Nabi đang bận. Bạn thử lại sau nhé.',
       );
     });
   });
@@ -145,49 +175,245 @@ void main() {
   });
 
   group('AI prompts', () {
-    test('meal prompt uses code-only schema and allowed catalog codes', () {
+    test('meal prompt includes every SQLite code and name only', () {
       final prompt = MealPlanPrompt.generate(
-        healthData: const _FakeHealthData(),
         startDate: DateTime(2026, 6, 18),
         startDay: 1,
         days: 2,
-        catalog: catalog.meals,
-        usedMealCodes: const ['br_oat_egg'],
+        catalog: [
+          _promptMeal(code: 'meal_prompt_active'),
+          _promptMeal(code: 'meal_prompt_inactive', isActive: false),
+        ],
+        usedMealCodeCounts: const {'br_oat_egg': 1},
       );
 
       expect(prompt, contains('"meal_code"'));
-      expect(prompt, contains('br_oat_egg'));
-      expect(prompt, contains('Không tự tạo meal_code mới.'));
-      expect(prompt, contains('Không trả về meal_name'));
-      expect(prompt, isNot(contains('"meal_name":')));
+      expect(prompt, contains('meal_prompt_active'));
+      expect(
+        prompt,
+        contains(
+          jsonEncode([
+            {'code': 'meal_prompt_active', 'name': 'Yến mạch trứng'},
+            {'code': 'meal_prompt_inactive', 'name': 'Yến mạch trứng'},
+          ]),
+        ),
+      );
+      expect(prompt, isNot(contains('Đào Văn Hùng')));
+      expect(prompt, isNot(contains('user_id')));
+      expect(prompt, isNot(contains('Dị ứng thực phẩm:')));
+      expect(prompt, contains('meal_prompt_inactive'));
+      expect(prompt, isNot(contains('"is_plan_eligible":')));
+      expect(prompt, isNot(contains('"cooking_instructions":')));
+      expect(prompt, contains('không tự tạo món hoặc mã mới'));
+      expect(prompt, contains('Chỉ trả day, meal_type và meal_code'));
       expect(prompt, isNot(_containsMojibake));
     });
 
-    test('exercise prompt uses code-only schema and allowed catalog codes', () {
+    test('exercise prompt splits code/name rows by selection status', () {
       final prompt = ExerciseTasksPrompt.generate(
-        profile: const DailyHealthProfileEntity(
-          userId: 'u1',
-          fullName: 'Đào Văn Hùng',
-          goals: ['Ngủ ngon hơn'],
-          conditions: ['Đau lưng nhẹ'],
-          habits: ['Đi bộ buổi sáng'],
-          sleepQuality: 'Khá',
-          activityLevel: 'Vừa phải',
-          waterPerDay: '2 lít',
-        ),
         startDate: DateTime(2026, 6, 18),
         startDay: 3,
         days: 2,
-        catalog: catalog.exercises,
-        usedExerciseCodes: const ['ex_walk_relaxed'],
+        catalog: [
+          _promptExercise(code: 'ex_prompt_active'),
+          _promptExercise(code: 'ex_prompt_inactive', isActive: false),
+        ],
+        usedExerciseCodeCounts: const {'ex_walk_relaxed': 1},
+        availableTimeWindows: const [
+          {'day': '3', 'start': '08:00', 'end': '08:30'},
+        ],
       );
 
       expect(prompt, contains('"exercise_code"'));
-      expect(prompt, contains('ex_walk_relaxed'));
-      expect(prompt, contains('Không tự tạo exercise_code mới.'));
-      expect(prompt, contains('Không trả về title'));
-      expect(prompt, isNot(contains('"title":')));
+      expect(prompt, contains('ex_prompt_active'));
+      expect(prompt, contains('"selectable"'));
+      expect(prompt, contains('"context_only"'));
+      expect(prompt, contains('"name":"Đi bộ thư giãn"'));
+      expect(prompt, isNot(contains('"description":')));
+      expect(prompt, isNot(contains('08:30')));
+      expect(prompt, isNot(contains('Đào Văn Hùng')));
+      expect(prompt, isNot(contains('Đau lưng nhẹ')));
+      expect(prompt, contains('ex_prompt_inactive'));
+      expect(prompt, isNot(contains('"encouragement":')));
+      expect(prompt, contains('Không tạo mã mới;'));
+      expect(prompt, contains('chỉ trả day và exercise_code'));
       expect(prompt, isNot(_containsMojibake));
+    });
+
+    test('meal prompt includes every provided row exactly once', () {
+      final prompt = MealPlanPrompt.generate(
+        startDate: DateTime(2026, 6, 18),
+        startDay: 1,
+        days: 1,
+        catalog: [
+          for (var index = 1; index <= 11; index++)
+            _promptMeal(code: 'candidate-${index.toString().padLeft(2, '0')}'),
+        ],
+        usedMealCodeCounts: const {},
+      );
+
+      expect(prompt, contains('candidate-10'));
+      expect(prompt, contains('candidate-11'));
+      expect(_countOccurrences(prompt, '"code":"candidate-10"'), 1);
+      expect(_countOccurrences(prompt, '"code":"candidate-11"'), 1);
+    });
+
+    test(
+      'production meal prompt includes all 163 SQLite code/name pairs',
+      () async {
+        final decoded =
+            jsonDecode(
+                  await rootBundle.loadString(
+                    'assets/data/meal_catalog_v1.json',
+                  ),
+                )
+                as Map<String, dynamic>;
+        final sourceRows = decoded['recipes'] as List;
+        final meals = sourceRows
+            .whereType<Map>()
+            .map(
+              (row) => MealCatalogItemModel.fromSourceJson(
+                Map<String, Object?>.from(row),
+                timestamp: '2026-06-18T00:00:00Z',
+              ),
+            )
+            .toList(growable: false);
+        final prompt = MealPlanPrompt.generate(
+          startDate: DateTime(2026, 6, 18),
+          startDay: 1,
+          days: 1,
+          catalog: meals,
+          usedMealCodeCounts: const {},
+        );
+        expect(meals, hasLength(163));
+        expect(meals.where((meal) => meal.isActive), hasLength(163));
+        final catalogPayload = [
+          for (final meal in meals) {'code': meal.code, 'name': meal.mealName},
+        ];
+        expect(prompt, contains(jsonEncode(catalogPayload)));
+        expect(
+          catalogPayload.map((row) => row['code']).toSet(),
+          hasLength(163),
+        );
+        expect(
+          catalogPayload.every(
+            (row) =>
+                row.keys.toSet().containsAll({'code', 'name'}) &&
+                row.length == 2,
+          ),
+          isTrue,
+        );
+        for (final row in catalogPayload) {
+          expect(_countOccurrences(prompt, '"code":"${row['code']}"'), 1);
+        }
+      },
+    );
+
+    test('exercise prompt sends all 16 active and 24 context-only records', () {
+      final exercises = [
+        for (var index = 1; index <= 40; index++)
+          _promptExercise(
+            code: 'exercise-${index.toString().padLeft(2, '0')}',
+            isActive: index <= 16,
+          ),
+      ];
+      final prompt = ExerciseTasksPrompt.generate(
+        startDate: DateTime(2026, 6, 18),
+        startDay: 1,
+        days: 1,
+        catalog: exercises,
+        usedExerciseCodeCounts: const {},
+      );
+
+      final selectable = exercises
+          .where((item) => item.isActive)
+          .map((item) => {'code': item.code, 'name': item.title})
+          .toList(growable: false);
+      final contextOnly = exercises
+          .where((item) => !item.isActive)
+          .map((item) => {'code': item.code, 'name': item.title})
+          .toList(growable: false);
+      expect(selectable, hasLength(16));
+      expect(contextOnly, hasLength(24));
+      expect(
+        prompt,
+        contains(
+          jsonEncode({'selectable': selectable, 'context_only': contextOnly}),
+        ),
+      );
+      for (final item in exercises) {
+        expect(_countOccurrences(prompt, '"code":"${item.code}"'), 1);
+      }
+    });
+
+    test('meal prompt does not trim a row over 32,000 characters', () {
+      final oversizedMeal = MealCatalogItemModel(
+        code: 'oversized',
+        mealType: 'unclassified',
+        mealName: List.filled(33000, 'x').join(),
+        description: '',
+        cookingInstructions: '',
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+        waterMl: 0,
+        createdAt: '2026-06-18T00:00:00Z',
+        updatedAt: '2026-06-18T00:00:00Z',
+      );
+
+      final prompt = MealPlanPrompt.generate(
+        startDate: DateTime(2026, 6, 18),
+        startDay: 1,
+        days: 1,
+        catalog: [oversizedMeal],
+        usedMealCodeCounts: const {},
+      );
+      expect(prompt.length, greaterThan(32000));
+      expect(prompt, contains('"code":"oversized"'));
+    });
+
+    test('AI service sends request content above 32,000 characters', () async {
+      final meals = _longNameMealCatalog();
+      final prompt = MealPlanPrompt.generate(
+        startDate: DateTime(2026, 6, 18),
+        startDay: 1,
+        days: 1,
+        catalog: meals,
+        usedMealCodeCounts: const {},
+      );
+      expect(prompt.length, greaterThan(32000));
+
+      var modelCalls = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => AiCatalogBundle(
+          meals: meals,
+          exercises: const [],
+          scheduleTasks: const [],
+        ),
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls++;
+          return jsonEncode([
+            for (final slot in MealPlanAiNormalizer.mealSlots)
+              {
+                'day': 1,
+                'meal_type': slot.type,
+                'meal_code': 'large-${slot.type}',
+              },
+          ]);
+        },
+      );
+
+      final result = await service.generateMealPlanWithSource(
+        healthData: const _FakeHealthData(),
+        userId: 'u1',
+        startDate: DateTime(2026, 6, 18),
+        days: 1,
+      );
+      expect(result.value, hasLength(5));
+      expect(modelCalls, 1);
     });
 
     test('JSON wrapper is Vietnamese and forbids display text output', () {
@@ -629,6 +855,406 @@ void main() {
   });
 
   group('AIService chunked generation', () {
+    test('meal day API requests exactly one five-meal code list', () async {
+      final prompts = <String>[];
+      var backendInvocations = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          prompts.add(prompt);
+          return jsonEncode(_mealItemsForRange(startDay: 3, days: 1));
+        },
+      );
+
+      final items = await service.generateMealDayCodeItems(
+        startDate: DateTime(2026, 6, 18),
+        day: 3,
+        catalog: catalog,
+        usedCodeCounts: const {'br_oat_egg': 1},
+        onBackendInvocation: () async => backendInvocations++,
+      );
+
+      expect(items, hasLength(5));
+      expect(items.every((item) => item['day'] == 3), isTrue);
+      expect(
+        items.every(
+          (item) =>
+              item.keys.toSet().containsAll({
+                'day',
+                'meal_type',
+                'meal_code',
+              }) &&
+              item.length == 3,
+        ),
+        isTrue,
+      );
+      expect(backendInvocations, 1);
+      expect(prompts.single, contains('ngày 3 đến ngày 3'));
+      expect(prompts.single, contains('br_oat_egg'));
+    });
+
+    test('exercise day API requests exactly two exercise codes', () async {
+      final prompts = <String>[];
+      var backendInvocations = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          prompts.add(prompt);
+          return jsonEncode(_exerciseItemsForRange(startDay: 4, days: 1));
+        },
+      );
+
+      final items = await service.generateExerciseDayCodeItems(
+        startDate: DateTime(2026, 6, 18),
+        day: 4,
+        catalog: catalog,
+        usedCodeCounts: const {},
+        onBackendInvocation: () async => backendInvocations++,
+      );
+
+      expect(items, hasLength(2));
+      expect(items.every((item) => item['day'] == 4), isTrue);
+      expect(
+        items.every(
+          (item) =>
+              item.keys.toSet().containsAll({'day', 'exercise_code'}) &&
+              item.length == 2,
+        ),
+        isTrue,
+      );
+      expect(backendInvocations, 1);
+      expect(prompts.single, contains('ngày 4 đến ngày 4'));
+    });
+
+    test(
+      'meal day returns a validated local fallback for invalid AI output',
+      () async {
+        var backendInvocations = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async => '[]',
+        );
+
+        final result = await service.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 3,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          onBackendInvocation: () async => backendInvocations++,
+        );
+
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
+        expect(result.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        expect(
+          result.value.map((item) => item['meal_code']).toSet(),
+          hasLength(5),
+        );
+        expect(result.value.every((item) => item['day'] == 3), isTrue);
+        const MealPlanAiNormalizer().validateCodeItems(
+          items: result.value,
+          catalog: catalog,
+          startDay: 3,
+          days: 1,
+          usedCodeCounts: const {},
+        );
+      },
+    );
+
+    test('invalid meal output escalates to the higher model', () async {
+      final modelCalls = <String>[];
+      final service = AIService(
+        modelNames: const ['base-model', 'higher-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls.add(modelName);
+          return modelName == 'base-model'
+              ? '[]'
+              : jsonEncode(_mealItemsForRange(startDay: 3, days: 1));
+        },
+      );
+
+      final result = await service.generateMealDayCodeItemsWithSource(
+        startDate: DateTime(2026, 6, 18),
+        day: 3,
+        catalog: catalog,
+        usedCodeCounts: const {},
+        allowLocalFallback: false,
+        onBackendInvocation: () async {},
+      );
+
+      expect(modelCalls, ['base-model', 'higher-model']);
+      expect(result.source, PlanGenerationSource.ai);
+      expect(result.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
+    });
+
+    test('split meal generation validates one requested meal slot', () async {
+      final slot = MealPlanAiNormalizer.mealSlots.first;
+      final meal = catalog
+          .mealsForType(slot.type)
+          .firstWhere((candidate) => candidate.isActive);
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          expect(prompt, contains('Chỉ tạo bữa ${slot.type}'));
+          return jsonEncode([
+            {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
+          ]);
+        },
+      );
+
+      final result = await service.generateMealSlotCodeItemWithSource(
+        startDate: DateTime(2026, 6, 18),
+        day: 2,
+        mealType: slot.type,
+        catalog: catalog,
+        usedCodeCounts: const {},
+        dayMealCodes: const {},
+        onBackendInvocation: () async {},
+      );
+
+      expect(result.source, PlanGenerationSource.ai);
+      expect(result.value, [
+        {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
+      ]);
+    });
+
+    test(
+      'slot AI may use active catalog items outside local fallback subset',
+      () async {
+        final slot = MealPlanAiNormalizer.mealSlots.first;
+        final meal = catalog
+            .mealsForType(slot.type)
+            .firstWhere((candidate) => candidate.isActive);
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async =>
+              jsonEncode([
+                {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
+              ]),
+        );
+
+        final result = await service.generateMealSlotCodeItemWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 2,
+          mealType: slot.type,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          dayMealCodes: const {},
+          eligibleFallbackCodesByType: {slot.type: const {}},
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.ai);
+        expect(result.value.single['meal_code'], meal.code);
+      },
+    );
+
+    test(
+      'split meal generation uses local choice after six failed AI calls',
+      () async {
+        var backendInvocations = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async => '[]',
+        );
+
+        final result = await service.generateMealSlotCodeItemWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 2,
+          mealType: 'breakfast',
+          catalog: catalog,
+          usedCodeCounts: const {},
+          dayMealCodes: const {},
+          onBackendInvocation: () async => backendInvocations++,
+        );
+
+        expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(result.value, hasLength(1));
+        expect(result.value.single['meal_type'], 'breakfast');
+      },
+    );
+
+    test(
+      'meal fallback fails when the eligible catalog has no unused meals',
+      () async {
+        final eligibleByType = {
+          for (final slot in MealPlanAiNormalizer.mealSlots)
+            slot.type: {
+              AiCatalogSeedData.meals
+                  .firstWhere((meal) => meal.mealType == slot.type)
+                  .code,
+            },
+        };
+        final usedCodeCounts = {
+          for (final codes in eligibleByType.values)
+            for (final code in codes) code: 2,
+        };
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async => '[]',
+        );
+
+        await expectLater(
+          service.generateMealDayCodeItemsWithSource(
+            startDate: DateTime(2026, 6, 18),
+            day: 4,
+            catalog: catalog,
+            usedCodeCounts: usedCodeCounts,
+            eligibleFallbackCodesByType: eligibleByType,
+            onBackendInvocation: () async {},
+          ),
+          throwsStateError,
+        );
+      },
+    );
+
+    test(
+      'exercise day returns a validated local fallback after backend error',
+      () async {
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            throw const GeminiApiException(
+              statusCode: 503,
+              status: 'UNAVAILABLE',
+              message: 'Provider unavailable.',
+            );
+          },
+        );
+
+        final result = await service.generateExerciseDayCodeItemsWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 4,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(result.value, hasLength(2));
+        expect(
+          result.value.map((item) => item['exercise_code']).toSet(),
+          hasLength(2),
+        );
+        expect(result.value.every((item) => item['day'] == 4), isTrue);
+        const ExerciseTasksAiNormalizer().validateCodeItems(
+          items: result.value,
+          catalog: catalog,
+          startDay: 4,
+          days: 1,
+          usedCodeCounts: const {},
+        );
+      },
+    );
+
+    test(
+      'exercise fallback applies repeat limits only to eligible exercises',
+      () async {
+        final eligibleCodes = AiCatalogSeedData.exercises
+            .take(2)
+            .map((exercise) => exercise.code)
+            .toSet();
+        final usedCodeCounts = {for (final code in eligibleCodes) code: 2};
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            throw const GeminiApiException(
+              statusCode: 503,
+              status: 'UNAVAILABLE',
+              message: 'Provider unavailable.',
+            );
+          },
+        );
+
+        final result = await service.generateExerciseDayCodeItemsWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 5,
+          catalog: catalog,
+          usedCodeCounts: usedCodeCounts,
+          eligibleFallbackCodes: eligibleCodes,
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(
+          result.value.map((item) => item['exercise_code']).toSet(),
+          eligibleCodes,
+        );
+      },
+    );
+
+    test('day API retries HTTP 429 using the higher model', () async {
+      final modelCalls = <String>[];
+      var backendInvocations = 0;
+      final service = AIService(
+        modelNames: const ['first-model', 'fallback-model'],
+        catalogLoader: () async => catalog,
+        delay: (_) async {},
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls.add(modelName);
+          throw const GeminiApiException(
+            statusCode: 429,
+            status: 'RESOURCE_EXHAUSTED',
+            message: 'Rate limit exceeded.',
+          );
+        },
+      );
+
+      await expectLater(
+        service.generateMealDayCodeItems(
+          startDate: DateTime(2026, 6, 18),
+          day: 1,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          onBackendInvocation: () async => backendInvocations++,
+        ),
+        throwsA(isA<AIOverloadedException>()),
+      );
+      expect(modelCalls, [
+        'first-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+      ]);
+      expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
+    });
+
+    test('missing meal catalog fails before making an AI request', () async {
+      var requestCount = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async =>
+            const AiCatalogBundle(meals: [], exercises: [], scheduleTasks: []),
+        textGenerator: ({required modelName, required prompt}) async {
+          requestCount++;
+          return '[]';
+        },
+      );
+
+      await expectLater(
+        service.generateMealPlan(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+        ),
+        throwsStateError,
+      );
+      expect(requestCount, 0);
+    });
+
     test('meal generation requests seven days in one chunk', () async {
       final prompts = <String>[];
       final service = AIService(
@@ -695,44 +1321,46 @@ void main() {
       },
     );
 
-    test('meal generation falls back only for invalid chunks', () async {
-      var call = 0;
-      final service = AIService(
-        modelNames: const ['fake-model'],
-        catalogLoader: () async => catalog,
-        textGenerator: ({required modelName, required prompt}) async {
-          call++;
-          if (call == 2) {
-            return jsonEncode([
-              {'day': 8, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
-            ]);
-          }
-          return jsonEncode(
-            call == 1
-                ? _mealItemsForRange(startDay: 1, days: 7)
-                : _mealItemsForRange(startDay: 8, days: 1),
-          );
-        },
-      );
+    test(
+      'meal generation stops when any chunk has an invalid response',
+      () async {
+        var call = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            call++;
+            if (call == 2) {
+              return jsonEncode([
+                {
+                  'day': 8,
+                  'meal_type': 'breakfast',
+                  'meal_code': 'unknown_meal',
+                },
+              ]);
+            }
+            return jsonEncode(
+              call == 1
+                  ? _mealItemsForRange(startDay: 1, days: 7)
+                  : _mealItemsForRange(startDay: 8, days: 1),
+            );
+          },
+        );
 
-      final result = await service.generateMealPlanWithSource(
-        healthData: const _FakeHealthData(),
-        userId: 'u1',
-        startDate: DateTime(2026, 6, 18),
-        days: 8,
-      );
-      final meals = result.value;
+        await expectLater(
+          service.generateMealPlanWithSource(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 8,
+          ),
+          throwsFormatException,
+        );
+        expect(call, 2);
+      },
+    );
 
-      expect(result.source, PlanGenerationSource.localFallback);
-      expect(meals, hasLength(40));
-      expect(
-        meals.where((meal) => meal.planDate == '2026-06-25'),
-        hasLength(MealPlanAiNormalizer.mealsPerDay),
-      );
-      expect(meals.map((meal) => meal.mealName), isNot(contains('Bua sang')));
-    });
-
-    test('meal generation logs redacted error type and local source', () async {
+    test('invalid meal code fails without a local substitute', () async {
       final service = AIService(
         modelNames: const ['fake-model'],
         catalogLoader: () async => catalog,
@@ -744,21 +1372,23 @@ void main() {
       );
 
       final logs = await _captureDebugPrint(() async {
-        final meals = await service.generateMealPlan(
-          healthData: const _FakeHealthData(),
-          userId: 'u1',
-          startDate: DateTime(2026, 6, 18),
-          days: 1,
+        await expectLater(
+          service.generateMealPlan(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 1,
+          ),
+          throwsFormatException,
         );
-        expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
       });
       final joined = logs.join('\n');
 
-      expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
+      expect(joined, contains('MEAL_CHUNK_FAILED'));
       expect(joined, contains('errorType'));
       expect(joined, contains('FormatException'));
-      expect(joined, contains(AITraceLogger.localGen));
-      expect(joined, contains('MEAL_LOCAL_FALLBACK_READY'));
+      expect(joined, isNot(contains('MEAL_CHUNK_LOCAL_FALLBACK')));
+      expect(joined, isNot(contains(AITraceLogger.localGen)));
       expect(joined, isNot(contains('Unknown meal_code')));
       expect(joined, isNot(contains('unknown_meal')));
       expect(joined, isNot(contains('StackTrace')));
@@ -840,7 +1470,7 @@ void main() {
       expect(logs.join('\n'), contains('MODEL_COOLDOWN_SKIP'));
     });
 
-    test('all transient model failures use local fallback', () async {
+    test('all transient model failures stop plan generation', () async {
       final modelCalls = <String>[];
       final service = AIService(
         modelNames: const ['primary-model', 'fallback-model'],
@@ -852,23 +1482,28 @@ void main() {
         },
       );
 
-      final logs = await _captureDebugPrint(() async {
-        final meals = await service.generateMealPlan(
+      await expectLater(
+        service.generateMealPlan(
           healthData: const _FakeHealthData(),
           userId: 'u1',
           startDate: DateTime(2026, 6, 18),
           days: 1,
-        );
-        expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
-      });
+        ),
+        throwsA(isA<AIOverloadedException>()),
+      );
 
-      expect(modelCalls, ['primary-model', 'fallback-model']);
-      expect(logs.join('\n'), contains('MEAL_CHUNK_LOCAL_FALLBACK'));
-      expect(logs.join('\n'), contains(AITraceLogger.localGen));
+      expect(modelCalls, [
+        'primary-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+        'fallback-model',
+      ]);
     });
 
     test(
-      'missing runtime API key uses local meal fallback instead of crashing',
+      'missing runtime API key fails without a local meal substitute',
       () async {
         final logs = await _captureDebugPrint(() async {
           final service = AIService(
@@ -878,20 +1513,21 @@ void main() {
             delay: (_) async {},
           );
 
-          final meals = await service.generateMealPlan(
-            healthData: const _FakeHealthData(),
-            userId: 'u1',
-            startDate: DateTime(2026, 6, 18),
-            days: 1,
+          await expectLater(
+            service.generateMealPlan(
+              healthData: const _FakeHealthData(),
+              userId: 'u1',
+              startDate: DateTime(2026, 6, 18),
+              days: 1,
+            ),
+            throwsA(isA<AIConfigurationUnavailableException>()),
           );
-
-          expect(meals, hasLength(MealPlanAiNormalizer.mealsPerDay));
         });
         final joined = logs.join('\n');
 
         expect(joined, contains('MISSING_API_KEY'));
-        expect(joined, contains('MEAL_CHUNK_LOCAL_FALLBACK'));
-        expect(joined, contains(AITraceLogger.localGen));
+        expect(joined, isNot(contains('MEAL_CHUNK_LOCAL_FALLBACK')));
+        expect(joined, isNot(contains(AITraceLogger.localGen)));
         expect(joined, isNot(contains('AIza')));
         expect(joined, isNot(contains(const _FakeHealthData().fullName)));
       },
@@ -938,7 +1574,7 @@ void main() {
             primaryModel: null,
             fallbackModelsCsv: null,
           ),
-          ['gemini-2.5-flash'],
+          ['gemini-2.5-flash', 'gemini-3.8-flash'],
         );
       },
     );
@@ -958,6 +1594,7 @@ void main() {
           'gemini-2.5-flash',
           'gemini-3-flash-preview',
           'gemini-2.5-pro',
+          'gemini-3.8-flash',
         ],
       );
     });
@@ -968,7 +1605,7 @@ void main() {
           primaryModel: 'gemini-custom',
           fallbackModelsCsv: ' , ',
         ),
-        ['gemini-custom'],
+        ['gemini-custom', 'gemini-3.8-flash'],
       );
     });
   });
@@ -980,7 +1617,7 @@ void main() {
           primaryModel: null,
           fallbackModelsCsv: null,
         ),
-        ['gemini-3.1-flash-lite', 'gemini-3.5-flash', 'gemini-2.5-flash-lite'],
+        ['gemini-3.1-flash-lite', 'gemini-3.5-flash'],
       );
     });
 
@@ -996,6 +1633,13 @@ void main() {
   });
 
   group('AIRetryPolicy', () {
+    test(
+      'allows one initial request and five retries per generation chunk',
+      () {
+        expect(AIRetryPolicy.maxAttemptsPerRequest, 6);
+      },
+    );
+
     test('classifies only transient errors as retryable with backoff', () {
       expect(
         AIRetryPolicy.isTransient(
@@ -1050,6 +1694,9 @@ void main() {
   });
 }
 
+int _countOccurrences(String value, String match) =>
+    match.isEmpty ? 0 : value.split(match).length - 1;
+
 final Matcher _containsMojibake = matches(RegExp(r'Ã|Ä|Æ|áº|á»|Â'));
 
 Future<List<String>> _captureDebugPrint(Future<void> Function() body) async {
@@ -1069,6 +1716,77 @@ Future<List<String>> _captureDebugPrint(Future<void> Function() body) async {
 
   return logs;
 }
+
+MealCatalogItemModel _promptMeal({required String code, bool isActive = true}) {
+  return MealCatalogItemModel(
+    code: code,
+    mealType: 'unclassified',
+    mealName: 'Yến mạch trứng',
+    description: 'Bữa ăn thử',
+    cookingInstructions: 'Không gửi nội dung này',
+    calories: 420,
+    protein: 21,
+    carbs: 50,
+    fat: 10,
+    fiber: 7,
+    waterMl: 250,
+    healthTopicCode: 'healthy-eating',
+    healthTopicName: 'Ăn uống cân bằng',
+    healthTopicDescription: 'Chủ đề dinh dưỡng',
+    ingredients: const ['yến mạch 40 g', 'trứng 1 quả'],
+    servingSize: '1 bát',
+    allergenTags: const ['trứng'],
+    avoidConditionTags: const ['đái tháo đường'],
+    nutritionStatus: 'estimated_from_ingredients',
+    constraintMetadataStatus: 'awaiting_professional_review',
+    metadataStatus: 'source_imported',
+    isPlanEligible: false,
+    sourceHash: 'sha256-test',
+    isActive: isActive,
+    createdAt: '2026-06-18T00:00:00Z',
+    updatedAt: '2026-06-18T00:00:00Z',
+  );
+}
+
+ExerciseCatalogItemModel _promptExercise({
+  required String code,
+  bool isActive = true,
+}) {
+  return ExerciseCatalogItemModel(
+    code: code,
+    category: 'cardio',
+    title: 'Đi bộ thư giãn',
+    description: 'Đi bộ nhẹ quanh nhà',
+    unit: 'phút',
+    encouragement: 'Không gửi nội dung này',
+    minTarget: 10,
+    maxTarget: 45,
+    defaultTarget: 25,
+    intensityLevel: 'light',
+    isActive: isActive,
+    createdAt: '2026-06-18T00:00:00Z',
+    updatedAt: '2026-06-18T00:00:00Z',
+  );
+}
+
+List<MealCatalogItemModel> _longNameMealCatalog() => [
+  for (final slot in MealPlanAiNormalizer.mealSlots)
+    MealCatalogItemModel(
+      code: 'large-${slot.type}',
+      mealType: slot.type,
+      mealName: List.filled(7000, 'x').join(),
+      description: '',
+      cookingInstructions: '',
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      waterMl: 0,
+      createdAt: '2026-06-18T00:00:00Z',
+      updatedAt: '2026-06-18T00:00:00Z',
+    ),
+];
 
 List<Map<String, Object?>> _mealItemsForRange({
   required int startDay,
@@ -1090,8 +1808,6 @@ List<Map<String, Object?>> _mealItemsForRange({
           'meal_type': slot.type,
           'meal_code':
               byType[slot.type]![(day - 1) % byType[slot.type]!.length],
-          'portion_level': 'standard',
-          'priority': slot.order,
         },
   ];
 }
@@ -1105,21 +1821,11 @@ List<Map<String, Object?>> _exerciseItemsForRange({
       {
         'day': day,
         'exercise_code': AiCatalogSeedData.exercises[((day - 1) * 2) % 16].code,
-        'start_time': '08:00',
-        'end_time': '08:25',
-        'intensity': 'light',
-        'target_value': 1,
-        'priority': 1,
       },
       {
         'day': day,
         'exercise_code':
             AiCatalogSeedData.exercises[(((day - 1) * 2) + 1) % 16].code,
-        'start_time': '17:30',
-        'end_time': '18:00',
-        'intensity': 'moderate',
-        'target_value': 1,
-        'priority': 2,
       },
     ],
   ];

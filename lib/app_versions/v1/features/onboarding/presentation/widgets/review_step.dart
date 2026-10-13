@@ -3,15 +3,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/shared/widgets/loading_gen_ai.dart';
 
 import '../../providers/onboarding_provider.dart';
 import '../controllers/onboarding_controller.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
+import 'onboarding_schedule_progress_panel.dart';
 import 'onboarding_step_shell.dart';
+
+String onboardingSubmissionErrorMessage(Object error) {
+  if (error is AIOverloadedException) return AIOverloadedException.userMessage;
+  if (error is OnboardingInitialPlanException) return error.message;
+  if (error is StateError) return error.message.toString();
+  return 'Mình chưa thể hoàn tất lúc này. Bạn thử lại nhé.';
+}
 
 class ReviewStep extends ConsumerWidget {
   const ReviewStep({super.key});
@@ -243,9 +253,13 @@ class ReviewStep extends ConsumerWidget {
     }
 
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const AIGeneratingPage()));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const AIGeneratingPage(
+          progressContent: OnboardingScheduleProgressPanel(),
+        ),
+      ),
+    );
     try {
       await controller.saveOnboarding();
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
@@ -256,16 +270,17 @@ class ReviewStep extends ConsumerWidget {
         _showMessage(context, 'Nabi đã tạo lịch gợi ý cơ bản đầu tiên.');
       }
       if (context.mounted) V1AppNavigator.goMenu(context);
-    } catch (error) {
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'ONBOARDING_REVIEW',
+        'Submit failed while saving profile or generating initial plan',
+        error,
+        stackTrace,
+      );
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (!context.mounted) return;
       Navigator.of(context).pop();
-      final message = error is AIOverloadedException
-          ? AIOverloadedException.userMessage
-          : error is StateError
-          ? error.message.toString()
-          : 'Mình chưa thể hoàn tất lúc này. Bạn thử lại nhé.';
-      _showMessage(context, message);
+      _showMessage(context, onboardingSubmissionErrorMessage(error));
     }
   }
 

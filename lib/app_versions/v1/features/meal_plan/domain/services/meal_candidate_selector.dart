@@ -4,50 +4,189 @@ import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 class MealCandidateSelector {
   const MealCandidateSelector();
 
+  static const _allergenAliases = <String, Set<String>>{
+    'peanut': {'peanut', 'groundnut', 'lac', 'dau phong'},
+    'tree_nut': {
+      'tree nut',
+      'almond',
+      'cashew',
+      'walnut',
+      'hazelnut',
+      'pistachio',
+      'hạnh nhân',
+      'hat dieu',
+      'oc cho',
+    },
+    'milk': {'milk', 'dairy', 'sua', 'casein', 'whey'},
+    'egg': {'egg', 'trung'},
+    'soy': {'soy', 'soya', 'soybean', 'dau nanh', 'dau tuong'},
+    'fish': {'fish', 'ca'},
+    'shellfish': {
+      'shellfish',
+      'shrimp',
+      'prawn',
+      'crab',
+      'lobster',
+      'tom',
+      'cua',
+      'ghe',
+    },
+    'wheat_gluten': {
+      'wheat',
+      'gluten',
+      'barley',
+      'rye',
+      'lua mi',
+      'bot mi',
+      'lua mach',
+    },
+    'sesame': {'sesame', 'vung', 'me'},
+  };
+
   List<MealCatalogItemModel> eligibleMeals({
     required Iterable<MealCatalogItemModel> catalog,
     required NutritionProfileEntity profile,
     String? mealType,
+    Set<String> conditions = const {},
+    Set<String> goals = const {},
+    Set<String> additionalAllergies = const {},
+    bool unparsedAllergyDetails = false,
     Set<String> excludedCodes = const {},
+    int? limit,
   }) {
-    final normalizedType = mealType?.trim().toLowerCase() ?? '';
-    final isSlotScopedSelection = normalizedType.isNotEmpty;
+    final normalizedType = normalizeMealCatalogType(mealType ?? '');
     final restrictions = profile.restrictions
         .where((item) => item.isActive)
+        .where((item) => _normalize(item.itemName).isNotEmpty)
+        .toList(growable: false);
+    final allergyRestrictions =
+        restrictions
+            .where(
+              (item) => const {
+                'allergy',
+                'intolerance',
+              }.contains(_normalize(item.type)),
+            )
+            .map((item) => _normalize(item.itemName))
+            .where((item) => item.isNotEmpty && !_isNoConstraint(item))
+            .toSet()
+          ..addAll(
+            additionalAllergies
+                .map(_normalize)
+                .where((item) => item.isNotEmpty && !_isNoConstraint(item)),
+          );
+    final avoidRestrictions = restrictions
+        .where((item) => _normalize(item.type) == 'avoid')
         .map((item) => _normalize(item.itemName))
-        .where((item) => item.isNotEmpty)
+        .where((item) => item.isNotEmpty && !_isNoConstraint(item))
         .toSet();
-    final conditionTokens = <String>{
-      _normalize(profile.currentStatus),
-      ...profile.symptoms
-          .where((item) => item.isActive)
-          .map((item) => _normalize(item.symptomType)),
-    }..removeWhere((item) => item.isEmpty);
+    final conditionTokens = conditions
+        .map(_normalize)
+        .where((value) => value.isNotEmpty && !_isNoConstraint(value))
+        .toSet();
+    final currentStatus = _normalize(profile.currentStatus);
+    if (currentStatus.isNotEmpty && !_isNoConstraint(currentStatus)) {
+      conditionTokens.add(currentStatus);
+    }
+    final hasUnsupportedAllergy = allergyRestrictions.any(
+      (value) => _canonicalAllergen(value) == null,
+    );
+    final goalTokens = {
+      ...goals.map(_normalize),
+      ...profile.goals
+          .where((goal) => goal.isActive)
+          .map((goal) => _normalize('${goal.code} ${goal.name}')),
+    }..removeWhere((value) => value.isEmpty || _isNoConstraint(value));
+    final needsVerifiedNutrition = goalTokens.any(
+      (goal) => _containsGoal(goal, const {
+        'maintain weight',
+        'lose weight',
+        'gain weight',
+        'lose belly fat',
+        'gain muscle',
+        'balanced nutrition',
+      }),
+    );
+    final needsConditionReview = goalTokens.any(
+      (goal) => _containsGoal(goal, const {
+        'stable blood sugar',
+        'stable blood pressure',
+        'heart health',
+        'joint health',
+        'improve digestion',
+      }),
+    );
+    final anyPersonalConstraint =
+        allergyRestrictions.isNotEmpty ||
+        avoidRestrictions.isNotEmpty ||
+        conditionTokens.isNotEmpty ||
+        unparsedAllergyDetails ||
+        needsVerifiedNutrition ||
+        needsConditionReview;
 
-    final candidates =
-        catalog
-            .where((meal) {
-              if (!meal.isActive) return false;
-              if (_isFixtureCode(meal.code)) return false;
-              if (excludedCodes.contains(meal.code)) return false;
+    final candidates = catalog
+        .where((meal) {
+          if (!meal.isActive || meal.code.trim().isEmpty) return false;
+          if (_isFixtureCode(meal.code) || excludedCodes.contains(meal.code)) {
+            return false;
+          }
+          if (normalizedType.isNotEmpty &&
+              normalizeMealCatalogType(meal.mealType) != normalizedType &&
+              normalizeMealCatalogType(meal.mealType) != 'unclassified') {
+            return false;
+          }
+          if (unparsedAllergyDetails) return false;
+          if (hasUnsupportedAllergy) return false;
+          if (!anyPersonalConstraint) return true;
 
-              // The meal catalog is a Supabase mirror. Source-imported recipes
-              // are valid inputs for plan generation; safety restrictions below
-              // still apply to slot-scoped replacement.
-              if (!isSlotScopedSelection) return true;
+          // Empty/unreviewed tags are unknown. Do not use them to infer safety.
+          if ((conditionTokens.isNotEmpty || needsConditionReview) &&
+              meal.constraintMetadataStatus != 'verified') {
+            return false;
+          }
+          if (avoidRestrictions.isNotEmpty &&
+              (meal.constraintMetadataStatus != 'verified' ||
+                  meal.ingredients.isEmpty)) {
+            return false;
+          }
+          if (needsVerifiedNutrition &&
+              !_hasRequiredNutritionForGoals(meal, goalTokens)) {
+            return false;
+          }
+          if (allergyRestrictions.isNotEmpty &&
+              !const {
+                'verified_none',
+                'verified_present',
+              }.contains(meal.allergenVerificationStatus)) {
+            return false;
+          }
+          if (allergyRestrictions.isNotEmpty &&
+              meal.allergenVerificationStatus == 'verified_present' &&
+              (meal.allergenTags.isEmpty ||
+                  meal.allergenTags.any(
+                    (tag) => _canonicalAllergen(tag) == null,
+                  ))) {
+            return false;
+          }
+          if (_conflictsWithAllergies(meal, allergyRestrictions)) return false;
+          if (_conflictsWithAvoidFoods(meal, avoidRestrictions)) return false;
+          if (_conflictsWithConditions(meal, conditionTokens)) return false;
+          return true;
+        })
+        .toList(growable: false);
 
-              // Manual replacement remains slot-aware and keeps local safety checks.
-              if (meal.mealType != normalizedType &&
-                  meal.mealType != 'unclassified') {
-                return false;
-              }
-              if (_conflictsWithRestrictions(meal, restrictions)) return false;
-              if (_conflictsWithConditions(meal, conditionTokens)) return false;
-              return true;
-            })
-            .toList(growable: false)
-          ..sort((left, right) => left.code.compareTo(right.code));
-    return candidates;
+    final ranked = [...candidates]
+      ..sort((left, right) {
+        final score = _rank(
+          right,
+          profile: profile,
+          mealType: normalizedType,
+        ).compareTo(_rank(left, profile: profile, mealType: normalizedType));
+        if (score != 0) return score;
+        return left.code.compareTo(right.code);
+      });
+    if (limit == null || ranked.length <= limit) return ranked;
+    return ranked.take(limit).toList(growable: false);
   }
 
   MealCatalogItemModel? replacementFor({
@@ -67,22 +206,63 @@ class MealCandidateSelector {
     return candidates[replacementCount % candidates.length];
   }
 
-  bool _conflictsWithRestrictions(
+  int _rank(
+    MealCatalogItemModel meal, {
+    required NutritionProfileEntity profile,
+    required String mealType,
+  }) {
+    var score = 0;
+    if (mealType.isNotEmpty &&
+        normalizeMealCatalogType(meal.mealType) == mealType) {
+      score += 100;
+    }
+    if (meal.servingQuantity != null && meal.servingUnit.isNotEmpty) score += 5;
+    if (meal.verifiedNutrients != null) score += 4;
+    if (meal.ingredients.isNotEmpty) score += 3;
+    if (meal.metadataStatus == 'source_verified') score += 2;
+    final searchable = _searchable(meal);
+    for (final goal in profile.goals.where((item) => item.isActive)) {
+      final normalizedGoal = _normalize('${goal.code} ${goal.name}');
+      if (normalizedGoal.isNotEmpty && searchable.contains(normalizedGoal)) {
+        score += 2;
+      }
+    }
+    for (final rule in profile.preferenceRules.where(
+      (item) => item.isActive && item.preferenceLevel == 'preferred',
+    )) {
+      final preference = _normalize(rule.itemName);
+      if (preference.isNotEmpty && searchable.contains(preference)) score += 1;
+    }
+    return score;
+  }
+
+  bool _conflictsWithAllergies(
     MealCatalogItemModel meal,
     Set<String> restrictions,
   ) {
     if (restrictions.isEmpty) return false;
-    final searchable = <String>{
-      _normalize(meal.mealName),
-      _normalize(meal.description),
-      ...meal.ingredients.map(_normalize),
-      ...meal.allergenTags.map(_normalize),
-    }.where((item) => item.isNotEmpty);
-    for (final restriction in restrictions) {
-      for (final value in searchable) {
-        if (value.contains(restriction) || restriction.contains(value)) {
-          return true;
-        }
+    final requested = restrictions
+        .map(_canonicalAllergen)
+        .whereType<String>()
+        .toSet();
+    final tags = meal.allergenTags
+        .map(_canonicalAllergen)
+        .whereType<String>()
+        .toSet();
+    return requested.any(tags.contains);
+  }
+
+  bool _conflictsWithAvoidFoods(
+    MealCatalogItemModel meal,
+    Set<String> avoidFoods,
+  ) {
+    if (avoidFoods.isEmpty) return false;
+    final ingredients = meal.ingredients
+        .map(_normalize)
+        .where((s) => s.isNotEmpty);
+    for (final avoidFood in avoidFoods) {
+      if (ingredients.any((ingredient) => _overlaps(ingredient, avoidFood))) {
+        return true;
       }
     }
     return false;
@@ -90,28 +270,90 @@ class MealCandidateSelector {
 
   bool _conflictsWithConditions(
     MealCatalogItemModel meal,
-    Set<String> conditionTokens,
+    Set<String> conditions,
   ) {
-    if (conditionTokens.isEmpty || meal.avoidConditionTags.isEmpty) {
-      return false;
-    }
-    final avoid = meal.avoidConditionTags.map(_normalize);
-    for (final condition in conditionTokens) {
-      for (final tag in avoid) {
-        if (tag.isNotEmpty &&
-            (condition.contains(tag) || tag.contains(condition))) {
-          return true;
-        }
+    if (conditions.isEmpty) return false;
+    final avoidTags = meal.avoidConditionTags.map(_normalize).toSet();
+    return conditions.any(
+      (condition) => avoidTags.any((tag) => _overlaps(tag, condition)),
+    );
+  }
+
+  Set<String> _searchable(MealCatalogItemModel meal) => {
+    _normalize(meal.mealName),
+    _normalize(meal.description),
+    ...meal.ingredients.map(_normalize),
+    ...meal.allergenTags.map(_normalize),
+  }..removeWhere((item) => item.isEmpty);
+
+  bool _overlaps(String left, String right) =>
+      left == right || left.contains(right) || right.contains(left);
+
+  bool _hasRequiredNutritionForGoals(
+    MealCatalogItemModel meal,
+    Set<String> goals,
+  ) {
+    final nutrition = meal.verifiedNutrients;
+    if (nutrition == null) return false;
+    final needsProtein = goals.any(
+      (goal) =>
+          _containsGoal(goal, const {'gain muscle', 'balanced nutrition'}),
+    );
+    final needsEnergy = goals.any(
+      (goal) => _containsGoal(goal, const {
+        'maintain weight',
+        'lose weight',
+        'gain weight',
+        'lose belly fat',
+      }),
+    );
+    if (needsEnergy && nutrition['energy_kcal'] == null) return false;
+    if (needsProtein && nutrition['protein_g'] == null) return false;
+    return true;
+  }
+
+  bool _containsGoal(String value, Set<String> codesOrNames) =>
+      codesOrNames.any((goal) => value.contains(goal));
+
+  bool _isNoConstraint(String value) => const {
+    'none',
+    'no',
+    'no issue',
+    'no special issue',
+    'khong',
+    'khong co',
+    'khong co van de dac biet',
+    'không có dị ứng',
+    'khong co di ung',
+    'không',
+    'không có',
+    'không có vấn đề đặc biệt',
+  }.contains(value);
+
+  bool _isFixtureCode(String code) =>
+      code.trim().toLowerCase().startsWith('fixture-');
+
+  String _normalize(String value) => value
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[àáạảãâầấậẩẫăằắặẳẵ]'), 'a')
+      .replaceAll(RegExp(r'[èéẹẻẽêềếệểễ]'), 'e')
+      .replaceAll(RegExp(r'[ìíịỉĩ]'), 'i')
+      .replaceAll(RegExp(r'[òóọỏõôồốộổỗơờớợởỡ]'), 'o')
+      .replaceAll(RegExp(r'[ùúụủũưừứựửữ]'), 'u')
+      .replaceAll(RegExp(r'[ỳýỵỷỹ]'), 'y')
+      .replaceAll('đ', 'd')
+      .replaceAll('_', ' ')
+      .replaceAll(RegExp(r'\s+'), ' ');
+
+  String? _canonicalAllergen(String value) {
+    final normalized = _normalize(value);
+    for (final entry in _allergenAliases.entries) {
+      if (entry.key == normalized ||
+          entry.value.any((alias) => _normalize(alias) == normalized)) {
+        return entry.key;
       }
     }
-    return false;
-  }
-
-  bool _isFixtureCode(String code) {
-    return code.trim().toLowerCase().startsWith('fixture-');
-  }
-
-  String _normalize(String value) {
-    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+    return null;
   }
 }

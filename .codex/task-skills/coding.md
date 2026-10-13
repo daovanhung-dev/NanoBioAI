@@ -2,11 +2,11 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 36 worklog(s).
+- Generated from 38 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (25)
+- Historical task type: coding (27)
 - Historical task type: coding/test/docs (6)
 - Historical task type: coding/test/docs. (2)
 - Historical task type: feature (1)
@@ -15,6 +15,7 @@
 
 ## Common Modules
 
+- M02 PERSONAL_SCHEDULE_AI: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - unknown: 2
 - Dashboard, AI service, lifestyle schedule: 1
@@ -22,7 +23,6 @@
 - onboarding, dashboard: 1
 - authentication: 1
 - authentication v2: 1
-- Authentication v2, Settings account security: 1
 
 ## Work Pattern
 

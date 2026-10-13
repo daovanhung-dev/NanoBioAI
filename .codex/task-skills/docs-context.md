@@ -2,7 +2,7 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 60 worklog(s).
+- Generated from 63 worklog(s).
 
 ## When To Read
 
@@ -10,6 +10,7 @@
 - Historical task type: docs-context (10)
 - Historical task type: docs (5)
 - Historical task type: bugfix / M31 SLEEP_SAFETY_MONITORING. (2)
+- Historical task type: bugfix M02 PERSONAL_SCHEDULE_AI. (2)
 - Historical task type: docs/context update (1)
 - Historical task type: coding - pha khao sat/checklist/plan, chua coding runtime (1)
 - Historical task type: coding / visual asset integration (1)
@@ -17,10 +18,11 @@
 - Historical task type: docs-context hỗ trợ coding M07 (1)
 - Historical task type: feature/business design/catalog preparation (1)
 - Historical task type: coding, localization, platform branding và validation (1)
+- Historical task type: coding và UI. (1)
 
 ## Common Modules
 
-- unknown: 38
+- unknown: 40
 - .codex: 2
 - docs/issues, docs/todo: 1
 - authentication: 1

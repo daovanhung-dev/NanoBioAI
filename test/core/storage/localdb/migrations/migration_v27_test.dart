@@ -47,7 +47,7 @@ void main() {
       final row = (await db.query('sleep_safety_contacts_cache')).single;
       expect(row['id'], 'contact-1');
       expect(row['allow_unverified_voice_alert'], 0);
-      expect(DatabaseVersion.currentVersion, 28);
+      expect(DatabaseVersion.currentVersion, 31);
     },
   );
 }

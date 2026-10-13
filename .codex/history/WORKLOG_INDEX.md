@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 198
+- Total worklogs: 209
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -207,3 +207,14 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-07 | coding/test/docs. | coding | admin-web / landing NanoBio. | [Worklog - Rút gọn nội dung landing NanoBio](../../docs/worklog/2026-10-07/007-worklog-nanobio-landing-copy-trim.md) |
 | 2026-10-07 | coding/review/docs. | find-issues | admin-web / gallery landing NanoBio. | [Worklog - Thay ảnh gallery NanoBio theo ảnh người dùng cung cấp](../../docs/worklog/2026-10-07/008-worklog-nanobio-gallery-user-images.md) |
 | 2026-10-07 | coding | coding | NanoBio Early Access - Thong tin su kien | [Worklog - Them STT cho danh sach thong tin su kien](../../docs/worklog/2026-10-07/009-worklog-event-info-serial-number.md) |
+| 2026-10-13 | coding | coding | M02 PERSONAL_SCHEDULE_AI, SQLite catalog | [Worklog - Dùng catalog SQLite cho lịch AI](../../docs/worklog/2026-10-13/001-worklog-sqlite-ai-catalog.md) |
+| 2026-10-13 | triển khai kế hoạch đã duyệt. | supabase-schema | SQLite v30, tạo lịch AI, lọc món/bài vận động và Edge Function tra cứu bằng chứng thực phẩm. | [Worklog - Cải thiện độ an toàn và độ chính xác lịch cá nhân](../../docs/worklog/2026-10-13/002-worklog-personalized-plan-safety.md) |
+| 2026-10-13 | triển khai kế hoạch đã duyệt. | supabase-schema | M02 tạo lịch cá nhân, SQLite v31, prompt món ăn và vận động. | [Worklog - Lịch AI 14 lượt có thể tiếp tục](../../docs/worklog/2026-10-13/003-worklog-ai-14-call-resumable-plan.md) |
+| 2026-10-13 | Bugfix, diagnostics, focused tests, device reproduction attempt. | test | onboarding, AI generated plan, meal/exercise candidate filtering. | [Worklog - Chẩn đoán lỗi tạo lịch onboarding trên Xiaomi](../../docs/worklog/2026-10-13/004-worklog-onboarding-plan-diagnosis.md) |
+| 2026-10-13 | Feature implementation, prompt/backend limits, focused tests. | supabase-schema | M02 PERSONAL_SCHEDULE_AI, SQLite catalog, Supabase Edge Function. | [Worklog - Gửi đầy đủ catalog SQLite vào prompt lập lịch](../../docs/worklog/2026-10-13/005-worklog-full-ai-catalog-context.md) |
+| 2026-10-13 | Deploy backend | supabase-schema | Supabase Edge Functions / AI schedule | [Worklog - Deploy cac Edge Functions NanoBio](../../docs/worklog/2026-10-13/006-worklog-deploy-all-edge-functions.md) |
+| 2026-10-13 | Bugfix, phân loại lỗi, kiểm chứng trên thiết bị thật. | test | AI generated plan, meal prompt, exercise prompt, onboarding retry. | [Worklog - Sửa lỗi tạo lịch do prompt thiếu số lần dùng mã](../../docs/worklog/2026-10-13/007-worklog-ai-schedule-reuse-limit.md) |
+| 2026-10-13 | bugfix M02 PERSONAL_SCHEDULE_AI. | docs-context | unknown | [Worklog - Fallback AI và lưu lịch từng ngày](../../docs/worklog/2026-10-13/008-worklog-ai-plan-local-fallback-daily-commit.md) |
+| 2026-10-13 | bugfix M02 PERSONAL_SCHEDULE_AI. | docs-context | unknown | [Worklog - Retry AI và tách món khi tạo lịch lỗi](../../docs/worklog/2026-10-13/009-worklog-ai-model-escalation-meal-slot-split.md) |
+| 2026-10-13 | coding và UI. | docs-context | M01 Onboarding, M02 AI generated plan. | [Worklog - Hiển thị tiến độ tạo lịch trong onboarding](../../docs/worklog/2026-10-13/010-worklog-onboarding-plan-progress.md) |
+| 2026-10-13 | coding | coding | M02 PERSONAL_SCHEDULE_AI | [Worklog - Không lặp món trong lịch một tuần](../../docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md) |

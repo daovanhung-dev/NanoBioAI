@@ -8,24 +8,32 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dash
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/data/datasources/exercise_planning_preferences_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/exercise_planning_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
+import 'package:nano_app/app_versions/v1/features/nutrition/data/datasources/nutrition_profile_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutrition_profile_entity.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/exercise_task_model.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
+import 'package:nano_app/core/utils/logger/terminal_log_sink.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   });
@@ -44,6 +52,10 @@ void main() {
         dailyHealthDatasource: dailyHealthDatasource,
         scheduleDatasource: scheduleDatasource,
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
         scheduleHorizonReader: const _FakeScheduleHorizonReader(),
         currentUserId: () => null,
@@ -78,12 +90,15 @@ void main() {
       final aiService = _RecordingAIService();
       final requestStore = _RecordingRequestStore();
       var reminderCalls = 0;
-
       final service = GeneratedPlanService(
         dashboardRepository: repository,
         dailyHealthDatasource: dailyHealthDatasource,
         scheduleDatasource: scheduleDatasource,
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -118,6 +133,288 @@ void main() {
   );
 
   test(
+    'seven day plan runs fourteen ordered AI chunks before commit',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final aiService = _RecordingAIService();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _SevenDayCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      final result = await service.generateInitialGuestPlan(
+        days: 7,
+        startDate: DateTime(2026, 1, 2),
+        requestId: 'guest-seven-day-plan',
+      );
+
+      expect(result.mealCount, 35);
+      expect(result.exerciseCount, 14);
+      expect(result.scheduleItemCount, 77);
+      expect(aiService.callOrder, [
+        for (var day = 1; day <= 7; day++) ...['meal:$day', 'exercise:$day'],
+      ]);
+      expect(requestStore.commitCalls, 1);
+      expect(
+        requestStore.stagedChunks.containsKey('guest-seven-day-plan'),
+        isFalse,
+      );
+    },
+  );
+
+  test(
+    'splits only the failed meal day into slots and resumes full days afterward',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final aiService = _RecordingAIService()..failuresRemainingByDay[1] = 1;
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _SevenDayCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      final result = await service.generateInitialGuestPlan(
+        days: 2,
+        startDate: DateTime(2026, 1, 2),
+        requestId: 'guest-split-meal-day',
+      );
+
+      expect(result.mealCount, 10);
+      expect(result.exerciseCount, 4);
+      expect(aiService.callOrder, [
+        'meal:1',
+        for (final slot in MealPlanAiNormalizer.mealSlots)
+          'meal_slot:1:${slot.type}',
+        'exercise:1',
+        'meal:2',
+        'exercise:2',
+      ]);
+      expect(requestStore.dailyCommitCalls, 2);
+      expect(requestStore.commitCalls, 1);
+    },
+  );
+
+  test('reports schedule progress only after each day is saved', () async {
+    final requestStore = _RecordingRequestStore();
+    final aiService = _RecordingAIService();
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
+      catalogDatasource: const _SevenDayCatalogDatasource(),
+      requestStore: requestStore,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+      currentUserId: () => null,
+      scheduleReminders: () async {},
+    );
+    final reports = <GeneratedPlanProgress>[];
+
+    await service.generateInitialGuestPlan(
+      days: 2,
+      startDate: DateTime(2026, 1, 2),
+      requestId: 'guest-plan-progress',
+      onProgress: (progress) {
+        reports.add(progress);
+        expect(requestStore.committedDays, progress.savedDays);
+      },
+    );
+
+    expect(reports.map((progress) => progress.savedDays).toList(), [
+      [1],
+      [1, 2],
+    ]);
+    expect(reports.map((progress) => progress.percentComplete).toList(), [
+      50,
+      100,
+    ]);
+  });
+
+  test(
+    'reports previously saved days immediately when generation resumes',
+    () async {
+      const requestId = 'guest-plan-progress-resume';
+      final requestStore = _RecordingRequestStore();
+      final aiService = _RecordingAIService()
+        ..failuresRemainingByDay[2] = 1
+        ..failSlotOnceFor = 'lunch';
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _SevenDayCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      await expectLater(
+        service.generateInitialGuestPlan(
+          days: 2,
+          startDate: DateTime(2026, 1, 2),
+          requestId: requestId,
+        ),
+        throwsFormatException,
+      );
+      expect(requestStore.committedDays, [1]);
+
+      final resumedReports = <GeneratedPlanProgress>[];
+      await service.generateInitialGuestPlan(
+        days: 2,
+        startDate: DateTime(2026, 1, 2),
+        requestId: requestId,
+        onProgress: resumedReports.add,
+      );
+
+      expect(resumedReports.first.savedDays, [1]);
+      expect(resumedReports.first.percentComplete, 50);
+      expect(resumedReports.last.savedDays, [1, 2]);
+      expect(resumedReports.last.percentComplete, 100);
+    },
+  );
+
+  test('resumes a failed meal slot without regenerating the day', () async {
+    const requestId = 'guest-resume-meal-slot';
+    final requestStore = _RecordingRequestStore();
+    final aiService = _RecordingAIService()
+      ..failuresRemainingByDay[1] = 1
+      ..failSlotOnceFor = 'lunch';
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
+      catalogDatasource: const _SevenDayCatalogDatasource(),
+      requestStore: requestStore,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+      currentUserId: () => null,
+      scheduleReminders: () async {},
+    );
+
+    await expectLater(
+      service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+        requestId: requestId,
+      ),
+      throwsFormatException,
+    );
+
+    expect(requestStore.stagedChunks[requestId]?.keys.toSet(), {
+      'meal_slot:1:breakfast',
+      'meal_slot:1:morning_snack',
+    });
+    expect(requestStore.dailyCommitCalls, 0);
+
+    final result = await service.generateInitialGuestPlan(
+      days: 1,
+      startDate: DateTime(2026, 1, 2),
+      requestId: requestId,
+    );
+
+    expect(result.mealCount, 5);
+    expect(aiService.callOrder, [
+      'meal:1',
+      'meal_slot:1:breakfast',
+      'meal_slot:1:morning_snack',
+      'meal_slot:1:lunch',
+      'meal_slot:1:lunch',
+      'meal_slot:1:afternoon_snack',
+      'meal_slot:1:dinner',
+      'exercise:1',
+    ]);
+    expect(requestStore.dailyCommitCalls, 1);
+    expect(requestStore.commitCalls, 1);
+  });
+
+  test(
+    'empty local meal catalog fails without partial schedule writes',
+    () async {
+      final logs = <String>[];
+      TerminalLogSink.setTestWriter(logs.add);
+      addTearDown(() => TerminalLogSink.setTestWriter(null));
+      final repository = _RecordingDashboardRepository();
+      final scheduleDatasource = _RecordingScheduleDatasource();
+      final aiService = _RecordingAIService();
+      final requestStore = _RecordingRequestStore();
+      final service = GeneratedPlanService(
+        dashboardRepository: repository,
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: scheduleDatasource,
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _EmptyMealsCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      await expectLater(
+        service.generateInitialGuestPlan(
+          days: 1,
+          startDate: DateTime(2026, 1, 2),
+        ),
+        throwsStateError,
+      );
+
+      expect(repository.saveCalls, 0);
+      expect(scheduleDatasource.seedCalls, 0);
+      expect(aiService.mealCalls, 0);
+      expect(aiService.exerciseCalls, 0);
+      expect(requestStore.commitCalls, 0);
+      expect(requestStore.failedCalls, 1);
+      final output = logs.join('\n');
+      expect(output, contains('stage=load_catalog'));
+      expect(output, contains('errorCode=invalid_generation'));
+      expect(output, contains('errorType=StateError'));
+      expect(output, contains('StackTrace:'));
+    },
+  );
+
+  test(
     'generateInitialGuestPlan retries same request without AI duplication',
     () async {
       final repository = _RecordingDashboardRepository();
@@ -131,6 +428,10 @@ void main() {
         dailyHealthDatasource: dailyHealthDatasource,
         scheduleDatasource: scheduleDatasource,
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -168,6 +469,10 @@ void main() {
         dailyHealthDatasource: _RecordingDailyHealthDatasource(),
         scheduleDatasource: _RecordingScheduleDatasource(),
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -208,6 +513,9 @@ void main() {
       ),
       scheduleDatasource: _RecordingScheduleDatasource(),
       aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
       catalogDatasource: const _FakeCatalogDatasource(),
       requestStore: requestStore,
       routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -248,6 +556,10 @@ void main() {
         ),
         scheduleDatasource: _RecordingScheduleDatasource(),
         aiService: _RecordingAIService(),
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -272,7 +584,7 @@ void main() {
   );
 
   test(
-    'member local fallback is persisted, skips quota commit, and survives reminder failure',
+    'member AI plan commits quota once and survives reminder failure',
     () async {
       final requestStore = _RecordingRequestStore();
       final quotaGateway = _RecordingQuotaGateway();
@@ -284,10 +596,11 @@ void main() {
           userId: 'auth-user-1',
         ),
         scheduleDatasource: _RecordingScheduleDatasource(),
-        aiService: _RecordingAIService(
-          mealSource: PlanGenerationSource.localFallback,
-          exerciseSource: PlanGenerationSource.localFallback,
-        ),
+        aiService: _RecordingAIService(),
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -300,31 +613,31 @@ void main() {
       );
 
       final result = await service.generateNextPlan(
-        requestId: 'member-local-fallback',
+        requestId: 'member-ai-plan',
         days: 1,
         startDate: DateTime(2026, 1, 2),
       );
       final replay = await service.generateNextPlan(
-        requestId: 'member-local-fallback',
+        requestId: 'member-ai-plan',
         days: 1,
         startDate: DateTime(2026, 1, 2),
       );
 
-      expect(result.generationSource, PlanGenerationSource.localFallback);
+      expect(result.generationSource, PlanGenerationSource.ai);
       expect(replay.reusedExistingRequest, isTrue);
-      expect(replay.generationSource, PlanGenerationSource.localFallback);
+      expect(replay.generationSource, PlanGenerationSource.ai);
       expect(requestStore.commitCalls, 1);
       expect(
-        requestStore.records['member-local-fallback']?.generationSource,
-        PlanGenerationSource.localFallback,
+        requestStore.records['member-ai-plan']?.generationSource,
+        PlanGenerationSource.ai,
       );
       expect(quotaGateway.checkCalls, 1);
-      expect(quotaGateway.commitCalls, 0);
+      expect(quotaGateway.commitCalls, 1);
     },
   );
 
   test(
-    'generateNextPlan does not commit quota when AI generation fails',
+    'generateNextPlan falls back locally after AI failure without quota commit',
     () async {
       final requestStore = _RecordingRequestStore();
       final quotaGateway = _RecordingQuotaGateway();
@@ -338,6 +651,10 @@ void main() {
         ),
         scheduleDatasource: _RecordingScheduleDatasource(),
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -347,24 +664,109 @@ void main() {
         scheduleReminders: () async {},
       );
 
-      await expectLater(
-        service.generateNextPlan(
-          requestId: 'member-request-1',
-          days: 1,
-          startDate: DateTime(2026, 1, 2),
-        ),
-        throwsStateError,
+      final result = await service.generateNextPlan(
+        requestId: 'member-request-1',
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
       );
 
+      expect(result.generationSource, PlanGenerationSource.localFallback);
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 0);
       expect(requestStore.generatingCalls, 1);
-      expect(requestStore.failedCalls, 1);
-      expect(requestStore.commitCalls, 0);
+      expect(requestStore.failedCalls, 0);
+      expect(requestStore.commitCalls, 1);
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
     },
   );
+
+  test(
+    'AI daily-call failure falls back and persists a complete day',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final aiService = _FailOnceExerciseAIService();
+      final scheduleDatasource = _RecordingScheduleDatasource();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(),
+        scheduleDatasource: scheduleDatasource,
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+      final startDate = DateTime(2026, 1, 2);
+
+      final result = await service.generateInitialGuestPlan(
+        requestId: 'resume-guest-plan',
+        days: 1,
+        startDate: startDate,
+      );
+
+      expect(result.mealCount, 5);
+      expect(result.exerciseCount, 2);
+      expect(result.generationSource, PlanGenerationSource.localFallback);
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 1);
+      expect(requestStore.dailyCommitCalls, 1);
+      expect(requestStore.committedDays, [1]);
+      expect(requestStore.commitCalls, 1);
+      expect(
+        requestStore.stagedChunks.containsKey('resume-guest-plan'),
+        isFalse,
+      );
+    },
+  );
+
+  test('member plan skips AI quota for local fallback', () async {
+    final requestStore = _RecordingRequestStore();
+    final aiService = _FailOnceExerciseAIService();
+    final quotaGateway = _RecordingQuotaGateway();
+    final horizon = _MutableScheduleHorizonReader(
+      nextStartDate: DateTime(2026, 1, 2),
+    );
+    final service = GeneratedPlanService(
+      dashboardRepository: _RecordingDashboardRepository(userId: 'auth-user-1'),
+      dailyHealthDatasource: _RecordingDailyHealthDatasource(
+        userId: 'auth-user-1',
+      ),
+      scheduleDatasource: _RecordingScheduleDatasource(),
+      aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
+      catalogDatasource: const _FakeCatalogDatasource(),
+      requestStore: requestStore,
+      quotaGateway: quotaGateway,
+      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+      scheduleHorizonReader: horizon,
+      currentUserId: () => 'auth-user-1',
+      scheduleReminders: () async {},
+    );
+
+    final result = await service.generateNextPlan(
+      requestId: 'member-attempt-1',
+      days: 1,
+    );
+
+    expect(result.requestId, 'member-attempt-1');
+    expect(result.startDate, DateTime(2026, 1, 2));
+    expect(result.generationSource, PlanGenerationSource.localFallback);
+    expect(aiService.mealCalls, 1);
+    expect(aiService.exerciseCalls, 1);
+    expect(quotaGateway.checkCalls, 1);
+    expect(quotaGateway.commitCalls, 0);
+    expect(requestStore.dailyCommitCalls, 1);
+    expect(requestStore.commitCalls, 1);
+  });
 
   test('generateNextPlan blocks active horizon before quota and AI', () async {
     final quotaGateway = _RecordingQuotaGateway();
@@ -376,6 +778,9 @@ void main() {
       ),
       scheduleDatasource: _RecordingScheduleDatasource(),
       aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
       requestStore: _RecordingRequestStore(),
       quotaGateway: quotaGateway,
       routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -410,6 +815,9 @@ void main() {
       ),
       scheduleDatasource: _RecordingScheduleDatasource(),
       aiService: aiService,
+      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
+      exercisePreferencesDatasource:
+          const _FakeExercisePlanningPreferencesDatasource(),
       requestStore: _RecordingRequestStore(),
       quotaGateway: quotaGateway,
       routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
@@ -441,6 +849,10 @@ void main() {
         ),
         scheduleDatasource: _RecordingScheduleDatasource(),
         aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
         catalogDatasource: const _FakeCatalogDatasource(),
         requestStore: requestStore,
         quotaGateway: quotaGateway,
@@ -508,6 +920,24 @@ class _FakeRoutinePreferencesRepository
   ) async {}
 }
 
+class _FakeExercisePlanningPreferencesDatasource
+    extends ExercisePlanningPreferencesLocalDatasource {
+  const _FakeExercisePlanningPreferencesDatasource();
+
+  @override
+  Future<ExercisePlanningPreferences> loadForUser(String userId) async =>
+      const ExercisePlanningPreferences();
+}
+
+class _FakeNutritionProfileLocalDatasource
+    extends NutritionProfileLocalDatasource {
+  const _FakeNutritionProfileLocalDatasource();
+
+  @override
+  Future<NutritionProfileEntity> load(String userId) async =>
+      NutritionProfileEntity.empty(userId);
+}
+
 class _FakeScheduleHorizonReader implements ScheduleHorizonReader {
   const _FakeScheduleHorizonReader();
 
@@ -538,6 +968,24 @@ class _FixedScheduleHorizonReader implements ScheduleHorizonReader {
       lastScheduledDate: today.add(Duration(days: remainingDays - 1)),
       remainingDays: remainingDays,
       nextStartDate: today.add(Duration(days: remainingDays)),
+    );
+  }
+}
+
+class _MutableScheduleHorizonReader implements ScheduleHorizonReader {
+  DateTime nextStartDate;
+
+  _MutableScheduleHorizonReader({required this.nextStartDate});
+
+  @override
+  Future<ScheduleHorizon> read({
+    required String userId,
+    required DateTime today,
+  }) async {
+    return ScheduleHorizon(
+      lastScheduledDate: null,
+      remainingDays: 0,
+      nextStartDate: nextStartDate,
     );
   }
 }
@@ -612,7 +1060,7 @@ class _RecordingDailyHealthDatasource
     return DailyHealthProfileEntity(
       userId: userId,
       fullName: 'NabiGuest',
-      goals: ['overall_health'],
+      goals: [],
       conditions: [],
       habits: [],
       sleepQuality: 'good',
@@ -624,10 +1072,16 @@ class _RecordingDailyHealthDatasource
 
 class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   final records = <String, PersonalScheduleAiRequestRecord>{};
+  final stagedChunks = <String, Map<String, List<Map<String, dynamic>>>>{};
+  final stagedSources = <String, Map<String, PlanGenerationSource>>{};
+  final _stageFingerprints = <String, (String, String, String)>{};
+  final _invocationCounts = <String, int>{};
+  final committedDays = <int>[];
   var guestInitialPlanUsed = false;
   var generatingCalls = 0;
   var failedCalls = 0;
   var commitCalls = 0;
+  var dailyCommitCalls = 0;
 
   @override
   Future<PersonalScheduleAiRequestRecord?> findByRequestId(
@@ -642,6 +1096,127 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   }
 
   @override
+  Future<String?> findIncompleteRequestId({
+    required String userId,
+    required String actorMode,
+    DateTime? startDate,
+    required int days,
+  }) async {
+    for (final record in records.values) {
+      if (record.userId == userId &&
+          record.actorMode == actorMode &&
+          record.days == days &&
+          (startDate == null || record.startDate == startDate) &&
+          !record.isSucceeded) {
+        return record.requestId;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<GeneratedPlanStagingSnapshot> prepareStaging({
+    required String requestId,
+    required String inputFingerprint,
+    required String catalogFingerprint,
+    required String promptVersion,
+  }) async {
+    final next = (inputFingerprint, catalogFingerprint, promptVersion);
+    if (_stageFingerprints[requestId] != next) {
+      stagedChunks.remove(requestId);
+      stagedSources.remove(requestId);
+      _stageFingerprints[requestId] = next;
+    }
+    _invocationCounts[requestId] = 0;
+    final savedChunks =
+        stagedChunks[requestId] ?? const <String, List<Map<String, dynamic>>>{};
+    return GeneratedPlanStagingSnapshot(
+      invocationCount: 0,
+      chunks: {
+        for (final entry in savedChunks.entries)
+          entry.key: entry.value
+              .map((item) => Map<String, dynamic>.from(item))
+              .toList(growable: false),
+      },
+      chunkSources: Map<String, PlanGenerationSource>.of(
+        stagedSources[requestId] ?? const {},
+      ),
+    );
+  }
+
+  @override
+  Future<int> incrementBackendInvocationCount({
+    required String requestId,
+    required String inputFingerprint,
+    required String catalogFingerprint,
+    required String promptVersion,
+  }) async {
+    if (_stageFingerprints[requestId] !=
+        (inputFingerprint, catalogFingerprint, promptVersion)) {
+      throw StateError('Staging fingerprint mismatch');
+    }
+    final count = (_invocationCounts[requestId] ?? 0) + 1;
+    if (count >
+        LocalPersonalScheduleAiRequestStore.maxBackendInvocationsPerSession) {
+      throw const PersonalScheduleAiInvocationLimitException();
+    }
+    _invocationCounts[requestId] = count;
+    return count;
+  }
+
+  @override
+  Future<void> saveStagedChunk({
+    required String requestId,
+    required String inputFingerprint,
+    required String catalogFingerprint,
+    required String promptVersion,
+    required String chunkKey,
+    required List<Map<String, dynamic>> payload,
+    PlanGenerationSource source = PlanGenerationSource.ai,
+  }) async {
+    if (_stageFingerprints[requestId] !=
+        (inputFingerprint, catalogFingerprint, promptVersion)) {
+      throw StateError('Staging fingerprint mismatch');
+    }
+    stagedChunks.putIfAbsent(requestId, () => {})[chunkKey] = payload
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList(growable: false);
+    stagedSources.putIfAbsent(requestId, () => {})[chunkKey] = source;
+  }
+
+  @override
+  Future<void> saveGeneratedPlanDay({
+    required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
+    required int day,
+    required List<MealPlanModel> meals,
+    required List<LifestyleScheduleItemModel> schedule,
+    required bool replaceExistingDay,
+    required int mealCount,
+    required int exerciseCount,
+    required int scheduleItemCount,
+    required PlanGenerationSource generationSource,
+  }) async {
+    dailyCommitCalls++;
+    committedDays.add(day);
+    records[requestId] = PersonalScheduleAiRequestRecord(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      status: GeneratedPlanRequestStatuses.generating,
+      startDate: startDate,
+      days: days,
+      mealCount: mealCount,
+      exerciseCount: exerciseCount,
+      scheduleItemCount: scheduleItemCount,
+      generationSource: generationSource,
+    );
+  }
+
+  @override
   Future<void> markGenerating({
     required String requestId,
     required String userId,
@@ -650,6 +1225,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required int days,
   }) async {
     generatingCalls++;
+    final previous = records[requestId];
     records[requestId] = PersonalScheduleAiRequestRecord(
       requestId: requestId,
       userId: userId,
@@ -657,9 +1233,11 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
       status: GeneratedPlanRequestStatuses.generating,
       startDate: startDate,
       days: days,
-      mealCount: 0,
-      exerciseCount: 0,
-      scheduleItemCount: 0,
+      mealCount: previous?.mealCount ?? 0,
+      exerciseCount: previous?.exerciseCount ?? 0,
+      scheduleItemCount: previous?.scheduleItemCount ?? 0,
+      generationSource:
+          previous?.generationSource ?? PlanGenerationSource.unknown,
     );
   }
 
@@ -673,6 +1251,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required String errorCode,
   }) async {
     failedCalls++;
+    final previous = records[requestId];
     records[requestId] = PersonalScheduleAiRequestRecord(
       requestId: requestId,
       userId: userId,
@@ -680,9 +1259,11 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
       status: GeneratedPlanRequestStatuses.failed,
       startDate: startDate,
       days: days,
-      mealCount: 0,
-      exerciseCount: 0,
-      scheduleItemCount: 0,
+      mealCount: previous?.mealCount ?? 0,
+      exerciseCount: previous?.exerciseCount ?? 0,
+      scheduleItemCount: previous?.scheduleItemCount ?? 0,
+      generationSource:
+          previous?.generationSource ?? PlanGenerationSource.unknown,
       errorCode: errorCode,
     );
   }
@@ -697,13 +1278,16 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required List<MealPlanModel> meals,
     required List<LifestyleScheduleItemModel> schedule,
     required PlanGenerationSource generationSource,
-    required bool replaceExistingRange,
     required bool markGuestInitialPlanUsed,
   }) async {
     commitCalls++;
     if (markGuestInitialPlanUsed) {
       guestInitialPlanUsed = true;
     }
+    stagedChunks.remove(requestId);
+    stagedSources.remove(requestId);
+    _stageFingerprints.remove(requestId);
+    _invocationCounts.remove(requestId);
     records[requestId] = PersonalScheduleAiRequestRecord(
       requestId: requestId,
       userId: userId,
@@ -791,15 +1375,114 @@ class _RecordingScheduleDatasource extends LifestyleScheduleLocalDatasource {
 class _RecordingAIService extends AIService {
   int mealCalls = 0;
   int exerciseCalls = 0;
-  final PlanGenerationSource mealSource;
-  final PlanGenerationSource exerciseSource;
+  final callOrder = <String>[];
+  final failuresRemainingByDay = <int, int>{};
+  String? failSlotOnceFor;
 
-  _RecordingAIService({
-    this.mealSource = PlanGenerationSource.ai,
-    this.exerciseSource = PlanGenerationSource.ai,
-  }) : super(
-         textGenerator: ({required modelName, required prompt}) async => '[]',
-       );
+  _RecordingAIService()
+    : super(
+        textGenerator: ({required modelName, required prompt}) async => '[]',
+      );
+
+  @override
+  Future<List<Map<String, dynamic>>> generateMealDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    mealCalls++;
+    callOrder.add('meal:$day');
+    final failuresRemaining = failuresRemainingByDay[day] ?? 0;
+    if (failuresRemaining > 0) {
+      failuresRemainingByDay[day] = failuresRemaining - 1;
+      throw const FormatException('Synthetic invalid full-day response.');
+    }
+    final usedToday = <String>{};
+    return [
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        () {
+          final candidates =
+              catalog
+                  .mealsForType(slot.type)
+                  .where((item) => !usedToday.contains(item.code))
+                  .toList()
+                ..sort((left, right) {
+                  final count = (usedCodeCounts[left.code] ?? 0).compareTo(
+                    usedCodeCounts[right.code] ?? 0,
+                  );
+                  return count != 0 ? count : left.code.compareTo(right.code);
+                });
+          final chosen = candidates.first;
+          usedToday.add(chosen.code);
+          return {'day': day, 'meal_type': slot.type, 'meal_code': chosen.code};
+        }(),
+    ];
+  }
+
+  @override
+  Future<AIGenerationResult<List<Map<String, dynamic>>>>
+  generateMealSlotCodeItemWithSource({
+    required DateTime startDate,
+    required int day,
+    required String mealType,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    required Set<String> dayMealCodes,
+    Map<String, Set<String>>? eligibleFallbackCodesByType,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    mealCalls++;
+    callOrder.add('meal_slot:$day:$mealType');
+    if (failSlotOnceFor == mealType) {
+      failSlotOnceFor = null;
+      throw const FormatException('Synthetic invalid meal-slot response.');
+    }
+    final candidates =
+        catalog
+            .mealsForType(mealType)
+            .where((item) => !dayMealCodes.contains(item.code))
+            .toList()
+          ..sort((left, right) {
+            final count = (usedCodeCounts[left.code] ?? 0).compareTo(
+              usedCodeCounts[right.code] ?? 0,
+            );
+            return count != 0 ? count : left.code.compareTo(right.code);
+          });
+    return AIGenerationResult(
+      value: [
+        {'day': day, 'meal_type': mealType, 'meal_code': candidates.first.code},
+      ],
+      source: PlanGenerationSource.ai,
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> generateExerciseDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    exerciseCalls++;
+    callOrder.add('exercise:$day');
+    final candidates = catalog.exercises.where((item) => item.isActive).toList()
+      ..sort((left, right) {
+        final count = (usedCodeCounts[left.code] ?? 0).compareTo(
+          usedCodeCounts[right.code] ?? 0,
+        );
+        return count != 0 ? count : left.code.compareTo(right.code);
+      });
+    return [
+      for (final exercise in candidates.take(2))
+        {'day': day, 'exercise_code': exercise.code},
+    ];
+  }
 
   @override
   Future<List<MealPlanModel>> generateMealPlan({
@@ -818,6 +1501,8 @@ class _RecordingAIService extends AIService {
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     exerciseCalls++;
     final date = _dateKey(startDate);
@@ -862,7 +1547,7 @@ class _RecordingAIService extends AIService {
         startDate: startDate,
         days: days,
       ),
-      source: mealSource,
+      source: PlanGenerationSource.ai,
     );
   }
 
@@ -872,27 +1557,62 @@ class _RecordingAIService extends AIService {
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     return AIGenerationResult(
       value: await generateExerciseTasks(
         profile: profile,
         startDate: startDate,
         days: days,
+        catalogOverride: catalogOverride,
+        availableTimeWindows: availableTimeWindows,
       ),
-      source: exerciseSource,
+      source: PlanGenerationSource.ai,
     );
   }
 }
 
 class _FailingExerciseAIService extends _RecordingAIService {
   @override
-  Future<List<ExerciseTaskModel>> generateExerciseTasks({
-    required DailyHealthProfileEntity profile,
+  Future<List<Map<String, dynamic>>> generateExerciseDayCodeItems({
     required DateTime startDate,
-    int days = 7,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
   }) async {
     exerciseCalls++;
     throw StateError('exercise generation failed');
+  }
+}
+
+class _FailOnceExerciseAIService extends _RecordingAIService {
+  var shouldFail = true;
+
+  @override
+  Future<List<Map<String, dynamic>>> generateExerciseDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (shouldFail) {
+      exerciseCalls++;
+      shouldFail = false;
+      throw const AIRateLimitedException();
+    }
+    return super.generateExerciseDayCodeItems(
+      startDate: startDate,
+      day: day,
+      catalog: catalog,
+      usedCodeCounts: usedCodeCounts,
+      personalization: personalization,
+      onBackendInvocation: onBackendInvocation,
+    );
   }
 }
 
@@ -901,17 +1621,24 @@ class _BlockingAIService extends _RecordingAIService {
   final release = Completer<void>();
 
   @override
-  Future<List<MealPlanModel>> generateMealPlan({
-    AiCatalogBundle? catalogOverride,
-    int days = 7,
-    required HealthDataInterface healthData,
+  Future<List<Map<String, dynamic>>> generateMealDayCodeItems({
     required DateTime startDate,
-    required String userId,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
   }) async {
-    mealCalls++;
     if (!started.isCompleted) started.complete();
     await release.future;
-    return _mealPlans(userId: userId, startDate: startDate);
+    return super.generateMealDayCodeItems(
+      startDate: startDate,
+      day: day,
+      catalog: catalog,
+      usedCodeCounts: usedCodeCounts,
+      personalization: personalization,
+      onBackendInvocation: onBackendInvocation,
+    );
   }
 }
 
@@ -919,9 +1646,10 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
   const _FakeCatalogDatasource();
 
   @override
-  Future<AiCatalogBundle> loadActiveBundle() async {
+  Future<AiCatalogBundle> loadScheduleCatalogBundle() async {
     const now = '2026-01-01T00:00:00.000';
-    return const AiCatalogBundle(
+    const retrievedAt = now;
+    return AiCatalogBundle(
       meals: [
         MealCatalogItemModel(
           code: 'fake_breakfast',
@@ -999,7 +1727,40 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
           updatedAt: now,
         ),
       ],
-      exercises: [],
+      exercises: [
+        ExerciseCatalogItemModel(
+          code: 'fake_walk',
+          category: 'cardio',
+          title: 'Đi bộ nhẹ',
+          description: 'Đi bộ với cường độ nhẹ.',
+          unit: 'phút',
+          encouragement: '',
+          minTarget: 5,
+          maxTarget: 30,
+          defaultTarget: 10,
+          intensityLevel: 'light',
+          movementAreas: const ['cardio', 'leg'],
+          safetyStatus: 'general_wellness_unreviewed',
+          createdAt: now,
+          updatedAt: now,
+        ),
+        ExerciseCatalogItemModel(
+          code: 'fake_mobility',
+          category: 'mobility',
+          title: 'Giãn cơ nhẹ',
+          description: 'Giãn cơ trong biên độ thoải mái.',
+          unit: 'phút',
+          encouragement: '',
+          minTarget: 5,
+          maxTarget: 30,
+          defaultTarget: 10,
+          intensityLevel: 'light',
+          movementAreas: const ['mobility', 'upper_body'],
+          safetyStatus: 'general_wellness_unreviewed',
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ],
       scheduleTasks: [
         ScheduleTaskCatalogItemModel(
           code: 'routine_wake',
@@ -1044,6 +1805,87 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
           updatedAt: now,
         ),
       ],
+      ingredientEvidenceByName: {
+        'yến mạch': FoodIngredientEvidence(
+          normalizedName: 'yến mạch',
+          queriedName: 'yến mạch',
+          sourceFoodId: '',
+          description: '',
+          dataType: '',
+          nutrients: null,
+          sourceName: 'Viện Dinh dưỡng Quốc gia',
+          sourceUrl:
+              'https://viendinhduong.vn/vi/cong-cu-va-tien-ich/gia-tri-dinh-duong-thuc-pham',
+          datasetVersion: '',
+          retrievedAt: retrievedAt,
+          evidenceStatus: 'not_found_or_ambiguous',
+        ),
+      },
+    );
+  }
+}
+
+class _SevenDayCatalogDatasource extends _FakeCatalogDatasource {
+  const _SevenDayCatalogDatasource();
+
+  @override
+  Future<AiCatalogBundle> loadScheduleCatalogBundle() async {
+    final base = await super.loadScheduleCatalogBundle();
+    return AiCatalogBundle(
+      meals: [
+        for (final slot in MealPlanAiNormalizer.mealSlots)
+          for (var index = 1; index <= 7; index++)
+            MealCatalogItemModel(
+              code: 'seven_${slot.type}_$index',
+              mealType: slot.type,
+              mealName: 'Món ${slot.type} $index',
+              description: 'Món kiểm thử lịch bảy ngày.',
+              cookingInstructions: '',
+              calories: 300,
+              protein: 10,
+              carbs: 35,
+              fat: 8,
+              fiber: 4,
+              waterMl: 250,
+              createdAt: '2026-01-01T00:00:00.000',
+              updatedAt: '2026-01-01T00:00:00.000',
+            ),
+      ],
+      exercises: [
+        for (var index = 1; index <= 4; index++)
+          ExerciseCatalogItemModel(
+            code: 'seven_exercise_$index',
+            category: 'general',
+            title: 'Vận động $index',
+            description: 'Bài vận động kiểm thử.',
+            unit: 'phút',
+            encouragement: '',
+            minTarget: 5,
+            maxTarget: 30,
+            defaultTarget: 10,
+            intensityLevel: 'light',
+            safetyStatus: 'general_wellness_unreviewed',
+            createdAt: '2026-01-01T00:00:00.000',
+            updatedAt: '2026-01-01T00:00:00.000',
+          ),
+      ],
+      scheduleTasks: base.scheduleTasks,
+      ingredientEvidenceByName: base.ingredientEvidenceByName,
+    );
+  }
+}
+
+class _EmptyMealsCatalogDatasource extends _FakeCatalogDatasource {
+  const _EmptyMealsCatalogDatasource();
+
+  @override
+  Future<AiCatalogBundle> loadScheduleCatalogBundle() async {
+    final bundle = await super.loadScheduleCatalogBundle();
+    return AiCatalogBundle(
+      meals: const [],
+      exercises: bundle.exercises,
+      scheduleTasks: bundle.scheduleTasks,
+      ingredientEvidenceByName: bundle.ingredientEvidenceByName,
     );
   }
 }
@@ -1170,6 +2012,36 @@ class _GuardedAIService extends AIService {
       );
 
   @override
+  Future<List<Map<String, dynamic>>> generateMealDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    mealCalls++;
+    throw StateError(
+      'generateMealDayCodeItems should not be called without auth',
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> generateExerciseDayCodeItems({
+    required DateTime startDate,
+    required int day,
+    required AiCatalogBundle catalog,
+    required Map<String, int> usedCodeCounts,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    exerciseCalls++;
+    throw StateError(
+      'generateExerciseDayCodeItems should not be called without auth',
+    );
+  }
+
+  @override
   Future<List<MealPlanModel>> generateMealPlan({
     AiCatalogBundle? catalogOverride,
     int days = 7,
@@ -1186,6 +2058,8 @@ class _GuardedAIService extends AIService {
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     exerciseCalls++;
     throw StateError('generateExerciseTasks should not be called without auth');
@@ -1217,12 +2091,16 @@ class _GuardedAIService extends AIService {
     required DailyHealthProfileEntity profile,
     required DateTime startDate,
     int days = 7,
+    AiCatalogBundle? catalogOverride,
+    List<Map<String, String>> availableTimeWindows = const [],
   }) async {
     return AIGenerationResult(
       value: await generateExerciseTasks(
         profile: profile,
         startDate: startDate,
         days: days,
+        catalogOverride: catalogOverride,
+        availableTimeWindows: availableTimeWindows,
       ),
       source: PlanGenerationSource.ai,
     );

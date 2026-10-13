@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'ai_trace_logger.dart';
@@ -175,15 +176,55 @@ class NabiAiBackendClient implements AiTextClient {
       throw exception;
     } on FunctionException catch (error, stackTrace) {
       stopwatch.stop();
-      final backendCode = _backendCode(_asBackendMap(error.details));
+      final errorDetails = _asBackendMap(error.details);
+      final backendCode = _backendCode(errorDetails);
+      final providerErrorCode = _providerErrorCode(errorDetails);
+      final providerPhase = _providerPhase(errorDetails);
+      final providerStatus = _providerStatus(errorDetails);
+      final providerDiagnosticCode = [
+        providerErrorCode,
+        providerPhase,
+        providerStatus,
+      ].whereType<String>().join('_');
+      _printBackendFailure(
+        traceId: traceId,
+        stage: 'FUNCTION_ERROR',
+        model: model,
+        statusCode: error.status,
+        errorCode: providerDiagnosticCode.isNotEmpty
+            ? providerDiagnosticCode
+            : backendCode ?? 'backend_function_error',
+        stackTrace: stackTrace,
+      );
       final exception = GeminiApiException(
         statusCode: error.status,
-        status: backendCode == 'OUTPUT_TRUNCATED'
-            ? 'MAX_TOKENS'
-            : 'backend_function_error',
-        message: backendCode == 'OUTPUT_TRUNCATED'
-            ? 'AI did not complete the response.'
-            : 'AI backend request failed.',
+        status: switch (backendCode) {
+          'OUTPUT_TRUNCATED' => 'MAX_TOKENS',
+          'MODEL_CONTEXT_LIMIT_EXCEEDED' => 'model_context_limit_exceeded',
+          'REQUEST_TOO_LARGE' => 'request_too_large',
+          'PROVIDER_RATE_LIMITED' => 'resource_exhausted',
+          'PROVIDER_TIMEOUT' => 'provider_timeout',
+          'PROVIDER_NETWORK_ERROR' => 'provider_network_error',
+          'PROVIDER_TEMPORARY_FAILURE' => 'provider_temporary_failure',
+          _ => 'backend_function_error',
+        },
+        backendErrorCode: providerDiagnosticCode.isNotEmpty
+            ? providerDiagnosticCode
+            : backendCode,
+        message: switch (backendCode) {
+          'OUTPUT_TRUNCATED' => 'AI did not complete the response.',
+          'MODEL_CONTEXT_LIMIT_EXCEEDED' =>
+            'Danh mục vượt quá giới hạn token của model AI đang cấu hình. Cần cập nhật model hoặc dung lượng context trước khi tạo lịch.',
+          'REQUEST_TOO_LARGE' =>
+            'Danh sách gửi đến AI vượt quá giới hạn dung lượng request. Cần điều chỉnh model hoặc cấu hình request trước khi tạo lịch.',
+          'PROVIDER_RATE_LIMITED' =>
+            'Nhà cung cấp AI đang giới hạn tần suất yêu cầu.',
+          'PROVIDER_TIMEOUT' => 'Nhà cung cấp AI phản hồi quá thời gian chờ.',
+          'PROVIDER_NETWORK_ERROR' => 'Không thể kết nối đến nhà cung cấp AI.',
+          'PROVIDER_TEMPORARY_FAILURE' =>
+            'Nhà cung cấp AI tạm thời chưa sẵn sàng.',
+          _ => 'AI backend request failed.',
+        },
       );
       AITraceLogger.error(
         _tag,
@@ -200,6 +241,18 @@ class NabiAiBackendClient implements AiTextClient {
           'status': exception.status,
           'errorCode': backendCode == 'OUTPUT_TRUNCATED'
               ? 'output_truncated'
+              : backendCode == 'MODEL_CONTEXT_LIMIT_EXCEEDED'
+              ? 'model_context_limit_exceeded'
+              : backendCode == 'REQUEST_TOO_LARGE'
+              ? 'request_too_large'
+              : backendCode == 'PROVIDER_RATE_LIMITED'
+              ? 'provider_rate_limited'
+              : backendCode == 'PROVIDER_TIMEOUT'
+              ? 'provider_timeout'
+              : backendCode == 'PROVIDER_NETWORK_ERROR'
+              ? 'provider_network_error'
+              : backendCode == 'PROVIDER_TEMPORARY_FAILURE'
+              ? 'provider_temporary_failure'
               : 'backend_function_error',
         },
         location: StackTrace.current,
@@ -207,6 +260,14 @@ class NabiAiBackendClient implements AiTextClient {
       Error.throwWithStackTrace(exception, stackTrace);
     } on GeminiApiException catch (error, stackTrace) {
       if (error.status != 'invalid_backend_response') {
+        _printBackendFailure(
+          traceId: traceId,
+          stage: 'API_ERROR',
+          model: model,
+          statusCode: error.statusCode,
+          errorCode: error.status ?? 'api_error',
+          stackTrace: stackTrace,
+        );
         stopwatch.stop();
         AITraceLogger.error(
           _tag,
@@ -227,8 +288,16 @@ class NabiAiBackendClient implements AiTextClient {
         );
       }
       rethrow;
-    } catch (_, stackTrace) {
+    } catch (error, stackTrace) {
       stopwatch.stop();
+      _printBackendFailure(
+        traceId: traceId,
+        stage: 'NETWORK_ERROR',
+        model: model,
+        statusCode: 503,
+        errorCode: error.runtimeType.toString(),
+        stackTrace: stackTrace,
+      );
       const exception = GeminiApiException(
         statusCode: 503,
         status: 'network_error',
@@ -252,6 +321,30 @@ class NabiAiBackendClient implements AiTextClient {
         location: StackTrace.current,
       );
       Error.throwWithStackTrace(exception, stackTrace);
+    }
+  }
+
+  void _printBackendFailure({
+    required String traceId,
+    required String stage,
+    required String model,
+    required int? statusCode,
+    required String errorCode,
+    required StackTrace stackTrace,
+  }) {
+    if (!kDebugMode) return;
+    final safeModel = model.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
+    final safeCode = errorCode.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
+    // ignore: avoid_print
+    print(
+      '[NABI_AI_SCHEDULE] component=AI_BACKEND traceId=$traceId '
+      'stage=$stage function=$functionName model=$safeModel '
+      'statusCode=${statusCode ?? 'none'} errorCode=$safeCode',
+    );
+    for (final line in stackTrace.toString().split('\n').take(8)) {
+      if (line.trim().isEmpty) continue;
+      // ignore: avoid_print
+      print('[NABI_AI_SCHEDULE] stack=$line');
     }
   }
 
@@ -296,5 +389,30 @@ class NabiAiBackendClient implements AiTextClient {
   static String? _backendCode(Map<String, Object?>? value) {
     final code = value?['code']?.toString().trim();
     return code == null || code.isEmpty ? null : code;
+  }
+
+  static String? _providerErrorCode(Map<String, Object?>? value) {
+    final code = value?['providerErrorCode']?.toString().trim();
+    if (code == null || !RegExp(r'^provider_[a-z0-9_]{1,48}$').hasMatch(code)) {
+      return null;
+    }
+    return code;
+  }
+
+  static String? _providerPhase(Map<String, Object?>? value) {
+    final phase = value?['providerPhase']?.toString().trim();
+    return phase == 'model_metadata' ||
+            phase == 'count_tokens' ||
+            phase == 'generate_content'
+        ? phase
+        : null;
+  }
+
+  static String? _providerStatus(Map<String, Object?>? value) {
+    final status = value?['providerStatus']?.toString().trim();
+    if (status == null || !RegExp(r'^[A-Z][A-Z0-9_]{0,63}$').hasMatch(status)) {
+      return null;
+    }
+    return status;
   }
 }

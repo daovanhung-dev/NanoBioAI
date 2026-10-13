@@ -52,10 +52,6 @@ class ExerciseTasksAiNormalizer {
         );
       }
 
-      dayItems.sort(
-        (a, b) =>
-            (a['start_time'] as String).compareTo(b['start_time'] as String),
-      );
       for (var index = 0; index < dayItems.length; index++) {
         final map = dayItems[index];
         final catalogItem = catalogByCode[map['exercise_code']];
@@ -64,17 +60,22 @@ class ExerciseTasksAiNormalizer {
             'Unknown exercise_code: ${map['exercise_code']}',
           );
         }
+        if (!catalogItem.isActive) {
+          throw FormatException('Inactive exercise_code: ${catalogItem.code}');
+        }
 
         result.add(
           ExerciseTaskModel(
             id: 'exercise_${profile.userId}_${date}_${index + 1}',
             userId: profile.userId,
             scheduleDate: date,
-            startTime: map['start_time'] as String,
-            endTime: map['end_time'] as String,
+            startTime: exerciseSlots[index].startTime,
+            endTime: exerciseSlots[index].endTime,
             title: catalogItem.title,
             description: catalogItem.description,
-            targetValue: _clampTarget(map['target_value'], catalogItem),
+            targetValue: catalogItem.defaultTarget
+                .clamp(catalogItem.minTarget, catalogItem.maxTarget)
+                .toDouble(),
             unit: catalogItem.unit,
             encouragement: catalogItem.encouragement,
             createdAt: createdAt,
@@ -93,6 +94,7 @@ class ExerciseTasksAiNormalizer {
     required int startDay,
     required int days,
     required Map<String, int> usedCodeCounts,
+    Set<String>? eligibleCodes,
   }) {
     final expectedCount = days * exercisesPerDay;
     if (items.length != expectedCount) {
@@ -112,6 +114,7 @@ class ExerciseTasksAiNormalizer {
 
       final map = Map<String, dynamic>.from(item);
       _rejectForbiddenTextFields(map, label: 'Exercise AI item');
+      _requireOutputKeys(map, const {'day', 'exercise_code'});
 
       final day = _readInt(map['day']);
       final endDay = startDay + days - 1;
@@ -126,11 +129,8 @@ class ExerciseTasksAiNormalizer {
       if (catalogItem == null) {
         throw FormatException('Unknown exercise_code: $exerciseCode');
       }
-
-      final startTime = _readTime(map['start_time']);
-      final endTime = _readTime(map['end_time']);
-      if (endTime.compareTo(startTime) <= 0) {
-        throw FormatException('Exercise end_time must be after start_time');
+      if (!catalogItem.isActive) {
+        throw FormatException('Inactive exercise_code: $exerciseCode');
       }
 
       final dayItems = grouped.putIfAbsent(day, () => []);
@@ -141,22 +141,19 @@ class ExerciseTasksAiNormalizer {
       }
 
       final nextCount = (counts[exerciseCode] ?? 0) + 1;
-      if (nextCount > 2 && _hasLessUsedAlternative(catalog, counts)) {
+      if (nextCount > 2 &&
+          _hasLessUsedAlternative(
+            catalog,
+            counts,
+            eligibleCodes: eligibleCodes,
+          )) {
         throw FormatException(
           'Exercise code repeated too often: $exerciseCode',
         );
       }
       counts[exerciseCode] = nextCount;
 
-      dayItems.add({
-        'day': day,
-        'exercise_code': exerciseCode,
-        'start_time': startTime,
-        'end_time': endTime,
-        'intensity': _normalizeIntensity(map['intensity']),
-        'target_value': _clampTarget(map['target_value'], catalogItem),
-        'priority': _readOptionalInt(map['priority']) ?? dayItems.length + 1,
-      });
+      dayItems.add({'day': day, 'exercise_code': exerciseCode});
     }
 
     final result = <Map<String, dynamic>>[];
@@ -167,68 +164,10 @@ class ExerciseTasksAiNormalizer {
           'Expected $exercisesPerDay exercises for day $day',
         );
       }
-      dayItems.sort(
-        (a, b) =>
-            (a['start_time'] as String).compareTo(b['start_time'] as String),
-      );
       result.addAll(dayItems);
     }
 
     return result;
-  }
-
-  List<Map<String, dynamic>> fallbackCodeItems({
-    required AiCatalogBundle catalog,
-    required int startDay,
-    required int days,
-    required Map<String, int> usedCodeCounts,
-  }) {
-    final counts = Map<String, int>.from(usedCodeCounts);
-    final result = <Map<String, dynamic>>[];
-
-    for (var day = startDay; day < startDay + days; day++) {
-      final dayCodes = <String>{};
-      for (final slot in exerciseSlots) {
-        final item = _pickExercise(catalog, counts, dayCodes);
-        counts[item.code] = (counts[item.code] ?? 0) + 1;
-        dayCodes.add(item.code);
-        result.add({
-          'day': day,
-          'exercise_code': item.code,
-          'start_time': slot.startTime,
-          'end_time': slot.endTime,
-          'intensity': item.intensityLevel,
-          'target_value': item.defaultTarget,
-          'priority': slot.order,
-        });
-      }
-    }
-
-    return result;
-  }
-
-  static ExerciseCatalogItemModel _pickExercise(
-    AiCatalogBundle catalog,
-    Map<String, int> usedCodeCounts,
-    Set<String> dayCodes,
-  ) {
-    if (catalog.exercises.isEmpty) {
-      throw const FormatException('Exercise catalog is empty');
-    }
-
-    final sorted = [...catalog.exercises]
-      ..sort((a, b) {
-        final countCompare = (usedCodeCounts[a.code] ?? 0).compareTo(
-          usedCodeCounts[b.code] ?? 0,
-        );
-        if (countCompare != 0) return countCompare;
-        return a.code.compareTo(b.code);
-      });
-
-    return sorted.firstWhere(
-      (item) => !dayCodes.contains(item.code),
-      orElse: () => sorted.first,
-    );
   }
 
   static void _rejectForbiddenTextFields(
@@ -242,11 +181,29 @@ class ExerciseTasksAiNormalizer {
     }
   }
 
+  static void _requireOutputKeys(
+    Map<String, dynamic> map,
+    Set<String> allowed,
+  ) {
+    if (map.keys.any((key) => !allowed.contains(key)) ||
+        !map.keys.toSet().containsAll(allowed)) {
+      throw const FormatException(
+        'Exercise AI item must contain only day and exercise_code.',
+      );
+    }
+  }
+
   static bool _hasLessUsedAlternative(
     AiCatalogBundle catalog,
-    Map<String, int> counts,
-  ) {
-    return catalog.exercises.any((item) => (counts[item.code] ?? 0) < 2);
+    Map<String, int> counts, {
+    Set<String>? eligibleCodes,
+  }) {
+    return catalog.exercises.any(
+      (item) =>
+          item.isActive &&
+          (eligibleCodes == null || eligibleCodes.contains(item.code)) &&
+          (counts[item.code] ?? 0) < 2,
+    );
   }
 
   static String _readString(Object? value) {
@@ -267,42 +224,6 @@ class ExerciseTasksAiNormalizer {
       final num n => n.toInt(),
       final String s => int.tryParse(s.trim()),
       _ => null,
-    };
-  }
-
-  static String _readTime(Object? value) {
-    final text = _readString(value);
-    if (!RegExp(r'^\d{2}:\d{2}$').hasMatch(text)) {
-      throw FormatException('Invalid exercise time: $text');
-    }
-    final hour = int.parse(text.substring(0, 2));
-    final minute = int.parse(text.substring(3, 5));
-    if (hour > 23 || minute > 59) {
-      throw FormatException('Invalid exercise time: $text');
-    }
-    return text;
-  }
-
-  static double _clampTarget(
-    Object? value,
-    ExerciseCatalogItemModel catalogItem,
-  ) {
-    final parsed = switch (value) {
-      final num n => n.toDouble(),
-      final String s => double.tryParse(s.trim()),
-      _ => null,
-    };
-    final target = parsed ?? catalogItem.defaultTarget;
-    return target
-        .clamp(catalogItem.minTarget, catalogItem.maxTarget)
-        .toDouble();
-  }
-
-  static String _normalizeIntensity(Object? value) {
-    final text = _readString(value).toLowerCase();
-    return switch (text) {
-      'moderate' || 'medium' || 'vừa' => 'moderate',
-      _ => 'light',
     };
   }
 

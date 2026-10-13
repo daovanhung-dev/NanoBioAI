@@ -11,7 +11,9 @@ import 'package:nano_app/core/theme/app_spacing.dart';
 import 'package:nano_app/core/theme/app_duration.dart';
 
 class AIGeneratingPage extends StatefulWidget {
-  const AIGeneratingPage({super.key});
+  final Widget? progressContent;
+
+  const AIGeneratingPage({super.key, this.progressContent});
 
   @override
   State<AIGeneratingPage> createState() => _AIGeneratingPageState();
@@ -44,23 +46,23 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
   final List<_ThoughtEntry> _thoughts = const [
     _ThoughtEntry(
       icon: Icons.favorite_rounded,
-      text: 'Tôi đang lắng nghe thật kỹ điều bạn cần...',
+      text: 'Nabi đang sắp xếp lịch trình theo từng ngày cho bạn...',
     ),
     _ThoughtEntry(
       icon: Icons.spa_rounded,
-      text: 'Tôi đang gom những chi tiết quan trọng để chăm chút cho bạn...',
+      text: 'Mỗi ngày hoàn tất sẽ được lưu để bạn dễ theo dõi...',
     ),
     _ThoughtEntry(
       icon: Icons.auto_awesome_rounded,
-      text: 'Tôi đang sắp xếp câu trả lời sao cho dễ hiểu và nhẹ nhàng nhất...',
+      text: 'Nabi đang chọn các món ăn và hoạt động phù hợp...',
     ),
     _ThoughtEntry(
       icon: Icons.fact_check_rounded,
-      text: 'Tôi kiểm tra thêm một lượt để bạn có thể yên tâm hơn...',
+      text: 'Nabi kiểm tra từng ngày trước khi lưu vào lịch của bạn...',
     ),
     _ThoughtEntry(
       icon: Icons.volunteer_activism_rounded,
-      text: 'Sắp xong rồi, cảm ơn bạn đã chờ tôi thêm một chút nhé.',
+      text: 'Cảm ơn bạn đã chờ. Nabi đang hoàn thiện những ngày còn lại...',
     ),
   ];
 
@@ -174,7 +176,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                           const SizedBox(height: AppSpacing.xl),
 
                           Semantics(
-                            label: 'Nabi đang chuẩn bị câu trả lời cho bạn',
+                            label: 'Nabi đang tạo lịch trình cho bạn',
                             liveRegion: true,
                             child: _buildOrb(),
                           ),
@@ -182,6 +184,11 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
                           const SizedBox(height: AppSpacing.xl),
 
                           _buildThinkingPill(),
+
+                          if (widget.progressContent != null) ...[
+                            const SizedBox(height: AppSpacing.lg),
+                            widget.progressContent!,
+                          ],
 
                           const SizedBox(height: AppSpacing.lg),
 
@@ -289,13 +296,13 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
     return Column(
       children: [
         Text(
-          'Đợi Nabi một chút nhé',
+          'Nabi đang tạo lịch trình',
           style: AppTextStyles.heading2.copyWith(color: _colors.textPrimary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Tôi đang chăm chút câu trả lời để mọi thứ đến với bạn thật rõ ràng và dễ chịu.',
+          'Nabi sẽ hoàn thiện và lưu lịch theo từng ngày. Bạn có thể theo dõi tiến độ bên dưới.',
           style: AppTextStyles.bodyMedium.copyWith(
             color: _colors.textSecondary,
           ),
@@ -421,7 +428,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Nabi đang nghĩ',
+            'Đang sắp xếp lịch',
             style: AppTextStyles.labelLarge.copyWith(
               color: _colors.textPrimary,
             ),
@@ -505,7 +512,7 @@ class _AIGeneratingPageState extends State<AIGeneratingPage>
 
   Widget _buildFooter() {
     return Text(
-      'Giữ màn hình mở thêm chút. Nabi sẽ trả lời khi sẵn sàng.',
+      'Bạn giữ màn hình mở trong lúc Nabi hoàn thiện lịch nhé.',
       style: AppTextStyles.caption.copyWith(
         color: _colors.textMuted,
         height: 1.45,

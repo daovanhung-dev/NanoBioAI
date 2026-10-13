@@ -126,12 +126,14 @@ class GeminiGenerationConfig {
 class GeminiApiException implements Exception {
   final int? statusCode;
   final String? status;
+  final String? backendErrorCode;
   final String message;
 
   const GeminiApiException({
     required this.message,
     this.statusCode,
     this.status,
+    this.backendErrorCode,
   });
 
   bool get isAuthenticationFailure {
@@ -150,7 +152,9 @@ class GeminiApiException implements Exception {
   bool get isNetworkFailure {
     final normalizedStatus = _cleanText(status)?.toLowerCase();
     return normalizedStatus == 'network_error' ||
+        normalizedStatus == 'provider_network_error' ||
         normalizedStatus == 'connection_timeout' ||
+        normalizedStatus == 'provider_timeout' ||
         normalizedStatus == 'send_timeout' ||
         normalizedStatus == 'receive_timeout' ||
         normalizedStatus == 'tls_error';
@@ -166,6 +170,9 @@ class GeminiApiException implements Exception {
     return isNetworkFailure ||
         normalizedStatus == 'resource_exhausted' ||
         normalizedStatus == 'unavailable' ||
+        normalizedStatus == 'provider_temporary_failure' ||
+        normalizedStatus == 'provider_network_error' ||
+        normalizedStatus == 'provider_timeout' ||
         normalizedStatus == 'deadline_exceeded' ||
         normalizedStatus == 'internal';
   }
@@ -684,9 +691,7 @@ String extractGeminiResponseText(Object? payload) {
       message: 'Gemini blocked the request: $blockReason.',
     );
   }
-  throw const GeminiApiException(
-    message: 'Gemini returned an empty response.',
-  );
+  throw const GeminiApiException(message: 'Gemini returned an empty response.');
 }
 
 Map<String, Object?>? _asObjectMap(Object? value) {
