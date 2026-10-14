@@ -1,5 +1,40 @@
 # CHANGELOG — AUTH_PROFILE_SYNC / Xác thực, hồ sơ và đồng bộ Guest
 
+## [v1.6] - 2026-10-14
+### Changed
+- Removed the password request queue. Members change their password directly in Settings; Forgot Password tells them to contact Admin.
+- Added a Super Admin reset action on the user list; after verifying the registered phone it sets `12345678` and requires a new password at next sign-in.
+- Applied both additive migrations and deployed the phone signup, member password-change, Admin reset, and single/bulk Admin account functions to the authorized production project.
+
+### Validation
+- Flutter analyze and 44 focused tests passed; Admin Web typecheck and 67 tests passed; 14 Edge Function tests passed.
+- Production API signup and password login passed for a synthetic test account; Android UI login/reset remains unverified because Flutter Driver is not enabled.
+
+## [v1.5] - 2026-10-14
+### Changed
+- Kept Supabase Phone Auth disabled and added a server-created Auth email alias for member phone/password sessions.
+- Simplified forgotten-password recovery to a Super Admin reset from the user list; the password is `12345678` and the member must change it at next sign-in.
+- Members can change their password directly in Settings; Forgot Password directs them to contact Admin.
+- Changed guarded legacy migration from Auth phone assignment to phone-derived Auth aliases, preserving IDs/passwords/contact email.
+- Added private signup IP rate limiting and matching seed/auth contracts.
+
+### Removed
+- Removed the password request queue, approval workflow, related database tables/RPCs, and request-rate-limit state.
+
+### Validation
+- Source implementation is in progress. Hosted migration/deployment and production account acceptance are not claimed.
+
+## [v1.4] - 2026-10-14
+### Changed
+- Switched member signup/sign-in to normalized Vietnam phone and password; kept email login for Admin staff and legacy contact email data.
+- Added Admin-reviewed password-change requests from Settings and Forgot Password, one-time random temporary passwords, a forced-change gate, and server-side audit/rate limits.
+- Added guarded legacy phone migration tooling and canonical/additive Supabase SQL contracts.
+- Kept login phone Auth-owned by removing it from Admin/profile updates and mobile snapshot writes; the additive migration wraps the current snapshot RPC to strip legacy client phone data.
+
+### Validation
+- Focused Flutter, Admin Web, Deno handler/migration review tests, analyzer, and Deno checks passed locally.
+- Hosted Supabase Auth configuration, sandbox migration/RLS, function deployment, and device acceptance remain unverified.
+
 ## [v1.3] - 2026-07-12
 ### Changed
 - Implemented Auth V2 callback/session lifecycle, Guest consent and push-before-pull authenticated sync.

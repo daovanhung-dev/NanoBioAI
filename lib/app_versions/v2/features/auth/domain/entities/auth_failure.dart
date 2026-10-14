@@ -3,10 +3,9 @@ import 'package:nano_app/core/config/auth_backend_availability.dart';
 enum AuthFailureCode {
   validation,
   invalidCredentials,
-  emailUnverified,
+  phoneAlreadyRegistered,
   profileMissing,
   sessionMissing,
-  emailAlreadyRegistered,
   weakPassword,
   rateLimited,
   accountDisabled,

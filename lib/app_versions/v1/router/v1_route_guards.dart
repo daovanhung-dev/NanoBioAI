@@ -70,7 +70,6 @@ class V1RouteGuards {
     AuthRoutePaths.authGate,
     AuthRoutePaths.login,
     AuthRoutePaths.register,
-    AuthRoutePaths.verifyEmail,
     AuthRoutePaths.forgotPassword,
     AuthRoutePaths.resetPassword,
     AuthRoutePaths.authCallback,

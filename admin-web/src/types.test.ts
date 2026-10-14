@@ -175,35 +175,35 @@ describe('Supabase response normalization', () => {
 });
 
 describe('bulk account input', () => {
-  it('accepts strict Gmail rows and normalizes email casing', () => {
-    const result = parseBulkAccountLines('  User.Name@GMAIL.COM | Nguyễn Văn A  ');
+  it('accepts phone rows and normalizes optional contact email casing', () => {
+    const result = parseBulkAccountLines('  0912 345 678 | Nguyễn Văn A | User.Name@EXAMPLE.COM  ');
     expect(result.issues).toEqual([]);
-    expect(result.accounts).toEqual([{ email: 'user.name@gmail.com', fullName: 'Nguyễn Văn A' }]);
+    expect(result.accounts).toEqual([{ phone: '+84912345678', email: 'user.name@example.com', fullName: 'Nguyễn Văn A' }]);
   });
 
-  it('rejects malformed, non-Gmail and duplicate rows', () => {
+  it('rejects malformed and duplicate phone rows', () => {
     const result = parseBulkAccountLines([
-      'user@example.com | User',
-      'missing-name@gmail.com',
-      'USER@gmail.com | User One',
-      'user@gmail.com | User Two',
+      'abc0912345678 | Invalid',
+      '0912345678',
+      '0912345678 | User One',
+      '+84912345678 | User Two',
     ].join('\n'));
-    expect(result.accounts).toEqual([{ email: 'user@gmail.com', fullName: 'User One' }]);
+    expect(result.accounts).toEqual([{ phone: '+84912345678', fullName: 'User One' }]);
     expect(result.issues.map((issue) => issue.message)).toEqual([
-      'Chỉ chấp nhận địa chỉ kết thúc bằng @gmail.com.',
-      'Cần nhập theo dạng email | họ tên.',
-      'Email bị trùng trong danh sách.',
+      'Số điện thoại chưa đúng định dạng Việt Nam.',
+      'Cần nhập theo dạng số điện thoại | họ tên | email liên hệ tùy chọn.',
+      'Số điện thoại bị trùng trong danh sách.',
     ]);
   });
 
   it('rejects rows containing more than one separator', () => {
-    const result = parseBulkAccountLines('user@gmail.com | User | Extra');
+    const result = parseBulkAccountLines('0912345678 | User | user@example.com | Extra');
     expect(result.accounts).toEqual([]);
-    expect(result.issues[0]?.message).toBe('Cần nhập theo dạng email | họ tên.');
+    expect(result.issues[0]?.message).toBe('Cần nhập theo dạng số điện thoại | họ tên | email liên hệ tùy chọn.');
   });
 
   it('enforces the 100-account limit and deterministic confirmation text', () => {
-    const lines = Array.from({ length: 101 }, (_, index) => `user${index}@gmail.com | User ${index}`).join('\n');
+    const lines = Array.from({ length: 101 }, (_, index) => `09${String(index).padStart(8, '0')} | User ${index}`).join('\n');
     const result = parseBulkAccountLines(lines);
     expect(result.accounts).toHaveLength(101);
     expect(result.issues.at(-1)?.message).toBe('Mỗi lần chỉ được xử lý tối đa 100 tài khoản.');

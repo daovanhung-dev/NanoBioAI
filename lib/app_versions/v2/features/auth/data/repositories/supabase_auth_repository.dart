@@ -18,12 +18,10 @@ class SupabaseAuthRepository implements AuthRepository {
   static const _tag = 'AUTH_REPO';
 
   final SupabaseAuthRemoteDatasource datasource;
-  final bool requiresEmailConfirmation;
   final AuthRouteStateResolver resolver;
 
   SupabaseAuthRepository({
     required this.datasource,
-    required this.requiresEmailConfirmation,
     this.resolver = const AuthRouteStateResolver(),
   });
 
@@ -33,7 +31,7 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<AuthRouteState> resolveAuthRouteState() async {
     try {
-      final session = datasource.currentSessionSnapshot();
+      final session = await datasource.currentSessionSnapshot();
       if (session == null) {
         return const AuthRouteState.unauthenticated();
       }
@@ -46,33 +44,33 @@ class SupabaseAuthRepository implements AuthRepository {
         );
       }
 
-      return resolver.resolve(
-        session: session,
-        profile: profile,
-        requiresEmailConfirmation: requiresEmailConfirmation,
-      );
+      return resolver.resolve(session: session, profile: profile);
     } catch (error, stackTrace) {
       AppLogger.error(_tag, 'Resolve auth route failed', error, stackTrace);
-      final session = datasource.currentSessionSnapshot();
+      final session = datasource.cachedSessionSnapshot();
       return resolver.resolve(
         session: session,
         profile: null,
-        requiresEmailConfirmation: requiresEmailConfirmation,
         profileLoadFailed: session != null,
       );
     }
   }
 
   @override
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+  Future<RegistrationResult> signUpWithPhone(RegisterCommand command) async {
     _validateRegister(command);
 
     try {
       final response = await datasource.signUp(command);
-      if (response.session != null) {
-        return RegistrationResult.sessionReady;
+      if (response.session == null) {
+        throw const AuthFailure(
+          code: AuthFailureCode.configuration,
+          userMessage: 'Chưa tạo được phiên đăng nhập. Vui lòng thử lại sau.',
+        );
       }
-      return RegistrationResult.verificationRequired;
+      return RegistrationResult.sessionReady;
+    } on AuthFailure {
+      rethrow;
     } on AuthException catch (error) {
       throw _mapSignUpException(error, command);
     } catch (_) {
@@ -81,7 +79,7 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithEmail(LoginCommand command) async {
+  Future<void> signInWithPhone(LoginCommand command) async {
     _validateLogin(command);
 
     try {
@@ -105,38 +103,6 @@ class SupabaseAuthRepository implements AuthRepository {
       }
     } on AuthFailure {
       rethrow;
-    } on AuthException catch (error) {
-      throw _mapAuthException(error);
-    } catch (_) {
-      throw _genericFailure();
-    }
-  }
-
-  @override
-  Future<void> resendEmailConfirmation(String email) async {
-    final error = AuthValidators.email(email);
-    if (error != null) {
-      throw AuthFailure(code: AuthFailureCode.validation, userMessage: error);
-    }
-
-    try {
-      await datasource.resendEmailConfirmation(email);
-    } on AuthException catch (error) {
-      throw _mapAuthException(error);
-    } catch (_) {
-      throw _genericFailure();
-    }
-  }
-
-  @override
-  Future<void> sendPasswordRecovery(String email) async {
-    final error = AuthValidators.email(email);
-    if (error != null) {
-      throw AuthFailure(code: AuthFailureCode.validation, userMessage: error);
-    }
-
-    try {
-      await datasource.sendPasswordRecovery(email);
     } on AuthException catch (error) {
       throw _mapAuthException(error);
     } catch (_) {
@@ -174,7 +140,7 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const AuthFailure(
         code: AuthFailureCode.deepLinkInvalid,
         userMessage:
-            'Liên kết xác thực không hợp lệ. Bạn hãy mở lại liên kết mới nhất trong email.',
+            'Liên kết xác thực không hợp lệ. Bạn hãy mở lại liên kết mới nhất.',
       );
     }
 
@@ -188,7 +154,7 @@ class SupabaseAuthRepository implements AuthRepository {
       );
     } catch (_) {
       throw _genericFailure(
-        'Nabi chưa thể hoàn tất xác thực lúc này. Bạn có thể thử lại bằng liên kết trong email.',
+        'Nabi chưa thể hoàn tất xác thực lúc này. Bạn có thể mở lại liên kết mới nhất rồi thử lại.',
       );
     }
   }
@@ -260,11 +226,11 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   void _validateLogin(LoginCommand command) {
-    final emailError = AuthValidators.email(command.email);
-    if (emailError != null) {
+    final phoneError = AuthValidators.phone(command.phone);
+    if (phoneError != null) {
       throw AuthFailure(
         code: AuthFailureCode.validation,
-        userMessage: emailError,
+        userMessage: phoneError,
       );
     }
 
@@ -279,7 +245,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
   void _validateRegister(RegisterCommand command) {
     _validateLogin(
-      LoginCommand(email: command.email, password: command.password),
+      LoginCommand(phone: command.phone, password: command.password),
     );
 
     final confirmError = AuthValidators.confirmPassword(
@@ -314,14 +280,24 @@ class SupabaseAuthRepository implements AuthRepository {
     AuthException error,
     RegisterCommand command,
   ) {
+    final normalized = error.message.toLowerCase();
+    if (normalized.contains('phone_exists') ||
+        normalized.contains('phone already') ||
+        normalized.contains('unique constraint')) {
+      return const AuthFailure(
+        code: AuthFailureCode.phoneAlreadyRegistered,
+        userMessage:
+            'Số điện thoại này đã có tài khoản. Bạn hãy đăng nhập hoặc liên hệ quản trị viên để đặt lại mật khẩu.',
+      );
+    }
     final mapped = _mapAuthException(error);
     if (mapped.code == AuthFailureCode.invalidReferralCode) return mapped;
 
     final hasReferral = command.referralCode?.trim().isNotEmpty ?? false;
-    final normalized = error.message.toLowerCase();
+    final failureMessage = error.message.toLowerCase();
     final couldBeAtomicReferralRejection =
-        normalized.contains('database error saving new user') ||
-        normalized.contains('unexpected_failure');
+        failureMessage.contains('database error saving new user') ||
+        failureMessage.contains('unexpected_failure');
     if (hasReferral && couldBeAtomicReferralRejection) {
       return _invalidReferralFailure();
     }
@@ -357,11 +333,9 @@ class SupabaseAuthRepository implements AuthRepository {
   String _safeUserMessageFor(SupabaseAuthErrorKind kind) {
     return switch (kind) {
       SupabaseAuthErrorKind.invalidCredentials =>
-        'Email hoặc mật khẩu không đúng. Bạn hãy kiểm tra lại rồi thử lại.',
-      SupabaseAuthErrorKind.emailUnverified =>
-        'Tài khoản cần xác thực email trước khi đăng nhập.',
-      SupabaseAuthErrorKind.emailAlreadyRegistered =>
-        'Email này đã có tài khoản. Bạn hãy đăng nhập hoặc đặt lại mật khẩu.',
+        'Số điện thoại hoặc mật khẩu không đúng. Bạn hãy kiểm tra lại rồi thử lại.',
+      SupabaseAuthErrorKind.phoneAlreadyRegistered =>
+        'Số điện thoại này đã có tài khoản. Bạn hãy đăng nhập hoặc liên hệ quản trị viên để đặt lại mật khẩu.',
       SupabaseAuthErrorKind.weakPassword =>
         'Mật khẩu chưa đủ an toàn. Bạn hãy chọn mật khẩu khác.',
       SupabaseAuthErrorKind.rateLimited =>
@@ -381,9 +355,8 @@ class SupabaseAuthRepository implements AuthRepository {
     return switch (kind) {
       SupabaseAuthErrorKind.invalidCredentials =>
         AuthFailureCode.invalidCredentials,
-      SupabaseAuthErrorKind.emailUnverified => AuthFailureCode.emailUnverified,
-      SupabaseAuthErrorKind.emailAlreadyRegistered =>
-        AuthFailureCode.emailAlreadyRegistered,
+      SupabaseAuthErrorKind.phoneAlreadyRegistered =>
+        AuthFailureCode.phoneAlreadyRegistered,
       SupabaseAuthErrorKind.weakPassword => AuthFailureCode.weakPassword,
       SupabaseAuthErrorKind.rateLimited => AuthFailureCode.rateLimited,
       SupabaseAuthErrorKind.accountDisabled => AuthFailureCode.accountDisabled,

@@ -1,12 +1,11 @@
+import 'vietnam_phone_number.dart';
+
 class AuthValidators {
   const AuthValidators._();
 
-  static String? email(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return 'Bạn cho Nabixin email nhé.';
-    final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    if (!pattern.hasMatch(trimmed)) {
-      return 'Email này có vẻ chưa đúng, bạn kiểm tra lại giúp mình nhé.';
+  static String? phone(String value) {
+    if (VietnamPhoneNumber.normalize(value) == null) {
+      return 'Bạn nhập số điện thoại Việt Nam hợp lệ nhé.';
     }
     return null;
   }

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,7 +19,7 @@ class V2LoginPage extends ConsumerStatefulWidget {
 
 class _V2LoginPageState extends ConsumerState<V2LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
+  final _phone = TextEditingController();
   final _password = TextEditingController();
 
   var _loading = false;
@@ -29,7 +27,7 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
 
   @override
   void dispose() {
-    _email.dispose();
+    _phone.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -55,23 +53,22 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
             children: [
               _AuthSectionLabel(
                 title: 'Đăng nhập an toàn',
-                subtitle:
-                    'Dùng email đã liên kết với tài khoản NanoBio của bạn.',
+                subtitle: 'Đăng nhập bằng số điện thoại và mật khẩu.',
               ),
               const SizedBox(height: AppSpacing.sectionSpacing),
               _AuthTextField(
-                controller: _email,
-                label: 'Địa chỉ email',
-                hintText: 'ban@example.com',
-                prefixIcon: Icons.alternate_email_rounded,
-                keyboardType: TextInputType.emailAddress,
+                controller: _phone,
+                label: 'Số điện thoại',
+                hintText: '09xxxxxxxx',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [
                   AutofillHints.username,
-                  AutofillHints.email,
+                  AutofillHints.telephoneNumber,
                 ],
                 validator: (value) =>
-                    _authValidationText(AuthValidators.email(value ?? '')),
+                    _authValidationText(AuthValidators.phone(value ?? '')),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -154,8 +151,8 @@ class _V2LoginPageState extends ConsumerState<V2LoginPage> {
     try {
       await ref
           .read(v2AuthControllerProvider.notifier)
-          .signInWithEmail(
-            LoginCommand(email: _email.text.trim(), password: _password.text),
+          .signInWithPhone(
+            LoginCommand(phone: _phone.text.trim(), password: _password.text),
           );
 
       if (mounted) {
@@ -181,7 +178,6 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _fullName = TextEditingController();
   final _phone = TextEditingController();
-  final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
   final _referralCode = TextEditingController();
@@ -196,7 +192,6 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   void dispose() {
     _fullName.dispose();
     _phone.dispose();
-    _email.dispose();
     _password.dispose();
     _confirmPassword.dispose();
     _referralCode.dispose();
@@ -220,7 +215,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               _AuthSectionLabel(
                 title: 'Thông tin tài khoản',
                 subtitle:
-                    'Bạn có thể cập nhật thêm thông tin cá nhân bất cứ lúc nào.',
+                    'Bạn dùng số điện thoại để đăng nhập và khôi phục tài khoản.',
               ),
               const SizedBox(height: AppSpacing.sectionSpacing),
               _AuthTextField(
@@ -239,27 +234,13 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
               _AuthTextField(
                 controller: _phone,
                 label: 'Số điện thoại',
-                hintText: 'Không bắt buộc',
+                hintText: '09xxxxxxxx',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.telephoneNumber],
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _AuthTextField(
-                controller: _email,
-                label: 'Địa chỉ email',
-                hintText: 'ban@example.com',
-                prefixIcon: Icons.alternate_email_rounded,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                autofillHints: const [
-                  AutofillHints.username,
-                  AutofillHints.email,
-                ],
                 validator: (value) =>
-                    _authValidationText(AuthValidators.email(value ?? '')),
+                    _authValidationText(AuthValidators.phone(value ?? '')),
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -365,15 +346,14 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
     setState(() => _loading = true);
 
     try {
-      final result = await ref
+      await ref
           .read(v2AuthControllerProvider.notifier)
-          .signUpWithEmail(
+          .signUpWithPhone(
             RegisterCommand(
-              email: _email.text.trim(),
+              phone: _phone.text.trim(),
               password: _password.text,
               confirmPassword: _confirmPassword.text,
               fullName: _fullName.text.trim(),
-              phone: _phone.text.trim(),
               acceptedTerms: _acceptedTerms,
               referralCode: _referralCodeValidator.normalize(
                 _referralCode.text,
@@ -383,14 +363,7 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
 
       if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.success);
-      if (result == RegistrationResult.verificationRequired) {
-        context.go(
-          '${V2RoutePaths.verifyEmail}'
-          '?email=${Uri.encodeComponent(_email.text.trim())}',
-        );
-      } else {
-        context.go(V2RoutePaths.authGate);
-      }
+      context.go(V2RoutePaths.authGate);
     } catch (error) {
       if (mounted) _showError(context, error);
     } finally {
@@ -399,141 +372,8 @@ class _V2RegisterPageState extends ConsumerState<V2RegisterPage> {
   }
 }
 
-class V2VerifyEmailPage extends ConsumerStatefulWidget {
-  final String email;
-
-  const V2VerifyEmailPage({super.key, required this.email});
-
-  @override
-  ConsumerState<V2VerifyEmailPage> createState() => _V2VerifyEmailPageState();
-}
-
-class _V2VerifyEmailPageState extends ConsumerState<V2VerifyEmailPage> {
-  Timer? _timer;
-  var _cooldown = 0;
-  var _loading = false;
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final email = widget.email.isEmpty ? 'email của bạn' : widget.email;
-
-    return _AuthScaffold(
-      eyebrow: 'XÁC THỰC TÀI KHOẢN',
-      fallbackRoute: V2RoutePaths.login,
-      heroIcon: Icons.mark_email_read_rounded,
-      title: 'Kiểm tra email nhé',
-      subtitle: 'Mở liên kết xác thực gửi tới $email rồi quay lại.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _InfoBox(
-            icon: Icons.mail_lock_outlined,
-            title: 'Bước nhỏ để bảo vệ hồ sơ của bạn',
-            message:
-                'Hãy kiểm tra cả mục Thư rác hoặc Quảng cáo nếu bạn chưa thấy email sau vài phút.',
-          ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
-          _PrimaryAuthButton(
-            label: 'Tôi đã xác thực email',
-            icon: Icons.check_circle_outline_rounded,
-            loading: _loading,
-            onPressed: () => context.go(V2RoutePaths.authGate),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _SecondaryAuthButton(
-            label: _cooldown > 0
-                ? 'Gửi lại sau $_cooldown giây'
-                : 'Gửi lại email xác thực',
-            icon: Icons.refresh_rounded,
-            onPressed: _cooldown > 0 || _loading || widget.email.isEmpty
-                ? null
-                : _resend,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _RoutePrompt(
-            prompt: 'Muốn dùng email khác?',
-            actionLabel: 'Quay lại đăng nhập',
-            onPressed: _loading ? null : () => _returnToLogin(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _resend() async {
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    setState(() => _loading = true);
-
-    try {
-      await ref
-          .read(v2AuthControllerProvider.notifier)
-          .resendEmailConfirmation(widget.email);
-
-      _startCooldown();
-      AppFeedbackService.instance.emit(AppFeedbackType.success);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(AppSpacing.cardPadding),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            content: const Text('Nabi đã gửi lại email xác thực.'),
-          ),
-        );
-      }
-    } catch (error) {
-      if (mounted) _showError(context, error);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  void _startCooldown() {
-    _timer?.cancel();
-    setState(() => _cooldown = 60);
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) return;
-
-      if (_cooldown <= 1) {
-        timer.cancel();
-        setState(() => _cooldown = 0);
-      } else {
-        setState(() => _cooldown--);
-      }
-    });
-  }
-}
-
-class V2ForgotPasswordPage extends ConsumerStatefulWidget {
+class V2ForgotPasswordPage extends StatelessWidget {
   const V2ForgotPasswordPage({super.key});
-
-  @override
-  ConsumerState<V2ForgotPasswordPage> createState() =>
-      _V2ForgotPasswordPageState();
-}
-
-class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-
-  var _loading = false;
-  var _sent = false;
-
-  @override
-  void dispose() {
-    _email.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -542,80 +382,26 @@ class _V2ForgotPasswordPageState extends ConsumerState<V2ForgotPasswordPage> {
       fallbackRoute: V2RoutePaths.login,
       heroIcon: Icons.key_rounded,
       title: 'Lấy lại mật khẩu',
-      subtitle:
-          'Nhập email đã đăng ký, Nabi sẽ gửi một liên kết an toàn để bạn đặt mật khẩu mới.',
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (_sent) ...[
-              const _InfoBox(
-                icon: Icons.mark_email_read_outlined,
-                title: 'Kiểm tra hộp thư của bạn',
-                message:
-                    'Nếu email phù hợp với tài khoản, bạn sẽ nhận được liên kết đặt lại mật khẩu.',
-              ),
-              const SizedBox(height: AppSpacing.sectionSpacing),
-            ],
-            _AuthTextField(
-              controller: _email,
-              label: 'Địa chỉ email',
-              hintText: 'ban@example.com',
-              prefixIcon: Icons.alternate_email_rounded,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.done,
-              autofillHints: const [
-                AutofillHints.username,
-                AutofillHints.email,
-              ],
-              validator: (value) =>
-                  _authValidationText(AuthValidators.email(value ?? '')),
-              onFieldSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            _PrimaryAuthButton(
-              label: _sent ? 'Gửi lại liên kết' : 'Gửi liên kết',
-              icon: Icons.send_rounded,
-              loading: _loading,
-              onPressed: _submit,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            _RoutePrompt(
-              prompt: 'Bạn đã nhớ mật khẩu?',
-              actionLabel: 'Quay lại đăng nhập',
-              onPressed: _loading ? null : () => _returnToLogin(context),
-            ),
-          ],
-        ),
+      subtitle: 'Hãy liên hệ quản trị viên để được hỗ trợ.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _InfoBox(
+            icon: Icons.support_agent_rounded,
+            title: 'Liên hệ quản trị viên',
+            message:
+                'Sau khi xác minh số điện thoại đăng ký, quản trị viên sẽ đặt lại mật khẩu của bạn thành 12345678. Hãy đổi mật khẩu ngay sau khi đăng nhập.',
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+          _PrimaryAuthButton(
+            label: 'Quay lại đăng nhập',
+            icon: Icons.arrow_back_rounded,
+            loading: false,
+            onPressed: () => context.go(V2RoutePaths.login),
+          ),
+        ],
       ),
     );
-  }
-
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) {
-      AppFeedbackService.instance.emit(AppFeedbackType.warning);
-      return;
-    }
-
-    AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    FocusManager.instance.primaryFocus?.unfocus();
-    setState(() => _loading = true);
-
-    try {
-      await ref
-          .read(v2AuthControllerProvider.notifier)
-          .sendPasswordRecovery(_email.text.trim());
-
-      if (mounted) {
-        setState(() => _sent = true);
-        AppFeedbackService.instance.emit(AppFeedbackType.success);
-      }
-    } catch (error) {
-      if (mounted) _showError(context, error);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
   }
 }
 
@@ -651,7 +437,7 @@ class _V2ResetPasswordPageState extends ConsumerState<V2ResetPasswordPage> {
       heroIcon: Icons.lock_reset_rounded,
       title: 'Đặt mật khẩu mới',
       subtitle:
-          'Chọn một mật khẩu đủ an toàn để Nabi tiếp tục bảo vệ hồ sơ của bạn.',
+          'Quản trị viên đã đặt lại mật khẩu về 12345678. Hãy đổi sang mật khẩu riêng để tiếp tục.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -1386,24 +1172,31 @@ class _AuthLegalConsent extends StatelessWidget {
                 : colors.borderLight,
           ),
         ),
-        child: CheckboxListTile(
-          value: value,
-          onChanged: enabled ? onChanged : null,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          controlAffinity: ListTileControlAffinity.leading,
-          dense: true,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
-          activeColor: colors.primary,
-          checkboxShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-          ),
-          title: Text(
-            'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: colors.textSecondary,
-              height: 1.4,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          clipBehavior: Clip.antiAlias,
+          child: CheckboxListTile(
+            value: value,
+            onChanged: enabled ? onChanged : null,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+            ),
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            activeColor: colors.primary,
+            checkboxShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.xs),
+            ),
+            title: Text(
+              'Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
+                height: 1.4,
+              ),
             ),
           ),
         ),

@@ -1,28 +1,26 @@
 class RegisterCommand {
-  final String email;
+  final String phone;
   final String password;
   final String confirmPassword;
   final String? fullName;
-  final String? phone;
   final bool acceptedTerms;
   final String? referralCode;
 
   const RegisterCommand({
-    required this.email,
+    required this.phone,
     required this.password,
     required this.confirmPassword,
     required this.acceptedTerms,
     this.fullName,
-    this.phone,
     this.referralCode,
   });
 }
 
 class LoginCommand {
-  final String email;
+  final String phone;
   final String password;
 
-  const LoginCommand({required this.email, required this.password});
+  const LoginCommand({required this.phone, required this.password});
 }
 
 class UpdatePasswordCommand {
@@ -35,4 +33,4 @@ class UpdatePasswordCommand {
   });
 }
 
-enum RegistrationResult { verificationRequired, sessionReady }
+enum RegistrationResult { sessionReady }

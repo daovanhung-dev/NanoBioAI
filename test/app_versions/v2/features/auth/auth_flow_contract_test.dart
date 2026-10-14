@@ -10,7 +10,7 @@ void main() {
       expect(V2RoutePaths.authGate, AuthRoutePaths.authGate);
       expect(V2RoutePaths.login, AuthRoutePaths.login);
       expect(V2RoutePaths.register, AuthRoutePaths.register);
-      expect(V2RoutePaths.verifyEmail, AuthRoutePaths.verifyEmail);
+      expect(V2RoutePaths.forgotPassword, AuthRoutePaths.forgotPassword);
       expect(V2RoutePaths.authCallback, AuthRoutePaths.authCallback);
     });
 
@@ -90,7 +90,10 @@ void main() {
       ).readAsStringSync();
 
       expect(datasourceSource, contains("'referral_code': referralCode"));
-      expect(datasourceSource, contains("'device_fingerprint': deviceFingerprint"));
+      expect(
+        datasourceSource,
+        contains("'device_fingerprint': deviceFingerprint"),
+      );
       expect(datasourceSource, contains('authCallbackTypeFromUri'));
       expect(routerSource, contains('v2RouterProvider'));
       expect(routerSource, contains('exactProtectedPaths'));
@@ -104,7 +107,10 @@ void main() {
       expect(manifestSource, contains('android:value="false"'));
       expect(repositorySource, contains('_mapSignUpException'));
       expect(repositorySource, contains('_safeUserMessageFor'));
-      expect(repositorySource, isNot(contains('userMessage: details.fullMessage')));
+      expect(
+        repositorySource,
+        isNot(contains('userMessage: details.fullMessage')),
+      );
     });
 
     test('Flutter auth client does not insert baseline profile rows', () {

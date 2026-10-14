@@ -43,7 +43,7 @@ Deno.test("bulk account provisioning requires JWT and Super Admin", async () => 
   assertEquals(inspectCalls, 0);
 });
 
-Deno.test("bulk account provisioning validates Gmail rows, plan and limit", async () => {
+Deno.test("bulk account provisioning validates phones, plan and limit", async () => {
   let inspectCalls = 0;
   const handler = createAdminProvisionAccountsBulkHandler(deps({
     inspect: () => {
@@ -62,7 +62,7 @@ Deno.test("bulk account provisioning validates Gmail rows, plan and limit", asyn
         accounts: Array.from(
           { length: 101 },
           (_, index) => ({
-            email: `u${index}@gmail.com`,
+            phone: `09${String(index).padStart(8, "0")}`,
             full_name: `User ${index}`,
           }),
         ),
@@ -82,12 +82,14 @@ Deno.test("bulk preview returns only sanitized row metadata", async () => {
         candidates: [
           {
             index: 1,
+            phone: " +84910000001",
             email: "new@gmail.com",
             fullName: "New User",
             status: "new",
           },
           {
             index: 2,
+            phone: "+84910000002",
             email: "old@gmail.com",
             fullName: "Old User",
             status: "paid_preserved",
@@ -233,7 +235,11 @@ function validBody(
 ): Record<string, unknown> {
   return {
     mode: "execute",
-    accounts: [{ email: "new@gmail.com", full_name: "New User" }],
+    accounts: [{
+      phone: "0910000001",
+      email: "new@gmail.com",
+      full_name: "New User",
+    }],
     password: "StrongPassword123!",
     plan_code: "plus",
     duration_months: 1,
@@ -251,6 +257,7 @@ function preview(): BulkPreview {
     candidateCount: 1,
     candidates: [{
       index: 1,
+      phone: "+84910000001",
       email: "new@gmail.com",
       fullName: "New User",
       status: "new",

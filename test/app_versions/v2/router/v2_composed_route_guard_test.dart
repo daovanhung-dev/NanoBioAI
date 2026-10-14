@@ -84,7 +84,7 @@ void main() {
     test('does not bypass unresolved or unverified auth states', () {
       for (final status in [
         AuthRouteStatus.initializing,
-        AuthRouteStatus.emailVerificationRequired,
+        AuthRouteStatus.passwordChangeRequired,
         AuthRouteStatus.profileBootstrapUnavailable,
         AuthRouteStatus.failure,
       ]) {

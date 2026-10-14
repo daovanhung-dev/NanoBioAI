@@ -79,12 +79,12 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
   }
 
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+  Future<RegistrationResult> signUpWithPhone(RegisterCommand command) async {
     final active = _signUpInFlight;
     if (active != null) return active;
 
     final operation = _runAccountMutation(
-      (repository) => repository.signUpWithEmail(command),
+      (repository) => repository.signUpWithPhone(command),
       syncReasonForResult: (result) => result == RegistrationResult.sessionReady
           ? AuthSyncReason.signUpSessionReady
           : null,
@@ -97,12 +97,12 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     }
   }
 
-  Future<void> signInWithEmail(LoginCommand command) async {
+  Future<void> signInWithPhone(LoginCommand command) async {
     final active = _signInInFlight;
     if (active != null) return active;
 
     final operation = _runAccountMutation(
-      (repository) => repository.signInWithEmail(command),
+      (repository) => repository.signInWithPhone(command),
       syncReason: AuthSyncReason.signIn,
     );
     _signInInFlight = operation;
@@ -111,16 +111,6 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     } finally {
       if (identical(_signInInFlight, operation)) _signInInFlight = null;
     }
-  }
-
-  Future<void> resendEmailConfirmation(String email) async {
-    _ensureAuthBackendReady();
-    await _repository.resendEmailConfirmation(email);
-  }
-
-  Future<void> sendPasswordRecovery(String email) async {
-    _ensureAuthBackendReady();
-    await _repository.sendPasswordRecovery(email);
   }
 
   Future<void> updatePassword(UpdatePasswordCommand command) {
@@ -230,7 +220,10 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
     try {
       await refresh();
     } catch (error, stackTrace) {
-      AppLogger.warning('AUTH_CONTROLLER', 'Auth event refresh deferred: $error');
+      AppLogger.warning(
+        'AUTH_CONTROLLER',
+        'Auth event refresh deferred: $error',
+      );
       AppLogger.error(
         'AUTH_CONTROLLER',
         'Auth event refresh failed',

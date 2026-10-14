@@ -10,7 +10,14 @@ export type BulkAccountParseResult = {
   issues: BulkAccountLineIssue[];
 };
 
-const GMAIL_PATTERN = /^[^\s@|]+@gmail\.com$/i;
+const EMAIL_PATTERN = /^[^\s@|]+@[^\s@|]+\.[^\s@|]+$/i;
+
+function normalizeVietnamPhone(value: string): string | null {
+  if (!/^[+\d\s().-]+$/.test(value.trim())) return null;
+  const digits = value.trim().replace(/\D/g, '');
+  const local = digits.startsWith('0084') ? digits.slice(4) : digits.startsWith('84') ? digits.slice(2) : digits.startsWith('0') ? digits.slice(1) : '';
+  return /^\d{9}$/.test(local) ? `+84${local}` : null;
+}
 
 export function parseBulkAccountLines(value: string): BulkAccountParseResult {
   const lines = value.split(/\r?\n/);
@@ -22,29 +29,34 @@ export function parseBulkAccountLines(value: string): BulkAccountParseResult {
     const raw = line.trim();
     if (!raw) return;
 
-    const separator = raw.indexOf('|');
-    if (separator < 0 || raw.indexOf('|', separator + 1) >= 0) {
-      issues.push({ index: index + 1, message: 'Cần nhập theo dạng email | họ tên.' });
+    const parts = raw.split('|').map((part) => part.trim());
+    if (parts.length < 2 || parts.length > 3) {
+      issues.push({ index: index + 1, message: 'Cần nhập theo dạng số điện thoại | họ tên | email liên hệ tùy chọn.' });
       return;
     }
 
-    const email = raw.slice(0, separator).trim().toLowerCase();
-    const fullName = raw.slice(separator + 1).trim();
-    if (!GMAIL_PATTERN.test(email)) {
-      issues.push({ index: index + 1, message: 'Chỉ chấp nhận địa chỉ kết thúc bằng @gmail.com.' });
+    const phone = normalizeVietnamPhone(parts[0] ?? '');
+    const fullName = parts[1] ?? '';
+    const email = (parts[2] ?? '').toLowerCase() || undefined;
+    if (!phone) {
+      issues.push({ index: index + 1, message: 'Số điện thoại chưa đúng định dạng Việt Nam.' });
+      return;
+    }
+    if (email && !EMAIL_PATTERN.test(email)) {
+      issues.push({ index: index + 1, message: 'Email liên hệ chưa đúng định dạng.' });
       return;
     }
     if (fullName.length < 2) {
       issues.push({ index: index + 1, message: 'Họ tên cần ít nhất 2 ký tự.' });
       return;
     }
-    if (seen.has(email)) {
-      issues.push({ index: index + 1, message: 'Email bị trùng trong danh sách.' });
+    if (seen.has(phone)) {
+      issues.push({ index: index + 1, message: 'Số điện thoại bị trùng trong danh sách.' });
       return;
     }
 
-    seen.add(email);
-    accounts.push({ email, fullName });
+    seen.add(phone);
+    accounts.push({ phone, fullName, ...(email ? { email } : {}) });
   });
 
   if (accounts.length > 100) {

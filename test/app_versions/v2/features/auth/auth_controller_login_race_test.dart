@@ -42,11 +42,8 @@ void main() {
 
       await container
           .read(v2AuthControllerProvider.notifier)
-          .signInWithEmail(
-            const LoginCommand(
-              email: 'dev.free@nanobio.local',
-              password: 'NanoBio@123456',
-            ),
+          .signInWithPhone(
+            const LoginCommand(phone: '0910000101', password: 'NanoBio@123456'),
           );
       await Future<void>.delayed(Duration.zero);
 
@@ -89,15 +86,15 @@ void main() {
     await container.read(v2AuthControllerProvider.future);
     final controller = container.read(v2AuthControllerProvider.notifier);
     const command = RegisterCommand(
-      email: 'signup@example.com',
+      phone: '0912345678',
       password: 'NanoBio@123456',
       confirmPassword: 'NanoBio@123456',
       fullName: 'Test User',
       acceptedTerms: true,
     );
 
-    final first = controller.signUpWithEmail(command);
-    final second = controller.signUpWithEmail(command);
+    final first = controller.signUpWithPhone(command);
+    final second = controller.signUpWithPhone(command);
 
     expect(repository.signUpCalls, 1);
     signupGate.complete(RegistrationResult.sessionReady);
@@ -132,14 +129,14 @@ class _RaceAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithEmail(LoginCommand command) async {
+  Future<void> signInWithPhone(LoginCommand command) async {
     onSignInEvent();
     await Future<void>.delayed(Duration.zero);
     signedIn = true;
   }
 
   @override
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+  Future<RegistrationResult> signUpWithPhone(RegisterCommand command) async {
     signUpCalls++;
     if (signupGate != null) return signupGate!.future;
     signedIn = true;
@@ -156,11 +153,7 @@ class _RaceAuthRepository implements AuthRepository {
   Future<void> requestAccountDeletion() async {}
 
   @override
-  Future<void> resendEmailConfirmation(String email) async {}
-
   @override
-  Future<void> sendPasswordRecovery(String email) async {}
-
   @override
   Future<void> signOut() async {
     signedIn = false;

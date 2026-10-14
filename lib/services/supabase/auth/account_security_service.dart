@@ -30,14 +30,13 @@ class AccountSecurityService {
     }
   }
 
-  Future<void> updatePassword(String newPassword) async {
+  Future<void> changePassword(String newPassword) async {
     final client = _requireClient();
-    final response = await client.auth.updateUser(
-      UserAttributes(password: newPassword),
+    await client.functions.invoke(
+      'member-change-password',
+      body: {'new_password': newPassword},
     );
-    if (response.user == null) {
-      throw AuthException('Failed to update password.');
-    }
+    await client.auth.refreshSession();
   }
 
   Future<void> signOut() async {

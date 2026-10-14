@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 import {
   createAdminUserManagementHandler,
+  MEMBER_RESET_PASSWORD,
   type UserManagementDetails,
   type UserManagementIdempotency,
   UserManagementRequestError,
@@ -45,8 +46,58 @@ Deno.serve(createAdminUserManagementHandler({
   getDetails: (userId) => getUserDetails(userId),
   updateProfile: ({ userId, changes }) => updateUserProfile(userId, changes),
   writeAudit: (input) => writeAudit(input),
-  resetPassword: (input) => resetUserPassword(input),
+  resetMemberPassword: ({ userId }) => resetMemberPassword(userId),
 }));
+
+async function resetMemberPassword(userId: string): Promise<void> {
+  const { data: profile, error: profileError } = await admin
+    .from("users")
+    .select("phone,app_access_mode")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profileError) throw profileError;
+  if (!profile) {
+    throw new UserManagementRequestError(404, "Không tìm thấy tài khoản.");
+  }
+  if (
+    typeof profile.phone !== "string" ||
+    profile.app_access_mode === "admin" ||
+    profile.app_access_mode === "both"
+  ) {
+    throw new UserManagementRequestError(
+      400,
+      "Chỉ đặt lại được tài khoản thành viên có số điện thoại.",
+    );
+  }
+
+  const { data: assignments, error: assignmentError } = await admin
+    .from("admin_user_roles")
+    .select("role_code")
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .is("revoked_at", null)
+    .limit(1);
+  if (assignmentError) throw assignmentError;
+  if (assignments?.length) {
+    throw new UserManagementRequestError(
+      400,
+      "Không thể đặt lại mật khẩu cho tài khoản nhân viên Admin.",
+    );
+  }
+
+  const { data, error: readError } = await admin.auth.admin.getUserById(userId);
+  if (readError || !data.user) {
+    throw readError ??
+      new UserManagementRequestError(404, "Không tìm thấy tài khoản.");
+  }
+  const appMetadata = { ...(data.user.app_metadata ?? {}) };
+  appMetadata.must_change_password = true;
+  const { error } = await admin.auth.admin.updateUserById(userId, {
+    password: MEMBER_RESET_PASSWORD,
+    app_metadata: appMetadata,
+  });
+  if (error) throw error;
+}
 
 async function hasActiveSuperAdmin(actorId: string): Promise<boolean> {
   const { data: actor, error: actorError } = await admin
@@ -241,19 +292,20 @@ async function updateUserProfile(
 ): Promise<void> {
   const update: Record<string, unknown> = {};
   if ("fullName" in changes) update.full_name = changes.fullName;
-  if ("phone" in changes) update.phone = changes.phone;
   if ("gender" in changes) update.gender = changes.gender;
   if ("birthYear" in changes) update.birth_year = changes.birthYear;
 
-  const { data: user, error: userError } = await admin
-    .from("users")
-    .update(update)
-    .eq("id", userId)
-    .select("id")
-    .maybeSingle();
-  if (userError) throw userError;
-  if (!user) {
-    throw new UserManagementRequestError(404, "Không tìm thấy tài khoản.");
+  if (Object.keys(update).length > 0) {
+    const { data: user, error: userError } = await admin
+      .from("users")
+      .update(update)
+      .eq("id", userId)
+      .select("id")
+      .maybeSingle();
+    if (userError) throw userError;
+    if (!user) {
+      throw new UserManagementRequestError(404, "Không tìm thấy tài khoản.");
+    }
   }
 
   const subjectUpdate: Record<string, unknown> = {};
@@ -276,15 +328,14 @@ async function updateUserProfile(
   }
   const metadata = record(authData.user.user_metadata) ?? {};
   if ("fullName" in changes) metadata.full_name = changes.fullName;
-  if ("phone" in changes) {
-    if (changes.phone) metadata.phone = changes.phone;
-    else delete metadata.phone;
-  }
+  const authUpdate: {
+    user_metadata: Record<string, unknown>;
+  } = {
+    user_metadata: metadata,
+  };
   const { error: authUpdateError } = await admin.auth.admin.updateUserById(
     userId,
-    {
-      user_metadata: metadata,
-    },
+    authUpdate,
   );
   if (authUpdateError) throw authUpdateError;
 }
@@ -310,68 +361,6 @@ async function writeAudit(input: {
     ignoreDuplicates: true,
   });
   if (error) throw error;
-}
-
-async function resetUserPassword(input: {
-  actorId: string;
-  userId: string;
-  reason: string;
-  idempotencyKey: string;
-}): Promise<{ password: string }> {
-  const { data: current, error: readError } = await admin.auth.admin
-    .getUserById(input.userId);
-  if (readError || !current.user) {
-    throw readError ??
-      new UserManagementRequestError(404, "Không tìm thấy tài khoản.");
-  }
-
-  const { data: marker, error: markerError } = await admin.from(
-    "admin_audit_events",
-  ).insert({
-    actor_id: input.actorId,
-    action: "admin_reset_user_password",
-    target_type: "user",
-    target_id: input.userId,
-    reason: input.reason,
-    idempotency_key: input.idempotencyKey,
-    metadata: { status: "started" },
-  }).select("id").single();
-  if (markerError) {
-    if (markerError.code === "23505") {
-      throw new UserManagementRequestError(
-        409,
-        "Mã thao tác đã được xử lý trước đó. Không tạo mật khẩu mới.",
-      );
-    }
-    throw markerError;
-  }
-
-  const password = generateTemporaryPassword();
-  const metadata = record(current.user.user_metadata) ?? {};
-  metadata.must_change_password = false;
-  const { error: updateError } = await admin.auth.admin.updateUserById(
-    input.userId,
-    {
-      password,
-      user_metadata: metadata,
-    },
-  );
-  if (updateError) throw updateError;
-
-  const { error: completeError } = await admin
-    .from("admin_audit_events")
-    .update({ metadata: { status: "completed", password_reset: true } })
-    .eq("id", marker.id);
-  if (completeError) throw completeError;
-  return { password };
-}
-
-function generateTemporaryPassword(): string {
-  const alphabet =
-    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*+-_";
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
 }
 
 function normalizePlanCode(

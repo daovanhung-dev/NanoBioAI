@@ -13,13 +13,25 @@ void main() {
       expect(details.fullMessage, contains('Sai thông tin đăng nhập'));
     });
 
-    test('classifies unverified email separately', () {
+    test('classifies duplicate phone signup errors', () {
       final details = SupabaseAuthErrorTranslator.fromAuthException(
-        const AuthException('Email not confirmed', statusCode: '400'),
+        const AuthException(
+          'Phone number already registered',
+          statusCode: '422',
+        ),
       );
 
-      expect(details.kind, SupabaseAuthErrorKind.emailUnverified);
-      expect(details.fullMessage, contains('Email chưa xác thực'));
+      expect(details.kind, SupabaseAuthErrorKind.phoneAlreadyRegistered);
+      expect(details.fullMessage, contains('Số điện thoại đã có tài khoản'));
+    });
+
+    test('classifies disabled phone auth as configuration failure', () {
+      final details = SupabaseAuthErrorTranslator.fromAuthException(
+        const AuthException('Phone signups are disabled', statusCode: '422'),
+      );
+
+      expect(details.kind, SupabaseAuthErrorKind.configuration);
+      expect(details.fullMessage, isNot(contains('Tài khoản bị khóa')));
     });
 
     test(

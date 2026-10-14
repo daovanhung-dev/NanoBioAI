@@ -2,8 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum SupabaseAuthErrorKind {
   invalidCredentials,
-  emailUnverified,
-  emailAlreadyRegistered,
+  phoneAlreadyRegistered,
   weakPassword,
   rateLimited,
   accountDisabled,
@@ -53,22 +52,23 @@ class SupabaseAuthErrorTranslator {
       return _rateLimited;
     }
 
-    if (message.contains('email not confirmed') ||
-        message.contains('email_not_confirmed') ||
-        message.contains('not confirmed')) {
-      return _emailUnverified;
-    }
-
-    if (message.contains('already registered') ||
+    if (message.contains('phone_exists') ||
+        message.contains('phone already') ||
+        message.contains('already registered') ||
         message.contains('already exists') ||
         message.contains('user already')) {
-      return _emailAlreadyRegistered;
+      return _phoneAlreadyRegistered;
     }
 
     if (message.contains('weak password') ||
         message.contains('password should') ||
         message.contains('password must')) {
       return _weakPassword;
+    }
+
+    if (message.contains('phone') &&
+        (message.contains('disabled') || message.contains('not enabled'))) {
+      return _configuration;
     }
 
     if (message.contains('banned') ||
@@ -130,19 +130,13 @@ class SupabaseAuthErrorTranslator {
 const _invalidCredentials = SupabaseAuthErrorDetails(
   kind: SupabaseAuthErrorKind.invalidCredentials,
   title: 'Sai thông tin đăng nhập',
-  message: 'Email hoặc mật khẩu không đúng. Kiểm tra lại rồi thử lại.',
+  message: 'Số điện thoại hoặc mật khẩu không đúng. Kiểm tra lại rồi thử lại.',
 );
 
-const _emailUnverified = SupabaseAuthErrorDetails(
-  kind: SupabaseAuthErrorKind.emailUnverified,
-  title: 'Email chưa xác thực',
-  message: 'Tài khoản này cần xác thực email trước khi đăng nhập.',
-);
-
-const _emailAlreadyRegistered = SupabaseAuthErrorDetails(
-  kind: SupabaseAuthErrorKind.emailAlreadyRegistered,
-  title: 'Email đã tồn tại',
-  message: 'Email này đã có tài khoản. Hãy đăng nhập hoặc đặt lại mật khẩu.',
+const _phoneAlreadyRegistered = SupabaseAuthErrorDetails(
+  kind: SupabaseAuthErrorKind.phoneAlreadyRegistered,
+  title: 'Số điện thoại đã có tài khoản',
+  message: 'Hãy đăng nhập hoặc liên hệ quản trị viên để đặt lại mật khẩu.',
 );
 
 const _weakPassword = SupabaseAuthErrorDetails(

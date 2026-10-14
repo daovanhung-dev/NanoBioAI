@@ -2,22 +2,20 @@ import 'package:nano_app/app_versions/v2/features/auth/data/services/device_fing
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_profile.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/services/vietnam_phone_number.dart';
 import 'package:nano_app/core/config/app_env.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthRemoteDatasource {
   final SupabaseClient client;
-  final String? emailRedirectUrl;
   final String deleteAccountFunctionName;
   final DeviceFingerprintProvider deviceFingerprintProvider;
 
   SupabaseAuthRemoteDatasource({
     required this.client,
-    String? emailRedirectUrl,
     String? deleteAccountFunctionName,
     this.deviceFingerprintProvider = const DeviceFingerprintProvider(),
-  }) : emailRedirectUrl = emailRedirectUrl ?? _env('AUTH_EMAIL_REDIRECT_URL'),
-       deleteAccountFunctionName =
+  }) : deleteAccountFunctionName =
            deleteAccountFunctionName ??
            _env('AUTH_DELETE_ACCOUNT_FUNCTION') ??
            'delete-account';
@@ -28,7 +26,7 @@ class SupabaseAuthRemoteDatasource {
     );
   }
 
-  AuthSessionSnapshot? currentSessionSnapshot() {
+  AuthSessionSnapshot? cachedSessionSnapshot() {
     final session = client.auth.currentSession;
     final user = client.auth.currentUser;
     if (session == null || user == null || session.isExpired) return null;
@@ -36,8 +34,20 @@ class SupabaseAuthRemoteDatasource {
     return AuthSessionSnapshot(
       userId: user.id,
       email: user.email,
-      emailConfirmed: user.emailConfirmedAt != null,
-      mustChangePassword: user.userMetadata?['must_change_password'] == true,
+      mustChangePassword: user.appMetadata['must_change_password'] == true,
+    );
+  }
+
+  Future<AuthSessionSnapshot?> currentSessionSnapshot() async {
+    final cached = cachedSessionSnapshot();
+    if (cached == null) return null;
+    final response = await client.auth.getUser();
+    final user = response.user;
+    if (user == null) return null;
+    return AuthSessionSnapshot(
+      userId: user.id,
+      email: user.email,
+      mustChangePassword: user.appMetadata['must_change_password'] == true,
     );
   }
 
@@ -57,55 +67,56 @@ class SupabaseAuthRemoteDatasource {
 
   Future<AuthResponse> signUp(RegisterCommand command) async {
     final fullName = command.fullName?.trim();
-    final phone = command.phone?.trim();
+    final phone = VietnamPhoneNumber.normalize(command.phone);
+    if (phone == null) throw AuthException('invalid phone number');
     final referralCode = command.referralCode?.trim().toUpperCase();
     final deviceFingerprint = await deviceFingerprintProvider.getOrCreate();
 
-    return client.auth.signUp(
-      email: command.email.trim(),
+    try {
+      await client.functions.invoke(
+        'member-phone-signup',
+        body: {
+          'phone': phone,
+          'password': command.password,
+          if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
+          if (referralCode != null && referralCode.isNotEmpty)
+            'referral_code': referralCode,
+          'device_fingerprint': deviceFingerprint,
+        },
+      );
+    } on FunctionException catch (error) {
+      final details = error.details;
+      final code = details is Map ? details['code']?.toString() : null;
+      if (error.status == 409 || code == 'phone_exists') {
+        throw AuthException('phone_exists');
+      }
+      if (error.status == 429 || code == 'rate_limited') {
+        throw AuthException('rate limit');
+      }
+      throw AuthException('member signup unavailable');
+    }
+
+    return client.auth.signInWithPassword(
+      email: VietnamPhoneNumber.authEmail(phone),
       password: command.password,
-      emailRedirectTo: emailRedirectUrl,
-      data: {
-        if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
-        if (phone != null && phone.isNotEmpty) 'phone': phone,
-        if (referralCode != null && referralCode.isNotEmpty)
-          'referral_code': referralCode,
-        'device_fingerprint': deviceFingerprint,
-      },
     );
   }
 
   Future<void> signIn(LoginCommand command) async {
+    final phone = VietnamPhoneNumber.normalize(command.phone);
+    if (phone == null) throw AuthException('invalid phone number');
     await client.auth.signInWithPassword(
-      email: command.email.trim(),
+      email: VietnamPhoneNumber.authEmail(phone),
       password: command.password,
     );
   }
 
-  Future<void> resendEmailConfirmation(String email) async {
-    await client.auth.resend(
-      email: email.trim(),
-      type: OtpType.signup,
-      emailRedirectTo: emailRedirectUrl,
-    );
-  }
-
-  Future<void> sendPasswordRecovery(String email) async {
-    await client.auth.resetPasswordForEmail(
-      email.trim(),
-      redirectTo: emailRedirectUrl,
-    );
-  }
-
   Future<void> updatePassword(UpdatePasswordCommand command) async {
-    final metadata = <String, dynamic>{
-      ...?client.auth.currentUser?.userMetadata,
-      'must_change_password': false,
-    };
-    await client.auth.updateUser(UserAttributes(
-      password: command.newPassword,
-      data: metadata,
-    ));
+    await client.functions.invoke(
+      'member-change-password',
+      body: {'new_password': command.newPassword},
+    );
+    await client.auth.refreshSession();
   }
 
   Future<AuthCallbackResult> recoverSessionFromUri(Uri uri) async {
@@ -114,8 +125,7 @@ class SupabaseAuthRemoteDatasource {
     return switch (callbackType) {
       AuthCallbackType.passwordRecovery =>
         const AuthCallbackResult.passwordRecovery(),
-      AuthCallbackType.emailConfirmation =>
-        const AuthCallbackResult.emailConfirmation(),
+      AuthCallbackType.emailConfirmation => const AuthCallbackResult.unknown(),
       AuthCallbackType.unknown => const AuthCallbackResult.unknown(),
     };
   }

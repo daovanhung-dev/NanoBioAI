@@ -55,10 +55,8 @@ void main() {
           session: const AuthSessionSnapshot(
             userId: 'auth-1',
             email: 'auth-1@nanobio.local',
-            emailConfirmed: true,
           ),
           profile: AuthProfile.fromMap(remote.lastSnapshot!.user!),
-          requiresEmailConfirmation: false,
         );
         expect(routeState.status, AuthRouteStatus.authenticatedReady);
       },

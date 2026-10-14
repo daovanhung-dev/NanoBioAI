@@ -1,56 +1,56 @@
 export const ADMIN_ROLES = [
-  'super_admin',
-  'finance_admin',
-  'support_admin',
-  'content_admin',
-  'operations_admin',
+  "super_admin",
+  "finance_admin",
+  "support_admin",
+  "content_admin",
+  "operations_admin",
 ] as const;
 
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 
 export const PERMISSIONS = {
-  dashboardRead: 'dashboard.read',
-  usersWrite: 'users.write',
-  paymentsWrite: 'payments.write',
-  salesWrite: 'sales.write',
-  reconciliationWrite: 'reconciliation.write',
-  pointsWrite: 'points.write',
-  wellnessRewardsRead: 'wellness_rewards.read',
-  wellnessRewardsWrite: 'wellness_rewards.write',
-  earlyAccessRead: 'early_access.read',
-  earlyAccessUpdate: 'early_access.update',
-  plansWrite: 'plans.write',
-  reportsWrite: 'reports.write',
-  auditRead: 'audit.read',
-  configWrite: 'config.write',
-  wildcard: '*',
+  dashboardRead: "dashboard.read",
+  usersWrite: "users.write",
+  paymentsWrite: "payments.write",
+  salesWrite: "sales.write",
+  reconciliationWrite: "reconciliation.write",
+  pointsWrite: "points.write",
+  wellnessRewardsRead: "wellness_rewards.read",
+  wellnessRewardsWrite: "wellness_rewards.write",
+  earlyAccessRead: "early_access.read",
+  earlyAccessUpdate: "early_access.update",
+  plansWrite: "plans.write",
+  reportsWrite: "reports.write",
+  auditRead: "audit.read",
+  configWrite: "config.write",
+  wildcard: "*",
 } as const;
 
 export type AdminPermission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 export const SECTIONS = [
-  'dashboard',
-  'users',
-  'payments',
-  'sales',
-  'sale-conversions',
-  'wellness-rewards',
-  'event-info',
-  'reconciliation',
-  'plans',
-  'reports',
-  'audit',
-  'config',
+  "dashboard",
+  "users",
+  "payments",
+  "sales",
+  "sale-conversions",
+  "wellness-rewards",
+  "event-info",
+  "reconciliation",
+  "plans",
+  "reports",
+  "audit",
+  "config",
 ] as const;
 
 export type AdminSection = (typeof SECTIONS)[number];
 
 export const EARLY_ACCESS_LEAD_STATUSES = [
-  'new',
-  'contacted',
-  'registered',
-  'converted',
-  'rejected',
+  "new",
+  "contacted",
+  "registered",
+  "converted",
+  "rejected",
 ] as const;
 
 export type EarlyAccessLeadStatus = (typeof EARLY_ACCESS_LEAD_STATUSES)[number];
@@ -112,7 +112,12 @@ export type AdminWorkItem = {
   paymentReconciliation?: PaymentReconciliation;
 };
 
-export const ADMIN_PLAN_CODES = ['guest', 'free', 'plus', 'family_plus'] as const;
+export const ADMIN_PLAN_CODES = [
+  "guest",
+  "free",
+  "plus",
+  "family_plus",
+] as const;
 
 export type AdminPlanCode = (typeof ADMIN_PLAN_CODES)[number];
 
@@ -150,23 +155,26 @@ export type MutationResult = {
 
 export type AccountCreateInput = {
   fullName: string;
-  email: string;
+  email?: string;
   password: string;
-  phone?: string;
+  phone: string;
   reason: string;
   idempotencyKey: string;
 };
 
 export type MembershipGrantInput = {
   userId: string;
-  planCode: 'plus' | 'family_plus';
+  planCode: "plus" | "family_plus";
   startsAt: string;
   endsAt: string;
   reason: string;
   idempotencyKey: string;
 };
 
-export type MembershipPeriodAdjustmentOperation = 'add_days' | 'subtract_days' | 'set_end_at';
+export type MembershipPeriodAdjustmentOperation =
+  | "add_days"
+  | "subtract_days"
+  | "set_end_at";
 
 export type MembershipPeriodAdjustmentInput = {
   userId: string;
@@ -190,16 +198,17 @@ export type MembershipPeriodAdjustmentResult = {
   deltaDays: number | null;
 };
 
-export type BulkProvisionPlanCode = 'plus' | 'family_plus';
+export type BulkProvisionPlanCode = "plus" | "family_plus";
 
 export type BulkProvisionAccount = {
-  email: string;
+  phone: string;
   fullName: string;
+  email?: string;
 };
 
 export type BulkProvisionPreviewRow = {
   index: number;
-  status: 'new' | 'existing' | 'paid_preserved';
+  status: "new" | "existing" | "paid_preserved";
   currentPlan?: string;
 };
 
@@ -265,19 +274,10 @@ export type AdminUserDetails = {
 export type AdminUserProfileUpdateInput = {
   userId: string;
   fullName: string;
-  phone: string;
   gender: string;
   birthYear?: number;
   reason: string;
   idempotencyKey: string;
-};
-
-export type AdminPasswordResetResult = {
-  success: boolean;
-  message: string;
-  status: 'password_reset' | 'already_processed';
-  temporaryPassword?: string;
-  passwordVisibleOnce: boolean;
 };
 
 export type RewardOfferInput = {
@@ -304,98 +304,111 @@ export type SectionConfig = {
 
 export const SECTION_CONFIG: Record<AdminSection, SectionConfig> = {
   dashboard: {
-    label: 'Tổng quan',
-    description: 'Theo dõi tình hình vận hành và các việc cần ưu tiên.',
+    label: "Tổng quan",
+    description: "Theo dõi tình hình vận hành và các việc cần ưu tiên.",
     permission: PERMISSIONS.dashboardRead,
-    group: 'Tổng quan',
+    group: "Tổng quan",
   },
   users: {
-    label: 'Người dùng',
-    description: 'Tìm kiếm và quản lý trạng thái tài khoản người dùng.',
+    label: "Người dùng",
+    description: "Tìm kiếm và quản lý trạng thái tài khoản người dùng.",
     permission: PERMISSIONS.usersWrite,
-    group: 'Tài khoản',
+    group: "Tài khoản",
   },
   payments: {
-    label: 'Thanh toán',
-    description: 'Đối chiếu giao dịch trước khi duyệt hoặc từ chối.',
+    label: "Thanh toán",
+    description: "Đối chiếu giao dịch trước khi duyệt hoặc từ chối.",
     permission: PERMISSIONS.paymentsWrite,
-    group: 'Tài chính',
+    group: "Tài chính",
   },
   sales: {
-    label: 'Cộng tác viên',
-    description: 'Xử lý hồ sơ và trạng thái hoạt động của cộng tác viên.',
+    label: "Cộng tác viên",
+    description: "Xử lý hồ sơ và trạng thái hoạt động của cộng tác viên.",
     permission: PERMISSIONS.salesWrite,
-    group: 'Sale',
+    group: "Sale",
   },
-  'sale-conversions': {
-    label: 'Chi trả cộng tác viên',
-    description: 'Kiểm tra yêu cầu quy đổi và xác nhận việc chi trả.',
+  "sale-conversions": {
+    label: "Chi trả cộng tác viên",
+    description: "Kiểm tra yêu cầu quy đổi và xác nhận việc chi trả.",
     permission: PERMISSIONS.salesWrite,
-    group: 'Sale',
+    group: "Sale",
   },
-  'wellness-rewards': {
-    label: 'Điểm chăm sóc',
-    description: 'Quản lý ưu đãi và kho mã dành cho người dùng.',
+  "wellness-rewards": {
+    label: "Điểm chăm sóc",
+    description: "Quản lý ưu đãi và kho mã dành cho người dùng.",
     permission: PERMISSIONS.wellnessRewardsRead,
-    group: 'Vận hành',
+    group: "Vận hành",
   },
-  'event-info': {
-    label: 'Thông tin sự kiện',
-    description: 'Xem và xử lý thông tin đăng ký NanoBio Early Access.',
+  "event-info": {
+    label: "Thông tin sự kiện",
+    description: "Xem và xử lý thông tin đăng ký NanoBio Early Access.",
     permission: PERMISSIONS.earlyAccessRead,
-    group: 'Vận hành',
+    group: "Vận hành",
   },
   reconciliation: {
-    label: 'Đối soát',
-    description: 'Theo dõi sai lệch và ghi nhận kết quả đối soát.',
+    label: "Đối soát",
+    description: "Theo dõi sai lệch và ghi nhận kết quả đối soát.",
     permission: PERMISSIONS.reconciliationWrite,
-    group: 'Vận hành',
+    group: "Vận hành",
   },
   plans: {
-    label: 'Gói dịch vụ',
-    description: 'Quản lý các gói dịch vụ đang áp dụng.',
+    label: "Gói dịch vụ",
+    description: "Quản lý các gói dịch vụ đang áp dụng.",
     permission: PERMISSIONS.plansWrite,
-    group: 'Vận hành',
+    group: "Vận hành",
   },
   reports: {
-    label: 'Báo cáo',
-    description: 'Tạo và theo dõi yêu cầu xuất báo cáo.',
+    label: "Báo cáo",
+    description: "Tạo và theo dõi yêu cầu xuất báo cáo.",
     permission: PERMISSIONS.reportsWrite,
-    group: 'Kiểm tra',
+    group: "Kiểm tra",
   },
   audit: {
-    label: 'Lịch sử thao tác',
-    description: 'Xem lại các thao tác quan trọng đã được ghi nhận.',
+    label: "Lịch sử thao tác",
+    description: "Xem lại các thao tác quan trọng đã được ghi nhận.",
     permission: PERMISSIONS.auditRead,
-    group: 'Kiểm tra',
+    group: "Kiểm tra",
   },
   config: {
-    label: 'Thiết lập',
-    description: 'Cập nhật thiết lập vận hành theo phạm vi được cấp.',
+    label: "Thiết lập",
+    description: "Cập nhật thiết lập vận hành theo phạm vi được cấp.",
     permission: PERMISSIONS.configWrite,
-    group: 'Kiểm tra',
+    group: "Kiểm tra",
   },
 };
 
 export function canReviewPayments(session: AdminSession): boolean {
-  const reviewer = session.roles.includes('super_admin') || session.roles.includes('finance_admin');
-  return session.active && reviewer && (session.permissions.includes(PERMISSIONS.wildcard) || session.permissions.includes(PERMISSIONS.paymentsWrite));
+  const reviewer = session.roles.includes("super_admin") ||
+    session.roles.includes("finance_admin");
+  return session.active && reviewer &&
+    (session.permissions.includes(PERMISSIONS.wildcard) ||
+      session.permissions.includes(PERMISSIONS.paymentsWrite));
 }
 
-export function hasPermission(session: AdminSession, permission: string): boolean {
+export function hasPermission(
+  session: AdminSession,
+  permission: string,
+): boolean {
   if (!session.active || session.roles.length === 0) return false;
-  if (permission === PERMISSIONS.paymentsWrite) return canReviewPayments(session);
-  return session.permissions.includes(PERMISSIONS.wildcard) || session.permissions.includes(permission);
+  if (permission === PERMISSIONS.paymentsWrite) {
+    return canReviewPayments(session);
+  }
+  return session.permissions.includes(PERMISSIONS.wildcard) ||
+    session.permissions.includes(permission);
 }
 
-export function canAccessSection(session: AdminSession, section: AdminSection): boolean {
-  if (section === 'event-info') return canAccessEarlyAccess(session);
+export function canAccessSection(
+  session: AdminSession,
+  section: AdminSection,
+): boolean {
+  if (section === "event-info") return canAccessEarlyAccess(session);
   return hasPermission(session, SECTION_CONFIG[section].permission);
 }
 
 export function canAccessEarlyAccess(session: AdminSession): boolean {
   const allowedRole = session.roles.some((role) =>
-    role === 'super_admin' || role === 'support_admin' || role === 'operations_admin'
+    role === "super_admin" || role === "support_admin" ||
+    role === "operations_admin"
   );
   return session.active && allowedRole && (
     session.permissions.includes(PERMISSIONS.wildcard) ||
@@ -405,7 +418,8 @@ export function canAccessEarlyAccess(session: AdminSession): boolean {
 
 export function canManageEarlyAccess(session: AdminSession): boolean {
   const allowedRole = session.roles.some((role) =>
-    role === 'super_admin' || role === 'support_admin' || role === 'operations_admin'
+    role === "super_admin" || role === "support_admin" ||
+    role === "operations_admin"
   );
   return session.active && allowedRole && (
     session.permissions.includes(PERMISSIONS.wildcard) ||
@@ -414,27 +428,30 @@ export function canManageEarlyAccess(session: AdminSession): boolean {
 }
 
 export function canCreateAccount(session: AdminSession): boolean {
-  return session.active && (session.roles.includes('super_admin') || session.roles.includes('support_admin'));
+  return session.active &&
+    (session.roles.includes("super_admin") ||
+      session.roles.includes("support_admin"));
 }
 
 export function canGrantMembership(session: AdminSession): boolean {
-  return session.active && session.roles.includes('super_admin');
+  return session.active && session.roles.includes("super_admin");
 }
 
 export function canAdjustMembership(session: AdminSession): boolean {
-  return session.active && session.roles.includes('super_admin');
+  return session.active && session.roles.includes("super_admin");
 }
 
 export function canBulkProvisionAccounts(session: AdminSession): boolean {
-  return session.active && session.roles.includes('super_admin');
+  return session.active && session.roles.includes("super_admin");
 }
 
 export function canManageUserDetails(session: AdminSession): boolean {
-  return session.active && session.roles.includes('super_admin');
+  return session.active && session.roles.includes("super_admin");
 }
 
 export function canAdjustPoints(session: AdminSession): boolean {
-  return session.roles.includes('super_admin') && hasPermission(session, PERMISSIONS.pointsWrite);
+  return session.roles.includes("super_admin") &&
+    hasPermission(session, PERMISSIONS.pointsWrite);
 }
 
 export function normalizeArray<T>(value: unknown): T[] {
@@ -443,15 +460,17 @@ export function normalizeArray<T>(value: unknown): T[] {
 }
 
 export function normalizeMap(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return value as Record<string, unknown>;
 }
 
 export function toAdminSession(value: unknown): AdminSession {
   const map = normalizeMap(Array.isArray(value) ? value[0] : value);
   return {
-    userId: String(map.user_id ?? ''),
-    roles: normalizeArray<unknown>(map.roles).filter((role): role is AdminRole => ADMIN_ROLES.includes(role as AdminRole)),
+    userId: String(map.user_id ?? ""),
+    roles: normalizeArray<unknown>(map.roles).filter((
+      role,
+    ): role is AdminRole => ADMIN_ROLES.includes(role as AdminRole)),
     permissions: normalizeArray<unknown>(map.permissions).map(String),
     active: map.is_active === true,
     canUseUserApp: map.can_use_user_app !== false,
@@ -475,36 +494,40 @@ export function toUserWorkItems(value: unknown): AdminWorkItem[] {
       parseUserPlanCode(item.subtitle),
     );
 
-    const membershipId = optionalString(row.subscription_id ?? row.membership_id);
+    const membershipId = optionalString(
+      row.subscription_id ?? row.membership_id,
+    );
     const membershipPlan = normalizePlanCode(row.plan_code) ?? planCode;
     const membership = membershipId && membershipPlan
       ? {
-          subscriptionId: membershipId,
-          planCode: membershipPlan,
-          status: String(row.membership_status ?? 'active'),
-          source: optionalString(row.membership_source),
-          startsAt: optionalString(row.membership_starts_at),
-          endsAt: optionalString(row.membership_ends_at),
-        } satisfies AdminMembershipSummary
+        subscriptionId: membershipId,
+        planCode: membershipPlan,
+        status: String(row.membership_status ?? "active"),
+        source: optionalString(row.membership_source),
+        startsAt: optionalString(row.membership_starts_at),
+        endsAt: optionalString(row.membership_ends_at),
+      } satisfies AdminMembershipSummary
       : undefined;
 
     return planCode || membership
       ? {
-          ...item,
-          metadata: planCode ? { ...metadata, plan_code: planCode } : metadata,
-          ...(membership ? { membership } : {}),
-        }
+        ...item,
+        metadata: planCode ? { ...metadata, plan_code: planCode } : metadata,
+        ...(membership ? { membership } : {}),
+      }
       : item;
   });
 }
 
 export function parseUserPlanCode(subtitle: string): AdminPlanCode | undefined {
-  const match = subtitle.match(/(?:^| - )(guest|free|plus|family_plus) - [^-]+$/i);
+  const match = subtitle.match(
+    /(?:^| - )(guest|free|plus|family_plus) - [^-]+$/i,
+  );
   return match ? normalizePlanCode(match[1]) : undefined;
 }
 
 export function normalizePlanCode(value: unknown): AdminPlanCode | undefined {
-  const normalized = String(value ?? '').trim().toLowerCase();
+  const normalized = String(value ?? "").trim().toLowerCase();
   return ADMIN_PLAN_CODES.includes(normalized as AdminPlanCode)
     ? normalized as AdminPlanCode
     : undefined;
@@ -521,18 +544,18 @@ function firstPlanCode(...values: unknown[]): AdminPlanCode | undefined {
 function planCodeFromValue(value: unknown): AdminPlanCode | undefined {
   const code = normalizePlanCode(value);
   if (code) return code;
-  return String(value ?? '').trim().toLowerCase() === 'familyplus'
-    ? 'family_plus'
+  return String(value ?? "").trim().toLowerCase() === "familyplus"
+    ? "family_plus"
     : undefined;
 }
 
 function toWorkItem(row: Record<string, unknown>): AdminWorkItem {
   return {
-    id: String(row.id ?? ''),
-    title: String(row.title ?? 'Bản ghi'),
-    subtitle: String(row.subtitle ?? ''),
-    status: String(row.status ?? 'ready'),
-    section: String(row.section ?? ''),
+    id: String(row.id ?? ""),
+    title: String(row.title ?? "Bản ghi"),
+    subtitle: String(row.subtitle ?? ""),
+    status: String(row.status ?? "ready"),
+    section: String(row.section ?? ""),
     createdAt: row.created_at ? String(row.created_at) : undefined,
     metadata: normalizeMap(row.metadata),
     paymentReconciliation: toPaymentReconciliation(row),
@@ -563,20 +586,26 @@ export function toWellnessWorkItems(value: unknown): AdminWorkItem[] {
       cancelled_at: optionalString(row.cancelled_at),
     };
     return {
-      id: redemptionId ?? offerId ?? String(row.id ?? ''),
-      title: String(row.title ?? 'Ưu đãi Điểm chăm sóc'),
+      id: redemptionId ?? offerId ?? String(row.id ?? ""),
+      title: String(row.title ?? "Ưu đãi Điểm chăm sóc"),
       subtitle: redemptionId
-        ? `${optionalString(row.user_label) ?? 'Tài khoản NanoBio'} · ${optionalNumber(row.points_spent) ?? 0} điểm`
-        : `${optionalString(row.provider_name) ?? 'Nhà cung cấp chưa cập nhật'} · ${optionalNumber(row.cost_points) ?? 0} điểm`,
-      status: String(row.status ?? 'ready'),
-      section: 'wellness-rewards',
+        ? `${optionalString(row.user_label) ?? "Tài khoản NanoBio"} · ${
+          optionalNumber(row.points_spent) ?? 0
+        } điểm`
+        : `${
+          optionalString(row.provider_name) ?? "Nhà cung cấp chưa cập nhật"
+        } · ${optionalNumber(row.cost_points) ?? 0} điểm`,
+      status: String(row.status ?? "ready"),
+      section: "wellness-rewards",
       createdAt: row.created_at ? String(row.created_at) : undefined,
       metadata,
     };
   });
 }
 
-function toPaymentReconciliation(row: Record<string, unknown>): PaymentReconciliation | undefined {
+function toPaymentReconciliation(
+  row: Record<string, unknown>,
+): PaymentReconciliation | undefined {
   const metadata = normalizeMap(row.metadata);
   const source = { ...metadata, ...row };
   const details: PaymentReconciliation = {
@@ -588,23 +617,25 @@ function toPaymentReconciliation(row: Record<string, unknown>): PaymentReconcili
     currency: optionalString(source.currency),
     transferConfirmedAt: optionalString(source.transfer_confirmed_at),
   };
-  return Object.values(details).some((value) => value !== undefined) ? details : undefined;
+  return Object.values(details).some((value) => value !== undefined)
+    ? details
+    : undefined;
 }
 
 function optionalString(value: unknown): string | undefined {
-  const result = String(value ?? '').trim();
+  const result = String(value ?? "").trim();
   return result.length > 0 ? result : undefined;
 }
 
 function optionalNumber(value: unknown): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-export function makeIdempotencyKey(prefix: string, target = ''): string {
-  const random = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+export function makeIdempotencyKey(prefix: string, target = ""): string {
+  const random = typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  return `${prefix}-${target}-${random}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  return `${prefix}-${target}-${random}`.replace(/[^a-zA-Z0-9_-]/g, "_");
 }

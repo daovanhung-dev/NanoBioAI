@@ -1,11 +1,10 @@
 export type UserManagementOperation =
   | "detail"
   | "update_profile"
-  | "reset_password";
+  | "reset_member_password";
 
 export type UserProfileChanges = {
   fullName?: string;
-  phone?: string | null;
   gender?: string | null;
   birthYear?: number | null;
 };
@@ -26,7 +25,9 @@ export type AdminUserManagementDeps = {
   authenticate: (authorization: string | null) => Promise<string | null>;
   isAllowedAdmin: (actorId: string) => Promise<boolean>;
   findIdempotency: (
-    action: "admin_update_user_profile" | "admin_reset_user_password",
+    action:
+      | "admin_update_user_profile"
+      | "admin_reset_member_password",
     idempotencyKey: string,
   ) => Promise<UserManagementIdempotency | null>;
   getDetails: (userId: string) => Promise<UserManagementDetails>;
@@ -34,6 +35,7 @@ export type AdminUserManagementDeps = {
     userId: string;
     changes: UserProfileChanges;
   }) => Promise<void>;
+  resetMemberPassword: (input: { userId: string }) => Promise<void>;
   writeAudit: (input: {
     actorId: string;
     action: string;
@@ -42,12 +44,6 @@ export type AdminUserManagementDeps = {
     idempotencyKey?: string;
     metadata?: Record<string, unknown>;
   }) => Promise<void>;
-  resetPassword: (input: {
-    actorId: string;
-    userId: string;
-    reason: string;
-    idempotencyKey: string;
-  }) => Promise<{ password: string }>;
 };
 
 export class UserManagementRequestError extends Error {
@@ -56,6 +52,8 @@ export class UserManagementRequestError extends Error {
     this.name = "UserManagementRequestError";
   }
 }
+
+export const MEMBER_RESET_PASSWORD = "12345678";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -113,27 +111,40 @@ export function createAdminUserManagementHandler(
         message: "Thao tác quản lý người dùng chưa hợp lệ.",
       });
     }
-    if (!userId) {
+    if (
+      (operation === "detail" || operation === "update_profile" ||
+        operation === "reset_member_password") && !userId
+    ) {
       return json(400, {
         success: false,
         message: "Chưa chọn tài khoản.",
       });
     }
-    if (!reason) {
+    if (
+      (operation === "update_profile" ||
+        operation === "reset_member_password" || operation === "detail") &&
+      !reason
+    ) {
       return json(400, {
         success: false,
         message: "Cần nhập lý do cho thao tác này.",
       });
     }
+    if (reason && reason.length > 500) {
+      return json(400, {
+        success: false,
+        message: "Lý do thao tác tối đa 500 ký tự.",
+      });
+    }
 
     if (operation === "detail") {
       try {
-        const details = await deps.getDetails(userId);
+        const details = await deps.getDetails(userId!);
         await deps.writeAudit({
           actorId,
           action: "admin_view_user_health",
-          userId,
-          reason,
+          userId: userId!,
+          reason: reason ?? "",
           metadata: { scope: "self_health_and_current_membership" },
         });
         return json(200, { success: true, ...details });
@@ -175,15 +186,15 @@ export function createAdminUserManagementHandler(
           });
         }
 
-        await deps.updateProfile({ userId, changes: changes.value });
+        await deps.updateProfile({ userId: userId!, changes: changes.value });
         const changedFields = Object.keys(changes.value).map((key) =>
           key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
         );
         await deps.writeAudit({
           actorId,
           action: "admin_update_user_profile",
-          userId,
-          reason,
+          userId: userId!,
+          reason: reason!,
           idempotencyKey,
           metadata: { status: "completed", changed_fields: changedFields },
         });
@@ -196,19 +207,9 @@ export function createAdminUserManagementHandler(
         return requestError(error, "Chưa cập nhật được thông tin người dùng.");
       }
     }
-
-    if (actorId === userId) {
-      return json(400, {
-        success: false,
-        message: "Không thể đổi mật khẩu của tài khoản đang quản trị.",
-      });
-    }
-
+    const action = "admin_reset_member_password";
     try {
-      const previous = await deps.findIdempotency(
-        "admin_reset_user_password",
-        idempotencyKey,
-      );
+      const previous = await deps.findIdempotency(action, idempotencyKey);
       if (previous) {
         if (previous.targetId !== userId) {
           return json(409, {
@@ -216,37 +217,29 @@ export function createAdminUserManagementHandler(
             message: "Mã thao tác đã được dùng cho tài khoản khác.",
           });
         }
-        if (previous.status === "started") {
-          return json(409, {
-            success: false,
-            message:
-              "Thao tác đổi mật khẩu trước đó chưa có kết quả. Không tạo mật khẩu mới.",
-          });
-        }
         return json(200, {
           success: true,
-          status: "already_processed",
-          password_visible_once: false,
-          message: "Mật khẩu đã được đổi trước đó và không thể hiển thị lại.",
+          reset_password: MEMBER_RESET_PASSWORD,
+          message: "Mật khẩu tài khoản đã được đặt lại về 12345678.",
         });
       }
 
-      const result = await deps.resetPassword({
+      await deps.resetMemberPassword({ userId: userId! });
+      await deps.writeAudit({
         actorId,
-        userId,
-        reason,
+        action,
+        userId: userId!,
+        reason: reason ?? "",
         idempotencyKey,
+        metadata: { status: "completed", must_change_password: true },
       });
       return json(200, {
         success: true,
-        status: "password_reset",
-        temporary_password: result.password,
-        password_visible_once: true,
-        message:
-          "Đã đổi mật khẩu. Hãy lưu lại mật khẩu này và gửi cho người dùng qua kênh an toàn.",
+        reset_password: MEMBER_RESET_PASSWORD,
+        message: "Đã đặt lại mật khẩu về 12345678. Hãy liên hệ người dùng.",
       });
     } catch (error) {
-      return requestError(error, "Chưa đổi được mật khẩu người dùng.");
+      return requestError(error, "Chưa đặt lại được mật khẩu tài khoản.");
     }
   };
 }
@@ -258,6 +251,7 @@ function parseProfileChanges(body: Record<string, unknown>): {
   for (
     const forbidden of [
       "email",
+      "phone",
       "avatar_url",
       "password",
       "plan_code",
@@ -280,13 +274,6 @@ function parseProfileChanges(body: Record<string, unknown>): {
       return { value: {}, error: "Họ và tên chưa hợp lệ." };
     }
     changes.fullName = value;
-  }
-  if ("phone" in body) {
-    const value = nullableText(body.phone);
-    if (value !== null && value.length > 32) {
-      return { value: {}, error: "Số điện thoại chưa hợp lệ." };
-    }
-    changes.phone = value;
   }
   if ("gender" in body) {
     const value = nullableText(body.gender);
@@ -326,7 +313,7 @@ function requestError(error: unknown, fallback: string): Response {
 
 function isOperation(value: string): value is UserManagementOperation {
   return value === "detail" || value === "update_profile" ||
-    value === "reset_password";
+    value === "reset_member_password";
 }
 
 function text(value: unknown): string | null {

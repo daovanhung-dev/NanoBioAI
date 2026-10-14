@@ -225,7 +225,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               Text('Chỉnh sửa hồ sơ', style: AppTextStyles.heading3),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Email đăng nhập không đổi tại đây.',
+                'Số điện thoại gắn với đăng nhập được xem tại đây.',
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.sectionSpacing),
@@ -236,14 +236,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               ),
               _ProfileField(
                 controller: _email,
-                label: 'Địa chỉ email',
+                label: 'Email liên hệ',
                 enabled: false,
               ),
               _ProfileField(
                 controller: _phone,
                 label: 'Số điện thoại',
-                keyboardType: TextInputType.phone,
-                validator: ProfileValidator.validatePhone,
+                enabled: false,
               ),
               _ProfileField(controller: _gender, label: 'Giới tính'),
               _ProfileField(
@@ -324,7 +323,6 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       final bmi = _calculateBmi(height, weight);
       final localProfile = <String, dynamic>{
         'full_name': _fullName.text.trim(),
-        'phone': _phone.text.trim(),
         'gender': _gender.text.trim(),
         'birth_year': birthYear,
         'occupation': _occupation.text.trim(),

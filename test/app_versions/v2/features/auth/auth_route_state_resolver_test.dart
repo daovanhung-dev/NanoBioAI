@@ -7,58 +7,18 @@ void main() {
   const resolver = AuthRouteStateResolver();
   const session = AuthSessionSnapshot(
     userId: 'user-1',
-    email: 'Nabi@example.com',
-    emailConfirmed: true,
+    email: 'legacy-contact@example.com',
   );
 
   test('maps missing session to unauthenticated', () {
-    final state = resolver.resolve(
-      session: null,
-      profile: null,
-      requiresEmailConfirmation: true,
-    );
-
+    final state = resolver.resolve(session: null, profile: null);
     expect(state.status, AuthRouteStatus.unauthenticated);
   });
 
-  test('maps unverified email to verification route state', () {
+  test('routes accounts requiring an approved password change first', () {
     final state = resolver.resolve(
       session: const AuthSessionSnapshot(
         userId: 'user-1',
-        email: 'Nabi@example.com',
-        emailConfirmed: false,
-      ),
-      profile: const AuthProfile(
-        id: 'user-1',
-        onboardingStatus: 'completed',
-        subscriptionTier: 'plus',
-      ),
-      requiresEmailConfirmation: true,
-    );
-
-    expect(state.status, AuthRouteStatus.emailVerificationRequired);
-    expect(state.email, 'Nabi@example.com');
-    expect(state.subscriptionTier, 'plus');
-  });
-
-  test('maps missing profile to bootstrap unavailable', () {
-    final state = resolver.resolve(
-      session: session,
-      profile: null,
-      requiresEmailConfirmation: true,
-    );
-
-    expect(state.status, AuthRouteStatus.profileBootstrapUnavailable);
-    expect(state.userId, 'user-1');
-    expect(state.email, 'Nabi@example.com');
-  });
-
-  test('routes accounts marked for first-login password change to reset password', () {
-    final state = resolver.resolve(
-      session: const AuthSessionSnapshot(
-        userId: 'user-1',
-        email: 'Nabi@example.com',
-        emailConfirmed: true,
         mustChangePassword: true,
       ),
       profile: const AuthProfile(
@@ -66,7 +26,6 @@ void main() {
         onboardingStatus: 'completed',
         subscriptionTier: 'plus',
       ),
-      requiresEmailConfirmation: true,
     );
 
     expect(state.status, AuthRouteStatus.passwordChangeRequired);
@@ -74,16 +33,20 @@ void main() {
     expect(state.subscriptionTier, 'plus');
   });
 
+  test('maps missing profile to bootstrap unavailable', () {
+    final state = resolver.resolve(session: session, profile: null);
+    expect(state.status, AuthRouteStatus.profileBootstrapUnavailable);
+    expect(state.userId, 'user-1');
+    expect(state.email, 'legacy-contact@example.com');
+  });
+
   test('maps pending onboarding statuses to onboarding required', () {
     for (final status in ['not_started', 'in_progress']) {
       final state = resolver.resolve(
         session: session,
         profile: AuthProfile(id: 'user-1', onboardingStatus: status),
-        requiresEmailConfirmation: true,
       );
-
       expect(state.status, AuthRouteStatus.onboardingRequired);
-      expect(state.email, 'Nabi@example.com');
     }
   });
 
@@ -95,12 +58,11 @@ void main() {
         onboardingStatus: 'completed',
         subscriptionTier: 'familyplus',
       ),
-      requiresEmailConfirmation: true,
     );
 
     expect(state.status, AuthRouteStatus.authenticatedReady);
     expect(state.userId, 'user-1');
-    expect(state.email, 'Nabi@example.com');
+    expect(state.email, 'legacy-contact@example.com');
     expect(state.subscriptionTier, 'familyplus');
   });
 
@@ -108,9 +70,7 @@ void main() {
     final state = resolver.resolve(
       session: session,
       profile: const AuthProfile(id: 'user-1', onboardingStatus: 'paused'),
-      requiresEmailConfirmation: true,
     );
-
     expect(state.status, AuthRouteStatus.failure);
   });
 
@@ -120,7 +80,6 @@ void main() {
       'onboarding_status': 'completed',
       'subscription_tier': '',
     });
-
     expect(profile.subscriptionTier, 'free');
   });
 }

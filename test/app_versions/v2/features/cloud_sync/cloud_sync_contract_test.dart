@@ -44,6 +44,10 @@ void main() {
         expect(cloudTables, contains('health_score_ledgers'));
         expect(cloudTables, contains('wellness_point_ledgers'));
         expect(localTables, contains('notifications'));
+        expect(
+          UserDataSyncTables.cloudColumnsByTable['users'],
+          isNot(contains('phone')),
+        );
         expect(localTables, contains('personal_schedule_ai_requests'));
         expect(cloudTables, contains('personal_schedule_ai_requests'));
         expect(

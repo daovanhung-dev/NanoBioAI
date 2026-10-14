@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nano_app/app_versions/v2/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_callback_result.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_commands.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_route_state.dart';
@@ -34,11 +33,8 @@ void main() {
     await expectLater(
       container
           .read(v2AuthControllerProvider.notifier)
-          .signInWithEmail(
-            const LoginCommand(
-              email: 'dev.free@nanobio.local',
-              password: 'NanoBio@123456',
-            ),
+          .signInWithPhone(
+            const LoginCommand(phone: '0910000101', password: 'NanoBio@123456'),
           ),
       completes,
     );
@@ -52,42 +48,43 @@ void main() {
   });
 
   test('current user identity follows auth session events', () async {
-    final subscriptionStarted = Completer<void>();
-    final authChanges = StreamController<String?>(
-      onListen: () {
-        if (!subscriptionStarted.isCompleted) {
-          subscriptionStarted.complete();
-        }
-      },
-    );
     final container = ProviderContainer(
       overrides: [
-        v2AuthChangesProvider.overrideWith((ref) => authChanges.stream),
+        v2AuthControllerProvider.overrideWith(_TestAuthController.new),
       ],
     );
-    addTearDown(() async {
-      container.dispose();
-      await authChanges.close();
-    });
+    addTearDown(container.dispose);
 
-    final identitySubscription = container.listen<String?>(
-      currentAuthUserIdProvider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(identitySubscription.close);
+    await container.read(v2AuthControllerProvider.future);
+    final authController =
+        container.read(v2AuthControllerProvider.notifier)
+            as _TestAuthController;
 
     expect(container.read(currentAuthUserIdProvider), isNull);
-    await subscriptionStarted.future;
-
-    authChanges.add('session-user-id');
-    await container.read(v2AuthChangesProvider.future);
+    authController.setUserId('session-user-id');
     expect(container.read(currentAuthUserIdProvider), 'session-user-id');
 
-    authChanges.add(null);
-    await Future<void>.delayed(Duration.zero);
+    authController.setUserId(null);
     expect(container.read(currentAuthUserIdProvider), isNull);
   });
+}
+
+class _TestAuthController extends AuthController {
+  @override
+  Future<AuthRouteState> build() async =>
+      const AuthRouteState.unauthenticated();
+
+  void setUserId(String? userId) {
+    state = AsyncData(
+      userId == null
+          ? const AuthRouteState.unauthenticated()
+          : AuthRouteState.authenticatedReady(
+              userId: userId,
+              email: null,
+              subscriptionTier: 'free',
+            ),
+    );
+  }
 }
 
 class _FakeAuthRepository implements AuthRepository {
@@ -107,12 +104,12 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithEmail(LoginCommand command) async {
+  Future<void> signInWithPhone(LoginCommand command) async {
     signedIn = true;
   }
 
   @override
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command) async {
+  Future<RegistrationResult> signUpWithPhone(RegisterCommand command) async {
     signedIn = true;
     return RegistrationResult.sessionReady;
   }
@@ -127,11 +124,7 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> requestAccountDeletion() async {}
 
   @override
-  Future<void> resendEmailConfirmation(String email) async {}
-
   @override
-  Future<void> sendPasswordRecovery(String email) async {}
-
   @override
   Future<void> signOut() async {
     signedIn = false;

@@ -1,13 +1,11 @@
 class AuthSessionSnapshot {
   final String userId;
   final String? email;
-  final bool emailConfirmed;
   final bool mustChangePassword;
 
   const AuthSessionSnapshot({
     required this.userId,
-    required this.email,
-    required this.emailConfirmed,
+    this.email,
     this.mustChangePassword = false,
   });
 }
@@ -36,7 +34,8 @@ class AuthProfile {
     );
   }
 
-  bool get isAccessBlocked => adminStatus == 'suspended' || adminStatus == 'closed';
+  bool get isAccessBlocked =>
+      adminStatus == 'suspended' || adminStatus == 'closed';
 
   static String _normalizeSubscriptionTier(Object? value) {
     final text = value?.toString().trim().toLowerCase() ?? '';

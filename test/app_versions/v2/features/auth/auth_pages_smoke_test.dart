@@ -21,7 +21,7 @@ void main() {
     );
 
     expect(find.text('Tạo tài khoản NanoBio'), findsOneWidget);
-    expect(find.byType(TextFormField), findsNWidgets(6));
+    expect(find.byType(TextFormField), findsNWidgets(5));
   });
 
   testWidgets('login form accepts valid credentials', (tester) async {
@@ -32,7 +32,7 @@ void main() {
     final fields = find.byType(TextFormField);
     expect(fields, findsNWidgets(2));
 
-    await tester.enterText(fields.at(0), 'nabi@example.com');
+    await tester.enterText(fields.at(0), '0910000101');
     await tester.enterText(fields.at(1), '12345678');
     await tester.pump();
 
@@ -101,12 +101,12 @@ void main() {
     );
 
     final fields = find.byType(TextFormField);
-    expect(fields, findsNWidgets(6));
+    expect(fields, findsNWidgets(5));
 
     await tester.enterText(fields.at(0), 'Test User');
-    await tester.enterText(fields.at(2), 'nabi@example.com');
+    await tester.enterText(fields.at(1), '0910000101');
+    await tester.enterText(fields.at(2), '12345678');
     await tester.enterText(fields.at(3), '12345678');
-    await tester.enterText(fields.at(4), '12345678');
     await tester.pump();
 
     final formState = tester.state<FormState>(find.byType(Form));

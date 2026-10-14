@@ -466,11 +466,11 @@ set
 -- 14. Dev/sandbox auth users and Admin bootstrap
 -- ---------------------------------------------------------------------------
 -- DEV/SANDBOX ONLY. Test password for all accounts: NanoBio@123456
---   dev.free@nanobio.local   -> free
---   dev.plus@nanobio.local   -> plus
---   dev.family@nanobio.local -> family_plus
+--   0910000101 -> free (email retained as contact data)
+--   0910000102 -> plus (email retained as contact data)
+--   0910000103 -> family_plus (email retained as contact data)
 --   dev.admin@nanobio.local  -> free + super_admin
---   Thuytien8994@gmail.com   -> plus (local/sandbox only)
+--   0910000105 -> plus (email retained as contact data; local/sandbox only)
 
 with seed_users as (
   select *
@@ -482,7 +482,8 @@ with seed_users as (
         '30000000-0000-4000-8000-000000000101'::uuid,
         'dev.free@nanobio.local',
         'Dev Free',
-        'free'::public.nb_membership_plan
+        'free'::public.nb_membership_plan,
+        '+84910000101'
       ),
       (
         '10000000-0000-4000-8000-000000000102'::uuid,
@@ -490,7 +491,8 @@ with seed_users as (
         '30000000-0000-4000-8000-000000000102'::uuid,
         'dev.plus@nanobio.local',
         'Dev Plus',
-        'plus'::public.nb_membership_plan
+        'plus'::public.nb_membership_plan,
+        '+84910000102'
       ),
       (
         '10000000-0000-4000-8000-000000000103'::uuid,
@@ -498,7 +500,8 @@ with seed_users as (
         '30000000-0000-4000-8000-000000000103'::uuid,
         'dev.family@nanobio.local',
         'Dev FamilyPlus',
-        'family_plus'::public.nb_membership_plan
+        'family_plus'::public.nb_membership_plan,
+        '+84910000103'
       ),
       (
         '10000000-0000-4000-8000-000000000104'::uuid,
@@ -506,7 +509,8 @@ with seed_users as (
         '30000000-0000-4000-8000-000000000104'::uuid,
         'dev.admin@nanobio.local',
         'Dev Admin',
-        'free'::public.nb_membership_plan
+        'free'::public.nb_membership_plan,
+        null::text
       ),
       (
         '10000000-0000-4000-8000-000000000105'::uuid,
@@ -514,18 +518,24 @@ with seed_users as (
         '30000000-0000-4000-8000-000000000105'::uuid,
         'Thuytien8994@gmail.com',
         'Thuy Tien',
-        'plus'::public.nb_membership_plan
+        'plus'::public.nb_membership_plan,
+        '+84910000105'
       )
-  ) as t(user_id, identity_id, subscription_id, email, full_name, plan_code)
+  ) as t(user_id, identity_id, subscription_id, email, full_name, plan_code, phone)
 )
 insert into auth.users (
   id,
   instance_id,
   aud,
   role,
-  email,
+  case when phone is not null then
+    'member-' || regexp_replace(phone, '[^0-9]', '', 'g') || '@phone.nanobio.invalid'
+    else email
+  end,
+  null,
   encrypted_password,
   email_confirmed_at,
+  phone_confirmed_at,
   confirmation_token,
   recovery_token,
   email_change,
@@ -547,6 +557,7 @@ select
   'authenticated',
   'authenticated',
   email,
+  phone,
   crypt(
     case
       when email = 'Thuytien8994@gmail.com' then '1234567890'
@@ -555,6 +566,7 @@ select
     gen_salt('bf')
   ),
   now(),
+  null,
   '',
   '',
   '',
@@ -564,7 +576,12 @@ select
   '',
   '',
   jsonb_build_object('provider', 'email', 'providers', array['email']),
-  jsonb_build_object('full_name', full_name),
+  jsonb_build_object(
+    'full_name', full_name,
+    'phone', phone,
+    'auth_login_method', case when phone is not null then 'member_phone_password' end,
+    'contact_email', case when phone is not null then email end
+  ),
   now(),
   now(),
   false,
@@ -573,8 +590,10 @@ from seed_users
 on conflict (id) do update
 set
   email = excluded.email,
+  phone = excluded.phone,
   encrypted_password = excluded.encrypted_password,
   email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at),
+  phone_confirmed_at = excluded.phone_confirmed_at,
   confirmation_token = coalesce(excluded.confirmation_token, ''),
   recovery_token = coalesce(excluded.recovery_token, ''),
   email_change = coalesce(excluded.email_change, ''),
@@ -587,6 +606,12 @@ set
   raw_user_meta_data = excluded.raw_user_meta_data,
   updated_at = now(),
   is_anonymous = false;
+
+update public.users u
+set email = nullif(au.raw_user_meta_data ->> 'contact_email', '')
+from auth.users au
+where au.id = u.id
+  and au.raw_user_meta_data ->> 'auth_login_method' = 'member_phone_password';
 
 update auth.users
 set
@@ -692,7 +717,7 @@ select
     'sub',
     user_id::text,
     'email',
-    email,
+    (select au.email from auth.users au where au.id = user_id),
     'email_verified',
     true,
     'phone_verified',
@@ -1026,7 +1051,18 @@ where not exists (
 -- ---------------------------------------------------------------------------
 
 with fixture_users as (
-  select *
+  select t.*,
+    case t.user_id
+      when '11000000-0000-4000-8000-000000000002'::uuid then '+84900000002'
+      when '11000000-0000-4000-8000-000000000003'::uuid then '+84900000003'
+      when '11000000-0000-4000-8000-000000000018'::uuid then '+84900000018'
+      when '11000000-0000-4000-8000-000000000019'::uuid then '+84900000019'
+      when '11000000-0000-4000-8000-000000000020'::uuid then '+84900000020'
+      when '11000000-0000-4000-8000-000000000031'::uuid then '+84900000031'
+      when '11000000-0000-4000-8000-000000000032'::uuid then '+84900000032'
+      when '11000000-0000-4000-8000-000000000033'::uuid then '+84900000033'
+      else null
+    end as phone
   from (
     values
       ('11000000-0000-4000-8000-000000000001'::uuid, '21000000-0000-4000-8000-000000000001'::uuid, 'dev.fixture.guest@nanobio.local', 'Fixture Guest', 'anonymous', true),
@@ -1065,8 +1101,8 @@ with fixture_users as (
   ) as t(user_id, identity_id, email, full_name, provider, is_anonymous)
 )
 insert into auth.users (
-  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
-  confirmation_token, recovery_token, email_change, email_change_token_new,
+  id, instance_id, aud, role, email, phone, encrypted_password, email_confirmed_at,
+  phone_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new,
   email_change_token_current, phone_change, phone_change_token,
   reauthentication_token, raw_app_meta_data, raw_user_meta_data, created_at,
   updated_at, is_sso_user, is_anonymous
@@ -1077,8 +1113,10 @@ select
   'authenticated',
   'authenticated',
   email,
+  phone,
   crypt('NanoBio@123456', gen_salt('bf')),
   now(),
+  case when phone is not null then now() else null end,
   '', '', '', '', '', '', '', '',
   jsonb_build_object('provider', provider, 'providers', array[provider]),
   jsonb_build_object(
@@ -1091,8 +1129,10 @@ from fixture_users
 on conflict (id) do update
 set
   email = excluded.email,
+  phone = coalesce(excluded.phone, auth.users.phone),
   encrypted_password = excluded.encrypted_password,
   email_confirmed_at = coalesce(auth.users.email_confirmed_at, excluded.email_confirmed_at),
+  phone_confirmed_at = coalesce(auth.users.phone_confirmed_at, excluded.phone_confirmed_at),
   confirmation_token = '',
   recovery_token = '',
   email_change = '',
@@ -1220,6 +1260,36 @@ set
 where id between
   '11000000-0000-4000-8000-000000000001'::uuid and
   '11000000-0000-4000-8000-000000000033'::uuid;
+
+update auth.users au
+set
+  email = 'member-' || regexp_replace(u.phone, '[^0-9]', '', 'g') || '@phone.nanobio.invalid',
+  phone = null,
+  phone_confirmed_at = null,
+  raw_user_meta_data = coalesce(au.raw_user_meta_data, '{}'::jsonb) ||
+    jsonb_build_object(
+      'phone', u.phone,
+      'auth_login_method', 'member_phone_password',
+      'contact_email', u.email
+    ),
+  updated_at = now()
+from public.users u
+where u.id = au.id
+  and u.phone is not null
+  and u.app_access_mode = 'user';
+
+update auth.identities i
+set identity_data = jsonb_set(i.identity_data, '{email}', to_jsonb(au.email), true),
+    updated_at = now()
+from auth.users au
+where i.user_id = au.id
+  and au.raw_user_meta_data ->> 'auth_login_method' = 'member_phone_password';
+
+update public.users u
+set email = nullif(au.raw_user_meta_data ->> 'contact_email', '')
+from auth.users au
+where au.id = u.id
+  and au.raw_user_meta_data ->> 'auth_login_method' = 'member_phone_password';
 
 -- Make the historical Admin a dual-surface account; its super_admin role is
 -- created by the legacy bootstrap and remains the stable Storage uploader.

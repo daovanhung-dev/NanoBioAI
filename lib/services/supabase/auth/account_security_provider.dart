@@ -17,8 +17,8 @@ class AccountSecurityController extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
 
-  Future<void> updatePassword(String newPassword) {
-    return _run(() => _service.updatePassword(newPassword));
+  Future<void> changePassword(String newPassword) {
+    return _run(() => _service.changePassword(newPassword));
   }
 
   Future<void> signOut() {

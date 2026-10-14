@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 211
+- Total worklogs: 214
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -220,3 +220,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-13 | coding | coding | M02 PERSONAL_SCHEDULE_AI | [Worklog - Không lặp món trong lịch một tuần](../../docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md) |
 | 2026-10-13 | coding | coding | M01 ONBOARDING_PROFILE / onboarding UI | [Worklog - Tối giản WelcomeStep và motion màn vào](../../docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md) |
 | 2026-10-14 | coding | coding | M01 ONBOARDING_PROFILE / onboarding UI | [Worklog - Tái thiết kế onboarding theo Stitch Blue Wellness](../../docs/worklog/2026-10-14/001-worklog-onboarding-stitch-redesign.md) |
+| 2026-10-14 | Coding, migration source, targeted tests, project docs. | supabase-schema | M05 AUTH_PROFILE_SYNC, Supabase auth/admin provisioning. | [Worklog - Member Phone Auth And Password Approval](../../docs/worklog/2026-10-14/002-worklog-member-phone-auth-password-approval.md) |
+| 2026-10-14 | bugfix | bugfix | M05 AUTH_PROFILE_SYNC, Supabase Auth member phone signup. | [Worklog - Reproduce Member Phone Signup Failure](../../docs/worklog/2026-10-14/003-worklog-member-phone-signup-reproduction.md) |
+| 2026-10-14 | unknown | docs-context | unknown | [Worklog - Member Phone Auth With Simple Admin Password Reset](../../docs/worklog/2026-10-14/004-worklog-member-phone-simple-reset-production-smoke.md) |

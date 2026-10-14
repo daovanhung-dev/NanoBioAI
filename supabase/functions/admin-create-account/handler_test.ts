@@ -4,8 +4,8 @@ import {
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
 import {
-  createAdminCreateAccountHandler,
   type AdminCreateAccountDeps,
+  createAdminCreateAccountHandler,
 } from "./handler.ts";
 
 Deno.test("admin-create-account rejects missing JWT before any privileged work", async () => {
@@ -47,16 +47,39 @@ Deno.test("admin-create-account validates account data before Auth Admin API", a
     },
   }));
 
-  const response = await handler(request({ body: validBody({ password: "short" }) }));
+  const response = await handler(
+    request({ body: validBody({ password: "short" }) }),
+  );
   assertEquals(response.status, 400);
   assertEquals(createCalls, 0);
+});
+
+Deno.test("admin-create-account passes normalized phone and accepts no contact email", async () => {
+  let createdPhone = "";
+  let createdEmail: string | null = "not-set";
+  const handler = createAdminCreateAccountHandler(deps({
+    createUser: (input) => {
+      createdPhone = input.phone;
+      createdEmail = input.email;
+      return Promise.resolve({ userId: "new-user", email: input.email });
+    },
+  }));
+  const response = await handler(
+    request({ body: validBody({ phone: "0912 345 678", email: undefined }) }),
+  );
+  assertEquals(response.status, 200);
+  assertEquals(createdPhone, "+84912345678");
+  assertEquals(createdEmail, null);
 });
 
 Deno.test("admin-create-account returns an idempotent success without creating twice", async () => {
   let createCalls = 0;
   const handler = createAdminCreateAccountHandler(deps({
     findIdempotentResult: () =>
-      Promise.resolve({ userId: "existing-user", email: "existing@example.com" }),
+      Promise.resolve({
+        userId: "existing-user",
+        email: "existing@example.com",
+      }),
     createUser: () => {
       createCalls++;
       return Promise.resolve({ userId: "new-user", email: "new@example.com" });
@@ -107,10 +130,14 @@ Deno.test("admin-create-account compensates when the audit write fails", async (
   assertFalse(text.includes("private-audit-detail"));
 });
 
-function deps(overrides: Partial<AdminCreateAccountDeps> = {}): AdminCreateAccountDeps {
+function deps(
+  overrides: Partial<AdminCreateAccountDeps> = {},
+): AdminCreateAccountDeps {
   return {
     authenticate: (authorization) =>
-      Promise.resolve(authorization === "Bearer valid-jwt" ? "admin-user" : null),
+      Promise.resolve(
+        authorization === "Bearer valid-jwt" ? "admin-user" : null,
+      ),
     isAllowedAdmin: () => Promise.resolve(true),
     findIdempotentResult: () => Promise.resolve(null),
     createUser: ({ email }) => Promise.resolve({ userId: "new-user", email }),
@@ -136,7 +163,9 @@ function request({
   });
 }
 
-function validBody(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function validBody(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     full_name: "Nguyen Van A",
     email: "new@example.com",

@@ -31,12 +31,6 @@ final v2Routes = <RouteBase>[
     builder: (context, state) => const V2RegisterPage(),
   ),
   GoRoute(
-    path: V2RoutePaths.verifyEmail,
-    name: V2RoutePaths.verifyEmail,
-    builder: (context, state) =>
-        V2VerifyEmailPage(email: state.uri.queryParameters['email'] ?? ''),
-  ),
-  GoRoute(
     path: V2RoutePaths.forgotPassword,
     name: V2RoutePaths.forgotPassword,
     builder: (context, state) => const V2ForgotPasswordPage(),
@@ -151,8 +145,10 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
 
       return switch (routeState.status) {
         AuthRouteStatus.authenticatedReady => null,
-        AuthRouteStatus.unauthenticated =>
-          redirectTo(V2RoutePaths.login, 'authentication_required'),
+        AuthRouteStatus.unauthenticated => redirectTo(
+          V2RoutePaths.login,
+          'authentication_required',
+        ),
         _ => redirectTo(V2RoutePaths.authGate, 'auth_transition_in_progress'),
       };
     },
@@ -172,10 +168,7 @@ abstract class V2RouteGuards {
     V3RoutePaths.familyPlus,
   };
 
-  static String? redirectForV1Guest(
-    String path, {
-    required bool isSignedIn,
-  }) {
+  static String? redirectForV1Guest(String path, {required bool isSignedIn}) {
     if (isSignedIn || !V1RouteGuards.isRegisteredV1Path(path)) return null;
     return V1RouteGuards.guestRedirectForPath(path);
   }
@@ -186,11 +179,15 @@ abstract class V2RouteGuards {
         HealthModuleRoutePaths.matchesProtectedPrefix(normalizedPath);
   }
 
-  static canAccessMembershipPayment(
-    String payments, {
+  static bool canAccessMembershipPayment(
+    String path, {
     required bool isSignedIn,
     required AuthRouteStatus authStatus,
-  }) {}
+  }) {
+    if (path.trim() != V2RoutePaths.payments || !isSignedIn) return false;
+    return authStatus == AuthRouteStatus.onboardingRequired ||
+        authStatus == AuthRouteStatus.authenticatedReady;
+  }
 }
 
 class _RouterRefreshNotifier extends ChangeNotifier {

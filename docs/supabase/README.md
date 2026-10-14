@@ -116,10 +116,37 @@ thao tác được ghi vào `admin_audit_events`.
 Forward migrations cho môi trường cần nâng cấp là
 `supabase/migrations/20261007000000_nanobio_early_access.sql` và
 `supabase/migrations/20261007130000_nanobio_early_access_customer_admin.sql`.
+Đăng nhập thành viên dùng SĐT ở giao diện, còn Supabase Phone Auth vẫn tắt.
+Backend suy ra email nội bộ ổn định từ SĐT để dùng Email/Password Auth và cấp
+session/RLS bình thường; email này không được nhập hoặc gửi thư cho thành viên.
+Migration nguồn là
+`supabase/migrations/20261014090000_member_phone_auth_security.sql` và
+`supabase/migrations/20261014110000_member_phone_login_alias.sql`. Chỉ áp dụng
+sau khi rà soát trùng số và kiểm nghiệm trên sandbox cô lập. Không chạy script
+rebuild trên staging/production.
 Không chạy `docs/supabase/01_build_system.sql` hoặc `02_seed_data.sql` trên
-staging/production. Function đăng ký đặt `verify_jwt = false` vì khách website
-chưa đăng nhập; function Admin đặt `verify_jwt = true`. Cả hai handler đều yêu
-cầu origin nằm trong `ALLOWED_ORIGINS`.
+staging/production. Function signup đặt `verify_jwt = false` vì thành viên chưa
+đăng nhập; function Admin đặt `verify_jwt = true` và tự kiểm tra role ở server.
+CORS không thay thế các kiểm tra danh tính/quyền này.
+
+Rà soát tài khoản Auth cũ bằng
+`deno run --allow-env --allow-net supabase/scripts/member-phone-migration.ts`.
+Lệnh mặc định chỉ đọc: chuẩn hóa số Việt Nam, phân loại tài khoản đủ điều kiện
+và đưa số thiếu/sai/trùng, hồ sơ thiếu, alias Auth bị chiếm, hoặc tài khoản
+Admin/đa quyền sang xử lý thủ công; kết quả che số điện thoại và không xuất
+email/mật khẩu. Nếu cần chuyển những dòng đủ điều kiện trên sandbox, script chỉ nhận `--apply` khi
+`SUPABASE_ENVIRONMENT=sandbox`, URL trỏ đúng project ref, ref được truyền trùng
+qua `--sandbox-project-ref` và `--confirm-project-ref`, đồng thời khớp
+`SUPABASE_EXPECTED_SANDBOX_PROJECT_REF`. Nó đổi email Auth sang alias nội bộ,
+chuẩn hóa `public.users.phone`, giữ lại email liên hệ trong hồ sơ và giữ nguyên
+Auth ID, mật khẩu, role, dữ liệu khác. Số điện thoại không được xác minh quyền sở hữu bằng OTP; Super Admin cần xác minh thủ công trước khi đặt lại mật khẩu thành `12345678`. App bắt thành viên đổi mật khẩu sau khi đăng nhập.
+
+`member-phone-signup` dùng secret hiện có
+`EARLY_ACCESS_RATE_LIMIT_HMAC_KEY` (tối thiểu 32 ký tự). Signup tạo Auth user đã xác nhận ở phía server, kiểm tra
+trùng `public.users.phone` và giới hạn 10 lượt/IP/giờ. `member-change-password` tự xác minh bearer token khi thành viên đổi mật khẩu.
+`admin-user-management` chỉ cho Super Admin đặt lại mật khẩu thành viên, ghi audit
+và đặt cờ buộc đổi mật khẩu. Auth email confirmation và Phone Auth provider
+không cần đổi.
 
 Trước khi triển khai functions, đặt `ALLOWED_ORIGINS` bằng origin chính xác
 (`https://daovanhung-dev.github.io`; khi phát triển local dùng
@@ -169,7 +196,7 @@ RPC transactional bằng service role và ghi audit/idempotency; provider-manage
 gói đã hết hạn và request không có reason đều bị từ chối.
 
 `admin-provision-accounts-bulk` dành riêng cho Super Admin để preview rồi tạo
-tối đa 100 tài khoản Gmail và cấp Plus/FamilyPlus theo thời hạn tháng. Function
+tối đa 100 tài khoản thành viên bằng SĐT và cấp Plus/FamilyPlus theo thời hạn tháng. Function
 tính lại fingerprint, xử lý tuần tự, bảo toàn gói trả phí còn hạn và chỉ dùng
 password tạm cho tài khoản mới. Chỉ deploy sau khi bản app có bắt đổi mật khẩu
 lần đăng nhập đầu đã được phát hành.

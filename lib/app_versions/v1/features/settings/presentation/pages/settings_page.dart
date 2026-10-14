@@ -784,13 +784,13 @@ class _ChangePasswordSheet extends ConsumerStatefulWidget {
 class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   final _formKey = GlobalKey<FormState>();
   final _password = TextEditingController();
-  final _confirm = TextEditingController();
+  final _confirmPassword = TextEditingController();
   bool _saving = false;
 
   @override
   void dispose() {
     _password.dispose();
-    _confirm.dispose();
+    _confirmPassword.dispose();
     super.dispose();
   }
 
@@ -804,70 +804,71 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         AppSpacing.lg,
         bottomInset + AppSpacing.lg,
       ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Đổi mật khẩu', style: AppTextStyles.heading3),
-            const SizedBox(height: AppSpacing.sm),
-            const Text('Mật khẩu mới cần có ít nhất 8 ký tự.'),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            TextFormField(
-              controller: _password,
-              obscureText: true,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
-              validator: _validatePassword,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Đổi mật khẩu', style: AppTextStyles.heading3),
+          const SizedBox(height: AppSpacing.sm),
+          const Text(
+            'Bạn có thể tự đổi mật khẩu tại đây. Nếu quên mật khẩu, hãy liên hệ quản trị viên để được đặt lại thành 12345678.',
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+          Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _password,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.newPassword],
+                  decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
+                  validator: (value) => (value ?? '').length < 8
+                      ? 'Mật khẩu cần ít nhất 8 ký tự.'
+                      : null,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextFormField(
+                  controller: _confirmPassword,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Nhập lại mật khẩu mới',
+                  ),
+                  validator: (value) => value != _password.text
+                      ? 'Mật khẩu nhập lại chưa khớp.'
+                      : null,
+                ),
+                const SizedBox(height: AppSpacing.sectionSpacing),
+                FilledButton(
+                  onPressed: _saving ? null : _save,
+                  child: _saving
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Lưu mật khẩu mới'),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            TextFormField(
-              controller: _confirm,
-              obscureText: true,
-              textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
-              validator: (value) {
-                final error = _validatePassword(value);
-                if (error != null) return error;
-                return value == _password.text
-                    ? null
-                    : 'Hai mật khẩu chưa khớp nhau';
-              },
-              onFieldSubmitted: (_) => _save(),
-            ),
-            const SizedBox(height: AppSpacing.sectionSpacing),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: _saving
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Cập nhật mật khẩu'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  String? _validatePassword(String? value) {
-    return (value ?? '').length < 8 ? 'Mật khẩu cần ít nhất 8 ký tự' : null;
-  }
-
   Future<void> _save() async {
-    if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
+    if (_saving) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _saving = true);
     try {
       await ref
           .read(accountSecurityControllerProvider.notifier)
-          .updatePassword(_password.text);
+          .changePassword(_password.text);
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nabi đã cập nhật mật khẩu.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Đã cập nhật mật khẩu.')));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

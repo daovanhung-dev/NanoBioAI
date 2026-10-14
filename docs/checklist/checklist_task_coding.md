@@ -7,10 +7,10 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-10-13 |
+| Ngay cap nhat | 2026-10-14 |
 | Lifecycle | Current |
 | Source-truth baseline | `25018e8` |
-| Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
+| Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
 | Muc dich | Ghi handoff coding theo capability reachable; khong dung DD Approved/phan tram de claim runtime complete. |
 
 ## Current Coding Handoff
@@ -418,3 +418,15 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [ ] Hoàn tất PO/Tech/QA/Clinical/Privacy approval cho DD còn thiếu; chưa mở health/AI/chat/Sale business flow trước gate.
 - [ ] Xác minh license asset, store health permission policy và FamilyPlus escrow key ceremony trước production acceptance.
 - [x] Xác minh release mặc định Green và `flutter run` có cùng palette; giữ `--dart-define=STITCH_GREEN_UI_ENABLED=false` là rollback Blue trong một release (2026-08-11). Các gate acceptance/production-ready ở trên vẫn chưa được đánh dấu đạt.
+
+
+### M05 Phone-Facing Login And Admin Password Reset — 2026-10-14
+
+- [x] Member signup/sign-in, commands and validators use Vietnam `+84` phone; member UI no longer asks for email. Supabase Phone Auth stays disabled; server-created internal aliases use email/password Auth sessions. Admin staff retain email login and legacy contact email is preserved.
+- [x] Single/bulk Admin provisioning requires phone and treats email as optional contact data.
+- [x] Members can change their password in Settings; Forgot Password directs them to contact Admin. Admin Web lets Super Admin verify the registered phone and reset a member password to `12345678`; the app requires a new password after sign-in.
+- [x] Added guarded legacy account review/migration to phone-derived aliases, additive Supabase migrations, canonical rebuild contract, and matching seed fixtures.
+- [x] Flutter analyze and 44 focused Flutter tests pass; Admin Web typecheck and 67 tests pass; 14 focused Edge Function tests pass after simplifying password reset.
+- [x] Hosted Phone Auth/email settings were not changed. Both reviewed additive migrations were applied to the authorized project; phone unique-index and service-role RPC grants were verified.
+- [x] Production API signup and password login passed for a synthetic test member (phone ending 6453). Android interactive signup/reset was not run because the connected app lacks Flutter Driver support.
+- [ ] Review and convert the seven existing Auth identities through the guarded alias migration before existing members move to phone login; do not edit passwords, IDs, or contact email.

@@ -38,11 +38,8 @@ void main() {
       await expectLater(
         container
             .read(v2AuthControllerProvider.notifier)
-            .signInWithEmail(
-              const LoginCommand(
-                email: 'nabi@example.com',
-                password: '12345678',
-              ),
+            .signInWithPhone(
+              const LoginCommand(phone: '0912345678', password: '12345678'),
             ),
         throwsA(
           isA<AuthFailure>().having(

@@ -1,181 +1,188 @@
-import type { AdminSection } from '../types';
+import type { AdminSection } from "../types";
 
 const technicalLabels: Record<string, string> = {
-  users_total: 'Người dùng',
-  onboarding_completed: 'Hoàn tất khởi tạo hồ sơ',
-  packages_active: 'Gói thành viên đang hoạt động',
-  payments_pending: 'Thanh toán chờ duyệt',
-  payments_succeeded: 'Thanh toán hoàn tất',
-  revenue_succeeded: 'Doanh thu đã duyệt',
-  sales_active: 'Cộng tác viên đang hoạt động',
-  familyplus_active: 'FamilyPlus đang hoạt động',
-  commission_available: 'Điểm cộng tác viên khả dụng',
-  admin_alerts: 'Việc cần Admin xử lý',
-  membership_summary: 'Tổng hợp gói thành viên',
-  sale_points_summary: 'Tổng hợp điểm cộng tác viên',
-  admin_audit_summary: 'Tổng hợp lịch sử thao tác',
+  users_total: "Người dùng",
+  onboarding_completed: "Hoàn tất khởi tạo hồ sơ",
+  packages_active: "Gói thành viên đang hoạt động",
+  payments_pending: "Thanh toán chờ duyệt",
+  payments_succeeded: "Thanh toán hoàn tất",
+  revenue_succeeded: "Doanh thu đã duyệt",
+  sales_active: "Cộng tác viên đang hoạt động",
+  familyplus_active: "FamilyPlus đang hoạt động",
+  commission_available: "Điểm cộng tác viên khả dụng",
+  admin_alerts: "Việc cần Admin xử lý",
+  membership_summary: "Tổng hợp gói thành viên",
+  sale_points_summary: "Tổng hợp điểm cộng tác viên",
+  admin_audit_summary: "Tổng hợp lịch sử thao tác",
 };
 
 const statusLabels: Array<[string, string]> = [
-  ['new', 'Mới'],
-  ['contacted', 'Đã liên hệ'],
-  ['registered', 'Đã đăng ký'],
-  ['converted', 'Đã chuyển đổi'],
-  ['awaiting_transfer', 'Chờ chuyển khoản'],
-  ['pending_review', 'Chờ duyệt'],
-  ['needs_follow_up', 'Cần theo dõi'],
-  ['requested', 'Đã tiếp nhận'],
-  ['pending', 'Đang chờ'],
-  ['succeeded', 'Hoàn tất'],
-  ['approved', 'Đã duyệt'],
-  ['active', 'Đang hoạt động'],
-  ['expired', 'Đã hết hạn'],
-  ['inactive', 'Không hoạt động'],
-  ['suspended', 'Tạm dừng'],
-  ['closed', 'Đã đóng'],
-  ['cancelled', 'Đã hủy'],
-  ['canceled', 'Đã hủy'],
-  ['refunded', 'Đã hoàn tiền'],
-  ['chargeback', 'Đang khiếu nại'],
-  ['failed', 'Chưa hoàn tất'],
-  ['rejected', 'Đã từ chối'],
-  ['paid', 'Đã chi trả'],
-  ['resolved', 'Đã đối soát'],
-  ['adjusted', 'Đã điều chỉnh'],
-  ['dismissed', 'Đã bỏ qua'],
-  ['recorded', 'Đã ghi nhận'],
-  ['ready', 'Sẵn sàng'],
-  ['draft', 'Bản nháp'],
-  ['archived', 'Đã lưu trữ'],
-  ['open', 'Đang mở'],
+  ["new", "Mới"],
+  ["contacted", "Đã liên hệ"],
+  ["registered", "Đã đăng ký"],
+  ["converted", "Đã chuyển đổi"],
+  ["awaiting_transfer", "Chờ chuyển khoản"],
+  ["pending_review", "Chờ duyệt"],
+  ["needs_follow_up", "Cần theo dõi"],
+  ["requested", "Đã tiếp nhận"],
+  ["pending", "Đang chờ"],
+  ["succeeded", "Hoàn tất"],
+  ["approved", "Đã duyệt"],
+  ["active", "Đang hoạt động"],
+  ["expired", "Đã hết hạn"],
+  ["inactive", "Không hoạt động"],
+  ["suspended", "Tạm dừng"],
+  ["closed", "Đã đóng"],
+  ["cancelled", "Đã hủy"],
+  ["canceled", "Đã hủy"],
+  ["refunded", "Đã hoàn tiền"],
+  ["chargeback", "Đang khiếu nại"],
+  ["failed", "Chưa hoàn tất"],
+  ["rejected", "Đã từ chối"],
+  ["paid", "Đã chi trả"],
+  ["resolved", "Đã đối soát"],
+  ["adjusted", "Đã điều chỉnh"],
+  ["dismissed", "Đã bỏ qua"],
+  ["recorded", "Đã ghi nhận"],
+  ["ready", "Sẵn sàng"],
+  ["draft", "Bản nháp"],
+  ["archived", "Đã lưu trữ"],
+  ["open", "Đang mở"],
 ];
 
 const actionLabels: Record<string, string> = {
-  active: 'Mở lại',
-  suspended: 'Tạm khóa',
-  approve: 'Duyệt',
-  reject: 'Từ chối',
-  refund: 'Hoàn tiền',
-  cancel: 'Hủy giao dịch',
-  chargeback: 'Ghi nhận khiếu nại',
-  suspend: 'Tạm dừng',
-  close: 'Đóng cộng tác viên',
-  mark_paid: 'Xác nhận đã chi trả',
-  adjust_points: 'Điều chỉnh điểm',
-  resolved: 'Đã đối soát',
-  needs_follow_up: 'Cần theo dõi',
-  adjusted: 'Điều chỉnh',
-  dismissed: 'Bỏ qua',
-  upsert: 'Lưu phiên bản',
-  export: 'Tạo yêu cầu xuất',
-  cancel_redemption: 'Hủy lượt dùng',
-  create_account: 'Tạo tài khoản',
-  grant_membership: 'Cấp gói thành viên',
-  adjust_membership_period: 'Chỉnh thời hạn gói',
-  view_health: 'Xem thông tin sức khỏe',
-  update_user_profile: 'Sửa thông tin người dùng',
-  reset_user_password: 'Đổi mật khẩu người dùng',
-  import_codes: 'Nhập mã ưu đãi',
+  active: "Mở lại",
+  suspended: "Tạm khóa",
+  approve: "Duyệt",
+  reject: "Từ chối",
+  refund: "Hoàn tiền",
+  cancel: "Hủy giao dịch",
+  chargeback: "Ghi nhận khiếu nại",
+  suspend: "Tạm dừng",
+  close: "Đóng cộng tác viên",
+  mark_paid: "Xác nhận đã chi trả",
+  adjust_points: "Điều chỉnh điểm",
+  resolved: "Đã đối soát",
+  needs_follow_up: "Cần theo dõi",
+  adjusted: "Điều chỉnh",
+  dismissed: "Bỏ qua",
+  upsert: "Lưu phiên bản",
+  export: "Tạo yêu cầu xuất",
+  cancel_redemption: "Hủy lượt dùng",
+  create_account: "Tạo tài khoản",
+  grant_membership: "Cấp gói thành viên",
+  adjust_membership_period: "Chỉnh thời hạn gói",
+  view_health: "Xem thông tin sức khỏe",
+  update_user_profile: "Sửa thông tin người dùng",
+  reset_user_password: "Đổi mật khẩu người dùng",
+  reset_member_password: "Đặt lại mật khẩu thành viên",
+  import_codes: "Nhập mã ưu đãi",
 };
 
 const auditActions: Record<string, string> = {
-  admin_update_user_status: 'Cập nhật trạng thái người dùng',
-  admin_grant_membership: 'Cấp gói thành viên',
-  admin_adjust_membership_period: 'Chỉnh thời hạn gói',
-  admin_review_payment: 'Xử lý thanh toán',
-  admin_refund_or_cancel_payment: 'Hoàn hoặc hủy thanh toán',
-  admin_review_sale_profile: 'Xử lý hồ sơ cộng tác viên',
-  admin_upsert_config_version: 'Cập nhật thiết lập',
-  admin_request_report_export: 'Yêu cầu xuất báo cáo',
-  admin_adjust_sale_points: 'Điều chỉnh điểm cộng tác viên',
-  admin_create_reconciliation_run: 'Bắt đầu đối soát',
-  admin_update_reconciliation_discrepancy_status: 'Cập nhật kết quả đối soát',
-  admin_review_sale_point_conversion: 'Xử lý yêu cầu quy đổi điểm',
-  admin_upsert_reward_offer: 'Cập nhật ưu đãi Điểm chăm sóc',
-  admin_import_reward_codes: 'Bổ sung mã ưu đãi',
-  admin_cancel_reward_redemption: 'Hủy lượt dùng ưu đãi',
-  admin_view_user_health: 'Xem thông tin sức khỏe người dùng',
-  admin_update_user_profile: 'Sửa thông tin người dùng',
-  admin_reset_user_password: 'Đổi mật khẩu người dùng',
+  admin_update_user_status: "Cập nhật trạng thái người dùng",
+  admin_grant_membership: "Cấp gói thành viên",
+  admin_adjust_membership_period: "Chỉnh thời hạn gói",
+  admin_review_payment: "Xử lý thanh toán",
+  admin_refund_or_cancel_payment: "Hoàn hoặc hủy thanh toán",
+  admin_review_sale_profile: "Xử lý hồ sơ cộng tác viên",
+  admin_upsert_config_version: "Cập nhật thiết lập",
+  admin_request_report_export: "Yêu cầu xuất báo cáo",
+  admin_adjust_sale_points: "Điều chỉnh điểm cộng tác viên",
+  admin_create_reconciliation_run: "Bắt đầu đối soát",
+  admin_update_reconciliation_discrepancy_status: "Cập nhật kết quả đối soát",
+  admin_review_sale_point_conversion: "Xử lý yêu cầu quy đổi điểm",
+  admin_upsert_reward_offer: "Cập nhật ưu đãi Điểm chăm sóc",
+  admin_import_reward_codes: "Bổ sung mã ưu đãi",
+  admin_cancel_reward_redemption: "Hủy lượt dùng ưu đãi",
+  admin_view_user_health: "Xem thông tin sức khỏe người dùng",
+  admin_update_user_profile: "Sửa thông tin người dùng",
+  admin_reset_user_password: "Đổi mật khẩu người dùng",
+  admin_reset_member_password: "Đặt lại mật khẩu thành viên",
 };
 
-export function metricLabel(key: string, fallback = 'Chỉ số vận hành'): string {
+export function metricLabel(key: string, fallback = "Chỉ số vận hành"): string {
   return technicalLabels[key] ?? fallback;
 }
 
 export function statusLabel(value: string): string {
   const normalized = value.trim().toLowerCase();
-  return statusLabels.find(([key]) => normalized === key)?.[1]
-    ?? statusLabels.find(([key]) => new RegExp(`(^|[_-])${key}($|[_-])`).test(normalized))?.[1]
-    ?? 'Đang cập nhật';
+  return statusLabels.find(([key]) => normalized === key)?.[1] ??
+    statusLabels.find(([key]) =>
+      new RegExp(`(^|[_-])${key}($|[_-])`).test(normalized)
+    )?.[1] ??
+    "Đang cập nhật";
 }
 
 export function actionLabel(value: string): string {
-  return actionLabels[value] ?? 'Thực hiện';
+  return actionLabels[value] ?? "Thực hiện";
 }
 
-export function planLabel(value: unknown, fallback = 'Chưa xác định'): string {
-  const normalized = String(value ?? '').trim().toLowerCase();
+export function planLabel(value: unknown, fallback = "Chưa xác định"): string {
+  const normalized = String(value ?? "").trim().toLowerCase();
   return ({
-    guest: 'Khách',
-    free: 'Miễn phí',
-    plus: 'Plus',
-    family_plus: 'FamilyPlus',
-    familyplus: 'FamilyPlus',
+    guest: "Khách",
+    free: "Miễn phí",
+    plus: "Plus",
+    family_plus: "FamilyPlus",
+    familyplus: "FamilyPlus",
   } as Record<string, string>)[normalized] ?? fallback;
 }
 
 export function auditActionLabel(value: string): string {
-  return auditActions[value] ?? 'Thao tác quản trị';
+  return auditActions[value] ?? "Thao tác quản trị";
 }
 
 export function sectionTitle(section: AdminSection): string {
   return ({
-    dashboard: 'Tổng quan vận hành',
-    users: 'Người dùng',
-    payments: 'Thanh toán',
-    sales: 'Cộng tác viên',
-    'sale-conversions': 'Chi trả cộng tác viên',
-    'wellness-rewards': 'Điểm chăm sóc',
-    'event-info': 'Thông tin sự kiện',
-    reconciliation: 'Đối soát',
-    plans: 'Gói dịch vụ',
-    reports: 'Báo cáo',
-    audit: 'Lịch sử thao tác',
-    config: 'Thiết lập',
+    dashboard: "Tổng quan vận hành",
+    users: "Người dùng",
+    payments: "Thanh toán",
+    sales: "Cộng tác viên",
+    "sale-conversions": "Chi trả cộng tác viên",
+    "wellness-rewards": "Điểm chăm sóc",
+    "event-info": "Thông tin sự kiện",
+    reconciliation: "Đối soát",
+    plans: "Gói dịch vụ",
+    reports: "Báo cáo",
+    audit: "Lịch sử thao tác",
+    config: "Thiết lập",
   } satisfies Record<AdminSection, string>)[section];
 }
 
 export function formatDate(value?: string): string {
-  if (!value) return '—';
+  if (!value) return "—";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Ho_Chi_Minh',
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Ho_Chi_Minh",
   }).format(date);
 }
 
-export function formatMembershipPeriod(startsAt?: string, endsAt?: string): string {
-  if (!startsAt && !endsAt) return '—';
-  if (!endsAt) return 'Không thời hạn';
+export function formatMembershipPeriod(
+  startsAt?: string,
+  endsAt?: string,
+): string {
+  if (!startsAt && !endsAt) return "—";
+  if (!endsAt) return "Không thời hạn";
   if (!startsAt) return `Hết hạn ${formatDate(endsAt)}`;
   return `${formatDate(startsAt)} – ${formatDate(endsAt)}`;
 }
 
 export function toDateTimeLocal(value?: string): string {
-  if (!value) return '';
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
   }).formatToParts(date).reduce<Record<string, string>>((result, part) => {
     result[part.type] = part.value;
     return result;
@@ -192,22 +199,28 @@ export function dateTimeLocalToIso(value: string): string | undefined {
   const day = Number(dayText);
   const hour = Number(hourText);
   const minute = Number(minuteText);
-  if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) return undefined;
-  const timestamp = Date.UTC(year, month - 1, day, hour, minute) - 7 * 60 * 60 * 1000;
+  if (
+    year < 1970 || month < 1 || month > 12 || day < 1 || day > 31 ||
+    hour > 23 || minute > 59
+  ) return undefined;
+  const timestamp = Date.UTC(year, month - 1, day, hour, minute) -
+    7 * 60 * 60 * 1000;
   const date = new Date(timestamp);
-  return toDateTimeLocal(date.toISOString()) === value ? date.toISOString() : undefined;
+  return toDateTimeLocal(date.toISOString()) === value
+    ? date.toISOString()
+    : undefined;
 }
 
-export function formatMoney(cents?: number, currency = 'VND'): string {
-  if (cents === undefined) return '—';
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
+export function formatMoney(cents?: number, currency = "VND"): string {
+  if (cents === undefined) return "—";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
     currency,
     maximumFractionDigits: 0,
   }).format(cents / 100);
 }
 
-export function safeDisplay(value: unknown, fallback = '—'): string {
-  const text = String(value ?? '').trim();
+export function safeDisplay(value: unknown, fallback = "—"): string {
+  const text = String(value ?? "").trim();
   return text || fallback;
 }

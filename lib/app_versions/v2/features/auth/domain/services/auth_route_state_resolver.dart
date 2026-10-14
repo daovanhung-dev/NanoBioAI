@@ -7,7 +7,6 @@ class AuthRouteStateResolver {
   AuthRouteState resolve({
     required AuthSessionSnapshot? session,
     required AuthProfile? profile,
-    required bool requiresEmailConfirmation,
     bool profileLoadFailed = false,
   }) {
     if (session == null) {
@@ -15,13 +14,6 @@ class AuthRouteStateResolver {
     }
 
     final subscriptionTier = profile?.subscriptionTier ?? 'free';
-
-    if (requiresEmailConfirmation && !session.emailConfirmed) {
-      return AuthRouteState.emailVerificationRequired(
-        email: session.email,
-        subscriptionTier: subscriptionTier,
-      );
-    }
 
     if (profileLoadFailed || profile == null) {
       return AuthRouteState.profileBootstrapUnavailable(

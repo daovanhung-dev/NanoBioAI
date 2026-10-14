@@ -9,7 +9,6 @@ abstract class V2RoutePaths {
   static const authGate = AuthRoutePaths.authGate;
   static const login = AuthRoutePaths.login;
   static const register = AuthRoutePaths.register;
-  static const verifyEmail = AuthRoutePaths.verifyEmail;
   static const forgotPassword = AuthRoutePaths.forgotPassword;
   static const resetPassword = AuthRoutePaths.resetPassword;
   static const authCallback = AuthRoutePaths.authCallback;

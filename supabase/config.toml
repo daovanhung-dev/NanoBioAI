@@ -40,6 +40,12 @@ verify_jwt = false
 [functions.food-scan-analyze]
 verify_jwt = true
 
+[functions.member-change-password]
+verify_jwt = true
+
+[functions.member-phone-signup]
+verify_jwt = false
+
 [functions.sleep-safety-contact-verification]
 verify_jwt = true
 

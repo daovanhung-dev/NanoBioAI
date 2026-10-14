@@ -15,6 +15,10 @@ import {
   chooseCurrentPaidSubscription,
   type ExistingMembership,
 } from "../admin-grant-membership/membership-guard.ts";
+import {
+  memberAuthEmail,
+  normalizeVietnamPhone,
+} from "../_shared/member_phone_identity.ts";
 
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const supabaseAnonKey = requiredEnvironment("SUPABASE_ANON_KEY");
@@ -76,21 +80,22 @@ async function inspectAccounts(input: {
   durationMonths: 1 | 3 | 6 | 12;
 }): Promise<BulkPreview> {
   const { accounts, planCode, durationMonths } = input;
-  const usersByEmail = await listAuthUsersByEmail();
+  const usersByPhone = await listAuthUsersByPhone();
 
   const userIds = accounts
-    .map((account) => usersByEmail.get(account.email)?.id)
+    .map((account) => usersByPhone.get(account.phone)?.id)
     .filter((id): id is string => Boolean(id));
   const memberships = await listMemberships(userIds);
 
   const candidates: BulkPreviewCandidate[] = accounts.map((account, offset) => {
-    const user = usersByEmail.get(account.email);
+    const user = usersByPhone.get(account.phone);
     const current = user
       ? chooseCurrentPaidSubscription(memberships.get(user.id) ?? [])
       : null;
     return {
       index: offset + 1,
-      email: account.email,
+      phone: account.phone,
+      ...(account.email ? { email: account.email } : {}),
       fullName: account.fullName,
       status: !user ? "new" : current ? "paid_preserved" : "existing",
       ...(user ? { userId: user.id } : {}),
@@ -117,7 +122,7 @@ async function executeProvision(input: {
 }): Promise<BulkProvisionResult> {
   const startsAt = new Date();
   const endsAt = addCalendarMonths(startsAt, input.durationMonths);
-  const usersByEmail = await listAuthUsersByEmail();
+  const usersByPhone = await listAuthUsersByPhone();
   const result: BulkProvisionResult = {
     batchId: input.idempotencyKey,
     processedCount: 0,
@@ -138,14 +143,14 @@ async function executeProvision(input: {
       let userId = candidate.userId;
       let created = false;
       if (!userId) {
-        const existing = usersByEmail.get(candidate.email);
+        const existing = usersByPhone.get(candidate.phone);
         if (existing) {
           userId = existing.id;
         } else {
           const provisioned = await createUser(
             candidate,
             input.password,
-            usersByEmail,
+            usersByPhone,
           );
           userId = provisioned.user.id;
           created = provisioned.created;
@@ -224,27 +229,37 @@ async function executeProvision(input: {
 async function createUser(
   candidate: BulkPreviewCandidate,
   password: string,
-  usersByEmail: Map<string, User>,
+  usersByPhone: Map<string, User>,
 ): Promise<{ user: User; created: boolean }> {
   const { data, error } = await admin.auth.admin.createUser({
-    email: candidate.email,
-    password,
+    email: memberAuthEmail(candidate.phone),
     email_confirm: true,
+    password,
     user_metadata: {
       full_name: candidate.fullName,
-      must_change_password: true,
+      phone: candidate.phone,
+      auth_login_method: "member_phone_password",
+      ...(candidate.email ? { contact_email: candidate.email } : {}),
     },
   });
   if (!error && data.user) {
-    usersByEmail.set(candidate.email, data.user);
+    const { error: profileError } = await admin
+      .from("users")
+      .update({ email: candidate.email ?? null })
+      .eq("id", data.user.id);
+    if (profileError) {
+      await admin.auth.admin.deleteUser(data.user.id);
+      throw profileError;
+    }
+    usersByPhone.set(candidate.phone, data.user);
     return { user: data.user, created: true };
   }
 
-  // A concurrent operator may have created the same email after preview. The
+  // A concurrent operator may have created the same phone after preview. The
   // existing account is reused without ever updating its password.
-  const existing = await findAuthUser(candidate.email);
+  const existing = await findAuthUserByPhone(candidate.phone);
   if (existing) {
-    usersByEmail.set(candidate.email, existing);
+    usersByPhone.set(candidate.phone, existing);
     return { user: existing, created: false };
   }
   throw error ?? new Error("Account creation failed");
@@ -409,19 +424,28 @@ async function listAuthUsers(): Promise<User[]> {
   return users;
 }
 
-async function listAuthUsersByEmail(): Promise<Map<string, User>> {
-  const usersByEmail = new Map<string, User>();
-  for (const user of await listAuthUsers()) {
-    const email = user.email?.trim().toLowerCase();
-    if (email) usersByEmail.set(email, user);
+async function listAuthUsersByPhone(): Promise<Map<string, User>> {
+  const usersByPhone = new Map<string, User>();
+  const authUsers = await listAuthUsers();
+  const authById = new Map(authUsers.map((user) => [user.id, user]));
+  const { data: profiles, error } = await admin
+    .from("users")
+    .select("id,phone")
+    .not("phone", "is", null);
+  if (error) throw error;
+  for (const profile of profiles ?? []) {
+    const userId = typeof profile.id === "string" ? profile.id : "";
+    const phone = normalizeVietnamPhone(
+      typeof profile.phone === "string" ? profile.phone : "",
+    );
+    const user = authById.get(userId);
+    if (phone && user) usersByPhone.set(phone, user);
   }
-  return usersByEmail;
+  return usersByPhone;
 }
 
-async function findAuthUser(email: string): Promise<User | null> {
-  const users = await listAuthUsers();
-  return users.find((user) => user.email?.trim().toLowerCase() === email) ??
-    null;
+async function findAuthUserByPhone(phone: string): Promise<User | null> {
+  return (await listAuthUsersByPhone()).get(phone) ?? null;
 }
 
 async function listMemberships(
@@ -457,7 +481,8 @@ async function fingerprint(
 ): Promise<string> {
   const stable = candidates.map((candidate) => ({
     index: candidate.index,
-    email: candidate.email,
+    phone: candidate.phone,
+    email: candidate.email ?? null,
     user_id: candidate.userId ?? null,
     status: candidate.status,
     current_plan: candidate.currentPlan ?? null,
@@ -484,7 +509,7 @@ async function rowIdempotencyKey(
   const digest = await crypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(
-      `${batchKey}:${candidate.index}:${candidate.email}`,
+      `${batchKey}:${candidate.index}:${candidate.phone}`,
     ),
   );
   return `bulk-provision-${candidate.index}-${

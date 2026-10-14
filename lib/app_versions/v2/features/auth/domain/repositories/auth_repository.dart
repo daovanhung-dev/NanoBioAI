@@ -7,13 +7,9 @@ abstract class AuthRepository {
 
   Future<AuthRouteState> resolveAuthRouteState();
 
-  Future<RegistrationResult> signUpWithEmail(RegisterCommand command);
+  Future<RegistrationResult> signUpWithPhone(RegisterCommand command);
 
-  Future<void> signInWithEmail(LoginCommand command);
-
-  Future<void> resendEmailConfirmation(String email);
-
-  Future<void> sendPasswordRecovery(String email);
+  Future<void> signInWithPhone(LoginCommand command);
 
   Future<void> updatePassword(UpdatePasswordCommand command);
 

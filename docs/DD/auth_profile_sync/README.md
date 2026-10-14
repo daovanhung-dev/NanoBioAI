@@ -4,15 +4,15 @@
 |---|---|
 | Module Code | AUTH_PROFILE_SYNC |
 | BD Module | M05 |
-| Version | v1.3 |
+| Version | v1.6 |
 | Lifecycle | Current |
 | DD decision | Approved |
 | Implementation | Implemented |
-| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
-| Source evidence | V2 auth routes/controller, reactive gate, Guest consent and cloud-sync source are reachable |
+| Verification | Focused-tests-pass; Hosted-migrations-functions-deployed; Production-API-signup-login-pass; Mobile-interaction-unverified |
+| Source evidence | Members sign in with normalized phone/password through internal Auth aliases; Admin staff keep email login; members change passwords in Settings; Super Admin resets forgotten passwords to `12345678` |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-07-12 |
+| Last Updated | 2026-10-14 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M05, 13, Appendix A UC-05 |
 
 ## Purpose
@@ -63,3 +63,44 @@
 - The local/sandbox system build source `docs/supabase/01_build_system.sql`
   contains the final signup trigger contract.
 - Production acceptance remains pending Flutter compile/full tests, Supabase sandbox/RLS/atomic rollback and device evidence.
+
+## Implementation Update 2026-10-14 — Source stage before production smoke
+
+- Member login/register now use normalized Vietnam phone plus password; legacy
+  email stays as contact data and Admin staff keep email login. Supabase Phone
+  Auth remains off: a server-side signup function creates a confirmed internal
+  Auth alias derived from the normalized phone, then the app signs in using the
+  same alias. The member only sees and enters a phone number.
+- Members change their password directly in Settings. Forgot Password tells
+  the member to contact Admin. A Super Admin verifies the registered phone,
+  resets the password to `12345678` in Admin Web, and the app requires a new
+  password on the next sign-in.
+- Existing account migration preserves IDs/passwords and changes eligible
+  member Auth emails to phone-derived aliases while normalizing unique phones.
+  The migration tool is dry-run by default and routes conflicts, missing
+  profiles and Admin/dual-access accounts to manual review.
+- Supabase Auth remains the source of truth for login phones: profile and Admin
+  forms are read-only for phone, the mobile sync allowlist excludes it, and the
+  snapshot RPC strips it before invoking the existing server-side sync logic.
+- Production Phone Auth and email-confirmation settings are not changed. Signup
+  uses an IP limit and a private service-role RPC. Current code changes and
+  verification are tracked in the 2026-10-14 worklogs. The following update
+  records the later production migration/deployment and remaining device gap.
+
+## Implementation Update 2026-10-14 — Simplified Password Recovery
+
+- Removed the member password-request queue and its tables/RPCs. Members change
+  their password directly in Settings; Forgot Password directs them to Admin.
+- Super Admin can reset a member password from the user list after confirming
+  the registered phone. The server sets `12345678`, audits the action, and the
+  app requires a new password on the next sign-in.
+- Production migrations `20261014090000` and `20261014110000` were applied to
+  the explicitly requested project. The five related Edge Functions deployed;
+  API signup and password login passed for a synthetic test profile ending in
+  `6453`. The test profile remains in production.
+- Seven pre-existing Auth identities were still on their previous email
+  identities after the smoke; they need the guarded alias migration before
+  existing members can sign in with phone.
+- Focused Flutter, Edge Function and Admin Web tests pass. Android hot reload
+  succeeded; interactive device acceptance remains unverified because the
+  Flutter driver extension is not enabled in the running app.

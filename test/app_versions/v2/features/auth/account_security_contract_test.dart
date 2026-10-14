@@ -37,8 +37,13 @@ void main() {
         final providerSource = File(
           'lib/services/supabase/auth/account_security_provider.dart',
         ).readAsStringSync();
+        final serviceSource = File(
+          'lib/services/supabase/auth/account_security_service.dart',
+        ).readAsStringSync();
 
-        expect(source, contains('updatePassword'));
+        expect(source, contains('changePassword'));
+        expect(serviceSource, contains('member-change-password'));
+        expect(serviceSource, contains('new_password'));
         expect(source, contains('signOut'));
         expect(source, contains('requestAccountDeletion'));
         expect(source, contains('accountSecurityControllerProvider.notifier'));

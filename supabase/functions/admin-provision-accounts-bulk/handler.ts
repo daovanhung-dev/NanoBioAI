@@ -1,6 +1,7 @@
 export type BulkProvisionAccount = {
-  email: string;
+  phone: string;
   fullName: string;
+  email?: string;
 };
 
 export type BulkPreviewCandidate = BulkProvisionAccount & {
@@ -250,24 +251,38 @@ function parseAccounts(value: unknown): {
   const seen = new Set<string>();
   value.forEach((raw, offset) => {
     const row = record(raw);
+    const phone = normalizeVietnamPhone(text(row?.phone) ?? "");
     const email = text(row?.email)?.toLowerCase();
     const fullName = text(row?.full_name);
     if (
-      !email || !/^[^\s@|]+@gmail\.com$/i.test(email) || !fullName ||
-      fullName.length < 2 || fullName.includes("|")
+      !phone || (email && !/^[^\s@|]+@[^\s@|]+\.[^\s@|]+$/i.test(email)) ||
+      !fullName || fullName.length < 2 || fullName.includes("|")
     ) {
       issues.push(offset + 1);
       return;
     }
-    if (seen.has(email)) {
+    if (seen.has(phone)) {
       issues.push(offset + 1);
       return;
     }
-    seen.add(email);
-    accounts.push({ email, fullName });
+    seen.add(phone);
+    accounts.push({ phone, fullName, ...(email ? { email } : {}) });
   });
 
   return issues.length > 0 ? { issues } : { accounts, issues };
+}
+
+function normalizeVietnamPhone(value: string): string | null {
+  if (!/^[+\d\s().-]+$/.test(value.trim())) return null;
+  const digits = value.trim().replace(/\D/g, "");
+  const local = digits.startsWith("0084")
+    ? digits.slice(4)
+    : digits.startsWith("84")
+    ? digits.slice(2)
+    : digits.startsWith("0")
+    ? digits.slice(1)
+    : "";
+  return /^\d{9}$/.test(local) ? `+84${local}` : null;
 }
 
 function parseDuration(value: unknown): 1 | 3 | 6 | 12 | null {

@@ -1,190 +1,318 @@
-import { describe, expect, it } from 'vitest';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { AdminApi, AdminApiError, makeKey } from './admin-api';
+import { describe, expect, it } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { AdminApi, AdminApiError, makeKey } from "./admin-api";
 
 type RpcCall = { name: string; params?: Record<string, unknown> };
 type FunctionCall = { name: string; body?: Record<string, unknown> };
 
-function fakeClient(rpcCalls: RpcCall[], storageCalls: Array<Record<string, unknown>> = [], functionCalls: FunctionCall[] = [], functionResponse: unknown = { success: true, message: 'ok' }) {
+function fakeClient(
+  rpcCalls: RpcCall[],
+  storageCalls: Array<Record<string, unknown>> = [],
+  functionCalls: FunctionCall[] = [],
+  functionResponse: unknown = { success: true, message: "ok" },
+) {
   return {
     rpc: async (name: string, params?: Record<string, unknown>) => {
       rpcCalls.push({ name, params });
-      return { data: [{ success: true, message: 'ok' }], error: null };
+      return { data: [{ success: true, message: "ok" }], error: null };
     },
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => undefined } } }),
+      onAuthStateChange: () => ({
+        data: { subscription: { unsubscribe: () => undefined } },
+      }),
       signInWithPassword: async () => ({ error: null }),
       signOut: async () => ({ error: null }),
     },
-    functions: { invoke: async (name: string, options: { body?: Record<string, unknown> }) => { functionCalls.push({ name, body: options.body }); return { data: functionResponse, error: null }; } },
+    functions: {
+      invoke: async (
+        name: string,
+        options: { body?: Record<string, unknown> },
+      ) => {
+        functionCalls.push({ name, body: options.body });
+        return { data: functionResponse, error: null };
+      },
+    },
     storage: {
       from: () => ({
-        upload: async (path: string, file: File, options: Record<string, unknown>) => { storageCalls.push({ path, file, options }); return { data: { path }, error: null }; },
-        createSignedUrl: async () => ({ data: { signedUrl: 'https://example.test/signed' }, error: null }),
+        upload: async (
+          path: string,
+          file: File,
+          options: Record<string, unknown>,
+        ) => {
+          storageCalls.push({ path, file, options });
+          return { data: { path }, error: null };
+        },
+        createSignedUrl: async () => ({
+          data: { signedUrl: "https://example.test/signed" },
+          error: null,
+        }),
       }),
     },
   } as unknown as SupabaseClient;
 }
 
-describe('AdminApi mutation contract', () => {
-  it('loads a bounded event lead page through the authenticated function', async () => {
+describe("AdminApi mutation contract", () => {
+  it("loads a bounded event lead page through the authenticated function", async () => {
     const functionCalls: FunctionCall[] = [];
-    const api = new AdminApi(() => fakeClient([], [], functionCalls, {
-      success: true,
+    const api = new AdminApi(() =>
+      fakeClient([], [], functionCalls, {
+        success: true,
+        rows: [{
+          id: "lead-1",
+          phone_e164: "+84912345678",
+          phone_display: "0912 345 678",
+          full_name: "Nguyễn An",
+          age: 24,
+          gender: "female",
+          address: "Quận 1",
+          status: "new",
+          created_at: "2026-10-07T00:00:00.000Z",
+        }],
+        total: 51,
+        page: 2,
+        page_size: 25,
+      })
+    );
+    const page = await api.fetchEarlyAccessLeads(" Nguyen An ", 2, 25);
+
+    expect(page).toEqual({
       rows: [{
-        id: 'lead-1', phone_e164: '+84912345678', phone_display: '0912 345 678',
-        full_name: 'Nguyễn An', age: 24, gender: 'female', address: 'Quận 1',
-        status: 'new', created_at: '2026-10-07T00:00:00.000Z',
+        id: "lead-1",
+        phoneE164: "+84912345678",
+        phoneDisplay: "0912 345 678",
+        fullName: "Nguyễn An",
+        age: 24,
+        gender: "female",
+        address: "Quận 1",
+        status: "new",
+        createdAt: "2026-10-07T00:00:00.000Z",
       }],
       total: 51,
       page: 2,
-      page_size: 25,
-    }));
-    const page = await api.fetchEarlyAccessLeads(' Nguyen An ', 2, 25);
-
-    expect(page).toEqual({ rows: [{
-      id: 'lead-1', phoneE164: '+84912345678', phoneDisplay: '0912 345 678',
-      fullName: 'Nguyễn An', age: 24, gender: 'female', address: 'Quận 1',
-      status: 'new', createdAt: '2026-10-07T00:00:00.000Z',
-    }], total: 51, page: 2, pageSize: 25 });
+      pageSize: 25,
+    });
     expect(functionCalls[0]).toEqual({
-      name: 'admin-early-access-leads',
-      body: { action: 'list', query: 'Nguyen An', page: 2, page_size: 25 },
+      name: "admin-early-access-leads",
+      body: { action: "list", query: "Nguyen An", page: 2, page_size: 25 },
     });
   });
 
-  it('sends an audited lead status update with an idempotency key', async () => {
+  it("sends an audited lead status update with an idempotency key", async () => {
     const functionCalls: FunctionCall[] = [];
     const api = new AdminApi(() => fakeClient([], [], functionCalls));
     await api.updateEarlyAccessLeadStatus({
-      leadId: 'lead-1',
-      status: 'contacted',
-      reason: 'Đã gọi khách hàng.',
-      idempotencyKey: 'status-change-1',
+      leadId: "lead-1",
+      status: "contacted",
+      reason: "Đã gọi khách hàng.",
+      idempotencyKey: "status-change-1",
     });
     expect(functionCalls[0]).toEqual({
-      name: 'admin-early-access-leads',
+      name: "admin-early-access-leads",
       body: {
-        action: 'update_status',
-        lead_id: 'lead-1',
-        status: 'contacted',
-        reason: 'Đã gọi khách hàng.',
-        idempotency_key: 'status-change-1',
+        action: "update_status",
+        lead_id: "lead-1",
+        status: "contacted",
+        reason: "Đã gọi khách hàng.",
+        idempotency_key: "status-change-1",
       },
     });
   });
 
-  it('sends a membership period adjustment through the protected Edge Function', async () => {
+  it("sends a membership period adjustment through the protected Edge Function", async () => {
     const functionCalls: FunctionCall[] = [];
     const api = new AdminApi(() => fakeClient([], [], functionCalls));
     const result = await api.adjustMembershipPeriod({
-      userId: 'user-1',
-      subscriptionId: 'subscription-1',
-      operation: 'add_days',
+      userId: "user-1",
+      subscriptionId: "subscription-1",
+      operation: "add_days",
       days: 7,
       endsAt: null,
-      expectedEndsAt: '2026-10-13T00:00:00.000Z',
-      reason: 'Gia hạn theo phê duyệt.',
-      idempotencyKey: 'adjust-1',
+      expectedEndsAt: "2026-10-13T00:00:00.000Z",
+      reason: "Gia hạn theo phê duyệt.",
+      idempotencyKey: "adjust-1",
     });
 
-    expect(result.planCode).toBe('free');
+    expect(result.planCode).toBe("free");
     expect(functionCalls[0]).toEqual({
-      name: 'admin-adjust-membership-period',
+      name: "admin-adjust-membership-period",
       body: {
-        user_id: 'user-1',
-        subscription_id: 'subscription-1',
-        operation: 'add_days',
+        user_id: "user-1",
+        subscription_id: "subscription-1",
+        operation: "add_days",
         days: 7,
         ends_at: null,
-        expected_ends_at: '2026-10-13T00:00:00.000Z',
-        reason: 'Gia hạn theo phê duyệt.',
-        idempotency_key: 'adjust-1',
+        expected_ends_at: "2026-10-13T00:00:00.000Z",
+        reason: "Gia hạn theo phê duyệt.",
+        idempotency_key: "adjust-1",
       },
     });
   });
 
-  it('sends payment review reason, idempotency and transfer verification', async () => {
+  it("sends payment review reason, idempotency and transfer verification", async () => {
     const calls: RpcCall[] = [];
     const api = new AdminApi(() => fakeClient(calls));
-    await api.runMutation({ section: 'payments', action: 'approve', targetId: 'payment-1', reason: 'Đã kiểm tra sao kê.', idempotencyKey: 'payment-1-approve-1', payload: { transferVerified: true } });
+    await api.runMutation({
+      section: "payments",
+      action: "approve",
+      targetId: "payment-1",
+      reason: "Đã kiểm tra sao kê.",
+      idempotencyKey: "payment-1-approve-1",
+      payload: { transferVerified: true },
+    });
     expect(calls[0]).toEqual({
-      name: 'admin_review_payment',
-      params: { p_reason: 'Đã kiểm tra sao kê.', p_idempotency_key: 'payment-1-approve-1', p_payment_event_id: 'payment-1', p_decision: 'approve', p_transfer_verified: true },
+      name: "admin_review_payment",
+      params: {
+        p_reason: "Đã kiểm tra sao kê.",
+        p_idempotency_key: "payment-1-approve-1",
+        p_payment_event_id: "payment-1",
+        p_decision: "approve",
+        p_transfer_verified: true,
+      },
     });
   });
 
-  it('rejects a write without reason before calling Supabase', async () => {
+  it("rejects a write without reason before calling Supabase", async () => {
     const calls: RpcCall[] = [];
     const api = new AdminApi(() => fakeClient(calls));
-    await expect(api.runMutation({ section: 'users', action: 'suspended', targetId: 'user-1', reason: ' ' })).rejects.toBeInstanceOf(AdminApiError);
+    await expect(
+      api.runMutation({
+        section: "users",
+        action: "suspended",
+        targetId: "user-1",
+        reason: " ",
+      }),
+    ).rejects.toBeInstanceOf(AdminApiError);
     expect(calls).toHaveLength(0);
   });
 
-  it('uploads payout proof only to the constrained bucket path', async () => {
-    const calls: RpcCall[] = []; const storageCalls: Array<Record<string, unknown>> = [];
+  it("uploads payout proof only to the constrained bucket path", async () => {
+    const calls: RpcCall[] = [];
+    const storageCalls: Array<Record<string, unknown>> = [];
     const api = new AdminApi(() => fakeClient(calls, storageCalls));
-    const file = new File(['proof'], 'transfer receipt.png', { type: 'image/png' });
-    const path = await api.uploadPayoutProof('conversion/unsafe', file);
-    expect(path).toMatch(/^sale-point-conversions\/conversion_unsafe\/\d+-transfer_receipt.png$/);
-    expect(storageCalls[0].options).toEqual({ contentType: 'image/png', upsert: false });
+    const file = new File(["proof"], "transfer receipt.png", {
+      type: "image/png",
+    });
+    const path = await api.uploadPayoutProof("conversion/unsafe", file);
+    expect(path).toMatch(
+      /^sale-point-conversions\/conversion_unsafe\/\d+-transfer_receipt.png$/,
+    );
+    expect(storageCalls[0].options).toEqual({
+      contentType: "image/png",
+      upsert: false,
+    });
   });
 
-  it('rejects unsupported payout proof files', async () => {
+  it("rejects unsupported payout proof files", async () => {
     const api = new AdminApi(() => fakeClient([]));
-    const file = new File(['not an image'], 'receipt.pdf', { type: 'application/pdf' });
-    await expect(api.uploadPayoutProof('conversion-1', file)).rejects.toThrow('Chỉ nhận ảnh JPG hoặc PNG.');
+    const file = new File(["not an image"], "receipt.pdf", {
+      type: "application/pdf",
+    });
+    await expect(api.uploadPayoutProof("conversion-1", file)).rejects.toThrow(
+      "Chỉ nhận ảnh JPG hoặc PNG.",
+    );
   });
 
-  it('previews and executes bulk provisioning through the protected Edge Function', async () => {
+  it("previews and executes bulk provisioning through the protected Edge Function", async () => {
     const calls: RpcCall[] = [];
     const functionCalls: FunctionCall[] = [];
     const api = new AdminApi(() => fakeClient(calls, [], functionCalls));
-    const accounts = [{ email: 'user@gmail.com', fullName: 'User One' }];
+    const accounts = [{
+      phone: "0912345678",
+      email: "user@gmail.com",
+      fullName: "User One",
+    }];
 
     await expect(api.previewBulkProvision({
       accounts,
-      planCode: 'plus',
+      planCode: "plus",
       durationMonths: 1,
-      reason: 'Được phê duyệt.',
-      idempotencyKey: 'bulk-1',
-    })).rejects.toThrow('Bản xem trước chưa hợp lệ');
+      reason: "Được phê duyệt.",
+      idempotencyKey: "bulk-1",
+    })).rejects.toThrow("Bản xem trước chưa hợp lệ");
     expect(functionCalls[0]).toEqual({
-      name: 'admin-provision-accounts-bulk',
+      name: "admin-provision-accounts-bulk",
       body: {
-        mode: 'preview',
-        accounts: [{ email: 'user@gmail.com', full_name: 'User One' }],
-        plan_code: 'plus',
+        mode: "preview",
+        accounts: [{
+          phone: "0912345678",
+          full_name: "User One",
+          email: "user@gmail.com",
+        }],
+        plan_code: "plus",
         duration_months: 1,
-        reason: 'Được phê duyệt.',
-        idempotency_key: 'bulk-1',
+        reason: "Được phê duyệt.",
+        idempotency_key: "bulk-1",
       },
     });
-    expect(JSON.stringify(functionCalls[0])).not.toContain('password');
+    expect(JSON.stringify(functionCalls[0])).not.toContain("password");
   });
 
-  it('uses the protected user-management Function for detail, profile update and password reset', async () => {
+  it("uses the protected user-management Function for detail and profile update", async () => {
     const functionCalls: FunctionCall[] = [];
     const api = new AdminApi(() => fakeClient([], [], functionCalls));
-    await api.getUserDetails('user-1', 'Hỗ trợ người dùng.');
-    await api.updateUserProfile({ userId: 'user-1', fullName: 'User One', phone: '', gender: '', birthYear: 1990, reason: 'Cập nhật hồ sơ.', idempotencyKey: 'profile-1' });
-    await api.resetUserPassword('user-1', 'Cấp lại quyền truy cập.', 'reset-1');
+    await api.getUserDetails("user-1", "Hỗ trợ người dùng.");
+    await api.updateUserProfile({
+      userId: "user-1",
+      fullName: "User One",
+      gender: "",
+      birthYear: 1990,
+      reason: "Cập nhật hồ sơ.",
+      idempotencyKey: "profile-1",
+    });
 
     expect(functionCalls.map((call) => call.name)).toEqual([
-      'admin-user-management',
-      'admin-user-management',
-      'admin-user-management',
+      "admin-user-management",
+      "admin-user-management",
     ]);
-    expect(functionCalls[0]?.body).toEqual({ operation: 'detail', user_id: 'user-1', reason: 'Hỗ trợ người dùng.' });
-    expect(functionCalls[1]?.body).toEqual({ operation: 'update_profile', user_id: 'user-1', full_name: 'User One', phone: null, gender: null, birth_year: 1990, reason: 'Cập nhật hồ sơ.', idempotency_key: 'profile-1' });
-    expect(functionCalls[2]?.body).toEqual({ operation: 'reset_password', user_id: 'user-1', reason: 'Cấp lại quyền truy cập.', idempotency_key: 'reset-1' });
-    expect(JSON.stringify(functionCalls)).not.toContain('service_role');
+    expect(functionCalls[0]?.body).toEqual({
+      operation: "detail",
+      user_id: "user-1",
+      reason: "Hỗ trợ người dùng.",
+    });
+    expect(functionCalls[1]?.body).toEqual({
+      operation: "update_profile",
+      user_id: "user-1",
+      full_name: "User One",
+      gender: null,
+      birth_year: 1990,
+      reason: "Cập nhật hồ sơ.",
+      idempotency_key: "profile-1",
+    });
+    expect(JSON.stringify(functionCalls)).not.toContain("service_role");
+  });
+
+  it("resets member password with reason and idempotency key", async () => {
+    const functionCalls: FunctionCall[] = [];
+    const api = new AdminApi(() =>
+      fakeClient([], [], functionCalls, {
+        success: true,
+        reset_password: "12345678",
+      })
+    );
+
+    const result = await api.resetMemberPassword(
+      "user-1",
+      "Đã xác minh.",
+      "reset-1",
+    );
+
+    expect(result).toMatchObject({ success: true });
+    expect(functionCalls.map((call) => call.body)).toEqual([
+      {
+        operation: "reset_member_password",
+        user_id: "user-1",
+        reason: "Đã xác minh.",
+        idempotency_key: "reset-1",
+      },
+    ]);
   });
 });
 
-describe('idempotency key generation', () => {
-  it('uses a scoped, transport-safe key', () => {
-    expect(makeKey('approve payment', 'a/b')).toMatch(/^approve_payment-a_b-.+/);
+describe("idempotency key generation", () => {
+  it("uses a scoped, transport-safe key", () => {
+    expect(makeKey("approve payment", "a/b")).toMatch(
+      /^approve_payment-a_b-.+/,
+    );
   });
 });

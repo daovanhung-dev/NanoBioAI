@@ -1,37 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// SettingsRemoteDatasource handles all remote operations for settings
-/// including authentication-related operations through Supabase.
-///
-/// This datasource is responsible for:
-/// - Password updates via Supabase auth
-/// - User sign out via Supabase auth
+/// SettingsRemoteDatasource handles remote sign out for settings.
 class SettingsRemoteDatasource {
   final supabase = Supabase.instance.client;
-
-  /// Updates the user's password in Supabase authentication system
-  ///
-  /// [newPassword] The new password to set for the authenticated user
-  ///
-  /// Throws [AuthException] if:
-  /// - User is not authenticated
-  /// - Password update fails due to Supabase service issues
-  /// - Password doesn't meet Supabase password requirements
-  Future<void> updatePassword(String newPassword) async {
-    try {
-      final response = await supabase.auth.updateUser(
-        UserAttributes(password: newPassword),
-      );
-
-      if (response.user == null) {
-        throw AuthException('Failed to update password');
-      }
-    } on AuthException {
-      rethrow;
-    } catch (e) {
-      throw AuthException('Failed to update password: ${e.toString()}');
-    }
-  }
 
   /// Signs out the current user from Supabase authentication
   ///

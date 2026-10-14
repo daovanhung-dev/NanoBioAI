@@ -1,6 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 import { createAdminCreateAccountHandler } from "./handler.ts";
+import {
+  memberAuthEmail,
+  normalizeVietnamPhone,
+} from "../_shared/member_phone_identity.ts";
 
 const supabaseUrl = requiredEnvironment("SUPABASE_URL");
 const supabaseAnonKey = requiredEnvironment("SUPABASE_ANON_KEY");
@@ -19,7 +23,8 @@ Deno.serve(createAdminCreateAccountHandler({
     const { data, error } = await userClient.auth.getUser();
     return error == null ? data.user?.id ?? null : null;
   },
-  isAllowedAdmin: (actorId) => hasActiveAdminRole(actorId, ["super_admin", "support_admin"]),
+  isAllowedAdmin: (actorId) =>
+    hasActiveAdminRole(actorId, ["super_admin", "support_admin"]),
   findIdempotentResult: async (idempotencyKey) => {
     const { data: audit } = await admin
       .from("admin_audit_events")
@@ -34,20 +39,56 @@ Deno.serve(createAdminCreateAccountHandler({
       .select("id,email")
       .eq("id", userId)
       .maybeSingle();
-    return user?.id && user?.email ? { userId: user.id, email: user.email } : null;
+    return user?.id
+      ? {
+        userId: user.id,
+        email: typeof user.email === "string" ? user.email : null,
+      }
+      : null;
   },
   createUser: async ({ email, password, fullName, phone }) => {
+    for (let from = 0;; from += 1000) {
+      const { data: existingProfiles, error: profileLookupError } = await admin
+        .from("users")
+        .select("phone")
+        .not("phone", "is", null)
+        .range(from, from + 999);
+      if (profileLookupError) throw profileLookupError;
+      if (
+        (existingProfiles ?? []).some((row) =>
+          normalizeVietnamPhone(
+            typeof row.phone === "string" ? row.phone : "",
+          ) ===
+            phone
+        )
+      ) {
+        throw new Error("phone_exists");
+      }
+      if ((existingProfiles ?? []).length < 1000) break;
+    }
     const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password,
+      email: memberAuthEmail(phone),
       email_confirm: true,
+      password,
       user_metadata: {
         full_name: fullName,
-        ...(phone ? { phone } : {}),
+        phone,
+        auth_login_method: "member_phone_password",
+        ...(email ? { contact_email: email } : {}),
       },
     });
-    if (error || !data.user) throw error ?? new Error("Account creation failed");
-    return { userId: data.user.id, email: data.user.email ?? email };
+    if (error || !data.user) {
+      throw error ?? new Error("Account creation failed");
+    }
+    const { error: profileError } = await admin
+      .from("users")
+      .update({ email })
+      .eq("id", data.user.id);
+    if (profileError) {
+      await admin.auth.admin.deleteUser(data.user.id);
+      throw profileError;
+    }
+    return { userId: data.user.id, email };
   },
   deleteUser: async (userId) => {
     const { error } = await admin.auth.admin.deleteUser(userId);

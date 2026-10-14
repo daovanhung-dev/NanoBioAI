@@ -84,10 +84,18 @@ Deno.test("profile update rejects forbidden fields and records changed field nam
   );
   assertEquals(updateCalls, 0);
 
+  assertEquals(
+    (await responseFor(handler, {
+      ...validBody("update_profile"),
+      phone: "+84900000000",
+    })).status,
+    400,
+  );
+  assertEquals(updateCalls, 0);
+
   const response = await responseFor(handler, {
     ...validBody("update_profile"),
     full_name: "Người dùng mới",
-    phone: "0900000000",
     gender: "female",
     birth_year: 1990,
   });
@@ -95,62 +103,90 @@ Deno.test("profile update rejects forbidden fields and records changed field nam
   assertEquals(response.status, 200);
   assertEquals(body.changed_fields, [
     "full_name",
-    "phone",
     "gender",
     "birth_year",
   ]);
   assertEquals(audits[0]?.metadata, {
     status: "completed",
-    changed_fields: ["full_name", "phone", "gender", "birth_year"],
+    changed_fields: ["full_name", "gender", "birth_year"],
   });
   assertFalse(JSON.stringify(audits[0]).includes("Người dùng mới"));
 });
 
-Deno.test("password reset cannot target the actor and returns a one-time password", async () => {
+Deno.test("member reset needs a reason and returns the default password", async () => {
   let resetCalls = 0;
+  const audits: Array<Record<string, unknown>> = [];
   const handler = createAdminUserManagementHandler(deps({
-    authenticate: () => Promise.resolve("admin-1"),
-    resetPassword: () => {
+    resetMemberPassword: ({ userId }) => {
       resetCalls += 1;
-      return Promise.resolve({ password: "Random16Chars!" });
+      assertEquals(userId, "user-1");
+      return Promise.resolve();
+    },
+    writeAudit: (input) => {
+      audits.push(input as unknown as Record<string, unknown>);
+      return Promise.resolve();
     },
   }));
 
-  assertEquals(
-    (await responseFor(handler, {
-      ...validBody("reset_password"),
-      user_id: "admin-1",
-    })).status,
-    400,
-  );
+  const missingReason = await responseFor(handler, {
+    operation: "reset_member_password",
+    user_id: "user-1",
+    idempotency_key: "reset-1",
+  });
+  assertEquals(missingReason.status, 400);
   assertEquals(resetCalls, 0);
 
-  const response = await responseFor(handler, validBody("reset_password"));
+  const response = await responseFor(handler, {
+    operation: "reset_member_password",
+    user_id: "user-1",
+    reason: "Đã xác minh số điện thoại.",
+    idempotency_key: "reset-1",
+  });
   const body = await response.json();
   assertEquals(response.status, 200);
-  assertEquals(body.status, "password_reset");
-  assertEquals(body.temporary_password, "Random16Chars!");
-  assertEquals(body.password_visible_once, true);
+  assertEquals(body.reset_password, "12345678");
   assertEquals(resetCalls, 1);
+  assertEquals(audits[0]?.action, "admin_reset_member_password");
+  assertEquals(audits[0]?.metadata, {
+    status: "completed",
+    must_change_password: true,
+  });
+  assertFalse(JSON.stringify(audits).includes("service-role-secret"));
 });
 
-Deno.test("password reset replay does not generate or return a second password", async () => {
+Deno.test("reset idempotency replay does not reset a second time", async () => {
   let resetCalls = 0;
   const handler = createAdminUserManagementHandler(deps({
     findIdempotency: () =>
       Promise.resolve({ targetId: "user-1", status: "completed" }),
-    resetPassword: () => {
+    resetMemberPassword: () => {
       resetCalls += 1;
-      return Promise.resolve({ password: "should-not-run" });
+      return Promise.resolve();
     },
   }));
-
-  const response = await responseFor(handler, validBody("reset_password"));
-  const text = await response.text();
+  const response = await responseFor(handler, {
+    operation: "reset_member_password",
+    user_id: "user-1",
+    reason: "Đã xác minh số điện thoại.",
+    idempotency_key: "reset-1",
+  });
   assertEquals(response.status, 200);
-  assertEquals(JSON.parse(text).password_visible_once, false);
-  assertFalse(text.includes("should-not-run"));
+  assertEquals((await response.json()).reset_password, "12345678");
   assertEquals(resetCalls, 0);
+});
+
+Deno.test("old request workflow is no longer supported", async () => {
+  const handler = createAdminUserManagementHandler(deps());
+  assertEquals(
+    (await responseFor(handler, { operation: "list_password_requests" }))
+      .status,
+    400,
+  );
+  assertEquals(
+    (await responseFor(handler, { operation: "approve_password_change" }))
+      .status,
+    400,
+  );
 });
 
 Deno.test("user management hides backend errors", async () => {
@@ -173,8 +209,8 @@ function deps(
     findIdempotency: () => Promise.resolve(null),
     getDetails: () => Promise.resolve(details()),
     updateProfile: () => Promise.resolve(),
+    resetMemberPassword: () => Promise.resolve(),
     writeAudit: () => Promise.resolve(),
-    resetPassword: () => Promise.resolve({ password: "Random16Chars!" }),
     ...overrides,
   };
 }
@@ -198,13 +234,12 @@ async function responseFor(
 }
 
 function validBody(
-  operation: "detail" | "update_profile" | "reset_password",
+  operation: "detail" | "update_profile",
 ): Record<string, unknown> {
   return {
     operation,
     user_id: "user-1",
     full_name: "Người dùng",
-    phone: null,
     gender: null,
     birth_year: null,
     reason: "Xử lý yêu cầu người dùng.",

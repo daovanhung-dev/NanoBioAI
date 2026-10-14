@@ -423,9 +423,10 @@ grant usage on schema public to anon, authenticated;
 grant
 select on public.users, public.health_subjects to authenticated;
 
+revoke update on public.users from anon, authenticated;
+
 grant
 update (
-    phone,
     full_name,
     avatar_url,
     gender,
@@ -3605,10 +3606,9 @@ begin
   end if;
 
   -- User-controlled profile fields only. Access and Sale states remain trusted
-  -- server-owned fields.
+  -- server-owned fields. Phone comes from Auth and cannot be changed in a client snapshot.
   update public.users
   set
-    phone = coalesce(nullif(v_user ->> 'phone', ''), phone),
     full_name = coalesce(nullif(v_user ->> 'full_name', ''), full_name),
     avatar_url = coalesce(nullif(v_user ->> 'avatar_url', ''), avatar_url),
     gender = coalesce(nullif(v_user ->> 'gender', ''), gender),
@@ -12438,7 +12438,6 @@ begin
 
   update public.users
   set
-    phone = coalesce(nullif(v_user ->> 'phone', ''), phone),
     full_name = coalesce(nullif(v_user ->> 'full_name', ''), full_name),
     avatar_url = coalesce(nullif(v_user ->> 'avatar_url', ''), avatar_url),
     gender = coalesce(nullif(v_user ->> 'gender', ''), gender),
@@ -13692,7 +13691,6 @@ begin
 
   update public.users
   set
-    phone = coalesce(nullif(v_user ->> 'phone', ''), phone),
     full_name = coalesce(nullif(v_user ->> 'full_name', ''), full_name),
     avatar_url = coalesce(nullif(v_user ->> 'avatar_url', ''), avatar_url),
     gender = coalesce(nullif(v_user ->> 'gender', ''), gender),
@@ -14945,13 +14943,27 @@ as $$
 declare
   v_user_id uuid := auth.uid();
   v_result jsonb;
+  v_safe_snapshot jsonb;
   v_overlay_count integer := 0;
 begin
   if v_user_id is null then
     raise exception using errcode = 'P0001', message = 'auth_required';
   end if;
 
-  v_result := public.sync_my_mobile_snapshot_before_daily_health_hub(p_snapshot);
+  if coalesce(jsonb_typeof(p_snapshot), '') <> 'object'
+     or (p_snapshot ? 'user' and coalesce(jsonb_typeof(p_snapshot -> 'user'), '') <> 'object') then
+    raise exception using errcode = '22023', message = 'INVALID_SNAPSHOT';
+  end if;
+
+  -- Supabase Auth owns member login phones; an old or modified client snapshot
+  -- must never be able to replace that identity in public.users.
+  v_safe_snapshot := jsonb_set(
+    p_snapshot,
+    '{user}',
+    coalesce(p_snapshot -> 'user', '{}'::jsonb) - 'phone',
+    true
+  );
+  v_result := public.sync_my_mobile_snapshot_before_daily_health_hub(v_safe_snapshot);
 
   -- Re-create active manual occurrences if a stale snapshot omitted them.
   with latest as (
@@ -15753,8 +15765,172 @@ commit;
 -- =============================================================================
 
 -- =============================================================================
--- BEGIN FAIL-FAST SYSTEM VALIDATION
 -- =============================================================================
+-- MEMBER PHONE PASSWORD APPROVAL
+-- Migration source: supabase/migrations/20261014090000_member_phone_auth_security.sql
+
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to service_role;
+
+create unique index if not exists idx_users_phone_unique_not_null
+  on public.users(phone) where phone is not null;
+
+revoke update on public.users from anon, authenticated;
+grant update (
+  full_name,
+  avatar_url,
+  gender,
+  birth_year,
+  onboarding_status,
+  onboarding_completed_at,
+  last_login_at
+) on public.users to authenticated;
+
+-- Preserve the currently deployed snapshot behavior while stripping the
+-- client-controlled phone field before any older SECURITY DEFINER body runs.
+do $$
+begin
+  if to_regprocedure('public.sync_my_mobile_snapshot_before_member_phone_auth(jsonb)') is null then
+    if to_regprocedure('public.sync_my_mobile_snapshot(jsonb)') is null then
+      raise exception 'sync_my_mobile_snapshot(jsonb) must exist before applying member phone auth migration';
+    end if;
+    execute 'alter function public.sync_my_mobile_snapshot(jsonb) rename to sync_my_mobile_snapshot_before_member_phone_auth';
+  end if;
+end
+$$;
+
+revoke all on function public.sync_my_mobile_snapshot_before_member_phone_auth(jsonb)
+from public, anon, authenticated;
+
+create or replace function public.sync_my_mobile_snapshot(p_snapshot jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_safe_snapshot jsonb;
+begin
+  if v_user_id is null then
+    raise exception using errcode = 'P0001', message = 'auth_required';
+  end if;
+  if coalesce(jsonb_typeof(p_snapshot), '') <> 'object'
+     or (p_snapshot ? 'user' and coalesce(jsonb_typeof(p_snapshot -> 'user'), '') <> 'object') then
+    raise exception using errcode = '22023', message = 'INVALID_SNAPSHOT';
+  end if;
+
+  v_safe_snapshot := jsonb_set(
+    p_snapshot,
+    '{user}',
+    coalesce(p_snapshot -> 'user', '{}'::jsonb) - 'phone',
+    true
+  );
+  return public.sync_my_mobile_snapshot_before_member_phone_auth(v_safe_snapshot);
+end;
+$$;
+
+revoke all on function public.sync_my_mobile_snapshot(jsonb)
+from public, anon;
+grant execute on function public.sync_my_mobile_snapshot(jsonb)
+to authenticated;
+
+do $$
+begin
+  if has_column_privilege('anon', 'public.users', 'phone', 'UPDATE')
+     or has_column_privilege('authenticated', 'public.users', 'phone', 'UPDATE') then
+    raise exception 'MEMBER_PHONE_CLIENT_UPDATE_GRANT_INVALID';
+  end if;
+  if has_function_privilege(
+       'anon',
+       'public.sync_my_mobile_snapshot(jsonb)'::regprocedure,
+       'EXECUTE'
+     )
+     or not has_function_privilege(
+       'authenticated',
+       'public.sync_my_mobile_snapshot(jsonb)'::regprocedure,
+       'EXECUTE'
+     )
+     or has_function_privilege(
+       'authenticated',
+       'public.sync_my_mobile_snapshot_before_member_phone_auth(jsonb)'::regprocedure,
+       'EXECUTE'
+     ) then
+    raise exception 'MEMBER_PHONE_SNAPSHOT_RPC_GRANT_INVALID';
+  end if;
+end
+$$;
+
+create table if not exists private.member_phone_signup_rate_limits (
+  key_hash text not null,
+  bucket_start timestamptz not null,
+  request_count integer not null default 0,
+  primary key (key_hash, bucket_start)
+);
+revoke all on table private.member_phone_signup_rate_limits
+from public, anon, authenticated, service_role;
+
+create or replace function public.consume_member_phone_signup_rate_limit(
+  p_ip_hash text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = private, auth, pg_temp
+as $$
+declare
+  v_count integer;
+  v_bucket timestamptz := date_trunc('hour', now());
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then
+    raise exception 'service_role_required' using errcode = '42501';
+  end if;
+  if coalesce(p_ip_hash, '') !~ '^[0-9a-f]{64}$' then
+    return false;
+  end if;
+  delete from private.member_phone_signup_rate_limits
+  where bucket_start < now() - interval '30 days';
+  insert into private.member_phone_signup_rate_limits(
+    key_hash, bucket_start, request_count
+  ) values ('signup:' || p_ip_hash, v_bucket, 1)
+  on conflict (key_hash, bucket_start) do update
+    set request_count = private.member_phone_signup_rate_limits.request_count + 1
+  returning request_count into v_count;
+  return v_count <= 10;
+end;
+$$;
+
+revoke all on function public.consume_member_phone_signup_rate_limit(text)
+from public, anon, authenticated;
+grant execute on function public.consume_member_phone_signup_rate_limit(text)
+to service_role;
+
+do $$
+begin
+  if to_regclass('public.idx_users_phone_unique_not_null') is null then
+    raise exception 'MEMBER_PHONE_UNIQUE_INDEX_MISSING';
+  end if;
+  if has_function_privilege(
+    'anon',
+    'public.consume_member_phone_signup_rate_limit(text)'::regprocedure,
+    'EXECUTE'
+  ) or has_function_privilege(
+    'authenticated',
+    'public.consume_member_phone_signup_rate_limit(text)'::regprocedure,
+    'EXECUTE'
+  ) or not has_function_privilege(
+    'service_role',
+    'public.consume_member_phone_signup_rate_limit(text)'::regprocedure,
+    'EXECUTE'
+  ) then
+    raise exception 'MEMBER_PHONE_SIGNUP_RATE_LIMIT_GRANTS_INVALID';
+  end if;
+  raise notice 'PASS member phone login and signup schema contract.';
+end
+$$;
+
+
 
 -- Daily Health Hub static contract.
 do $$

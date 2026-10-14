@@ -428,8 +428,9 @@ class UserDataSyncTables {
   };
 
   static const cloudColumnsByTable = <String, Set<String>>{
+    // Login identity comes from Supabase Auth and must never be pushed from a
+    // local profile snapshot.
     'users': {
-      'phone',
       'full_name',
       'avatar_url',
       'gender',
