@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 209
+- Total worklogs: 211
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -218,3 +218,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-13 | bugfix M02 PERSONAL_SCHEDULE_AI. | docs-context | unknown | [Worklog - Retry AI và tách món khi tạo lịch lỗi](../../docs/worklog/2026-10-13/009-worklog-ai-model-escalation-meal-slot-split.md) |
 | 2026-10-13 | coding và UI. | docs-context | M01 Onboarding, M02 AI generated plan. | [Worklog - Hiển thị tiến độ tạo lịch trong onboarding](../../docs/worklog/2026-10-13/010-worklog-onboarding-plan-progress.md) |
 | 2026-10-13 | coding | coding | M02 PERSONAL_SCHEDULE_AI | [Worklog - Không lặp món trong lịch một tuần](../../docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md) |
+| 2026-10-13 | coding | coding | M01 ONBOARDING_PROFILE / onboarding UI | [Worklog - Tối giản WelcomeStep và motion màn vào](../../docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md) |
+| 2026-10-14 | coding | coding | M01 ONBOARDING_PROFILE / onboarding UI | [Worklog - Tái thiết kế onboarding theo Stitch Blue Wellness](../../docs/worklog/2026-10-14/001-worklog-onboarding-stitch-redesign.md) |

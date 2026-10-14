@@ -5,7 +5,7 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import 'nabi_onboarding_experience.dart';
 
-/// Shared Green Wellness frame for every onboarding step.
+/// Shared Blue Wellness frame for every onboarding step.
 class OnboardingStepShell extends StatelessWidget {
   final int stepIndex;
   final int totalSteps;
@@ -67,14 +67,14 @@ class OnboardingStepShell extends StatelessWidget {
           totalSteps: totalSteps,
           showBack: showBack,
           onBack: onBack,
+          mood: _resolvedMood,
+          showCompanion: showCompanion,
         ),
         Expanded(
           child: _StepBody(
             title: title,
             subtitle: subtitle,
-            mood: _resolvedMood,
             nabiMessage: nabiMessage,
-            showCompanion: showCompanion,
             isScrollable: isScrollable,
             child: child,
           ),
@@ -93,36 +93,57 @@ class _WellnessTopBar extends StatelessWidget {
   final int totalSteps;
   final bool showBack;
   final VoidCallback? onBack;
+  final NabiOnboardingMood mood;
+  final bool showCompanion;
 
   const _WellnessTopBar({
     required this.stepIndex,
     required this.totalSteps,
     required this.showBack,
     required this.onBack,
+    required this.mood,
+    required this.showCompanion,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    final progress = ((stepIndex + 1) / totalSteps).clamp(0.0, 1.0).toDouble();
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 9, 14, 6),
+    const labels = [
+      'Khởi đầu',
+      'Hồ sơ sức khỏe',
+      'Mục tiêu sức khỏe',
+      'Lưu ý sức khỏe',
+      'Nhịp sống',
+      'Thông tin bổ sung',
+      'Nhịp sinh học',
+      'Quyền riêng tư',
+      'Xem lại hồ sơ',
+    ];
+    final label = stepIndex >= 0 && stepIndex < labels.length
+        ? labels[stepIndex]
+        : 'Hành trình của bạn';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+      decoration: BoxDecoration(
+        color: colors.background.withValues(alpha: 0.96),
+        border: Border(bottom: BorderSide(color: colors.divider)),
+      ),
       child: Row(
         children: [
           SizedBox(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             child: showBack
-                ? IconButton(
+                ? IconButton.filledTonal(
+                    key: const Key('onboarding_back'),
                     tooltip: 'Quay lại',
                     onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    color: colors.primary,
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    iconSize: 19,
                     style: IconButton.styleFrom(
-                      backgroundColor: colors.surface.withValues(alpha: 0.92),
-                      side: BorderSide(color: colors.border),
-                      shadowColor: colors.primary.withValues(alpha: 0.14),
-                      elevation: 2,
+                      backgroundColor: colors.card,
+                      foregroundColor: colors.textPrimary,
+                      padding: EdgeInsets.zero,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -130,132 +151,98 @@ class _WellnessTopBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Row(
                   children: [
-                    NabiMoodPill(
-                      icon: Icons.eco_rounded,
-                      label: '${stepIndex + 1}/$totalSteps',
-                    ),
-                    const Spacer(),
+                    for (var index = 0; index < totalSteps; index++) ...[
+                      Expanded(
+                        child: AnimatedContainer(
+                          duration: nabiReducedMotion(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: index < stepIndex
+                                ? colors.secondary
+                                : index == stepIndex
+                                ? colors.primary
+                                : colors.primarySoft,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                        ),
+                      ),
+                      if (index != totalSteps - 1) const SizedBox(width: 4),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
                     Text(
-                      stepIndex + 1 == totalSteps
-                          ? 'Sắp xong'
-                          : 'Hồ sơ của bạn',
+                      'Bước ${stepIndex + 1}/$totalSteps',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: colors.textSecondary,
-                        fontWeight: FontWeight.w700,
+                        color: colors.primary,
+                        fontWeight: FontWeight.w800,
                         letterSpacing: 0,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Icon(
+                        Icons.circle,
+                        size: 4,
+                        color: colors.textMuted,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: colors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: progress),
-                  duration: nabiReducedMotion(context)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 480),
-                  curve: Curves.easeOutBack,
-                  builder: (context, value, _) => _LeafProgress(
-                    value: value,
-                    totalSteps: totalSteps,
-                    currentStep: stepIndex,
-                  ),
-                ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LeafProgress extends StatelessWidget {
-  final double value;
-  final int totalSteps;
-  final int currentStep;
-
-  const _LeafProgress({
-    required this.value,
-    required this.totalSteps,
-    required this.currentStep,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return SizedBox(
-      height: 14,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            height: 6,
-            decoration: BoxDecoration(
-              color: colors.primarySoft,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FractionallySizedBox(
-              widthFactor: value,
-              child: Container(
-                height: 6,
-                decoration: BoxDecoration(
-                  gradient: NabiPalette.button,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  boxShadow: [
-                    BoxShadow(
-                      color: NabiPalette.greenBright.withValues(alpha: 0.30),
-                      blurRadius: 8,
-                    ),
-                  ],
+          const SizedBox(width: AppSpacing.sm),
+          if (showCompanion)
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: colors.secondarySoft,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colors.secondary.withValues(alpha: 0.2),
+                ),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  mood.assetPath,
+                  fit: BoxFit.cover,
+                  cacheWidth: 120,
+                  semanticLabel: 'Nabi',
                 ),
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              for (var index = 0; index < totalSteps; index++)
-                AnimatedContainer(
-                  duration: AppDuration.ripple,
-                  width: index == currentStep ? 14 : 10,
-                  height: index == currentStep ? 14 : 10,
-                  decoration: BoxDecoration(
-                    color: index <= currentStep
-                        ? NabiPalette.greenPrimary
-                        : colors.surface,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: index <= currentStep
-                          ? NabiPalette.greenPrimary
-                          : colors.border,
-                      width: 1.5,
-                    ),
-                    boxShadow: index == currentStep
-                        ? [
-                            BoxShadow(
-                              color: NabiPalette.greenPrimary.withValues(
-                                alpha: 0.28,
-                              ),
-                              blurRadius: 8,
-                            ),
-                          ]
-                        : const [],
-                  ),
-                  child: index < currentStep
-                      ? const Icon(
-                          Icons.check_rounded,
-                          size: 7,
-                          color: AppColors.textInverse,
-                        )
-                      : null,
-                ),
-            ],
+          const SizedBox(width: 6),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: colors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.person_rounded, color: colors.onBrand, size: 18),
           ),
         ],
       ),
@@ -266,68 +253,34 @@ class _LeafProgress extends StatelessWidget {
 class _StepBody extends StatelessWidget {
   final String title;
   final String subtitle;
-  final NabiOnboardingMood mood;
   final String? nabiMessage;
-  final bool showCompanion;
   final Widget child;
   final bool isScrollable;
 
   const _StepBody({
     required this.title,
     required this.subtitle,
-    required this.mood,
     required this.nabiMessage,
-    required this.showCompanion,
     required this.child,
     required this.isScrollable,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    final body = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (showCompanion) ...[
-          NabiStepHero(mood: mood, message: nabiMessage, compact: true),
-          const SizedBox(height: AppSpacing.sm),
-        ],
-        Text(
-          title,
-          style: AppTextStyles.heading3.copyWith(
-            color: colors.textPrimary,
-            fontWeight: FontWeight.w900,
-            height: 1.12,
-            letterSpacing: -0.35,
-          ),
-        ),
-        if (subtitle.trim().isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            subtitle,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: colors.textSecondary,
-              height: 1.35,
-            ),
-          ),
-        ],
-        const SizedBox(height: AppSpacing.sectionSpacing),
-        child,
-      ],
+    final body = Semantics(
+      container: true,
+      label: title,
+      hint: nabiMessage ?? subtitle,
+      child: child,
     );
 
     if (!isScrollable) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
-        child: body,
-      );
+      return Padding(padding: const EdgeInsets.all(16), child: body);
     }
 
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
@@ -358,15 +311,15 @@ class _BottomAction extends StatelessWidget {
       curve: Curves.easeOutCubic,
       padding: EdgeInsets.only(bottom: keyboardInset > 0 ? 4 : 0),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
         decoration: BoxDecoration(
           color: colors.background.withValues(alpha: 0.96),
           border: Border(top: BorderSide(color: colors.divider)),
           boxShadow: [
             BoxShadow(
               color: colors.textPrimary.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -3),
+              blurRadius: 14,
+              offset: const Offset(0, -4),
             ),
           ],
         ),

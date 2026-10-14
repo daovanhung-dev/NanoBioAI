@@ -5,6 +5,46 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import 'nabi_onboarding_experience.dart';
 
+/// Reveals the main blocks of a step in a short, readable sequence.
+///
+/// Spacing widgets keep their final position so the sequence does not alter
+/// form geometry. AppViewMotion resolves to the final state when reduced
+/// motion is enabled.
+class OnboardingRevealColumn extends StatelessWidget {
+  const OnboardingRevealColumn({
+    super.key,
+    required this.children,
+    this.crossAxisAlignment = CrossAxisAlignment.stretch,
+    this.mainAxisSize = MainAxisSize.max,
+  });
+
+  final List<Widget> children;
+  final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
+
+  @override
+  Widget build(BuildContext context) {
+    var revealIndex = 0;
+    return Column(
+      crossAxisAlignment: crossAxisAlignment,
+      mainAxisSize: mainAxisSize,
+      children: [
+        for (final child in children)
+          if (child is SizedBox || child is Divider || child is VerticalDivider)
+            child
+          else
+            AppViewMotion(
+              key: ValueKey('onboarding-reveal-$revealIndex'),
+              duration: const Duration(milliseconds: 220),
+              delay: AppDuration.stagger * (revealIndex++).clamp(0, 4),
+              offset: const Offset(0, 0.012),
+              child: child,
+            ),
+      ],
+    );
+  }
+}
+
 class OnboardingSectionCard extends StatelessWidget {
   final String? title;
   final String? subtitle;
@@ -32,10 +72,12 @@ class OnboardingSectionCard extends StatelessWidget {
     final colors = context.semanticColors;
     final color = accent ?? colors.primary;
     return NabiGlassPanel(
-      gradient: LinearGradient(colors: [colors.card, colors.cardAlt]),
+      gradient: LinearGradient(colors: [colors.card, colors.card]),
       padding: padding ?? const EdgeInsets.all(AppSpacing.cardPadding),
-      borderRadius: BorderRadius.circular(AppRadius.xl),
-      shadowColor: color,
+      borderRadius: BorderRadius.circular(22),
+      borderColor: colors.border,
+      shadowColor: colors.primaryDark,
+      elevated: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -45,13 +87,14 @@ class OnboardingSectionCard extends StatelessWidget {
               children: [
                 if (icon != null) ...[
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      color: color.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: color.withValues(alpha: 0.12)),
                     ),
-                    child: Icon(icon, color: color, size: 20),
+                    child: Icon(icon, color: color, size: 21),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                 ],
@@ -63,16 +106,14 @@ class OnboardingSectionCard extends StatelessWidget {
                         title!,
                         style: AppTextStyles.heading5.copyWith(
                           color: colors.textPrimary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.1,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
                         ),
                       ),
                       if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           subtitle!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: colors.textSecondary,
                             height: 1.35,
@@ -124,10 +165,11 @@ class OnboardingChoiceGrid extends StatelessWidget {
     final selected = selectedCodes.toSet();
     return LayoutBuilder(
       builder: (context, constraints) {
+        final colors = context.semanticColors;
         final width = constraints.maxWidth;
         final columns = width >= 680
             ? 3
-            : width >= 340
+            : width >= 320
             ? 2
             : 1;
         final itemWidth = (width - (columns - 1) * 8) / columns;
@@ -146,7 +188,7 @@ class OnboardingChoiceGrid extends StatelessWidget {
                       maxSelections == null ||
                       selected.contains(options[index].code) ||
                       selected.length < maxSelections!,
-                  accent: _accentForIndex(index),
+                  accent: index.isEven ? colors.primary : colors.secondary,
                   onTap: () {
                     AppFeedbackService.instance.emit(AppFeedbackType.selection);
                     onSelected(options[index].code);
@@ -158,18 +200,34 @@ class OnboardingChoiceGrid extends StatelessWidget {
       },
     );
   }
-
-  Color _accentForIndex(int index) {
-    const colors = [
-      NabiPalette.greenPrimary,
-      NabiPalette.calmBlue,
-      NabiPalette.personalPurple,
-      NabiPalette.careCoral,
-      NabiPalette.warning,
-    ];
-    return colors[index % colors.length];
-  }
 }
+
+IconData _goalIconFor(String code) => switch (code) {
+  'maintain_weight' => Icons.monitor_weight_outlined,
+  'lose_weight' => Icons.directions_run_rounded,
+  'gain_weight' => Icons.trending_up_rounded,
+  'lose_belly_fat' => Icons.local_fire_department_outlined,
+  'gain_muscle' => Icons.fitness_center_rounded,
+  'improve_strength' => Icons.sports_rounded,
+  'improve_cardio' || 'heart_health' => Icons.favorite_border_rounded,
+  'improve_flexibility' => Icons.self_improvement_rounded,
+  'daily_activity' => Icons.directions_walk_rounded,
+  'sleep_better' => Icons.bedtime_outlined,
+  'reduce_stress' => Icons.spa_outlined,
+  'improve_focus' => Icons.center_focus_strong_rounded,
+  'increase_energy' => Icons.bolt_rounded,
+  'improve_digestion' => Icons.eco_outlined,
+  'healthy_eating' ||
+  'balanced_nutrition' ||
+  'regular_meals' => Icons.restaurant_outlined,
+  'beautify_skin' => Icons.face_retouching_natural_outlined,
+  'immune_boost' || 'overall_health' => Icons.health_and_safety_outlined,
+  'stable_blood_sugar' => Icons.water_drop_outlined,
+  'stable_blood_pressure' => Icons.monitor_heart_outlined,
+  'joint_health' => Icons.accessibility_new_rounded,
+  'detox_body' => Icons.energy_savings_leaf_outlined,
+  _ => Icons.health_and_safety_outlined,
+};
 
 class OnboardingChoiceTile extends StatefulWidget {
   final OnboardingChoiceOption option;
@@ -197,12 +255,8 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    final foreground = widget.selected
-        ? AppColors.textInverse
-        : colors.textPrimary;
-    final border = widget.selected
-        ? NabiPalette.greenPrimary
-        : widget.accent.withValues(alpha: 0.16);
+    final foreground = colors.textPrimary;
+    final border = widget.selected ? colors.primary : colors.border;
     return Semantics(
       button: true,
       selected: widget.selected,
@@ -227,35 +281,23 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
           child: AnimatedContainer(
             duration: nabiReducedMotion(context)
                 ? Duration.zero
-                : AppDuration.ripple,
-            curve: Curves.easeOutBack,
-            constraints: const BoxConstraints(minHeight: 56),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: 6,
-            ),
+                : const Duration(milliseconds: 160),
+            curve: Curves.easeOutCubic,
+            constraints: const BoxConstraints(minHeight: 62),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              gradient: widget.selected
-                  ? NabiPalette.selection
-                  : LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        widget.accent.withValues(alpha: 0.09),
-                        colors.card,
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
+              color: widget.selected ? colors.primarySubtle : colors.card,
+              borderRadius: BorderRadius.circular(AppRadius.control),
               border: Border.all(
                 color: border,
-                width: widget.selected ? 1.8 : 1,
+                width: widget.selected ? 1.25 : 0.75,
               ),
               boxShadow: widget.selected
                   ? [
                       BoxShadow(
-                        color: NabiPalette.greenPrimary.withValues(alpha: 0.22),
+                        color: colors.primary.withValues(alpha: 0.08),
                         blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 3),
                       ),
                     ]
                   : const [],
@@ -264,53 +306,61 @@ class _OnboardingChoiceTileState extends State<OnboardingChoiceTile> {
               opacity: widget.enabled ? 1 : 0.42,
               child: Row(
                 children: [
-                  AnimatedContainer(
-                    duration: AppDuration.fast,
-                    width: 34,
-                    height: 34,
-                    alignment: Alignment.center,
+                  Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: widget.selected
-                          ? AppColors.textInverse.withValues(alpha: 0.16)
-                          : widget.accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      color: widget.accent.withValues(alpha: 0.11),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      widget.option.emoji,
-                      style: const TextStyle(fontSize: 18),
+                    child: Icon(
+                      _goalIconFor(widget.option.code),
+                      size: 20,
+                      color: widget.accent,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       widget.option.label,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: foreground,
-                        fontWeight: FontWeight.w800,
-                        height: 1.18,
+                        fontWeight: FontWeight.w700,
+                        height: 1.24,
                         letterSpacing: 0,
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.tiny),
+                  const SizedBox(width: AppSpacing.sm),
                   AnimatedSwitcher(
                     duration: AppDuration.button,
-                    transitionBuilder: (child, animation) =>
-                        ScaleTransition(scale: animation, child: child),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
                     child: widget.selected
-                        ? const Icon(
-                            Icons.check_circle_rounded,
+                        ? Container(
                             key: ValueKey('selected'),
-                            size: 22,
-                            color: AppColors.textInverse,
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: colors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              Icons.check_rounded,
+                              size: 15,
+                              color: colors.onBrand,
+                            ),
                           )
-                        : Icon(
-                            Icons.add_circle_outline_rounded,
+                        : Container(
                             key: const ValueKey('unselected'),
-                            size: 21,
-                            color: widget.accent,
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: colors.primarySoft,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
                           ),
                   ),
                 ],

@@ -30,16 +30,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<int>(
-      onboardingProvider.select((state) => state.currentStep),
-      (previous, next) {
-        if (previous == next) return;
-        AppLogger.info(
-          _tag,
-          'Step changed to ${next + 1}/${OnboardingCatalog.totalSteps}',
-        );
-      },
-    );
+    ref.listen<int>(onboardingProvider.select((state) => state.currentStep), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      AppLogger.info(
+        _tag,
+        'Step changed to ${next + 1}/${OnboardingCatalog.totalSteps}',
+      );
+    });
 
     final state = ref.watch(onboardingProvider);
     final hasHistory = Navigator.of(context).canPop();
@@ -59,7 +59,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         body: NabiAmbientBackground(
           child: AppDirectionalSwitcher(
             index: state.currentStep,
-            duration: AppDuration.emphasized,
+            duration: const Duration(milliseconds: 280),
             child: KeyedSubtree(
               key: ValueKey(state.currentStep),
               child: switch (state.currentStep) {

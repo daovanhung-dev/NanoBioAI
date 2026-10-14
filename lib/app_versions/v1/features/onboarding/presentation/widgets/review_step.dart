@@ -15,6 +15,7 @@ import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_schedule_progress_panel.dart';
 import 'onboarding_step_shell.dart';
+import 'onboarding_stitch_components.dart';
 
 String onboardingSubmissionErrorMessage(Object error) {
   if (error is AIOverloadedException) return AIOverloadedException.userMessage;
@@ -33,181 +34,209 @@ class ReviewStep extends ConsumerWidget {
     final goals = _labels(OnboardingCatalog.goals, state.goals);
     final conditions = _labels(OnboardingCatalog.conditions, state.conditions);
     final habits = _labels(OnboardingCatalog.habits, state.habits);
+    final routine = state.routinePreferences;
+    final colors = context.semanticColors;
+    final conditionSummary = [
+      ...conditions,
+      if (state.otherCondition.trim().isNotEmpty) state.otherCondition.trim(),
+    ];
+    final lifestyleSummary = [
+      if (habits.isNotEmpty) 'Thói quen: ${_preview(habits)}',
+      if (state.sleepQuality.trim().isNotEmpty)
+        'Giấc ngủ: ${state.sleepQuality}',
+      if (state.activityLevel.trim().isNotEmpty)
+        'Vận động: ${state.activityLevel}',
+      if (state.waterPerDay.trim().isNotEmpty)
+        'Nước uống: ${state.waterPerDay}',
+    ].join(' · ');
+    final extrasSummary = [
+      if (_splitValues(state.allergyName).isNotEmpty)
+        'Dị ứng: ${_preview(_splitValues(state.allergyName))}',
+      if (_splitValues(state.treatmentName).isNotEmpty)
+        'Theo dõi: ${_preview(_splitValues(state.treatmentName))}',
+      if (_splitValues(state.medicationName).isNotEmpty)
+        'Thuốc: ${_preview(_splitValues(state.medicationName))}',
+      if (_splitValues(state.concernText).isNotEmpty)
+        'Quan tâm: ${_preview(_splitValues(state.concernText))}',
+      if (state.allergyNote.trim().isNotEmpty)
+        'Ghi chú: ${state.allergyNote.trim()}',
+      if (state.treatmentNote.trim().isNotEmpty)
+        'Điều trị: ${state.treatmentNote.trim()}',
+    ].join(' · ');
 
     return OnboardingStepShell(
       stepIndex: 8,
       title: 'Hồ sơ của bạn',
-      subtitle: 'Xem nhanh trước khi tạo lộ trình.',
+      subtitle: 'Xem lại trước khi Nabi bắt đầu tạo lộ trình.',
       mood: NabiOnboardingMood.review,
       onBack: controller.previousStep,
-      footer: NabiPrimaryButton(
-        onPressed: state.isSaving
-            ? null
-            : () => _submit(context, ref, state, controller),
-        label: state.isSaving ? 'Đang tạo lộ trình...' : 'Tạo lộ trình',
-        icon: Icons.auto_awesome_rounded,
-        isLoading: state.isSaving,
-      ),
-      child: Column(
+      footer: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _ReadinessHero(ready: state.canSave, name: state.fullName),
-          const SizedBox(height: AppSpacing.sm),
-          _SummarySection(
-            title: 'Thông tin cơ bản',
-            icon: Icons.person_rounded,
-            accent: NabiPalette.greenPrimary,
-            onEdit: () => controller.goToStep(1),
-            child: Column(
-              children: [
-                _KeyValue(label: 'Họ tên', value: _value(state.fullName)),
-                _KeyValue(
-                  label: 'Giới tính',
-                  value: OnboardingCatalog.labelOf(
-                    OnboardingCatalog.genders,
-                    state.gender,
-                    fallback: 'Chưa cập nhật',
-                  ),
-                ),
-                _KeyValue(label: 'Năm sinh', value: '${state.birthYear}'),
-                _KeyValue(
-                  label: 'Sinh hoạt',
-                  value: OnboardingCatalog.labelOf(
-                    OnboardingCatalog.occupations,
-                    state.occupation,
-                    fallback: 'Chưa cập nhật',
-                  ),
-                ),
-                _KeyValue(
-                  label: 'Thể trạng',
-                  value:
-                      '${state.heightCm.toStringAsFixed(0)} cm · ${state.weightKg.toStringAsFixed(1)} kg',
-                  showDivider: false,
-                ),
-              ],
+          NabiPrimaryButton(
+            key: const Key('onboarding_review_create_plan'),
+            onPressed: state.isSaving
+                ? null
+                : () => _submit(context, ref, state, controller),
+            label: state.isSaving ? 'Đang tạo lộ trình...' : 'Tạo lộ trình',
+            icon: Icons.auto_awesome_rounded,
+            isLoading: state.isSaving,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Nabi tôn trọng dữ liệu cá nhân • Có thể điều chỉnh lại bất cứ lúc nào',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: colors.textSecondary,
+              letterSpacing: 0,
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          _SummarySection(
-            title: 'Mục tiêu',
-            icon: Icons.flag_rounded,
-            accent: NabiPalette.energyYellow,
-            onEdit: () => controller.goToStep(2),
-            child: _SummaryChips(
-              values: [
-                ...goals,
-                if (state.otherGoal.trim().isNotEmpty) state.otherGoal.trim(),
-              ],
-              fallback: 'Chưa chọn',
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _SummarySection(
-            title: 'Sức khỏe cần lưu ý',
-            icon: Icons.health_and_safety_rounded,
-            accent: NabiPalette.careCoral,
-            onEdit: () => controller.goToStep(3),
-            child: _SummaryChips(
-              values: [
-                ...conditions,
-                if (state.otherCondition.trim().isNotEmpty)
-                  state.otherCondition.trim(),
-              ],
-              fallback: 'Không có thông tin thêm',
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _SummarySection(
-            title: 'Nhịp sống',
-            icon: Icons.spa_rounded,
-            accent: NabiPalette.calmBlue,
-            onEdit: () => controller.goToStep(4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _SummaryChips(values: habits, fallback: 'Chưa chọn thói quen'),
-                const SizedBox(height: AppSpacing.sm),
-                _KeyValue(label: 'Giấc ngủ', value: _value(state.sleepQuality)),
-                _KeyValue(
-                  label: 'Vận động',
-                  value: _value(state.activityLevel),
-                ),
-                _KeyValue(
-                  label: 'Nước uống',
-                  value: _value(state.waterPerDay),
-                  showDivider: false,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          _SummarySection(
-            title: 'Thông tin bổ sung',
-            icon: Icons.medical_information_rounded,
-            accent: NabiPalette.personalPurple,
-            onEdit: () => controller.goToStep(5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _LabeledChips(
-                  label: 'Dị ứng',
-                  values: _splitValues(state.allergyName),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _LabeledChips(
-                  label: 'Điều trị',
-                  values: _splitValues(state.treatmentName),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _LabeledChips(
-                  label: 'Thuốc / sản phẩm',
-                  values: _splitValues(state.medicationName),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _LabeledChips(
-                  label: 'Mối quan tâm',
-                  values: _splitValues(state.concernText),
-                ),
-                if (state.allergyNote.trim().isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  _KeyValue(
-                    label: 'Ghi chú dị ứng',
-                    value: state.allergyNote.trim(),
-                  ),
-                ],
-                if (state.treatmentNote.trim().isNotEmpty)
-                  _KeyValue(
-                    label: 'Ghi chú điều trị',
-                    value: state.treatmentNote.trim(),
-                    showDivider: false,
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
+        ],
+      ),
+      child: OnboardingRevealColumn(
+        children: [
           Row(
             children: [
+              Icon(
+                Icons.check_circle_rounded,
+                size: 18,
+                color: colors.secondary,
+              ),
+              const SizedBox(width: AppSpacing.xs),
               Expanded(
-                child: _StatusCard(
-                  title: 'Khung giờ',
-                  ready: state.routineConfirmed,
-                  icon: Icons.schedule_rounded,
-                  onTap: () => controller.goToStep(6),
+                child: Text(
+                  'HOÀN TẤT THU THẬP DỮ LIỆU',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.25,
+                  ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: _StatusCard(
-                  title: 'Xác nhận',
-                  ready: state.agreed,
-                  icon: Icons.verified_user_rounded,
-                  onTap: () => controller.goToStep(7),
+              Text(
+                'Bước 9/9',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: colors.textSecondary,
+                  letterSpacing: 0,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.md),
+          OnboardingNabiNote(
+            mood: NabiOnboardingMood.review,
+            eyebrow: 'NABI AI ĐỒNG HÀNH',
+            compact: true,
+            message: state.canSave
+                ? 'Tuyệt vời! Bạn vừa hoàn thành các thông tin cốt lõi. Hãy lướt lại các mục trước khi tạo lộ trình nhé.'
+                : 'Hãy kiểm tra các mục còn thiếu trước khi tạo lộ trình.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const OnboardingScreenHeading(
+            title: 'Hồ sơ của bạn',
+            subtitle:
+                'Kiểm tra lại các chi tiết trước khi Nabi bắt đầu tính toán và thiết lập nhịp sinh học.',
+            bottomSpacing: AppSpacing.sm,
+          ),
+          _ReadinessHero(ready: state.canSave, name: state.fullName),
+          const SizedBox(height: AppSpacing.sm),
+          _SummarySection(
+            title: 'Thông tin cơ bản',
+            icon: Icons.badge_outlined,
+            accent: colors.primary,
+            onEdit: () => controller.goToStep(1),
+            child: Text(
+              [
+                _value(state.fullName),
+                OnboardingCatalog.labelOf(
+                  OnboardingCatalog.genders,
+                  state.gender,
+                  fallback: 'Chưa chọn giới tính',
+                ),
+                if (state.birthYear > 0) '${state.birthYear}',
+                if (state.occupation.trim().isNotEmpty)
+                  OnboardingCatalog.labelOf(
+                    OnboardingCatalog.occupations,
+                    state.occupation,
+                    fallback: '',
+                  ),
+                if (state.heightCm > 0)
+                  '${state.heightCm.toStringAsFixed(0)} cm',
+                if (state.weightKg > 0)
+                  '${state.weightKg.toStringAsFixed(1)} kg',
+              ].where((value) => value.trim().isNotEmpty).join(' · '),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Mục tiêu cải thiện',
+            icon: Icons.flag_rounded,
+            accent: colors.secondary,
+            onEdit: () => controller.goToStep(2),
+            child: Text(goals.isEmpty ? 'Chưa chọn mục tiêu' : _preview(goals)),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Lưu ý sức khỏe',
+            icon: Icons.health_and_safety_rounded,
+            accent: colors.tertiary,
+            onEdit: () => controller.goToStep(3),
+            child: Text(
+              conditionSummary.isEmpty
+                  ? 'Chưa ghi nhận'
+                  : _preview(conditionSummary),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Nhịp sống & thói quen',
+            icon: Icons.spa_rounded,
+            accent: colors.info,
+            onEdit: () => controller.goToStep(4),
+            child: Text(
+              lifestyleSummary.isEmpty ? 'Chưa thiết lập' : lifestyleSummary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Thông tin bổ sung',
+            icon: Icons.medication_rounded,
+            accent: colors.secondaryDark,
+            onEdit: () => controller.goToStep(5),
+            child: Text(
+              extrasSummary.isEmpty
+                  ? 'Chưa có thông tin bổ sung'
+                  : extrasSummary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Khung giờ trong ngày',
+            icon: Icons.schedule_rounded,
+            accent: colors.primary,
+            onEdit: () => controller.goToStep(6),
+            child: Text(
+              'Ngày thường: thức ${routine.weekday.wakeTime}, ngủ ${routine.weekday.sleepTime} · Cuối tuần: thức ${routine.weekend.wakeTime}, ngủ ${routine.weekend.sleepTime}',
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          _SummarySection(
+            title: 'Quyền riêng tư',
+            icon: Icons.verified_user_rounded,
+            accent: colors.success,
+            onEdit: () => controller.goToStep(7),
+            child: Text(
+              state.agreed ? 'Đã xác nhận đồng thuận' : 'Chưa xác nhận',
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  static String _preview(List<String> values, {int count = 3}) {
+    if (values.length <= count) return values.join(', ');
+    return '${values.take(count).join(', ')} +${values.length - count}';
   }
 
   static String _value(String value, {String fallback = 'Chưa cập nhật'}) {
@@ -308,45 +337,33 @@ class ReviewStep extends ConsumerWidget {
 }
 
 class _ReadinessHero extends StatelessWidget {
+  const _ReadinessHero({required this.ready, required this.name});
+
   final bool ready;
   final String name;
-
-  const _ReadinessHero({required this.ready, required this.name});
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    final color = ready ? colors.primary : colors.warning;
+    final statusColor = ready ? colors.secondaryDark : colors.warning;
     final normalizedName = name.trim();
-    final greeting = normalizedName.isEmpty
-        ? 'Sẵn sàng rồi!'
-        : 'Sẵn sàng rồi, $normalizedName!';
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      decoration: BoxDecoration(
-        gradient: ready
-            ? NabiPalette.hero
-            : LinearGradient(
-                colors: [NabiPalette.warning, NabiPalette.energyYellow],
-              ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.22),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return OnboardingStitchCard(
+      color: colors.primarySubtle,
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          NabiCompanionAvatar(
-            size: 76,
-            mood: ready
-                ? NabiOnboardingMood.review
-                : NabiOnboardingMood.thinking,
-            showStatus: false,
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colors.card,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.monitor_heart_rounded,
+              color: colors.primary,
+              size: 25,
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -354,22 +371,48 @@ class _ReadinessHero extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  ready ? greeting : 'Còn một chút nữa',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.heading4.copyWith(
-                    color: AppColors.textInverse,
-                    fontWeight: FontWeight.w900,
-                    height: 1.15,
+                  'Mức độ tương thích hồ sơ',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: 3),
                 Text(
                   ready
-                      ? 'Nabi sẽ tạo lộ trình cá nhân.'
-                      : 'Kiểm tra các mục chưa hoàn tất.',
+                      ? normalizedName.isEmpty
+                            ? 'Sẵn sàng khởi tạo'
+                            : 'Hồ sơ của $normalizedName sẵn sàng khởi tạo'
+                      : 'Cần hoàn tất thông tin bắt buộc',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textInverse.withValues(alpha: 0.86),
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+            decoration: BoxDecoration(
+              color: colors.card.withValues(alpha: 0.78),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  ready ? Icons.schedule_rounded : Icons.info_outline_rounded,
+                  size: 14,
+                  color: statusColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  ready ? 'Chờ thiết lập' : 'Cần kiểm tra',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
                   ),
                 ),
               ],
@@ -382,12 +425,6 @@ class _ReadinessHero extends StatelessWidget {
 }
 
 class _SummarySection extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Color accent;
-  final VoidCallback onEdit;
-  final Widget child;
-
   const _SummarySection({
     required this.title,
     required this.icon,
@@ -396,204 +433,66 @@ class _SummarySection extends StatelessWidget {
     required this.child,
   });
 
+  final String title;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onEdit;
+  final Widget child;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    return NabiGlassPanel(
-      gradient: LinearGradient(colors: [colors.card, colors.cardAlt]),
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      shadowColor: accent,
-      borderColor: accent.withValues(alpha: 0.14),
+    return OnboardingStitchCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 10, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
+                  color: colors.primarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(icon, color: accent, size: 21),
+                child: Icon(icon, color: colors.primary, size: 20),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
-                  title,
-                  style: AppTextStyles.heading5.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                  title.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
               TextButton.icon(
                 onPressed: onEdit,
-                icon: const Icon(Icons.edit_rounded, size: 16),
+                style: TextButton.styleFrom(
+                  foregroundColor: colors.primary,
+                  minimumSize: const Size(64, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 9),
+                ),
+                icon: const Icon(Icons.edit_rounded, size: 15),
                 label: const Text('Sửa'),
-                style: TextButton.styleFrom(foregroundColor: accent),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          child,
+          const SizedBox(height: AppSpacing.xs),
+          DefaultTextStyle.merge(
+            style: AppTextStyles.bodySmall.copyWith(
+              color: colors.textPrimary,
+              height: 1.4,
+            ),
+            child: child,
+          ),
         ],
       ),
     );
-  }
-}
-
-class _StatusCard extends StatelessWidget {
-  final String title;
-  final bool ready;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _StatusCard({
-    required this.title,
-    required this.ready,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    final color = ready ? colors.success : colors.warning;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.cardPadding),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(color: color.withValues(alpha: 0.17)),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 25),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                ready ? 'Đã xong' : 'Cần xem lại',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _KeyValue extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool showDivider;
-
-  const _KeyValue({
-    required this.label,
-    required this.value,
-    this.showDivider = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 104,
-                child: Text(
-                  label,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  value,
-                  textAlign: TextAlign.right,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (showDivider) Divider(height: 1, color: colors.divider),
-      ],
-    );
-  }
-}
-
-class _LabeledChips extends StatelessWidget {
-  final String label;
-  final List<String> values;
-
-  const _LabeledChips({required this.label, required this.values});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: colors.textSecondary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.tiny),
-        _SummaryChips(values: values, fallback: 'Chưa cập nhật'),
-      ],
-    );
-  }
-}
-
-class _SummaryChips extends StatelessWidget {
-  final List<String> values;
-  final String fallback;
-
-  const _SummaryChips({required this.values, required this.fallback});
-
-  @override
-  Widget build(BuildContext context) {
-    if (values.isEmpty) {
-      return Text(
-        fallback,
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: context.semanticColors.textSecondary,
-        ),
-      );
-    }
-    return OnboardingSelectedChips(values: values);
   }
 }

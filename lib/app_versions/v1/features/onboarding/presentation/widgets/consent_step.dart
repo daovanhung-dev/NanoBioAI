@@ -4,7 +4,9 @@ import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
 import 'nabi_onboarding_experience.dart';
+import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
+import 'onboarding_stitch_components.dart';
 
 class ConsentStep extends ConsumerWidget {
   const ConsentStep({super.key});
@@ -14,31 +16,137 @@ class ConsentStep extends ConsumerWidget {
     final colors = context.semanticColors;
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
+
     return OnboardingStepShell(
       stepIndex: 7,
       title: 'Bạn luôn có quyền chọn',
-      subtitle: 'Xác nhận trước khi tạo lộ trình.',
+      subtitle: 'Xem thông tin trước khi đồng ý.',
       mood: NabiOnboardingMood.consent,
       onBack: controller.previousStep,
-      nextLabel: 'Tiếp tục',
       onNext: state.agreed ? controller.nextStep : null,
-      child: Column(
+      child: OnboardingRevealColumn(
         children: [
-          const _ConsentCard(
-            icon: Icons.lock_rounded,
-            title: 'Dữ liệu của bạn',
-            text: 'Chỉ dùng để cá nhân hóa trải nghiệm.',
-            color: NabiPalette.greenPrimary,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [colors.primarySubtle, colors.infoSoft],
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.xxl),
+              border: Border.all(color: colors.primary.withValues(alpha: 0.06)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.card.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_rounded,
+                        size: 14,
+                        color: colors.secondaryDark,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'QUYỀN RIÊNG TƯ & MINH BẠCH',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: colors.secondaryDark,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Bạn luôn có quyền chọn',
+                  style: AppTextStyles.displaySmall.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    height: 1.16,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Thông tin của bạn được sử dụng minh bạch và tôn trọng quyền riêng tư trong quá trình đồng hành cùng Nabi.',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: colors.textSecondary,
+                    height: 1.48,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const _ConsentCard(
+          const _ConsentInfoCard(
+            icon: Icons.lock_person_rounded,
+            title: 'Dữ liệu của bạn',
+            description:
+                'Thông tin được lưu trữ an toàn trên thiết bị của bạn. Bạn có thể xem, xuất hoặc xóa bất cứ lúc nào.',
+            accent: NabiPalette.greenPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const _ConsentInfoCard(
             icon: Icons.medical_information_rounded,
             title: 'Lưu ý sức khỏe',
-            text: 'Nabi không thay thế bác sĩ hoặc chuyên gia.',
-            color: NabiPalette.warning,
+            description:
+                'Nabi hỗ trợ gợi ý lối sống, không thay thế chẩn đoán y khoa từ bác sĩ hoặc chuyên gia y tế.',
+            accent: NabiPalette.calmBlue,
           ),
-          const SizedBox(height: AppSpacing.md),
-          const _TeamStorySection(),
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingStitchCard(
+            color: colors.primarySubtle,
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colors.card,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.groups_2_rounded, color: colors.primary),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Những người đồng hành cùng Nabi',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Một nhóm sáng chế và huấn luyện cùng mong muốn giúp người Việt chủ động chăm sóc sức khỏe mỗi ngày.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: colors.textPrimary,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: AppSpacing.md),
           Semantics(
             checked: state.agreed,
@@ -46,6 +154,7 @@ class ConsentStep extends ConsumerWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
+                key: const Key('onboarding_consent_toggle'),
                 onTap: () {
                   AppFeedbackService.instance.emit(AppFeedbackType.selection);
                   controller.setAgreed(!state.agreed);
@@ -54,52 +163,49 @@ class ConsentStep extends ConsumerWidget {
                 child: AnimatedContainer(
                   duration: nabiReducedMotion(context)
                       ? Duration.zero
-                      : const Duration(milliseconds: 230),
-                  curve: Curves.easeOutBack,
-                  padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                      : const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    gradient: state.agreed
-                        ? NabiPalette.selection
-                        : LinearGradient(colors: [colors.card, colors.cardAlt]),
+                    color: state.agreed ? colors.primarySubtle : colors.card,
                     borderRadius: BorderRadius.circular(AppRadius.xl),
                     border: Border.all(
-                      color: state.agreed
-                          ? NabiPalette.greenPrimary
-                          : colors.border,
-                      width: state.agreed ? 1.8 : 1,
+                      color: state.agreed ? colors.primary : colors.border,
+                      width: state.agreed ? 1.5 : 1,
                     ),
                   ),
                   child: Row(
                     children: [
                       AnimatedContainer(
-                        duration: AppDuration.fast,
-                        width: 48,
-                        height: 48,
+                        duration: nabiReducedMotion(context)
+                            ? Duration.zero
+                            : const Duration(milliseconds: 160),
+                        width: 24,
+                        height: 24,
                         decoration: BoxDecoration(
-                          color: state.agreed
-                              ? AppColors.textInverse.withValues(alpha: 0.16)
-                              : colors.primarySoft,
-                          shape: BoxShape.circle,
+                          color: state.agreed ? colors.primary : colors.card,
+                          borderRadius: BorderRadius.circular(7),
+                          border: Border.all(
+                            color: state.agreed
+                                ? colors.primary
+                                : colors.outline,
+                            width: 1.3,
+                          ),
                         ),
-                        child: Icon(
-                          state.agreed
-                              ? Icons.check_rounded
-                              : Icons.touch_app_rounded,
-                          color: state.agreed
-                              ? AppColors.textInverse
-                              : NabiPalette.greenPrimary,
-                        ),
+                        child: state.agreed
+                            ? Icon(
+                                Icons.check_rounded,
+                                size: 18,
+                                color: colors.onBrand,
+                              )
+                            : null,
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           'Tôi đồng ý dùng thông tin đã nhập để tạo lộ trình.',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: state.agreed
-                                ? AppColors.textInverse
-                                : colors.textPrimary,
-                            fontWeight: FontWeight.w800,
-                            height: 1.35,
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -109,264 +215,48 @@ class ConsentStep extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          NabiAssistantMessage(
-            message: state.agreed
-                ? 'Cảm ơn bạn đã xác nhận'
-                : 'Chạm để xác nhận',
-            icon: state.agreed
-                ? Icons.favorite_rounded
-                : Icons.touch_app_rounded,
-            accent: state.agreed
-                ? NabiPalette.greenPrimary
-                : NabiPalette.calmBlue,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TeamStorySection extends StatelessWidget {
-  const _TeamStorySection();
-
-  static const _members = <_TeamMember>[
-    _TeamMember(
-      name: 'Lưu Hải Minh',
-      role: 'Nhà sáng chế',
-      assetPath: 'docs/note/19-08-2026/image_char/Lưu Hải Minh.jpg',
-      story:
-          'Đồng hành cùng dự án với niềm tin rằng sức khỏe cần một hệ sinh thái biết lắng nghe, nhắc nhở và cùng người dùng vun đắp những thói quen nhỏ mỗi ngày.',
-    ),
-    _TeamMember(
-      name: 'Lê Quang Thành',
-      role: 'Nhà sáng chế',
-      assetPath: 'docs/note/19-08-2026/image_char/Lê Quang Thành.jpg',
-      story:
-          'Mang khát vọng đưa tri thức và công nghệ ứng dụng vào đời sống, góp phần giúp mỗi người chủ động chăm sóc sức khỏe hằng ngày thay vì chỉ quan tâm khi cơ thể đã lên tiếng.',
-    ),
-    _TeamMember(
-      name: 'Thủy Tiên',
-      role: 'Huấn luyện viên',
-      assetPath: 'docs/note/19-08-2026/image_char/Thủy tiên.jpg',
-      story:
-          'Đồng hành từ kinh nghiệm chia sẻ về dinh dưỡng và chăm sóc sức khỏe chủ động, với mong muốn người dùng bớt hoang mang trước những lựa chọn chăm sóc cơ thể mỗi ngày.',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return NabiGlassPanel(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      elevated: false,
-      borderColor: NabiPalette.calmBlue.withValues(alpha: 0.18),
-      gradient: LinearGradient(
-        colors: [
-          NabiPalette.calmBlue.withValues(alpha: 0.08),
-          colors.card,
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: NabiPalette.calmBlue.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: const Icon(
-                  Icons.groups_2_rounded,
-                  color: NabiPalette.calmBlue,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Những người đồng hành cùng Nabi',
-                      style: AppTextStyles.labelLarge.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      'Ứng dụng không chỉ được xây dựng bởi công nghệ, mà bởi những con người cùng chung khát vọng giúp người Việt sống khỏe chủ động hơn mỗi ngày.',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: colors.textSecondary,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          for (var index = 0; index < _members.length; index++) ...[
-            _TeamMemberCard(member: _members[index]),
-            if (index != _members.length - 1)
-              const SizedBox(height: AppSpacing.sm),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _TeamMemberCard extends StatelessWidget {
-  const _TeamMemberCard({required this.member});
-
-  final _TeamMember member;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.semanticColors;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 380;
-        final portrait = Semantics(
-          image: true,
-          label: 'Ảnh ${member.role} ${member.name}',
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            child: Image.asset(
-              member.assetPath,
-              width: compact ? 74 : 84,
-              height: compact ? 88 : 100,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: compact ? 74 : 84,
-                height: compact ? 88 : 100,
-                color: colors.primarySubtle,
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.person_rounded,
-                  color: NabiPalette.calmBlue,
-                  size: 34,
-                ),
-              ),
-            ),
-          ),
-        );
-
-        final details = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              member.name,
-              style: AppTextStyles.labelLarge.copyWith(
-                color: colors.textPrimary,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              member.role,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: NabiPalette.calmBlue,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+          if (!state.agreed) ...[
             const SizedBox(height: AppSpacing.xs),
             Text(
-              member.story,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: colors.textSecondary,
-                height: 1.42,
-              ),
+              'Bạn cần xác nhận để tiếp tục.',
+              style: AppTextStyles.bodySmall.copyWith(color: colors.textMuted),
             ),
           ],
-        );
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: colors.surface.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: colors.border),
-          ),
-          child: compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    portrait,
-                    const SizedBox(height: AppSpacing.sm),
-                    details,
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    portrait,
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(child: details),
-                  ],
-                ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
 
-class _TeamMember {
-  const _TeamMember({
-    required this.name,
-    required this.role,
-    required this.assetPath,
-    required this.story,
-  });
-
-  final String name;
-  final String role;
-  final String assetPath;
-  final String story;
-}
-
-class _ConsentCard extends StatelessWidget {
-  const _ConsentCard({
+class _ConsentInfoCard extends StatelessWidget {
+  const _ConsentInfoCard({
     required this.icon,
     required this.title,
-    required this.text,
-    required this.color,
+    required this.description,
+    required this.accent,
   });
 
   final IconData icon;
   final String title;
-  final String text;
-  final Color color;
+  final String description;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    return NabiGlassPanel(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      elevated: false,
-      borderColor: color.withValues(alpha: 0.16),
-      gradient: LinearGradient(
-        colors: [color.withValues(alpha: 0.10), colors.card],
-      ),
+    return OnboardingStitchCard(
+      padding: const EdgeInsets.all(16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.14),
+              color: accent.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: accent, size: 22),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -377,15 +267,15 @@ class _ConsentCard extends StatelessWidget {
                   title,
                   style: AppTextStyles.labelLarge.copyWith(
                     color: colors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xxs),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
-                  text,
+                  description,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
-                    height: 1.35,
+                    height: 1.45,
                   ),
                 ),
               ],

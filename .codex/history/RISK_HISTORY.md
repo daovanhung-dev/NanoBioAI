@@ -1100,3 +1100,10 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md :: - Chưa fix: luồng thay món thủ công chưa được ràng buộc với tập tên/mã đã có của tuần.
 - docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md :: - Cần kiểm tra tiếp: QA tạo lịch 7 ngày trên thiết bị với hồ sơ tổng hợp để xác nhận 35 tên món khác nhau; xác nhận lỗi/tiếp tục khi danh sách đủ điều kiện không có đủ món khác nhau.
 - docs/worklog/2026-10-13/011-worklog-weekly-meal-uniqueness.md :: - Chất lượng đầu ra: tốt - validator và fallback cùng fail closed theo mã và tên món.
+- docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và các đường dẫn cũ trong `.codex/history/WORKLOG_2026-08-16_meal_nutrition_estimation.md` cùng `.codex/task-skills/nabi-character/SKILL.md`; không liên quan tệp onboarding đã sửa.
+- docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md :: - AI generation, lưu hồ sơ onboarding và tạo lịch: SKIPPED; không cần cho kiểm tra UI.
+- docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md :: - Chưa fix: không có lỗi còn mở trong phạm vi UI này.
+- docs/worklog/2026-10-13/012-worklog-onboarding-welcome-motion.md :: - Cần kiểm tra tiếp: QA thủ công trên thiết bị khác nếu cần xác nhận thêm kích thước màn hình nhỏ hơn 720x1650.
+- docs/worklog/2026-10-14/001-worklog-onboarding-stitch-redesign.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-14/001-worklog-onboarding-stitch-redesign.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và các backticked path cũ trong hai file history/task-skill không liên quan tới onboarding; không sửa ngoài phạm vi.

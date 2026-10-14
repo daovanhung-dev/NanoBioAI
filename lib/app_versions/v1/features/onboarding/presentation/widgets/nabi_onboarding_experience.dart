@@ -183,11 +183,92 @@ class NabiAmbientBackground extends StatelessWidget {
               opacity: strong ? .055 : .035,
             ),
           ),
+          Positioned(
+            top: -18,
+            right: -28,
+            child: IgnorePointer(
+              child: CustomPaint(
+                size: const Size(238, 224),
+                painter: _NatureAccentPainter(
+                  water: colors.primary,
+                  leaf: colors.secondary,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -76,
+            bottom: 86,
+            child: IgnorePointer(
+              child: Transform.rotate(
+                angle: math.pi,
+                child: CustomPaint(
+                  size: const Size(186, 176),
+                  painter: _NatureAccentPainter(
+                    water: colors.primary,
+                    leaf: colors.secondary,
+                  ),
+                ),
+              ),
+            ),
+          ),
           child,
         ],
       ),
     );
   }
+}
+
+/// Low contrast leaf veins and water lines keep the backdrop nature-led while
+/// remaining static and outside the interaction layer.
+class _NatureAccentPainter extends CustomPainter {
+  const _NatureAccentPainter({required this.water, required this.leaf});
+
+  final Color water;
+  final Color leaf;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final waterPaint = Paint()
+      ..color = water.withValues(alpha: 0.16)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    final leafPaint = Paint()
+      ..color = leaf.withValues(alpha: 0.22)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.7
+      ..strokeCap = StrokeCap.round;
+
+    final scale = size.width / 238;
+    canvas.save();
+    canvas.scale(scale, scale);
+
+    for (var index = 0; index < 3; index++) {
+      final y = 42.0 + index * 13;
+      final ripple = Path()
+        ..moveTo(20, y)
+        ..cubicTo(60, y - 11, 91, y + 11, 128, y)
+        ..cubicTo(162, y - 10, 196, y + 8, 224, y - 1);
+      canvas.drawPath(ripple, waterPaint);
+    }
+
+    final leafOutline = Path()
+      ..moveTo(122, 194)
+      ..cubicTo(93, 169, 82, 137, 103, 101)
+      ..cubicTo(117, 76, 148, 61, 184, 56)
+      ..cubicTo(185, 92, 175, 125, 153, 151)
+      ..cubicTo(143, 164, 132, 179, 122, 194);
+    canvas.drawPath(leafOutline, leafPaint);
+    canvas.drawLine(const Offset(122, 194), const Offset(184, 56), leafPaint);
+    canvas.drawLine(const Offset(143, 147), const Offset(112, 124), leafPaint);
+    canvas.drawLine(const Offset(158, 113), const Offset(132, 94), leafPaint);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _NatureAccentPainter oldDelegate) =>
+      oldDelegate.water != water || oldDelegate.leaf != leaf;
 }
 
 class _AtmosphereOrb extends StatelessWidget {
@@ -733,8 +814,6 @@ class NabiStepHero extends StatelessWidget {
               children: [
                 Text(
                   message ?? mood.message,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading5.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w900,

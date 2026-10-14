@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
+import 'onboarding_stitch_components.dart';
 import 'onboarding_step_shell.dart';
 import 'onboarding_text_field.dart';
 
-import 'package:nano_app/core/theme/app_spacing.dart';
 class GoalsStep extends ConsumerWidget {
   const GoalsStep({super.key});
 
@@ -24,41 +25,95 @@ class GoalsStep extends ConsumerWidget {
       mood: NabiOnboardingMood.goal,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
-      child: Column(
+      child: OnboardingRevealColumn(
         children: [
-          OnboardingSectionCard(
-            title: 'Mục tiêu của bạn',
-            icon: Icons.flag_rounded,
-            accent: NabiPalette.energyYellow,
-            selectedCount: state.goals.length,
-            trailing: state.goals.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: 'Bỏ chọn tất cả',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      for (final code in [...state.goals]) {
-                        controller.toggleGoal(code);
-                      }
-                    },
-                    icon: const Icon(Icons.clear_all_rounded),
-                    color: NabiPalette.greenDeep,
+          const OnboardingNabiNote(
+            mood: NabiOnboardingMood.goal,
+            eyebrow: 'NABI ĐỒNG HÀNH',
+            message:
+                'Mỗi bước khởi đầu nhỏ đều có ý nghĩa. Hãy chọn điều bạn muốn chăm sóc trước nhé.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: context.semanticColors.primarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.checklist_rounded,
+                  size: 16,
+                  color: context.semanticColors.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Tùy biến lộ trình cá nhân',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: context.semanticColors.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
                   ),
-            child: OnboardingChoiceGrid(
-              options: OnboardingCatalog.goals,
-              selectedCodes: state.goals,
-              multiSelect: true,
-              onSelected: controller.toggleGoal,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Mục tiêu khác',
-            icon: Icons.edit_note_rounded,
-            accent: NabiPalette.personalPurple,
+          const OnboardingScreenHeading(
+            title: 'Điều bạn muốn cải thiện',
+            subtitle:
+                'Bạn có thể chọn một hoặc nhiều mục tiêu quan trọng nhất với mình hiện tại.',
+            bottomSpacing: AppSpacing.md,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Danh sách mục tiêu',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: context.semanticColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: context.semanticColors.primarySoft,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  state.goals.isEmpty
+                      ? 'Chưa chọn mục tiêu'
+                      : '${state.goals.length} mục tiêu đã chọn',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: context.semanticColors.primary,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingChoiceGrid(
+            options: OnboardingCatalog.goals,
+            selectedCodes: state.goals,
+            multiSelect: true,
+            onSelected: controller.toggleGoal,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          OnboardingStitchCard(
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: OnboardingTextField(
-              label: 'Tùy chọn',
-              hint: 'Ví dụ: ngủ sớm hơn',
+              label: 'Mục tiêu khác (tùy chọn)',
+              hint: 'Điều bạn muốn chia sẻ thêm',
               initialValue: state.otherGoal,
               maxLines: 2,
               maxLength: 120,
@@ -66,16 +121,6 @@ class GoalsStep extends ConsumerWidget {
               onChanged: controller.updateOtherGoal,
             ),
           ),
-          if (state.goals.isNotEmpty || state.otherGoal.trim().isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm),
-            NabiAssistantMessage(
-              message: state.goals.length <= 1
-                  ? 'Mình đã ghi lại mục tiêu'
-                  : 'Mình đã ghi ${state.goals.length} mục tiêu',
-              icon: Icons.check_circle_rounded,
-              accent: NabiPalette.greenPrimary,
-            ),
-          ],
         ],
       ),
     );

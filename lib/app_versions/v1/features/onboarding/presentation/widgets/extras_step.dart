@@ -1,40 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
 import '../constants/onboarding_options.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
+import 'onboarding_stitch_components.dart';
 import 'onboarding_text_field.dart';
 
-import 'package:nano_app/core/theme/app_spacing.dart';
-class ExtrasStep extends ConsumerWidget {
+class ExtrasStep extends ConsumerStatefulWidget {
   const ExtrasStep({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExtrasStep> createState() => _ExtrasStepState();
+}
+
+class _ExtrasStepState extends ConsumerState<ExtrasStep> {
+  final Map<int, bool> _expanded = {0: false, 1: false, 2: false, 3: true};
+
+  void _toggle(int index) {
+    setState(() => _expanded[index] = !(_expanded[index] ?? false));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
+    final colors = context.semanticColors;
+
     return OnboardingStepShell(
       stepIndex: 5,
       title: 'Thông tin cần lưu ý',
-      subtitle: 'Chỉ chọn những gì đúng với bạn.',
+      subtitle: 'Bạn có thể cập nhật các chi tiết này sau.',
       mood: NabiOnboardingMood.thinking,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
-      child: Column(
+      child: OnboardingRevealColumn(
         children: [
-          OnboardingSectionCard(
-            title: 'Dị ứng / cần tránh',
-            icon: Icons.no_food_rounded,
-            accent: NabiPalette.careCoral,
-            selectedCount: _split(state.allergyName).length,
+          const OnboardingNabiNote(
+            mood: NabiOnboardingMood.thinking,
+            message:
+                'Mỗi cơ thể là một vũ trụ riêng. Những chi tiết nhỏ giúp gợi ý của Nabi gần với bạn hơn.',
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const OnboardingScreenHeading(
+            title: 'Thông tin cần lưu ý',
+            subtitle:
+                'Chia sẻ điều bạn thấy phù hợp để Nabi cá nhân hóa lộ trình.',
+            bottomSpacing: AppSpacing.md,
+          ),
+          OnboardingAccordionCard(
+            title: 'Dị ứng hoặc thực phẩm cần tránh',
+            subtitle: _summary(
+              _split(state.allergyName),
+              'Hải sản, hạt, lactose…',
+            ),
+            icon: Icons.spa_rounded,
+            accent: colors.primary,
+            expanded: _expanded[0] ?? false,
+            onToggle: () => _toggle(0),
             child: Column(
               children: [
                 OnboardingMultiChoicePickerField(
                   label: 'Thực phẩm hoặc thành phần',
-                  hint: 'Chọn nhiều nếu cần',
+                  hint: 'Chọn nếu có',
                   icon: Icons.restaurant_rounded,
                   options: OnboardingOptions.allergyChoices,
                   selectedLabels: _split(state.allergyName),
@@ -43,25 +74,31 @@ class ExtrasStep extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 OnboardingTextField(
-                  label: 'Ghi chú',
-                  hint: 'Ví dụ: phản ứng khi ăn nhiều',
+                  label: 'Ghi chú (tùy chọn)',
+                  hint: 'Ghi chú thêm nếu cần',
                   initialValue: state.allergyNote,
                   maxLines: 2,
-                  prefixIcon: const Icon(Icons.edit_note_rounded),
+                  maxLength: 160,
+                  textCapitalization: TextCapitalization.sentences,
                   onChanged: controller.updateAllergyNote,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Đang theo dõi',
+          OnboardingAccordionCard(
+            title: 'Chỉ số đang theo dõi đặc biệt',
+            subtitle: _summary(
+              _split(state.treatmentName),
+              'Đường huyết, huyết áp…',
+            ),
             icon: Icons.monitor_heart_rounded,
-            accent: NabiPalette.calmBlue,
-            selectedCount: _split(state.treatmentName).length,
+            accent: colors.info,
+            expanded: _expanded[1] ?? false,
+            onToggle: () => _toggle(1),
             child: OnboardingMultiChoicePickerField(
-              label: 'Tình trạng / điều trị',
-              hint: 'Chọn nhiều nếu cần',
+              label: 'Tình trạng hoặc điều trị',
+              hint: 'Chọn nội dung phù hợp',
               icon: Icons.medical_information_rounded,
               options: OnboardingOptions.treatmentChoices,
               selectedLabels: _split(state.treatmentName),
@@ -70,16 +107,21 @@ class ExtrasStep extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Thuốc / sản phẩm',
+          OnboardingAccordionCard(
+            title: 'Thực phẩm bổ sung hoặc thuốc',
+            subtitle: _summary(
+              _split(state.medicationName),
+              'Vitamin, khoáng chất…',
+            ),
             icon: Icons.medication_rounded,
-            accent: NabiPalette.personalPurple,
-            selectedCount: _split(state.medicationName).length,
+            accent: colors.tertiary,
+            expanded: _expanded[2] ?? false,
+            onToggle: () => _toggle(2),
             child: Column(
               children: [
                 OnboardingMultiChoicePickerField(
                   label: 'Đang sử dụng',
-                  hint: 'Chọn nhiều nếu cần',
+                  hint: 'Chọn sản phẩm nếu có',
                   icon: Icons.medication_liquid_rounded,
                   options: OnboardingOptions.medicationChoices,
                   selectedLabels: _split(state.medicationName),
@@ -88,50 +130,83 @@ class ExtrasStep extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 OnboardingTextField(
-                  label: 'Ghi chú điều trị',
-                  hint: 'Ví dụ: dùng theo chỉ định buổi tối',
+                  label: 'Ghi chú điều trị (tùy chọn)',
+                  hint: 'Ví dụ: thời điểm dùng theo chỉ định',
                   initialValue: state.treatmentNote,
                   maxLines: 2,
-                  prefixIcon: const Icon(Icons.notes_rounded),
+                  maxLength: 160,
+                  textCapitalization: TextCapitalization.sentences,
                   onChanged: controller.updateTreatmentNote,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Bạn quan tâm nhất',
+          OnboardingAccordionCard(
+            title: 'Chủ đề bạn muốn Nabi ưu tiên',
+            subtitle: _summary(
+              _split(state.concernText),
+              'Chọn chủ đề quan tâm (tùy chọn)',
+            ),
             icon: Icons.favorite_rounded,
-            accent: NabiPalette.energyYellow,
-            selectedCount: _split(state.concernText).length,
-            child: OnboardingMultiChoicePickerField(
-              label: 'Mối quan tâm',
-              hint: 'Chọn nhiều nếu cần',
-              icon: Icons.auto_awesome_rounded,
-              options: OnboardingOptions.concernChoices,
-              selectedLabels: _split(state.concernText),
-              onChanged: (values) =>
-                  controller.updateConcernText(_join(values)),
+            accent: colors.secondary,
+            expanded: _expanded[3] ?? false,
+            onToggle: () => _toggle(3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Chọn những chủ đề bạn quan tâm để Nabi sắp xếp lịch trình cá nhân hóa.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                OnboardingMultiChoicePickerField(
+                  label: 'Mối quan tâm',
+                  hint: 'Chọn chủ đề',
+                  icon: Icons.auto_awesome_rounded,
+                  options: OnboardingOptions.concernChoices,
+                  selectedLabels: _split(state.concernText),
+                  onChanged: (values) =>
+                      controller.updateConcernText(_join(values)),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          const OnboardingInlineInfo(
-            icon: Icons.verified_user_rounded,
-            text: 'Nabi dùng thông tin này để gợi ý phù hợp hơn.',
-            color: NabiPalette.greenPrimary,
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded, size: 18, color: colors.primary),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Text(
+                  'Không bắt buộc. Bạn luôn có thể cập nhật lại trong Hồ sơ.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  static List<String> _split(String value) {
-    return value
-        .split(',')
-        .map((item) => item.trim())
-        .where((item) => item.isNotEmpty)
-        .toList(growable: false);
+  static String _summary(List<String> values, String fallback) {
+    if (values.isEmpty) return fallback;
+    final joined = values.join(', ');
+    return joined.length > 38 ? '${joined.substring(0, 35)}…' : joined;
   }
+
+  static List<String> _split(String value) => value
+      .split(',')
+      .map((item) => item.trim())
+      .where((item) => item.isNotEmpty)
+      .toList(growable: false);
 
   static String _join(List<String> values) => values.join(', ');
 }

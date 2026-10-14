@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/constants/app/app_radius.dart';
 import 'package:nano_app/core/theme/app_semantic_colors.dart';
-
 import 'package:nano_app/core/constants/onboarding_constants.dart';
+import 'package:nano_app/core/theme/app_text_styles.dart';
 
 import '../../providers/onboarding_provider.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
+import 'onboarding_stitch_components.dart';
 import 'onboarding_step_shell.dart';
 import 'onboarding_text_field.dart';
 
@@ -29,7 +30,11 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
     final normalized = _query.trim().toLowerCase();
+    final specialOption = OnboardingCatalog.conditions.firstWhere(
+      (option) => option.code == 'no_special_issue',
+    );
     final visibleOptions = OnboardingCatalog.conditions
+        .where((option) => option.code != 'no_special_issue')
         .where(
           (option) =>
               normalized.isEmpty ||
@@ -44,98 +49,185 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
       mood: NabiOnboardingMood.care,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
-      child: Column(
+      child: OnboardingRevealColumn(
         children: [
-          OnboardingSectionCard(
-            title: 'Tình trạng sức khỏe',
-            icon: Icons.health_and_safety_rounded,
-            accent: NabiPalette.careCoral,
-            selectedCount: state.conditions.length,
-            trailing: state.conditions.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: 'Bỏ chọn tất cả',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      for (final code in [...state.conditions]) {
-                        controller.toggleCondition(code);
-                      }
-                    },
-                    icon: const Icon(Icons.clear_all_rounded),
-                    color: NabiPalette.greenDeep,
-                  ),
-            child: Column(
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [colors.primarySubtle, colors.secondarySoft],
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Row(
               children: [
-                TextField(
-                  onChanged: (value) => setState(() => _query = value),
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm bệnh lý',
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: _query.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: 'Xóa tìm kiếm',
-                            onPressed: () => setState(() => _query = ''),
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                    filled: true,
-                    fillColor: colors.inputBackground,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      borderSide: const BorderSide(
-                        color: NabiPalette.greenPrimary,
-                        width: 1.4,
-                      ),
-                    ),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: colors.secondary.withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.monitor_heart_rounded,
+                    color: colors.secondaryDark,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                if (visibleOptions.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                    child: NabiAssistantMessage(
-                      message: 'Chưa tìm thấy mục phù hợp',
-                      icon: Icons.search_off_rounded,
-                      accent: NabiPalette.calmBlue,
-                    ),
-                  )
-                else
-                  OnboardingChoiceGrid(
-                    options: visibleOptions,
-                    selectedCodes: state.conditions,
-                    multiSelect: true,
-                    onSelected: controller.toggleCondition,
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Điều cần lưu ý',
+                        style: AppTextStyles.heading5.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'Chọn nhiều nếu phù hợp.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Thông tin khác',
-            icon: Icons.edit_note_rounded,
-            accent: NabiPalette.personalPurple,
-            child: OnboardingTextField(
-              label: 'Tùy chọn',
-              hint: 'Ghi ngắn gọn điều cần lưu ý',
-              initialValue: state.otherCondition,
-              maxLines: 2,
-              maxLength: 160,
-              textCapitalization: TextCapitalization.sentences,
-              onChanged: controller.updateOtherCondition,
+          TextField(
+            onChanged: (value) => setState(() => _query = value),
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: 'Tìm kiếm tình trạng sức khỏe...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: _query.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: 'Xóa tìm kiếm',
+                      onPressed: () => setState(() => _query = ''),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+              filled: true,
+              fillColor: colors.card,
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide(color: colors.borderLight),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide(color: colors.borderLight),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide(color: colors.primary, width: 1.4),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const OnboardingInlineInfo(
-            icon: Icons.medical_information_outlined,
-            text:
-                'Thông tin này hỗ trợ gợi ý sức khỏe, không thay thế chẩn đoán.',
-            color: NabiPalette.calmBlue,
+          OnboardingChoiceRow(
+            option: specialOption,
+            selected: state.conditions.contains(specialOption.code),
+            onTap: () => controller.toggleCondition(specialOption.code),
+            leading: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: colors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.health_and_safety_rounded,
+                color: colors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'DANH MỤC PHỔ BIẾN',
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.35,
+                  ),
+                ),
+              ),
+              Text(
+                'Đã chọn: ${state.conditions.where((code) => code != 'no_special_issue').length}',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          if (visibleOptions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              child: Text(
+                'Chưa tìm thấy mục phù hợp.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            )
+          else
+            for (final option in visibleOptions) ...[
+              OnboardingChoiceRow(
+                option: option,
+                selected: state.conditions.contains(option.code),
+                onTap: () => controller.toggleCondition(option.code),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+            ],
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingStitchCard(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              children: [
+                OnboardingTextField(
+                  label: 'Thông tin khác (tùy chọn)',
+                  hint: 'Ghi ngắn gọn điều cần lưu ý',
+                  initialValue: state.otherCondition,
+                  maxLines: 2,
+                  maxLength: 160,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: controller.updateOtherCondition,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 18,
+                      color: colors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        'Thông tin này hỗ trợ gợi ý sức khỏe, không thay thế chẩn đoán.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

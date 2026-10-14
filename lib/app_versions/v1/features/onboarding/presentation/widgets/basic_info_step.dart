@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
 
+import 'package:nano_app/core/constants/onboarding_constants.dart';
 import '../../providers/onboarding_provider.dart';
 import '../constants/gender_options.dart';
 import '../constants/onboarding_options.dart';
@@ -27,107 +28,145 @@ class BasicInfoStep extends ConsumerWidget {
       mood: NabiOnboardingMood.guide,
       onBack: controller.previousStep,
       onNext: state.canContinueBasicInfo ? controller.nextStep : null,
-      child: Column(
+      child: OnboardingRevealColumn(
         children: [
-          OnboardingSectionCard(
-            title: 'Thông tin chính',
-            icon: Icons.person_rounded,
-            accent: NabiPalette.greenPrimary,
-            child: Column(
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colors.secondarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Row(
               children: [
-                OnboardingTextField(
-                  label: 'Họ và tên *',
-                  hint: 'Nguyễn Minh Anh',
-                  initialValue: state.fullName,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  prefixIcon: const Icon(Icons.person_outline_rounded),
-                  onChanged: controller.updateFullName,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Giới tính *',
-                    style: AppTextStyles.labelMedium.copyWith(
-                      color: colors.textSecondary,
-                      fontWeight: FontWeight.w800,
-                    ),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: colors.secondary.withValues(alpha: 0.16),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.psychology_rounded,
+                    color: colors.secondaryDark,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                OnboardingChoiceGrid(
-                  options: onboardingGenderOptions,
-                  selectedCodes: state.gender.isEmpty
-                      ? const []
-                      : [state.gender],
-                  onSelected: controller.updateGender,
-                  multiSelect: false,
-                  dense: true,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _ResponsivePair(
-                  first: _BirthYearField(
-                    value: state.birthYear,
-                    onChanged: (year) =>
-                        controller.updateBirthYear(year.toString()),
-                  ),
-                  second: OnboardingChoicePickerField(
-                    label: 'Công việc / sinh hoạt *',
-                    hint: 'Chọn nhóm gần đúng',
-                    icon: Icons.work_outline_rounded,
-                    options: occupations,
-                    selectedCode: state.occupation,
-                    onSelected: controller.updateOccupation,
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Để Nabi hiểu bạn',
+                        style: AppTextStyles.heading5.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Thông tin gần đúng là đủ.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          _SectionTitle(title: 'Thông tin chính'),
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingTextField(
+            label: 'Họ và tên *',
+            hint: 'Nhập họ và tên',
+            initialValue: state.fullName,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.next,
+            onChanged: controller.updateFullName,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _SectionLabel(title: 'Giới tính *'),
+          const SizedBox(height: AppSpacing.xs),
+          Row(
+            children: [
+              for (
+                var index = 0;
+                index < onboardingGenderOptions.length;
+                index++
+              ) ...[
+                if (index > 0) const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _GenderChoice(
+                    option: onboardingGenderOptions[index],
+                    selected:
+                        state.gender == onboardingGenderOptions[index].code,
+                    onTap: () => controller.updateGender(
+                      onboardingGenderOptions[index].code,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _BirthYearField(
+            value: state.birthYear,
+            onChanged: (year) => controller.updateBirthYear(year.toString()),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OnboardingChoicePickerField(
+            label: 'Công việc / sinh hoạt *',
+            hint: 'Chọn nhóm gần đúng',
+            icon: Icons.work_outline_rounded,
+            options: occupations,
+            selectedCode: state.occupation,
+            onSelected: controller.updateOccupation,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          _SectionTitle(title: 'Thể trạng'),
+          const SizedBox(height: AppSpacing.sm),
+          _ResponsivePair(
+            first: OnboardingTextField(
+              label: 'Chiều cao (cm) *',
+              hint: 'Nhập chiều cao',
+              initialValue: state.heightCm > 0
+                  ? state.heightCm.toStringAsFixed(0)
+                  : '',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              suffixIcon: const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Center(widthFactor: 1, child: Text('cm')),
+              ),
+              onChanged: controller.updateHeight,
+            ),
+            second: OnboardingTextField(
+              label: 'Cân nặng (kg) *',
+              hint: 'Nhập cân nặng',
+              initialValue: state.weightKg > 0
+                  ? state.weightKg.toStringAsFixed(1)
+                  : '',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              suffixIcon: const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Center(widthFactor: 1, child: Text('kg')),
+              ),
+              onChanged: controller.updateWeight,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingSectionCard(
-            title: 'Thể trạng',
-            icon: Icons.monitor_heart_rounded,
-            accent: NabiPalette.calmBlue,
-            child: Column(
-              children: [
-                _ResponsivePair(
-                  first: OnboardingTextField(
-                    label: 'Chiều cao (cm)',
-                    hint: '170',
-                    initialValue: state.heightCm > 0
-                        ? state.heightCm.toStringAsFixed(0)
-                        : '',
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    ],
-                    prefixIcon: const Icon(Icons.height_rounded),
-                    onChanged: controller.updateHeight,
-                  ),
-                  second: OnboardingTextField(
-                    label: 'Cân nặng (kg)',
-                    hint: '65',
-                    initialValue: state.weightKg > 0
-                        ? state.weightKg.toStringAsFixed(1)
-                        : '',
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                    ],
-                    prefixIcon: const Icon(Icons.monitor_weight_outlined),
-                    onChanged: controller.updateWeight,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _BmiInsight(value: state.bmi),
-              ],
-            ),
-          ),
+          _BmiInsight(value: state.bmi),
           if (!state.canContinueBasicInfo) ...[
             const SizedBox(height: AppSpacing.sm),
             const OnboardingInlineInfo(
@@ -152,7 +191,8 @@ class _ResponsivePair extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 540) {
+        if (constraints.maxWidth < 320 ||
+            MediaQuery.textScalerOf(context).scale(1) > 1.2) {
           return Column(
             children: [
               first,
@@ -174,6 +214,112 @@ class _ResponsivePair extends StatelessWidget {
   }
 }
 
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Text(
+      title,
+      style: AppTextStyles.labelLarge.copyWith(
+        color: colors.textPrimary,
+        fontWeight: FontWeight.w800,
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: AppTextStyles.labelMedium.copyWith(
+          color: colors.textSecondary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0,
+        ),
+      ),
+    );
+  }
+}
+
+class _GenderChoice extends StatelessWidget {
+  const _GenderChoice({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final OnboardingChoiceOption option;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: option.label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: AnimatedContainer(
+            duration: nabiReducedMotion(context)
+                ? Duration.zero
+                : AppDuration.tap,
+            constraints: const BoxConstraints(minHeight: 50),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: selected ? colors.primary : colors.card,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: selected ? colors.primary : colors.borderLight,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  option.code == 'male' ? Icons.male : Icons.female,
+                  size: 19,
+                  color: selected ? colors.onBrand : colors.primary,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    option.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: selected ? colors.onBrand : colors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _BirthYearField extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
@@ -183,7 +329,6 @@ class _BirthYearField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final years = OnboardingOptions.birthYears;
-    final effective = years.contains(value) ? value : years.first;
     final colors = context.semanticColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,8 +342,9 @@ class _BirthYearField extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         DropdownButtonFormField<int>(
-          initialValue: effective,
+          initialValue: years.contains(value) ? value : null,
           isExpanded: true,
+          hint: const Text('Nhập năm sinh'),
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
             color: NabiPalette.greenPrimary,

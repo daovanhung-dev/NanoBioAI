@@ -125,85 +125,81 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: 720,
-                    minHeight: constraints.maxHeight - 38,
+                    maxWidth: 560,
+                    minHeight: (constraints.maxHeight - 38)
+                        .clamp(0.0, 1200.0)
+                        .toDouble(),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const _BrandBar(),
-                      const SizedBox(height: AppSpacing.large),
-                      const _GreenHero(),
                       const SizedBox(height: AppSpacing.md),
-                      if (canRetryPlan.asData?.value == true) ...[
-                        _EntryActionCard(
-                          key: const Key('onboarding_entry_retry_plan_card'),
-                          icon: Icons.refresh_rounded,
-                          title: 'Tiếp tục tạo lịch đã lưu',
-                          description:
-                              'Dùng hồ sơ hiện có và tiếp tục các phần còn thiếu.',
-                          accent: NabiPalette.calmBlue,
-                          action: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              NabiPrimaryButton(
-                                key: const Key(
-                                  'onboarding_entry_retry_plan_cta',
-                                ),
-                                onPressed: _retrying ? null : _retrySavedPlan,
-                                label: 'Thử tạo lịch',
-                                icon: Icons.auto_awesome_rounded,
-                                isLoading: _retrying,
-                              ),
-                              if (kDebugMode && _retryFailureDetails != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: AppSpacing.xs,
-                                  ),
-                                  child: Text(
-                                    _retryFailureDetails!,
-                                    key: const Key(
-                                      'onboarding_retry_failure_details',
-                                    ),
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: colors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                      const _EntryHero(),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Lắng nghe cơ thể, sống trọn an lành cùng Nabi',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.displaySmall.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          height: 1.14,
                         ),
-                        const SizedBox(height: AppSpacing.sm),
-                      ],
-                      _EntryActionCard(
-                        key: const Key('onboarding_entry_guest_card'),
-                        icon: Icons.auto_awesome_rounded,
-                        title: 'Tạo lộ trình của bạn',
-                        description: 'Bắt đầu ngay trên thiết bị này.',
-                        accent: NabiPalette.greenPrimary,
-                        primary: true,
-                        action: NabiPrimaryButton(
-                          key: const Key('onboarding_entry_guest_cta'),
-                          onPressed: () =>
-                              context.push(V1RoutePaths.onboarding),
-                          label: 'Bắt đầu',
-                          icon: Icons.arrow_forward_rounded,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Lộ trình chăm sóc sức khỏe sinh học được cá nhân hóa theo nhịp sống tự nhiên của riêng bạn.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.45,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppViewMotion(
+                        key: const Key('onboarding_entry_guest_motion'),
+                        offset: const Offset(-1, 0),
+                        duration: AppDuration.emphasized,
+                        child: SizedBox(
+                          key: const Key('onboarding_entry_guest_card'),
+                          width: double.infinity,
+                          child: NabiPrimaryButton(
+                            key: const Key('onboarding_entry_guest_cta'),
+                            onPressed: () =>
+                                context.push(V1RoutePaths.onboarding),
+                            label: 'Tạo lộ trình của bạn',
+                            icon: Icons.arrow_forward_rounded,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      _EntryActionCard(
-                        key: const Key('onboarding_entry_login_card'),
-                        icon: Icons.cloud_done_rounded,
-                        title: 'Đã có tài khoản?',
-                        description: 'Đăng nhập để đồng bộ dữ liệu.',
-                        accent: NabiPalette.calmBlue,
-                        action: NabiSecondaryButton(
-                          key: const Key('onboarding_entry_login_cta'),
-                          onPressed: () => context.push(AuthRoutePaths.login),
-                          label: 'Đăng nhập',
-                          icon: Icons.login_rounded,
+                      AppViewMotion(
+                        key: const Key('onboarding_entry_login_motion'),
+                        offset: const Offset(1, 0),
+                        duration: AppDuration.emphasized,
+                        delay: AppDuration.stagger,
+                        child: SizedBox(
+                          key: const Key('onboarding_entry_login_card'),
+                          width: double.infinity,
+                          child: NabiSecondaryButton(
+                            key: const Key('onboarding_entry_login_cta'),
+                            onPressed: () => context.push(AuthRoutePaths.login),
+                            label: 'Đăng nhập',
+                            icon: Icons.login_rounded,
+                          ),
                         ),
                       ),
+                      if (canRetryPlan.asData?.value == true) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        _RetryPlanCard(
+                          key: const Key('onboarding_entry_retry_plan_card'),
+                          retrying: _retrying,
+                          failureDetails: kDebugMode
+                              ? _retryFailureDetails
+                              : null,
+                          onRetry: _retrySavedPlan,
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.md),
                       const _PrivacyLine(),
                     ],
@@ -228,247 +224,288 @@ class _BrandBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    return Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            gradient: NabiPalette.button,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            boxShadow: [
-              BoxShadow(
-                color: NabiPalette.greenPrimary.withValues(alpha: 0.24),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.eco_rounded, color: AppColors.textInverse),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: colors.primarySoft,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: colors.primary.withValues(alpha: 0.08)),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Nabi',
-                style: AppTextStyles.heading4.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              Text(
-                'Trợ lý sức khỏe AI',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: colors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const NabiMoodPill(icon: Icons.verified_rounded, label: 'Riêng tư'),
-      ],
-    );
-  }
-}
-
-class _GreenHero extends StatelessWidget {
-  const _GreenHero();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
-      decoration: BoxDecoration(
-        gradient: NabiPalette.hero,
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-        boxShadow: [
-          BoxShadow(
-            color: NabiPalette.greenDeep.withValues(alpha: 0.24),
-            blurRadius: 30,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          const Positioned(
-            top: AppSpacing.sm,
-            right: AppSpacing.sm,
-            child: IgnorePointer(
-              child: _HeroOrb(
-                icon: Icons.favorite_rounded,
-                color: NabiPalette.careCoral,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              child: Image.asset(
+                'assets/logo.jpg',
+                width: 30,
+                height: 30,
+                fit: BoxFit.cover,
+                cacheWidth: 90,
+                semanticLabel: 'Logo NanoBioAI',
               ),
             ),
-          ),
-          // Keep the decorative moon in the avatar zone instead of anchoring
-          // it to the bottom of the Stack. Bottom positioning allowed it to
-          // overlap the first hero tag ("Cá nhân hóa") on compact screens and
-          // with larger text scaling.
-          const Positioned(
-            left: AppSpacing.xs,
-            top: 104,
-            child: IgnorePointer(
-              key: Key('onboarding_entry_moon_orb'),
-              child: _HeroOrb(
-                icon: Icons.bedtime_rounded,
-                color: NabiPalette.calmBlue,
-                small: true,
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'NanoBioAI',
+              style: AppTextStyles.labelLarge.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-          Column(
-            children: [
-              const NabiCompanionAvatar(
-                size: 136,
-                mood: NabiOnboardingMood.welcome,
-                showStatus: false,
-                hero: true,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Khỏe hơn, nhẹ nhàng hơn',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.heading2.copyWith(
-                  color: AppColors.textInverse,
-                  fontWeight: FontWeight.w900,
-                  height: 1.08,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Nabi hiểu bạn và tạo lộ trình mỗi ngày.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.textInverse.withValues(alpha: 0.86),
-                  height: 1.35,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _HeroTag(icon: Icons.person_rounded, label: 'Cá nhân hóa'),
-                  _HeroTag(icon: Icons.schedule_rounded, label: 'Dễ theo dõi'),
-                  _HeroTag(icon: Icons.favorite_rounded, label: 'Nhẹ nhàng'),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeroOrb extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final bool small;
-
-  const _HeroOrb({required this.icon, required this.color, this.small = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final size = small ? 38.0 : 46.0;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.textInverse.withValues(alpha: 0.16),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: AppColors.textInverse.withValues(alpha: 0.20),
+          ],
         ),
       ),
-      child: Icon(icon, color: color, size: small ? 19 : 22),
     );
   }
 }
 
-class _HeroTag extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _HeroTag({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.textInverse.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(
-          color: AppColors.textInverse.withValues(alpha: 0.16),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.textInverse, size: 15),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textInverse,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EntryActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color accent;
-  final Widget action;
-  final bool primary;
-
-  const _EntryActionCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.accent,
-    required this.action,
-    this.primary = false,
-  });
+class _EntryHero extends StatelessWidget {
+  const _EntryHero();
 
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    return NabiGlassPanel(
-      padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      elevated: primary,
-      borderColor: accent.withValues(alpha: primary ? 0.24 : 0.14),
-      shadowColor: accent,
+    return AspectRatio(
+      key: const Key('onboarding_entry_hero'),
+      aspectRatio: 4 / 3,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xxxl),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.primarySubtle,
+                    colors.infoSoft,
+                    colors.secondarySoft,
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: -44,
+              top: -68,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: colors.secondary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Positioned(
+              right: -30,
+              bottom: -56,
+              child: Container(
+                width: 190,
+                height: 190,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.09),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _EntryNaturePainter(
+                    water: colors.primary.withValues(alpha: 0.20),
+                    leaf: colors.secondary.withValues(alpha: 0.30),
+                  ),
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Image.asset(
+                  NabiOnboardingMood.welcome.assetPath,
+                  width: 236,
+                  height: 236,
+                  fit: BoxFit.contain,
+                  cacheWidth: 480,
+                  semanticLabel: 'Nabi đồng hành cùng bạn',
+                ),
+              ),
+            ),
+            Positioned(
+              left: 16,
+              bottom: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.card.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(
+                    color: colors.card.withValues(alpha: 0.55),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.water_drop_rounded,
+                      size: 15,
+                      color: colors.secondaryDark,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Lắng nghe cơ thể',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 14,
+              right: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: colors.card.withValues(alpha: 0.84),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: colors.secondary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Nabi sẵn sàng',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: colors.secondaryDark,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EntryNaturePainter extends CustomPainter {
+  const _EntryNaturePainter({required this.water, required this.leaf});
+
+  final Color water;
+  final Color leaf;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final waterPaint = Paint()
+      ..color = water
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final leafPaint = Paint()
+      ..color = leaf
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    for (var index = 0; index < 3; index++) {
+      final y = size.height * (.18 + index * .045);
+      canvas.drawPath(
+        Path()
+          ..moveTo(size.width * .62, y)
+          ..cubicTo(
+            size.width * .76,
+            y - 16,
+            size.width * .88,
+            y + 14,
+            size.width * 1.02,
+            y,
+          ),
+        waterPaint,
+      );
+    }
+    final stem = Path()
+      ..moveTo(size.width * .85, size.height * .92)
+      ..cubicTo(
+        size.width * .78,
+        size.height * .67,
+        size.width * .82,
+        size.height * .45,
+        size.width * .95,
+        size.height * .31,
+      );
+    canvas.drawPath(stem, leafPaint);
+    for (var index = 0; index < 3; index++) {
+      final y = size.height * (.73 - index * .11);
+      final leafPath = Path()
+        ..moveTo(size.width * .83, y)
+        ..quadraticBezierTo(size.width * .73, y - 20, size.width * .69, y - 7)
+        ..quadraticBezierTo(size.width * .73, y + 5, size.width * .83, y);
+      canvas.drawPath(leafPath, leafPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _EntryNaturePainter oldDelegate) =>
+      oldDelegate.water != water || oldDelegate.leaf != leaf;
+}
+
+class _RetryPlanCard extends StatelessWidget {
+  const _RetryPlanCard({
+    super.key,
+    required this.retrying,
+    required this.failureDetails,
+    required this.onRetry,
+  });
+
+  final bool retrying;
+  final String? failureDetails;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colors.cardAlt,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: colors.borderLight),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
+                  color: colors.primarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(icon, color: accent, size: 22),
+                child: Icon(Icons.restore_page_rounded, color: colors.primary),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -476,18 +513,17 @@ class _EntryActionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
-                      style: AppTextStyles.heading5.copyWith(
+                      'Khôi phục phiên chưa hoàn tất',
+                      style: AppTextStyles.labelLarge.copyWith(
                         color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xxs),
+                    const SizedBox(height: 3),
                     Text(
-                      description,
+                      'Hồ sơ đã lưu. Bạn có thể thử lại nếu quá trình bị gián đoạn.',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: colors.textSecondary,
-                        height: 1.35,
                       ),
                     ),
                   ],
@@ -495,8 +531,25 @@ class _EntryActionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          action,
+          const SizedBox(height: AppSpacing.sm),
+          NabiPrimaryButton(
+            key: const Key('onboarding_entry_retry_plan_cta'),
+            onPressed: retrying ? null : onRetry,
+            label: 'Thử lại phiên gần nhất',
+            icon: Icons.sync_rounded,
+            isLoading: retrying,
+          ),
+          if (failureDetails != null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(
+                failureDetails!,
+                key: const Key('onboarding_retry_failure_details'),
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -509,25 +562,34 @@ class _PrivacyLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(
-          Icons.lock_outline_rounded,
-          size: 16,
-          color: NabiPalette.greenDeep,
-        ),
-        const SizedBox(width: AppSpacing.tiny),
-        Flexible(
-          child: Text(
-            'Bạn quyết định thông tin được chia sẻ.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: colors.textSecondary,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: colors.cardAlt,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.lock_outline_rounded,
+            size: 15,
+            color: colors.secondaryDark,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Text(
+              'Thông tin cá nhân luôn trong quyền kiểm soát của bạn.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: colors.textSecondary,
+                letterSpacing: 0,
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
