@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 218
+- Total worklogs: 219
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -227,3 +227,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-14 | Tái hiện lỗi trên điện thoại, chẩn đoán và sửa lỗi, regression tests. | test | M02 tạo lịch AI; đồng bộ dữ liệu cục bộ/cloud. | [Worklog - Tái hiện và sửa lỗi tạo lịch trình mới](../../docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md) |
 | 2026-10-14 | Bổ sung lối điều hướng UI vào chức năng hiện có. | docs-context | V1 Features Hub / Tiện ích; V2 Wellness Rewards route. | [Worklog - Thêm lối vào Đổi quà trong Tiện ích](../../docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md) |
 | 2026-10-15 | coding, Supabase schema, SQLite migration, UI, BD/DD/checklist/context. | supabase-schema | M03 DASHBOARD_SCHEDULE, M08 HEALTH_SCORE_HABITS; shared wellness rank. | [Worklog - Hạng cá nhân theo EXP nhiệm vụ](../../docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md) |
+| 2026-10-15 | coding | coding | M01 ONBOARDING_PROFILE | [Worklog - Ràng buộc lựa chọn đối nghịch trong onboarding](../../docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md) |

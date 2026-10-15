@@ -217,6 +217,15 @@ class OnboardingState {
 
 class OnboardingController extends Notifier<OnboardingState> {
   static const _tag = 'ONBOARDING';
+  static const Set<String> _exclusiveWeightGoalCodes = {
+    'maintain_weight',
+    'lose_weight',
+    'gain_weight',
+  };
+  static const Set<String> _exclusiveWeightConditionCodes = {
+    'overweight',
+    'underweight',
+  };
   DateTime? _startTime;
 
   @override
@@ -444,6 +453,9 @@ class OnboardingController extends Notifier<OnboardingState> {
     if (items.contains(code)) {
       items.remove(code);
     } else {
+      if (_exclusiveWeightGoalCodes.contains(code)) {
+        items.removeWhere(_exclusiveWeightGoalCodes.contains);
+      }
       items.add(code);
     }
     _logSelectionCount('selectedGoals', items.length);
@@ -468,6 +480,9 @@ class OnboardingController extends Notifier<OnboardingState> {
       if (items.contains(code)) {
         items.remove(code);
       } else {
+        if (_exclusiveWeightConditionCodes.contains(code)) {
+          items.removeWhere(_exclusiveWeightConditionCodes.contains);
+        }
         items.add(code);
       }
     }

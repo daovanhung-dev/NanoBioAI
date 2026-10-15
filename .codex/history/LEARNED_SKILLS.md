@@ -5,7 +5,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Canonical Work Types Seen
 
 - docs-context - Context and docs update: 66 worklog(s)
-- coding - Coding: 40 worklog(s)
+- coding - Coding: 41 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
 - supabase-schema - Supabase schema and RLS: 38 worklog(s)
 - test - Test and verification: 18 worklog(s)
@@ -25,10 +25,10 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - docs/issues, docs/todo: 2
 - authentication: 2
 - docs/DD M01-M19: 2
+- M01 ONBOARDING_PROFILE: 2
 - M02 PERSONAL_SCHEDULE_AI: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 - M05 AI / runtime configuration / onboarding: 2
-- M05 AI / AI Chat / runtime configuration: 2
 
 ## Reusable Project Skills
 

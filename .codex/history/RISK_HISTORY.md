@@ -1127,3 +1127,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và stale paths có sẵn trong history/task-skill cũ; không chỉ ra lỗi ở file delta mới.
 - docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: - Cần kiểm tra tiếp: review/apply forward migration trên Supabase sandbox riêng rồi xác minh hosted state theo quy trình dự án.
+- docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - missing `docs/audit/source_truth_manifest.json` and stale paths in unrelated historical context files.
+- docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Chưa fix: repository-wide context validation reports a missing source-truth manifest and stale paths in unrelated historical files; these are outside the onboarding change.
+- docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Cần kiểm tra tiếp: hot reload và nghiệm thu trên thiết bị chưa thực hiện; không có app đang chạy để hot reload.
+- docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Bằng chứng kiểm chứng: 10 focused tests, targeted analyze và diff whitespace check đều PASS; repository-wide context validator has pre-existing unrelated failures.
