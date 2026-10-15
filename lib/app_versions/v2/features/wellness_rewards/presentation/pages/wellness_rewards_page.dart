@@ -25,13 +25,16 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(wellnessRewardsControllerProvider);
+    final isOnline = ref
+        .watch(wellnessRewardsNetworkAvailableProvider)
+        .maybeWhen(data: (value) => value, orElse: () => false);
     final colors = context.semanticColors;
     return DefaultTabController(
       length: 3,
       child: MedicalPageScaffold(
         backgroundColor: colors.background,
         appBar: AppBar(
-          title: const Text('Điểm chăm sóc và ưu đãi'),
+          title: const Text('Đổi quà'),
           backgroundColor: colors.background,
           elevation: 0,
           actions: [
@@ -43,9 +46,9 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
           ],
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Ưu đãi', icon: Icon(Icons.redeem_rounded)),
+              Tab(text: 'Đổi quà', icon: Icon(Icons.redeem_rounded)),
               Tab(text: 'Lịch sử điểm', icon: Icon(Icons.history_rounded)),
-              Tab(text: 'Voucher của tôi', icon: Icon(Icons.confirmation_num)),
+              Tab(text: 'Lịch sử đổi', icon: Icon(Icons.receipt_long_rounded)),
             ],
           ),
         ),
@@ -70,11 +73,13 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
               key: const ValueKey<String>('wellness-rewards-ready'),
               children: [
                 _RewardSummary(summary: dashboard.summary),
+                if (!isOnline) const _OfflineRedemptionNotice(),
                 Expanded(
                   child: TabBarView(
                     children: [
                       _OffersTab(
                         dashboard: dashboard,
+                        isOnline: isOnline,
                         onRefresh: _refresh,
                         onRedeem: _confirmRedeem,
                       ),
@@ -114,13 +119,30 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
   }
 
   Future<void> _confirmRedeem(WellnessRewardOffer offer) async {
+    var isOnline = false;
+    try {
+      isOnline = await ref
+          .read(wellnessRewardsConnectivityGatewayProvider)
+          .hasNetworkTransport();
+    } catch (_) {
+      isOnline = false;
+    }
+    if (!mounted) return;
+    if (!isOnline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cần kết nối internet để đổi quà.')),
+      );
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đổi ưu đãi'),
+        title: Text(
+          offer.isPhysical ? 'Xác nhận đổi quà' : 'Xác nhận đổi voucher',
+        ),
         content: Text(
-          'Bạn sẽ dùng ${offer.costPoints} Điểm chăm sóc để nhận “${_offerTitle(offer)}”. '
-          'Mã đã cấp không thể tự hủy trong ứng dụng.',
+          'Bạn sẽ dùng ${offer.costPoints} Điểm chăm sóc để nhận “${_offerTitle(offer)}”.'
+          '${offer.isPhysical ? ' Quà sẽ ở trạng thái Đã đổi cho đến khi Admin xác nhận đã trao.' : ' Mã đã cấp không thể tự hủy trong ứng dụng.'}',
         ),
         actions: [
           TextButton(
@@ -129,7 +151,7 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đổi ưu đãi'),
+            child: const Text('Đổi quà'),
           ),
         ],
       ),
@@ -148,9 +170,19 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       }
       AppFeedbackService.instance.emit(AppFeedbackType.success);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã đổi ưu đãi thành công.')),
+        SnackBar(
+          content: Text(
+            redemption.isPhysical
+                ? 'Đã đổi quà thành công.'
+                : 'Đã đổi voucher thành công.',
+          ),
+        ),
       );
-      await _showVoucher(redemption);
+      if (redemption.isPhysical) {
+        await _showGiftStatus(redemption);
+      } else {
+        await _showVoucher(redemption);
+      }
     } on WellnessRewardException catch (error) {
       if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -162,13 +194,17 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Chưa đổi được ưu đãi. Bạn vui lòng thử lại.'),
+          content: Text('Chưa đổi được quà. Bạn vui lòng thử lại.'),
         ),
       );
     }
   }
 
   Future<void> _showVoucher(WellnessRewardRedemption redemption) async {
+    if (redemption.isPhysical) {
+      await _showGiftStatus(redemption);
+      return;
+    }
     if (redemption.isCancelled) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
       ScaffoldMessenger.of(
@@ -219,6 +255,31 @@ class _WellnessRewardsPageState extends ConsumerState<WellnessRewardsPage> {
       isScrollControlled: true,
       showDragHandle: true,
       builder: (context) => _VoucherSheet(redemption: redemption, code: code!),
+    );
+  }
+
+  Future<void> _showGiftStatus(WellnessRewardRedemption redemption) async {
+    final status = redemption.isReceived
+        ? 'Đã nhận'
+        : 'Đã đổi · Chờ Admin trao quà';
+    final receivedAt = redemption.receivedAt;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_redemptionTitle(redemption)),
+        content: Text(
+          receivedAt == null
+              ? '$status\n${redemption.pointsSpent} Điểm chăm sóc đã được sử dụng.'
+              : '$status lúc ${_dateLabel(receivedAt)}\n'
+                    '${redemption.pointsSpent} Điểm chăm sóc đã được sử dụng.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -284,13 +345,46 @@ class _RewardSummary extends StatelessWidget {
   }
 }
 
+class _OfflineRedemptionNotice extends StatelessWidget {
+  const _OfflineRedemptionNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      color: colors.warningSoft,
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_rounded, color: colors.warning),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Kết nối internet để đổi quà và đồng bộ điểm mới nhất.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: colors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _OffersTab extends StatelessWidget {
   final WellnessRewardsDashboard dashboard;
+  final bool isOnline;
   final Future<void> Function() onRefresh;
   final ValueChanged<WellnessRewardOffer> onRedeem;
 
   const _OffersTab({
     required this.dashboard,
+    required this.isOnline,
     required this.onRefresh,
     required this.onRedeem,
   });
@@ -305,9 +399,9 @@ class _OffersTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           const MedicalSectionHeader(
-            title: 'Ưu đãi dành cho bạn',
+            title: 'Quà tặng và voucher dành cho bạn',
             subtitle:
-                'Điểm được dùng theo khoản sắp hết hạn trước. Mỗi mã chỉ được cấp một lần.',
+                'Điểm được dùng theo khoản sắp hết hạn trước. Đổi quà cần kết nối internet.',
             icon: Icons.card_giftcard_rounded,
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
@@ -316,13 +410,14 @@ class _OffersTab extends StatelessWidget {
               icon: Icons.redeem_outlined,
               title: 'Chưa có ưu đãi đang mở',
               message:
-                  'Nabi sẽ hiển thị tại đây khi kho voucher mới được cập nhật.',
+                  'Nabi sẽ hiển thị quà tặng và voucher tại đây khi Admin cập nhật.',
             )
           else
             for (final offer in offers) ...[
               _OfferCard(
                 offer: offer,
                 availablePoints: dashboard.summary.availablePoints,
+                isOnline: isOnline,
                 onRedeem: () => onRedeem(offer),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -336,18 +431,20 @@ class _OffersTab extends StatelessWidget {
 class _OfferCard extends StatelessWidget {
   final WellnessRewardOffer offer;
   final int availablePoints;
+  final bool isOnline;
   final VoidCallback onRedeem;
 
   const _OfferCard({
     required this.offer,
     required this.availablePoints,
+    required this.isOnline,
     required this.onRedeem,
   });
 
   @override
   Widget build(BuildContext context) {
     final enoughPoints = availablePoints >= offer.costPoints;
-    final canRedeem = offer.isInStock && enoughPoints;
+    final canRedeem = offer.isInStock && enoughPoints && isOnline;
     final colors = context.semanticColors;
     return MedicalSurfaceCard(
       elevated: true,
@@ -358,7 +455,9 @@ class _OfferCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MedicalIconBadge(
-                icon: Icons.local_activity_rounded,
+                icon: offer.isPhysical
+                    ? Icons.card_giftcard_rounded
+                    : Icons.local_activity_rounded,
                 color: colors.tertiary,
                 backgroundColor: colors.tertiarySoft,
               ),
@@ -393,7 +492,11 @@ class _OfferCard extends StatelessWidget {
             children: [
               MedicalStatusPill(
                 label: offer.isInStock
-                    ? 'Còn ${offer.availableCodes} mã'
+                    ? offer.isPhysical
+                          ? 'Còn ${offer.availableStock} phần'
+                          : 'Còn ${offer.availableStock} mã'
+                    : offer.isPhysical
+                    ? 'Đã hết quà'
                     : 'Đã hết mã',
                 icon: offer.isInStock
                     ? Icons.inventory_2_outlined
@@ -421,10 +524,12 @@ class _OfferCard extends StatelessWidget {
               onPressed: canRedeem ? onRedeem : null,
               icon: const Icon(Icons.redeem_rounded),
               label: Text(
-                !offer.isInStock
-                    ? 'Đã hết mã'
+                !isOnline
+                    ? 'Cần kết nối internet'
+                    : !offer.isInStock
+                    ? (offer.isPhysical ? 'Đã hết quà' : 'Đã hết mã')
                     : enoughPoints
-                    ? 'Đổi ưu đãi'
+                    ? 'Đổi quà'
                     : 'Chưa đủ điểm',
               ),
             ),
@@ -452,7 +557,7 @@ class _PointHistoryTab extends StatelessWidget {
           const MedicalSectionHeader(
             title: 'Lịch sử Điểm chăm sóc',
             subtitle:
-                'Điểm cũ vẫn được lưu trong lịch sử nhưng không dùng để đổi voucher.',
+                'Điểm cũ vẫn được lưu trong lịch sử nhưng không dùng để đổi quà.',
             icon: Icons.history_rounded,
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
@@ -539,30 +644,33 @@ class _RedemptionsTab extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
         children: [
           const MedicalSectionHeader(
-            title: 'Voucher của tôi',
+            title: 'Lịch sử đổi quà',
             subtitle:
-                'Mã đã cấp có thể xem lại. Trạng thái không phản ánh việc sử dụng tại đối tác.',
-            icon: Icons.confirmation_num_rounded,
+                'Theo dõi voucher đã cấp và trạng thái quà vật lý đã đổi.',
+            icon: Icons.receipt_long_rounded,
           ),
           const SizedBox(height: AppSpacing.sectionSpacing),
           if (entries.isEmpty)
             const MedicalEmptyState(
-              icon: Icons.confirmation_num_outlined,
-              title: 'Bạn chưa đổi voucher',
-              message:
-                  'Khi đủ điểm, hãy chọn một ưu đãi để nhận mã dùng một lần.',
+              icon: Icons.redeem_outlined,
+              title: 'Bạn chưa có giao dịch đổi quà',
+              message: 'Các voucher và quà bạn đổi sẽ xuất hiện tại đây.',
             )
           else
             for (final entry in entries) ...[
               MedicalSurfaceCard(
                 onTap: () => onOpen(entry),
-                semanticLabel: 'Mở voucher ${_redemptionTitle(entry)}',
+                semanticLabel: entry.isPhysical
+                    ? 'Xem trạng thái quà ${_redemptionTitle(entry)}'
+                    : 'Mở voucher ${_redemptionTitle(entry)}',
                 padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 child: Row(
                   children: [
                     MedicalIconBadge(
                       icon: entry.isCancelled
                           ? Icons.cancel_outlined
+                          : entry.isPhysical
+                          ? Icons.card_giftcard_rounded
                           : Icons.qr_code_2_rounded,
                       color: entry.isCancelled ? colors.error : colors.tertiary,
                       backgroundColor: entry.isCancelled
@@ -591,12 +699,12 @@ class _RedemptionsTab extends StatelessWidget {
                       label: _redemptionStatusLabel(entry.status),
                       foregroundColor: entry.isCancelled
                           ? colors.error
-                          : _isIssuedStatus(entry.status)
+                          : _isActiveRedemptionStatus(entry.status)
                           ? colors.success
                           : colors.textMuted,
                       backgroundColor: entry.isCancelled
                           ? colors.errorSoft
-                          : _isIssuedStatus(entry.status)
+                          : _isActiveRedemptionStatus(entry.status)
                           ? colors.successSoft
                           : colors.surfaceSoft,
                     ),
@@ -779,9 +887,17 @@ String _redemptionStatusLabel(String status) {
   return switch (status.trim().toLowerCase()) {
     'issued' => 'Đã cấp',
     'cancelled' || 'canceled' => 'Đã hủy',
+    'redeemed' => 'Đã đổi · Chờ Admin trao',
+    'received' => 'Đã nhận',
     _ => 'Chưa xác định',
   };
 }
+
+bool _isActiveRedemptionStatus(String status) => const {
+  'issued',
+  'redeemed',
+  'received',
+}.contains(status.trim().toLowerCase());
 
 String _dateLabel(DateTime? value) {
   if (value == null) return 'chưa xác định';

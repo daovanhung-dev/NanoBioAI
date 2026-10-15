@@ -71,6 +71,21 @@ class SupabaseAdminWellnessRewardsRepository
     );
   }
 
+  @override
+  Future<AdminRewardMutationResult> markRedemptionReceived({
+    required String redemptionId,
+    required String reason,
+    required String idempotencyKey,
+  }) {
+    return _mutate(
+      () => datasource.markRedemptionReceived(
+        redemptionId: redemptionId,
+        reason: reason,
+        idempotencyKey: idempotencyKey,
+      ),
+    );
+  }
+
   Future<AdminRewardMutationResult> _mutate(
     Future<Object?> Function() operation,
   ) async {

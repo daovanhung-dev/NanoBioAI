@@ -60,6 +60,57 @@ void main() {
     expect(loaded!.redemptions.single.voucherCode, isNull);
   });
 
+  test(
+    'mirrors a redeemed gift and spent-points ledger row in SQLite',
+    () async {
+      await datasource.replaceDashboard(
+        userId: 'user-1',
+        dashboard: const WellnessRewardsDashboard(
+          summary: WellnessRewardSummary(
+            pendingPoints: 5,
+            availablePoints: 70,
+            expiringSoonPoints: 0,
+          ),
+          offers: [],
+          pointHistory: [],
+          redemptions: [],
+        ),
+      );
+
+      await datasource.applySuccessfulRedemption(
+        userId: 'user-1',
+        redemption: WellnessRewardRedemption(
+          id: 'redemption-physical',
+          offerId: 'offer-physical',
+          title: 'Bình nước',
+          providerName: 'NanoBio',
+          pointsSpent: 20,
+          rewardType: WellnessRewardType.physical,
+          status: 'redeemed',
+          createdAt: DateTime.utc(2026, 10, 14),
+        ),
+        pointHistory: WellnessPointHistoryEntry(
+          id: 'ledger-redemption-1',
+          pointsDelta: -20,
+          eventType: 'redemption',
+          status: 'redeemed',
+          title: 'Đổi quà: Bình nước',
+          isRedeemable: true,
+          createdAt: DateTime.utc(2026, 10, 14),
+        ),
+        availablePoints: 50,
+      );
+
+      final cached = await datasource.loadDashboard('user-1');
+
+      expect(cached!.summary.availablePoints, 50);
+      expect(cached.redemptions.single.rewardType, WellnessRewardType.physical);
+      expect(cached.redemptions.single.status, 'redeemed');
+      expect(cached.pointHistory.single.id, 'ledger-redemption-1');
+      expect(cached.pointHistory.single.pointsDelta, -20);
+    },
+  );
+
   test('replacement for one account does not erase another account', () async {
     await datasource.replaceDashboard(
       userId: 'user-1',

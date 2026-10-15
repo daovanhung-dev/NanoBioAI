@@ -2,7 +2,7 @@
 
 > Baseline: `daovanhung-dev/NanoBioAI` @ `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`  
 > Classification: **source-sub-surface** · Group: `03_dashboard_health` · Archetype: `feature-grid`
-> Compact-density decision: **2026-08-18 — 3-column active shortcut grid, 15 runtime destinations, future sections collapsed by default.**
+> Compact-density decision: **2026-08-18 — 3-column active shortcut grid, 19 runtime destinations, future sections collapsed by default.**
 
 ## 01. Purpose
 Tập hợp các chức năng chăm sóc theo nhóm để người dùng mở nhanh nhiều công cụ thật đang có trong runtime, đồng thời không để các mục chưa hoàn thiện chiếm phần lớn viewport.
@@ -80,7 +80,7 @@ Never populate production UI with mock/sample health or financial data. If a des
 Use Nabi-safe Vietnamese on consumer surfaces. Provide retry only when retry is meaningful; no stack trace, parser, table, query, exception or log terminology.
 
 ## 23. Ready state
-Ready content should be glanceable in the first viewport. The active section contains **15 runtime-backed shortcuts** in priority order. Compact tiles show icon + short title; detail copy remains semantic/supporting information rather than occupying the tile face.
+Ready content should be glanceable in the first viewport. The active section contains **19 runtime-backed shortcuts** in priority order, including **Đổi quà** through its existing guarded rewards route. Compact tiles show icon + short title; detail copy remains semantic/supporting information rather than occupying the tile face.
 
 ## 24. Disabled / locked / coming-soon
 - `Giấc ngủ`, `Cảm xúc & stress`, and `Cộng đồng chăm sóc` remain explicitly coming-soon/preview surfaces and live under a collapsed **Sắp ra mắt** group.
@@ -125,7 +125,7 @@ Presentation uses only existing route constants and catalog data. No DAO/API cal
 - Preserve current route behavior; this task is presentation density, not access/business refactoring.
 
 ## 32. Acceptance criteria
-- [ ] Active section renders exactly 15 approved runtime-backed shortcuts.
+- [ ] Active section renders exactly 19 approved runtime-backed shortcuts, including the guarded Đổi quà route.
 - [ ] Compact width renders the first three active shortcuts on the same row and the fourth on the next row.
 - [ ] Hero and active section header are materially more compact than the legacy layout.
 - [ ] Active compact cards do not show the legacy standalone 48×48 arrow button.

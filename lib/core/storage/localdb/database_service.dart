@@ -10,6 +10,7 @@ import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_
 import 'package:nano_app/core/storage/localdb/tables/schedule_health_checkin_outbox_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_rewards_cache_tables.dart';
+import 'package:nano_app/core/storage/localdb/tables/wellness_rank_cache_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/nutrition_profile_tables.dart';
 import 'package:nano_app/core/storage/localdb/tables/fitness_training_programs_table.dart';
@@ -51,6 +52,8 @@ import 'migrations/migration_v28.dart';
 import 'migrations/migration_v29.dart';
 import 'migrations/migration_v30.dart';
 import 'migrations/migration_v31.dart';
+import 'migrations/migration_v32.dart';
+import 'migrations/migration_v33.dart';
 import 'seeders/ai_catalog_seeder.dart';
 import 'seeders/meal_catalog_seeder.dart';
 
@@ -170,6 +173,8 @@ class DatabaseService {
             if (oldVersion < 29 && newVersion >= 29) await MigrationV29.run(db);
             if (oldVersion < 30 && newVersion >= 30) await MigrationV30.run(db);
             if (oldVersion < 31 && newVersion >= 31) await MigrationV31.run(db);
+            if (oldVersion < 32 && newVersion >= 32) await MigrationV32.run(db);
+            if (oldVersion < 33 && newVersion >= 33) await MigrationV33.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -216,6 +221,8 @@ class DatabaseService {
             if (version >= 28) await MigrationV28.ensureSchema(db);
             if (version >= 30) await MigrationV30.ensureSchema(db);
             if (version >= 31) await MigrationV31.ensureSchema(db);
+            if (version >= 32) await MigrationV32.ensureSchema(db);
+            if (version >= 33) await MigrationV33.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -297,6 +304,7 @@ class DatabaseService {
     for (final statement in wellnessRewardCacheSchema) {
       await db.execute(statement);
     }
+    await db.execute(WellnessRankSummaryCacheTable.createTable);
     await NabiNotificationTables.create(db);
     await SleepSafetyTables.create(db);
     await db.execute(NutritionLogsTable.createTable);
@@ -320,6 +328,8 @@ class DatabaseService {
     await db.execute(ScheduleTaskCatalogTable.createCategoryIndex);
     await MigrationV30.ensureSchema(db);
     await MigrationV31.ensureSchema(db);
+    await MigrationV32.ensureSchema(db);
+    await MigrationV33.ensureSchema(db);
     await MigrationV22.ensureSchema(db);
     await MigrationV23.ensureSchema(db);
     await AiCatalogSeeder.seed(db);

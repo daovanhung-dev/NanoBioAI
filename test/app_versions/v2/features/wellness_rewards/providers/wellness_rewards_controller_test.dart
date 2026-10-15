@@ -63,6 +63,29 @@ void main() {
       expect(repository.loadCalls, 2);
     });
 
+    test(
+      'physical redemption refreshes without writing voucher secrets',
+      () async {
+        final repository = _FakeRepository(
+          redemptionResult: _physicalRedemption(),
+        );
+        final secureStore = _FakeSecureStore();
+        final container = _container(repository, secureStore);
+        addTearDown(container.dispose);
+        await container.read(wellnessRewardsControllerProvider.future);
+
+        final redemption = await container
+            .read(wellnessRewardsControllerProvider.notifier)
+            .redeem('offer-physical');
+
+        expect(redemption.rewardType, WellnessRewardType.physical);
+        expect(redemption.status, 'redeemed');
+        expect(secureStore.codes, isEmpty);
+        expect(repository.lastOfferId, 'offer-physical');
+        expect(repository.loadCalls, 2);
+      },
+    );
+
     test('rejects a concurrent double tap for the same offer', () async {
       final pending = Completer<WellnessRewardRedemption>();
       final repository = _FakeRepository(redeemCompleter: pending);
@@ -182,6 +205,7 @@ ProviderContainer _container(
 class _FakeRepository implements WellnessRewardsRepository {
   final String? remoteVoucherCode;
   final Completer<WellnessRewardRedemption>? redeemCompleter;
+  final WellnessRewardRedemption? redemptionResult;
   final List<Object> redeemErrors;
 
   int loadCalls = 0;
@@ -194,6 +218,7 @@ class _FakeRepository implements WellnessRewardsRepository {
   _FakeRepository({
     this.remoteVoucherCode = 'REMOTE-CODE',
     this.redeemCompleter,
+    this.redemptionResult,
     List<Object> redeemErrors = const [],
   }) : redeemErrors = List<Object>.of(redeemErrors);
 
@@ -223,7 +248,7 @@ class _FakeRepository implements WellnessRewardsRepository {
     idempotencyKeys.add(idempotencyKey);
     if (redeemErrors.isNotEmpty) throw redeemErrors.removeAt(0);
     return redeemCompleter == null
-        ? _issuedRedemption()
+        ? redemptionResult ?? _issuedRedemption()
         : redeemCompleter!.future;
   }
 
@@ -299,5 +324,17 @@ WellnessRewardRedemption _issuedRedemption() {
     pointsSpent: 20,
     status: 'issued',
     voucherCode: 'ISSUED-CODE',
+  );
+}
+
+WellnessRewardRedemption _physicalRedemption() {
+  return const WellnessRewardRedemption(
+    id: 'redemption-physical',
+    offerId: 'offer-physical',
+    title: 'Bình nước',
+    providerName: 'NanoBio',
+    pointsSpent: 20,
+    rewardType: WellnessRewardType.physical,
+    status: 'redeemed',
   );
 }

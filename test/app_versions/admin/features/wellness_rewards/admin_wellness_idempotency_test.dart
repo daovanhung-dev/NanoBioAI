@@ -275,6 +275,7 @@ class _FakeAdminRepository implements AdminWellnessRewardsRepository {
   final List<String> upsertKeys = <String>[];
   final List<String> importKeys = <String>[];
   final List<String> cancelKeys = <String>[];
+  final List<String> receivedKeys = <String>[];
 
   _FakeAdminRepository({List<Object> mutationErrors = const []})
     : mutationErrors = List<Object>.of(mutationErrors);
@@ -309,6 +310,17 @@ class _FakeAdminRepository implements AdminWellnessRewardsRepository {
     required String idempotencyKey,
   }) async {
     cancelKeys.add(idempotencyKey);
+    _throwNextError();
+    return _success();
+  }
+
+  @override
+  Future<AdminRewardMutationResult> markRedemptionReceived({
+    required String redemptionId,
+    required String reason,
+    required String idempotencyKey,
+  }) async {
+    receivedKeys.add(idempotencyKey);
     _throwNextError();
     return _success();
   }

@@ -6,7 +6,7 @@ Commit de xuat: docs(bd): chot nhiem vu co bang chung va Diem cham soc
 |---|---|
 | Mã tài liệu | `BD-BIOAI-WELLNESS-REWARDS-001` |
 | Phiên bản | v1.0 |
-| Vòng đời | Current |
+| Vòng đời | Superseded by v1.1 on 2026-10-14 |
 | Trạng thái nghiệp vụ | Approved — user decision 2026-07-13 |
 | Implementation | Implemented |
 | Xác minh | Static-verified tại `25018e8`; Runtime-unverified; Sandbox-unverified |

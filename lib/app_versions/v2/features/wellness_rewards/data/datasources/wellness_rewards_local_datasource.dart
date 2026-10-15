@@ -73,18 +73,14 @@ class WellnessRewardsLocalDatasource {
     final db = await _db();
     final syncedAt = DateTime.now().toUtc().toIso8601String();
     await db.transaction((txn) async {
-      await txn.insert(
-        WellnessRewardSummaryCacheTable.tableName,
-        {
-          'user_id': normalizedUserId,
-          'pending_points': dashboard.summary.pendingPoints,
-          'available_points': dashboard.summary.availablePoints,
-          'expiring_soon_points': dashboard.summary.expiringSoonPoints,
-          'next_expiry_at': dashboard.summary.nextExpiryAt?.toIso8601String(),
-          'synced_at': syncedAt,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      await txn.insert(WellnessRewardSummaryCacheTable.tableName, {
+        'user_id': normalizedUserId,
+        'pending_points': dashboard.summary.pendingPoints,
+        'available_points': dashboard.summary.availablePoints,
+        'expiring_soon_points': dashboard.summary.expiringSoonPoints,
+        'next_expiry_at': dashboard.summary.nextExpiryAt?.toIso8601String(),
+        'synced_at': syncedAt,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
 
       await _replaceUserRows(
         txn,
@@ -98,7 +94,9 @@ class WellnessRewardsLocalDatasource {
             'description': offer.description,
             'provider_name': offer.providerName,
             'cost_points': offer.costPoints,
+            'reward_type': offer.rewardType.name,
             'available_codes': offer.availableCodes,
+            'stock_count': offer.stockCount,
             'eligible_plan_codes': jsonEncode(offer.eligiblePlanCodes),
             'available_from': offer.availableFrom?.toIso8601String(),
             'available_until': offer.availableUntil?.toIso8601String(),
@@ -113,19 +111,11 @@ class WellnessRewardsLocalDatasource {
         table: WellnessRewardPointHistoryCacheTable.tableName,
         userId: normalizedUserId,
         rows: dashboard.pointHistory.map(
-          (entry) => {
-            'id': entry.id,
-            'user_id': normalizedUserId,
-            'points_delta': entry.pointsDelta,
-            'event_type': entry.eventType,
-            'status': entry.status,
-            'title': entry.title,
-            'is_redeemable': entry.isRedeemable ? 1 : 0,
-            'available_at': entry.availableAt?.toIso8601String(),
-            'expires_at': entry.expiresAt?.toIso8601String(),
-            'created_at': entry.createdAt?.toIso8601String(),
-            'synced_at': syncedAt,
-          },
+          (entry) => _pointHistoryMap(
+            userId: normalizedUserId,
+            entry: entry,
+            syncedAt: syncedAt,
+          ),
         ),
       );
       await _replaceUserRows(
@@ -161,6 +151,58 @@ class WellnessRewardsLocalDatasource {
     );
   }
 
+  Future<void> applySuccessfulRedemption({
+    required String userId,
+    required WellnessRewardRedemption redemption,
+    required WellnessPointHistoryEntry pointHistory,
+    required int availablePoints,
+  }) async {
+    final normalizedUserId = userId.trim();
+    if (normalizedUserId.isEmpty ||
+        redemption.id.isEmpty ||
+        pointHistory.id.isEmpty) {
+      return;
+    }
+    final db = await _db();
+    final syncedAt = DateTime.now().toUtc().toIso8601String();
+    await db.transaction((txn) async {
+      await txn.insert(
+        WellnessRewardRedemptionCacheTable.tableName,
+        _redemptionMap(
+          userId: normalizedUserId,
+          redemption: redemption,
+          syncedAt: syncedAt,
+        ),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        WellnessRewardPointHistoryCacheTable.tableName,
+        _pointHistoryMap(
+          userId: normalizedUserId,
+          entry: pointHistory,
+          syncedAt: syncedAt,
+        ),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      final updated = await txn.update(
+        WellnessRewardSummaryCacheTable.tableName,
+        {'available_points': availablePoints, 'synced_at': syncedAt},
+        where: 'user_id = ?',
+        whereArgs: [normalizedUserId],
+      );
+      if (updated == 0) {
+        await txn.insert(WellnessRewardSummaryCacheTable.tableName, {
+          'user_id': normalizedUserId,
+          'pending_points': 0,
+          'available_points': availablePoints,
+          'expiring_soon_points': 0,
+          'synced_at': syncedAt,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    });
+  }
+
   Future<void> _replaceUserRows(
     DatabaseExecutor txn, {
     required String table,
@@ -186,6 +228,7 @@ class WellnessRewardsLocalDatasource {
       'id': redemption.id,
       'user_id': userId,
       'offer_id': redemption.offerId,
+      'reward_type': redemption.rewardType.name,
       'title': redemption.title,
       'provider_name': redemption.providerName,
       'points_spent': redemption.pointsSpent,
@@ -193,6 +236,27 @@ class WellnessRewardsLocalDatasource {
       'voucher_expires_at': redemption.voucherExpiresAt?.toIso8601String(),
       'created_at': redemption.createdAt?.toIso8601String(),
       'cancelled_at': redemption.cancelledAt?.toIso8601String(),
+      'received_at': redemption.receivedAt?.toIso8601String(),
+      'synced_at': syncedAt,
+    };
+  }
+
+  Map<String, Object?> _pointHistoryMap({
+    required String userId,
+    required WellnessPointHistoryEntry entry,
+    required String syncedAt,
+  }) {
+    return {
+      'id': entry.id,
+      'user_id': userId,
+      'points_delta': entry.pointsDelta,
+      'event_type': entry.eventType,
+      'status': entry.status,
+      'title': entry.title,
+      'is_redeemable': entry.isRedeemable ? 1 : 0,
+      'available_at': entry.availableAt?.toIso8601String(),
+      'expires_at': entry.expiresAt?.toIso8601String(),
+      'created_at': entry.createdAt?.toIso8601String(),
       'synced_at': syncedAt,
     };
   }

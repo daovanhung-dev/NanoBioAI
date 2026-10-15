@@ -88,6 +88,8 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 ## Source Roots
 
 - Unified app bootstrap and role-based surface selection: `lib/main.dart`, `lib/app/`
+- Shared personal task-rank feature: `lib/shared/wellness_rank/` (domain model/repository, Supabase/local data sources, providers, Dashboard/Settings card)
+- Personal rank offline snapshot: `lib/core/storage/localdb/tables/wellness_rank_cache_table.dart`, `lib/core/storage/localdb/daos/wellness_rank_summary_cache_dao.dart`, migration v33
 - v1 guest/basic: `lib/app_versions/v1/`
 - v2 authenticated user/capability layer: `lib/app_versions/v2/`
 - v3 Plus/FamilyPlus partial runtime plus planned markers: `lib/app_versions/v3/`

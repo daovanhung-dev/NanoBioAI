@@ -93,6 +93,26 @@ class AdminWellnessRewardsController
     );
   }
 
+  Future<AdminRewardMutationResult> markRedemptionReceived({
+    required String redemptionId,
+    required String reason,
+  }) {
+    return _runMutation(
+      operation: 'mark_received',
+      fingerprint: AdminWellnessMutationFingerprint.receivedRedemption(
+        redemptionId: redemptionId,
+        reason: reason,
+      ),
+      operationCall: (idempotencyKey) => ref
+          .read(adminWellnessRewardsRepositoryProvider)
+          .markRedemptionReceived(
+            redemptionId: redemptionId,
+            reason: reason,
+            idempotencyKey: idempotencyKey,
+          ),
+    );
+  }
+
   Future<AdminRewardMutationResult> _runMutation({
     required String operation,
     required String fingerprint,

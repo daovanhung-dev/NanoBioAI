@@ -150,6 +150,46 @@ void main() {
         expect(local.upsertedUserId, 'user-1');
       },
     );
+
+    test(
+      'writes the server redemption and ledger id to the local cache',
+      () async {
+        final local = _FakeLocalDatasource();
+        final remote = _FakeRemoteDatasource(
+          redeemResponse: const {
+            'success': true,
+            'id': 'redemption-physical',
+            'offer_id': 'offer-physical',
+            'reward_type': 'physical',
+            'title': 'Bình nước',
+            'provider_name': 'NanoBio',
+            'points_spent': 20,
+            'status': 'redeemed',
+            'point_ledger_id': 'ledger-physical-1',
+            'available_points': 50,
+          },
+        );
+        final repository = SupabaseWellnessRewardsRepository(
+          remoteDatasource: remote,
+          localDatasource: local,
+          currentUserId: () => 'user-1',
+        );
+
+        await repository.redeemOffer(
+          offerId: 'offer-physical',
+          idempotencyKey: 'request-physical',
+        );
+
+        expect(local.appliedUserId, 'user-1');
+        expect(
+          local.appliedRedemption?.rewardType,
+          WellnessRewardType.physical,
+        );
+        expect(local.appliedPointHistory?.id, 'ledger-physical-1');
+        expect(local.appliedPointHistory?.pointsDelta, -20);
+        expect(local.appliedAvailablePoints, 50);
+      },
+    );
   });
 }
 
@@ -253,6 +293,10 @@ class _FakeLocalDatasource extends WellnessRewardsLocalDatasource {
   String? replacedUserId;
   String? upsertedUserId;
   WellnessRewardsDashboard? replacedDashboard;
+  String? appliedUserId;
+  WellnessRewardRedemption? appliedRedemption;
+  WellnessPointHistoryEntry? appliedPointHistory;
+  int? appliedAvailablePoints;
 
   _FakeLocalDatasource({this.cachedDashboard, this.throwOnWrite = false});
 
@@ -278,6 +322,20 @@ class _FakeLocalDatasource extends WellnessRewardsLocalDatasource {
     required WellnessRewardRedemption redemption,
   }) async {
     upsertedUserId = userId;
+    if (throwOnWrite) throw StateError('cache unavailable');
+  }
+
+  @override
+  Future<void> applySuccessfulRedemption({
+    required String userId,
+    required WellnessRewardRedemption redemption,
+    required WellnessPointHistoryEntry pointHistory,
+    required int availablePoints,
+  }) async {
+    appliedUserId = userId;
+    appliedRedemption = redemption;
+    appliedPointHistory = pointHistory;
+    appliedAvailablePoints = availablePoints;
     if (throwOnWrite) throw StateError('cache unavailable');
   }
 }

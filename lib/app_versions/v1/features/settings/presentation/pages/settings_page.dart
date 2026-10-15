@@ -24,6 +24,8 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_participation_page.dart';
 import 'package:nano_app/services/supabase/auth/account_security_provider.dart';
 import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
+import 'package:nano_app/shared/wellness_rank/presentation/widgets/wellness_rank_card.dart';
+import 'package:nano_app/shared/wellness_rank/providers/wellness_rank_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'dev_database_viewer_page.dart';
@@ -74,6 +76,8 @@ class SettingsView extends ConsumerWidget {
                           _Header(isLoading: dashboardAsync.isLoading),
                           const SizedBox(height: AppSpacing.sectionSpacing),
                           _ProfileCard(dashboard: dashboard),
+                          const SizedBox(height: AppSpacing.sectionSpacing),
+                          const WellnessRankCard(),
                           const SizedBox(height: AppSpacing.sectionSpacing),
                           MembershipUpgradeCard(
                             isAuthenticated: isAuthenticated,
@@ -389,6 +393,10 @@ class SettingsView extends ConsumerWidget {
     ref.invalidate(settingsCacheSizeProvider);
     ref.invalidate(appExperiencePreferencesProvider);
     ref.invalidate(saleStateProvider);
+    final rankUserId = ref.read(wellnessRankUserIdProvider).value?.trim();
+    if (rankUserId != null && rankUserId.isNotEmpty) {
+      ref.invalidate(wellnessRankSummaryProvider(rankUserId));
+    }
 
     final loads = <Future<bool>>[
       _didLoad(() => ref.read(dashboardProvider.future)),

@@ -47,25 +47,31 @@ class _AdminWellnessRewardsPanelState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         MedicalSectionHeader(
-          title: 'Điểm chăm sóc và kho voucher',
+          title: 'Điểm chăm sóc, quà tặng và voucher',
           subtitle:
-              'Quản lý ưu đãi, nhập mã dùng một lần và xử lý giao dịch đã cấp.',
+              'Quản lý catalog, tồn kho quà, mã voucher và trạng thái trao quà.',
           icon: Icons.redeem_rounded,
           action: Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
               OutlinedButton.icon(
-                onPressed: !widget.canWrite || snapshot.offers.isEmpty
+                onPressed:
+                    !widget.canWrite ||
+                        snapshot.offers.every((offer) => offer.isPhysical)
                     ? null
-                    : () => _importCodes(snapshot.offers),
+                    : () => _importCodes(
+                        snapshot.offers
+                            .where((offer) => !offer.isPhysical)
+                            .toList(),
+                      ),
                 icon: const Icon(Icons.playlist_add_rounded),
                 label: const Text('Nhập kho mã'),
               ),
               FilledButton.icon(
                 onPressed: widget.canWrite ? () => _editOffer() : null,
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Tạo ưu đãi'),
+                label: const Text('Tạo quà / ưu đãi'),
               ),
             ],
           ),
@@ -74,9 +80,9 @@ class _AdminWellnessRewardsPanelState
         _AdminRewardMetrics(snapshot: snapshot),
         const SizedBox(height: AppSpacing.sectionSpacing),
         const MedicalSectionHeader(
-          title: 'Danh mục ưu đãi',
+          title: 'Danh mục quà và voucher',
           subtitle:
-              'Mã chưa cấp luôn được ẩn. Chỉ số tồn kho dùng để vận hành.',
+              'Mã chưa cấp luôn được ẩn; quà vật lý theo dõi số lượng còn lại.',
           icon: Icons.inventory_2_outlined,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -106,10 +112,12 @@ class _AdminWellnessRewardsPanelState
                             ? () => _editOffer(offer)
                             : null,
                         onImport: widget.canWrite
-                            ? () => _importCodes(
-                                snapshot.offers,
-                                selectedOffer: offer,
-                              )
+                            ? !offer.isPhysical
+                                  ? () => _importCodes(
+                                      snapshot.offers,
+                                      selectedOffer: offer,
+                                    )
+                                  : null
                             : null,
                       ),
                     ),
@@ -119,9 +127,9 @@ class _AdminWellnessRewardsPanelState
           ),
         const SizedBox(height: AppSpacing.sectionSpacing),
         const MedicalSectionHeader(
-          title: 'Giao dịch voucher',
+          title: 'Giao dịch đổi quà',
           subtitle:
-              'Chỉ hủy sau khi đã xác nhận mã không còn hiệu lực ở bên cung cấp.',
+              'Xác nhận đã trao quà cho người dùng; voucher giữ luồng xử lý hiện tại.',
           icon: Icons.receipt_long_rounded,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -136,6 +144,9 @@ class _AdminWellnessRewardsPanelState
           for (final redemption in snapshot.redemptions) ...[
             _AdminRedemptionCard(
               redemption: redemption,
+              onMarkReceived: widget.canWrite && redemption.canMarkReceived
+                  ? () => _markRedemptionReceived(redemption)
+                  : null,
               onCancel: widget.canWrite && redemption.canCancel
                   ? () => _cancelRedemption(redemption)
                   : null,
@@ -160,6 +171,9 @@ class _AdminWellnessRewardsPanelState
     final cost = TextEditingController(
       text: offer == null ? '' : offer.costPoints.toString(),
     );
+    final stock = TextEditingController(
+      text: offer?.stockCount.toString() ?? '0',
+    );
     final reason = TextEditingController(
       text: offer == null ? 'Tạo ưu đãi mới' : 'Cập nhật ưu đãi',
     );
@@ -168,6 +182,7 @@ class _AdminWellnessRewardsPanelState
       selectedPlans = {'free', 'plus', 'family_plus'};
     }
     var isActive = offer?.isActive ?? true;
+    var rewardType = offer?.rewardType ?? 'voucher';
     var availableFrom = offer?.availableFrom;
     var availableUntil = offer?.availableUntil;
     var voucherExpiresAt = offer?.voucherExpiresAt;
@@ -194,6 +209,28 @@ class _AdminWellnessRewardsPanelState
                       validator: _vietnameseCopyValidator,
                     ),
                     const SizedBox(height: AppSpacing.md),
+                    DropdownButtonFormField<String>(
+                      initialValue: rewardType,
+                      decoration: const InputDecoration(labelText: 'Loại quà'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'voucher',
+                          child: Text('Voucher'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'physical',
+                          child: Text('Quà vật lý'),
+                        ),
+                      ],
+                      onChanged: offer == null
+                          ? (value) {
+                              if (value != null) {
+                                setDialogState(() => rewardType = value);
+                              }
+                            }
+                          : null,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
                     TextFormField(
                       controller: description,
                       minLines: 2,
@@ -204,6 +241,22 @@ class _AdminWellnessRewardsPanelState
                       validator: _vietnameseCopyValidator,
                     ),
                     const SizedBox(height: AppSpacing.md),
+                    if (rewardType == 'physical') ...[
+                      TextFormField(
+                        controller: stock,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Số lượng quà còn lại',
+                        ),
+                        validator: (value) {
+                          final parsed = int.tryParse(value?.trim() ?? '');
+                          return parsed == null || parsed < 0
+                              ? 'Số lượng phải là số từ 0 trở lên.'
+                              : null;
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
                     Row(
                       children: [
                         Expanded(
@@ -283,22 +336,23 @@ class _AdminWellnessRewardsPanelState
                         }
                       },
                     ),
-                    _DateRow(
-                      label: 'Hạn voucher mặc định',
-                      value: voucherExpiresAt,
-                      onPick: () async {
-                        final value = await _pickDate(
-                          context,
-                          voucherExpiresAt,
-                        );
-                        if (value != null) {
-                          setDialogState(() => voucherExpiresAt = value);
-                        }
-                      },
-                    ),
+                    if (rewardType == 'voucher')
+                      _DateRow(
+                        label: 'Hạn voucher mặc định',
+                        value: voucherExpiresAt,
+                        onPick: () async {
+                          final value = await _pickDate(
+                            context,
+                            voucherExpiresAt,
+                          );
+                          if (value != null) {
+                            setDialogState(() => voucherExpiresAt = value);
+                          }
+                        },
+                      ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Đang mở đổi ưu đãi'),
+                      title: const Text('Đang mở đổi'),
                       value: isActive,
                       onChanged: (value) =>
                           setDialogState(() => isActive = value),
@@ -333,7 +387,7 @@ class _AdminWellnessRewardsPanelState
                 }
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text('Lưu ưu đãi'),
+              child: const Text('Lưu quà / ưu đãi'),
             ),
           ],
         ),
@@ -351,6 +405,10 @@ class _AdminWellnessRewardsPanelState
                 description: description.text,
                 providerName: provider.text,
                 costPoints: int.parse(cost.text.trim()),
+                rewardType: rewardType,
+                stockCount: rewardType == 'physical'
+                    ? int.parse(stock.text.trim())
+                    : 0,
                 eligiblePlanCodes: selectedPlans.toList(growable: false),
                 availableFrom: availableFrom,
                 availableUntil: availableUntil,
@@ -556,6 +614,42 @@ class _AdminWellnessRewardsPanelState
     reason.dispose();
   }
 
+  Future<void> _markRedemptionReceived(
+    AdminWellnessRewardRedemption redemption,
+  ) async {
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Xác nhận đã trao quà'),
+        content: Text(
+          'Xác nhận quà “${_adminRedemptionTitle(redemption)}” đã được trao trực tiếp cho ${redemption.userLabel}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Để sau'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Đã trao quà'),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true || !mounted) return;
+    try {
+      final result = await ref
+          .read(adminWellnessRewardsControllerProvider.notifier)
+          .markRedemptionReceived(
+            redemptionId: redemption.id,
+            reason: 'Admin xác nhận đã trao quà trực tiếp',
+          );
+      _showMessage(result.message);
+    } on AdminWellnessRewardException catch (error) {
+      _showMessage(error.safeMessage);
+    }
+  }
+
   void _showMessage(String message) {
     if (!mounted) return;
     final safeMessage = vietnameseSystemUiText(
@@ -578,7 +672,7 @@ class _AdminRewardMetrics extends StatelessWidget {
     final colors = context.adminColors;
     final stock = snapshot.offers.fold<int>(
       0,
-      (total, offer) => total + offer.availableCodes,
+      (total, offer) => total + offer.availableStock,
     );
     final issued = snapshot.redemptions
         .where((entry) => entry.status == 'issued')
@@ -673,7 +767,7 @@ class _AdminOfferCard extends StatelessWidget {
           Text(_adminOfferDescription(offer), style: AppTextStyles.bodyMedium),
           const SizedBox(height: AppSpacing.md),
           Text(
-            '${offer.costPoints} điểm · Còn ${offer.availableCodes} mã · Đã cấp ${offer.issuedCodes}',
+            '${offer.costPoints} điểm · ${offer.isPhysical ? 'Còn ${offer.availableStock} phần' : 'Còn ${offer.availableStock} mã · Đã cấp ${offer.issuedCodes}'}',
             style: AppTextStyles.labelMedium,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -685,11 +779,12 @@ class _AdminOfferCard extends StatelessWidget {
                 icon: const Icon(Icons.edit_rounded),
                 label: const Text('Sửa'),
               ),
-              FilledButton.tonalIcon(
-                onPressed: onImport,
-                icon: const Icon(Icons.playlist_add_rounded),
-                label: const Text('Nhập mã'),
-              ),
+              if (onImport != null)
+                FilledButton.tonalIcon(
+                  onPressed: onImport,
+                  icon: const Icon(Icons.playlist_add_rounded),
+                  label: const Text('Nhập mã'),
+                ),
             ],
           ),
         ],
@@ -701,66 +796,105 @@ class _AdminOfferCard extends StatelessWidget {
 class _AdminRedemptionCard extends StatelessWidget {
   final AdminWellnessRewardRedemption redemption;
   final VoidCallback? onCancel;
+  final VoidCallback? onMarkReceived;
 
-  const _AdminRedemptionCard({required this.redemption, this.onCancel});
+  const _AdminRedemptionCard({
+    required this.redemption,
+    this.onCancel,
+    this.onMarkReceived,
+  });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.adminColors;
     final normalizedStatus = redemption.status.trim().toLowerCase();
     final isIssued = normalizedStatus == 'issued';
+    final isRedeemed = normalizedStatus == 'redeemed';
+    final isReceived = normalizedStatus == 'received';
     final isCancelled =
         normalizedStatus == 'cancelled' || normalizedStatus == 'canceled';
     return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.cardPadding),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MedicalIconBadge(
-            icon: Icons.confirmation_num_rounded,
-            color: colors.cyan,
-            backgroundColor: colors.infoContainer,
-            size: 44,
+          Row(
+            children: [
+              MedicalIconBadge(
+                icon: redemption.rewardType == 'physical'
+                    ? Icons.card_giftcard_rounded
+                    : Icons.confirmation_num_rounded,
+                color: colors.cyan,
+                backgroundColor: colors.infoContainer,
+                size: 44,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _adminRedemptionTitle(redemption),
+                      style: AppTextStyles.labelLarge,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '${redemption.userLabel} · ${redemption.pointsSpent} điểm · ${redemption.rewardType == 'physical' ? 'Quà vật lý' : redemption.maskedCode}',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              MedicalStatusPill(
+                label: isIssued
+                    ? 'Đã cấp'
+                    : isCancelled
+                    ? 'Đã hủy'
+                    : isReceived
+                    ? 'Đã nhận'
+                    : isRedeemed
+                    ? 'Đã đổi · Chờ trao'
+                    : 'Chưa xác định',
+                foregroundColor: isCancelled
+                    ? colors.danger
+                    : isIssued || isRedeemed || isReceived
+                    ? colors.mint
+                    : colors.textMuted,
+                backgroundColor: isCancelled
+                    ? colors.dangerContainer
+                    : isIssued || isRedeemed || isReceived
+                    ? colors.successContainer
+                    : colors.neutralContainer,
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _adminRedemptionTitle(redemption),
-                  style: AppTextStyles.labelLarge,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '${redemption.userLabel} · ${redemption.pointsSpent} điểm · ${redemption.maskedCode}',
-                  style: AppTextStyles.bodySmall,
-                ),
-              ],
+          if (redemption.receivedAt != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Đã xác nhận trao ${_dateLabel(redemption.receivedAt!)}',
+              style: AppTextStyles.bodySmall,
             ),
-          ),
-          MedicalStatusPill(
-            label: isIssued
-                ? 'Đã cấp'
-                : isCancelled
-                ? 'Đã hủy'
-                : 'Chưa xác định',
-            foregroundColor: isIssued
-                ? colors.mint
-                : isCancelled
-                ? colors.danger
-                : colors.textMuted,
-            backgroundColor: isIssued
-                ? colors.successContainer
-                : isCancelled
-                ? colors.dangerContainer
-                : colors.neutralContainer,
-          ),
-          if (onCancel != null) ...[
-            const SizedBox(width: AppSpacing.sm),
-            OutlinedButton.icon(
-              onPressed: onCancel,
-              icon: const Icon(Icons.cancel_outlined),
-              label: const Text('Hủy'),
+          ],
+          if (onCancel != null || onMarkReceived != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                if (onMarkReceived != null)
+                  FilledButton.tonalIcon(
+                    onPressed: onMarkReceived,
+                    icon: const Icon(Icons.done_all_rounded),
+                    label: const Text('Xác nhận đã trao quà'),
+                  ),
+                if (onCancel != null)
+                  OutlinedButton.icon(
+                    onPressed: onCancel,
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text('Hủy voucher'),
+                  ),
+              ],
             ),
           ],
         ],

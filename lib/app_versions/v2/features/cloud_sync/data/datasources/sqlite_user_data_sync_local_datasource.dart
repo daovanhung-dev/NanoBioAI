@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
+import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_staging_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -108,11 +110,26 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
 
         await _deleteRowsForUser(txn, userId, includeUser: false);
 
-        await txn.insert(
+        final localUser = _localUserRow(snapshot.user!, userId);
+        final existingUser = await txn.query(
           'users',
-          _localUserRow(snapshot.user!, userId),
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          columns: const ['id'],
+          where: 'id = ?',
+          whereArgs: [userId],
+          limit: 1,
         );
+        if (existingUser.isEmpty) {
+          await txn.insert('users', localUser);
+        } else {
+          // REPLACE deletes the old parent row before inserting its new copy.
+          // That fires ON DELETE CASCADE on active generated-plan requests.
+          await txn.update(
+            'users',
+            localUser,
+            where: 'id = ?',
+            whereArgs: [userId],
+          );
+        }
 
         for (final table in UserDataSyncTables.localUserOwnedTables) {
           final rows =
@@ -120,6 +137,13 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
               preservedMissingCloudTables[table] ??
               const <Map<String, Object?>>[];
           for (final row in rows) {
+            if (table == PersonalScheduleAiRequestsTable.tableName &&
+                await _hasLocalScheduleStaging(txn, row['request_id'])) {
+              // Replacing a staged request row fires its ON DELETE CASCADE,
+              // which would erase the in-progress local generation chunks.
+              // Keep that request's local state until generation commits.
+              continue;
+            }
             await txn.insert(
               table,
               _localRowFromCloud(table, row, userId),
@@ -168,6 +192,18 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     required bool includeUser,
   }) async {
     for (final table in UserDataSyncTables.localUserOwnedTables.reversed) {
+      if (!includeUser &&
+          table == PersonalScheduleAiRequestsTable.tableName &&
+          await _tableExists(txn, PersonalScheduleAiStagingTable.tableName)) {
+        await txn.rawDelete(
+          'DELETE FROM ${PersonalScheduleAiRequestsTable.tableName} '
+          'WHERE user_id = ? AND request_id NOT IN ('
+          'SELECT request_id FROM ${PersonalScheduleAiStagingTable.tableName}'
+          ')',
+          [userId],
+        );
+        continue;
+      }
       await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
     }
     for (final table in SyncOutboxSchema.serverOwnedReadOnlyTables) {
@@ -178,6 +214,25 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     if (includeUser) {
       await txn.delete('users', where: 'id = ?', whereArgs: [userId]);
     }
+  }
+
+  Future<bool> _hasLocalScheduleStaging(
+    DatabaseExecutor db,
+    Object? requestId,
+  ) async {
+    final normalized = requestId?.toString().trim();
+    if (normalized == null || normalized.isEmpty) return false;
+    if (!await _tableExists(db, PersonalScheduleAiStagingTable.tableName)) {
+      return false;
+    }
+    final rows = await db.query(
+      PersonalScheduleAiStagingTable.tableName,
+      columns: const ['request_id'],
+      where: 'request_id = ?',
+      whereArgs: [normalized],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
   }
 
   Map<String, Object?> _localUserRow(

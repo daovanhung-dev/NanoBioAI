@@ -4,7 +4,9 @@ class AdminWellnessRewardOffer {
   final String description;
   final String providerName;
   final int costPoints;
+  final String rewardType;
   final int availableCodes;
+  final int stockCount;
   final int issuedCodes;
   final List<String> eligiblePlanCodes;
   final DateTime? availableFrom;
@@ -22,10 +24,16 @@ class AdminWellnessRewardOffer {
     required this.issuedCodes,
     required this.eligiblePlanCodes,
     required this.isActive,
+    this.rewardType = 'voucher',
+    this.stockCount = 0,
     this.availableFrom,
     this.availableUntil,
     this.voucherExpiresAt,
   });
+
+  bool get isPhysical => rewardType.trim().toLowerCase() == 'physical';
+
+  int get availableStock => isPhysical ? stockCount : availableCodes;
 
   factory AdminWellnessRewardOffer.fromMap(Map<String, Object?> map) {
     return AdminWellnessRewardOffer(
@@ -34,7 +42,9 @@ class AdminWellnessRewardOffer {
       description: _string(map['description']),
       providerName: _string(map['provider_name'], fallback: 'NanoBio'),
       costPoints: _integer(map['cost_points']),
+      rewardType: _string(map['reward_type'], fallback: 'voucher'),
       availableCodes: _integer(map['available_codes'] ?? map['stock_count']),
+      stockCount: _integer(map['stock_count']),
       issuedCodes: _integer(map['issued_codes']),
       eligiblePlanCodes: _stringList(map['eligible_plan_codes']),
       availableFrom: _date(map['available_from']),
@@ -51,10 +61,12 @@ class AdminWellnessRewardRedemption {
   final String providerName;
   final String userLabel;
   final int pointsSpent;
+  final String rewardType;
   final String status;
   final String maskedCode;
   final DateTime? createdAt;
   final DateTime? cancelledAt;
+  final DateTime? receivedAt;
 
   const AdminWellnessRewardRedemption({
     required this.id,
@@ -64,11 +76,16 @@ class AdminWellnessRewardRedemption {
     required this.pointsSpent,
     required this.status,
     required this.maskedCode,
+    this.rewardType = 'voucher',
     this.createdAt,
     this.cancelledAt,
+    this.receivedAt,
   });
 
   bool get canCancel => status.trim().toLowerCase() == 'issued';
+  bool get canMarkReceived =>
+      rewardType.trim().toLowerCase() == 'physical' &&
+      status.trim().toLowerCase() == 'redeemed';
 
   factory AdminWellnessRewardRedemption.fromMap(Map<String, Object?> map) {
     return AdminWellnessRewardRedemption(
@@ -81,9 +98,16 @@ class AdminWellnessRewardRedemption {
       ),
       pointsSpent: _integer(map['points_spent'] ?? map['cost_points']),
       status: _string(map['status'], fallback: 'issued'),
-      maskedCode: _string(map['masked_code'], fallback: '••••••'),
+      rewardType: _string(map['reward_type'], fallback: 'voucher'),
+      maskedCode: _string(
+        map['masked_code'],
+        fallback: _string(map['reward_type']) == 'physical'
+            ? 'Quà vật lý'
+            : '••••••',
+      ),
       createdAt: _date(map['created_at']),
       cancelledAt: _date(map['cancelled_at']),
+      receivedAt: _date(map['received_at']),
     );
   }
 }
@@ -130,6 +154,8 @@ class AdminRewardOfferCommand {
   final String description;
   final String providerName;
   final int costPoints;
+  final String rewardType;
+  final int stockCount;
   final List<String> eligiblePlanCodes;
   final DateTime? availableFrom;
   final DateTime? availableUntil;
@@ -143,6 +169,8 @@ class AdminRewardOfferCommand {
     required this.description,
     required this.providerName,
     required this.costPoints,
+    this.rewardType = 'voucher',
+    this.stockCount = 0,
     required this.eligiblePlanCodes,
     required this.isActive,
     required this.reason,
@@ -160,6 +188,8 @@ class AdminRewardOfferCommand {
       description: description,
       providerName: providerName,
       costPoints: costPoints,
+      rewardType: rewardType,
+      stockCount: stockCount,
       eligiblePlanCodes: eligiblePlanCodes,
       availableFrom: availableFrom,
       availableUntil: availableUntil,

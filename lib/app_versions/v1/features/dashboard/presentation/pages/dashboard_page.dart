@@ -26,6 +26,7 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
 import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
+import 'package:nano_app/shared/wellness_rank/providers/wellness_rank_providers.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   final bool showStandaloneChatButton;
@@ -60,6 +61,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _isVisibleInMainShell) {
       ref.invalidate(dashboardDynamicProvider);
+      _invalidateRankSummary();
     }
   }
 
@@ -73,6 +75,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   Future<void> _refresh() async {
     ref.invalidate(dashboardProvider);
     ref.invalidate(dashboardDynamicProvider);
+    _invalidateRankSummary();
     await ref.read(dashboardProvider.future);
     await ref.read(dashboardDynamicProvider.future);
   }
@@ -106,6 +109,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
     if (!mounted) return;
     ref.invalidate(dashboardProvider);
     ref.invalidate(dashboardDynamicProvider);
+    _invalidateRankSummary();
     try {
       await ref.read(dashboardProvider.future);
     } catch (_) {
@@ -216,9 +220,26 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           queryParameters: {'item': sourceId},
         ).toString(),
       );
-      if (mounted) ref.invalidate(dashboardDynamicProvider);
+      if (mounted) {
+        ref.invalidate(dashboardDynamicProvider);
+        _invalidateRankSummary();
+      }
     } finally {
       _busyTimelineItems.remove(item.id);
+    }
+  }
+
+  Future<void> _viewSchedule() async {
+    await context.push(V1RoutePaths.lifestyleSchedule);
+    if (!mounted) return;
+    ref.invalidate(dashboardDynamicProvider);
+    _invalidateRankSummary();
+  }
+
+  void _invalidateRankSummary() {
+    final rankUserId = ref.read(wellnessRankUserIdProvider).value?.trim();
+    if (rankUserId != null && rankUserId.isNotEmpty) {
+      ref.invalidate(wellnessRankSummaryProvider(rankUserId));
     }
   }
 
@@ -337,7 +358,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
             onAddWater: _addWater,
             onSetWater: _setWater,
             onSaveWeight: _saveWeight,
-            onViewSchedule: () => context.push(V1RoutePaths.lifestyleSchedule),
+            onViewSchedule: _viewSchedule,
             userDataSyncState: userDataSyncState,
           ),
         );

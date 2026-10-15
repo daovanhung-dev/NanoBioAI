@@ -5,6 +5,7 @@ import '../application/load_wellness_rewards.dart';
 import '../application/redeem_wellness_reward.dart';
 import '../data/datasources/wellness_rewards_remote_datasource.dart';
 import '../data/datasources/wellness_rewards_local_datasource.dart';
+import '../data/datasources/wellness_rewards_connectivity_gateway.dart';
 import '../data/datasources/wellness_voucher_secure_store.dart';
 import '../data/repositories/supabase_wellness_rewards_repository.dart';
 import '../domain/entities/wellness_reward_models.dart';
@@ -23,6 +24,15 @@ final wellnessRewardsLocalDatasourceProvider =
     Provider<WellnessRewardsLocalDatasource>((ref) {
       return const WellnessRewardsLocalDatasource();
     });
+
+final wellnessRewardsConnectivityGatewayProvider =
+    Provider<WellnessRewardsConnectivityGateway>((ref) {
+      return ConnectivityPlusWellnessRewardsConnectivityGateway();
+    });
+
+final wellnessRewardsNetworkAvailableProvider = StreamProvider<bool>((ref) {
+  return ref.watch(wellnessRewardsConnectivityGatewayProvider).networkAvailable;
+});
 
 final wellnessRewardsUserIdProvider = Provider<String?>((ref) {
   return Supabase.instance.client.auth.currentUser?.id;

@@ -29,6 +29,7 @@ Hiển thị lịch trình hiện hành, cho phép đánh dấu hoàn thành/b�
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
 - [Implementation Delta 2026-08-16 — Daily Health Hub](./Implementation_Delta_2026-08-16_Daily_Health_Hub.md)
+- [Implementation Delta 2026-10-15 — Hạng EXP nhiệm vụ](./Implementation_Delta_2026-10-15_Wellness_Rank_Experience.md)
 - [Implementation Delta 2026-07-15 — Logbug 14-7-26](./Implementation_Delta_2026-07-15_Logbug_14-7-26.md)
 - [Implementation Delta 2026-07-13](./Implementation_Delta_2026-07-13.md)
 

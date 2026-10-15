@@ -25,6 +25,7 @@ void main() {
       expect(offer.id, 'offer-1');
       expect(offer.costPoints, 50);
       expect(offer.availableCodes, 12);
+      expect(offer.stockCount, 12);
       expect(offer.issuedCodes, 3);
       expect(offer.eligiblePlanCodes, ['free', 'plus']);
       expect(offer.isActive, isFalse);
@@ -43,6 +44,28 @@ void main() {
 
       expect(issued.canCancel, isTrue);
       expect(cancelled.canCancel, isFalse);
+    });
+
+    test('only a redeemed physical gift can be marked received', () {
+      final waiting = AdminWellnessRewardRedemption.fromMap({
+        'id': 'redemption-physical',
+        'reward_type': 'physical',
+        'status': 'redeemed',
+      });
+      final received = AdminWellnessRewardRedemption.fromMap({
+        'id': 'redemption-received',
+        'reward_type': 'physical',
+        'status': 'received',
+      });
+      final voucher = AdminWellnessRewardRedemption.fromMap({
+        'id': 'redemption-voucher',
+        'reward_type': 'voucher',
+        'status': 'redeemed',
+      });
+
+      expect(waiting.canMarkReceived, isTrue);
+      expect(received.canMarkReceived, isFalse);
+      expect(voucher.canMarkReceived, isFalse);
     });
 
     test('bulk import statistics parse numeric server values', () {
@@ -204,8 +227,9 @@ void main() {
       'admin_wellness_rewards_remote_datasource.dart',
     ).readAsStringSync();
 
-    expect(source, contains("'admin_list_wellness_rewards'"));
-    expect(source, contains("'admin_upsert_reward_offer'"));
+    expect(source, contains("'admin_list_wellness_rewards_v2'"));
+    expect(source, contains("'admin_upsert_reward_offer_v2'"));
+    expect(source, contains("'admin_mark_reward_redemption_received'"));
     expect(source, contains("'admin_import_reward_codes'"));
     expect(source, contains("'admin_cancel_reward_redemption'"));
     expect(source, contains("'p_external_revocation_confirmed': true"));

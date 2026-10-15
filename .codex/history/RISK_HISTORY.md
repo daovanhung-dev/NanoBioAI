@@ -1115,3 +1115,15 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-14/003-worklog-member-phone-signup-reproduction.md :: # Worklog - Reproduce Member Phone Signup Failure
 - docs/worklog/2026-10-14/004-worklog-member-phone-simple-reset-production-smoke.md :: settings timeout; không ghi nhận giá trị mới từ endpoint đó.
 - docs/worklog/2026-10-14/004-worklog-member-phone-simple-reset-production-smoke.md :: - `git diff --check`: PASS. `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và stale path trong history/task-skill cũ, không liên quan thay đổi M05.
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: - Tái hiện lần đầu: request trên app có trạng thái `failed`, 7 ngày, 0 bữa,
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: dung 7 ngày nhưng bước kết thúc ghi `failed / invalid_generation`. Truy nguyên
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL - repository-wide check
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: - Chưa fix: request tiếp tục từ staging hiển thị `generation_source=unknown`;
+- docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md :: - Cần kiểm tra tiếp: nếu cần khẳng định provenance AI trong ledger, truy nguyên
+- docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md :: - `architecture_version_boundary_test.dart`: FAIL trên 8 file v1 có sẵn vi
+- docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md :: - Cần kiểm tra tiếp: architecture test toàn repo cần xử lý 8 vi phạm V1 đang có
+- docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và stale paths có sẵn trong history/task-skill cũ; không chỉ ra lỗi ở file delta mới.
+- docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md :: - Cần kiểm tra tiếp: review/apply forward migration trên Supabase sandbox riêng rồi xác minh hosted state theo quy trình dự án.

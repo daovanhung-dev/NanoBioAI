@@ -1,3 +1,15 @@
+enum WellnessRewardType {
+  voucher,
+  physical;
+
+  static WellnessRewardType parse(Object? value) {
+    return switch (value?.toString().trim().toLowerCase()) {
+      'physical' => WellnessRewardType.physical,
+      _ => WellnessRewardType.voucher,
+    };
+  }
+}
+
 class WellnessRewardSummary {
   final int pendingPoints;
   final int availablePoints;
@@ -36,7 +48,9 @@ class WellnessRewardOffer {
   final String description;
   final String providerName;
   final int costPoints;
+  final WellnessRewardType rewardType;
   final int availableCodes;
+  final int stockCount;
   final List<String> eligiblePlanCodes;
   final DateTime? availableFrom;
   final DateTime? availableUntil;
@@ -52,12 +66,18 @@ class WellnessRewardOffer {
     required this.availableCodes,
     required this.eligiblePlanCodes,
     required this.isActive,
+    this.rewardType = WellnessRewardType.voucher,
+    this.stockCount = 0,
     this.availableFrom,
     this.availableUntil,
     this.voucherExpiresAt,
   });
 
-  bool get isInStock => availableCodes > 0;
+  bool get isPhysical => rewardType == WellnessRewardType.physical;
+
+  int get availableStock => isPhysical ? stockCount : availableCodes;
+
+  bool get isInStock => availableStock > 0;
 
   factory WellnessRewardOffer.fromMap(Map<String, Object?> map) {
     return WellnessRewardOffer(
@@ -70,6 +90,8 @@ class WellnessRewardOffer {
       providerName: _readString(map['provider_name'], fallback: 'NanoBio'),
       costPoints: _readInt(map['cost_points']),
       availableCodes: _readInt(map['available_codes'] ?? map['stock_count']),
+      rewardType: WellnessRewardType.parse(map['reward_type']),
+      stockCount: _readInt(map['stock_count']),
       eligiblePlanCodes: _readStringList(map['eligible_plan_codes']),
       availableFrom: _readDate(map['available_from']),
       availableUntil: _readDate(map['available_until']),
@@ -123,11 +145,13 @@ class WellnessRewardRedemption {
   final String title;
   final String providerName;
   final int pointsSpent;
+  final WellnessRewardType rewardType;
   final String status;
   final String? voucherCode;
   final DateTime? voucherExpiresAt;
   final DateTime? createdAt;
   final DateTime? cancelledAt;
+  final DateTime? receivedAt;
 
   const WellnessRewardRedemption({
     required this.id,
@@ -136,13 +160,17 @@ class WellnessRewardRedemption {
     required this.providerName,
     required this.pointsSpent,
     required this.status,
+    this.rewardType = WellnessRewardType.voucher,
     this.voucherCode,
     this.voucherExpiresAt,
     this.createdAt,
     this.cancelledAt,
+    this.receivedAt,
   });
 
   bool get isCancelled => status.trim().toLowerCase() == 'cancelled';
+  bool get isPhysical => rewardType == WellnessRewardType.physical;
+  bool get isReceived => status.trim().toLowerCase() == 'received';
 
   factory WellnessRewardRedemption.fromMap(Map<String, Object?> map) {
     final code = _readNullableString(
@@ -155,10 +183,14 @@ class WellnessRewardRedemption {
       providerName: _readString(map['provider_name'], fallback: 'NanoBio'),
       pointsSpent: _readInt(map['points_spent'] ?? map['cost_points']),
       status: _readString(map['status'], fallback: 'issued'),
+      rewardType: WellnessRewardType.parse(
+        map['reward_type'] ?? map['reward_type_snapshot'],
+      ),
       voucherCode: code,
       voucherExpiresAt: _readDate(map['voucher_expires_at']),
       createdAt: _readDate(map['created_at']),
       cancelledAt: _readDate(map['cancelled_at']),
+      receivedAt: _readDate(map['received_at']),
     );
   }
 }
@@ -196,11 +228,11 @@ class WellnessRewardException implements Exception {
       ),
       'insufficient_points' => const WellnessRewardException(
         'insufficient_points',
-        'Bạn chưa có đủ Điểm chăm sóc cho ưu đãi này.',
+        'Bạn chưa có đủ Điểm chăm sóc cho món quà này.',
       ),
       'offer_out_of_stock' || 'out_of_stock' => const WellnessRewardException(
         'offer_out_of_stock',
-        'Ưu đãi này vừa hết mã. Bạn vui lòng chọn ưu đãi khác.',
+        'Món quà này vừa hết. Bạn vui lòng tải lại danh sách.',
       ),
       'offer_ineligible' => const WellnessRewardException(
         'offer_ineligible',
@@ -212,7 +244,7 @@ class WellnessRewardException implements Exception {
       'offer_required' ||
       'offer_window_invalid' => const WellnessRewardException(
         'offer_unavailable',
-        'Ưu đãi hiện không còn khả dụng.',
+        'Món quà hiện không còn khả dụng.',
       ),
       'redemption_not_found' ||
       'redemption_required' => const WellnessRewardException(
@@ -228,7 +260,12 @@ class WellnessRewardException implements Exception {
       'duplicate_request' ||
       'idempotency_conflict' => const WellnessRewardException(
         'duplicate_request',
-        'Yêu cầu này đã được xử lý. Danh sách voucher sẽ được làm mới.',
+        'Yêu cầu này đã được xử lý. Lịch sử đổi quà sẽ được làm mới.',
+      ),
+      'reward_stock_invalid' ||
+      'reward_type_invalid' => const WellnessRewardException(
+        'offer_unavailable',
+        'Thông tin món quà đang được cập nhật. Bạn vui lòng tải lại.',
       ),
       'secure_storage_unavailable' => const WellnessRewardException(
         'secure_storage_unavailable',

@@ -261,3 +261,32 @@ versioned migration workflow and verify resulting schema/functions read-only.
 
 Explicit user help stays on-device. Automatic no-response escalation uses only
 voice/SMS. Never print secret values or phone numbers in logs/worklogs.
+
+## Wellness rewards physical gifts
+
+`supabase/migrations/20261014130000_wellness_physical_rewards.sql` adds physical
+gift inventory and the `redeemed` → `received` handover state. Voucher RPCs stay
+available to older clients; new clients use the v2 catalog/redemption RPCs.
+Physical redemption locks the offer and wallet, consumes FEFO allocations,
+decrements stock, records the redemption and writes the negative point ledger in
+one transaction. Admin handover requires `wellness_rewards.write` and records
+actor, time and audit.
+
+Test the forward migration on an isolated sandbox with synthetic users and
+offers before applying it to a live project. Immediately before a live change,
+verify project ref/name, migration history, backup/PITR or an explicit recovery
+path, and the linked CLI target. The migration is transactional and does not
+delete or rewrite historical rows; never run the canonical rebuild/seed scripts
+on staging or production. Verify resulting columns, RPC grants and migration
+history read-only after apply.
+
+## Personal wellness rank experience
+
+`supabase/migrations/20261015090000_wellness_rank_experience.sql` adds
+server-confirmed task EXP, undo reconciliation, seven-day decay and the
+authenticated `get_my_wellness_rank_summary()` RPC. It is separate from the
+Care Points wallet and does not yet gate reward catalog items. Apply only as a
+forward migration after isolated sandbox/RLS/idempotency checks; verify the
+project identity, migration history and recovery path immediately before any
+hosted write. This repository change does not claim sandbox or production
+application.

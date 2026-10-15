@@ -1,0 +1,196 @@
+Commit de xuat: docs(bd): mo rong doi voucher sang doi qua vat ly
+
+# BD — Nhiệm vụ hằng ngày, bằng chứng, Điểm chăm sóc và Đổi quà
+
+| Thuộc tính | Giá trị |
+|---|---|
+| Mã tài liệu | `BD-BIOAI-WELLNESS-REWARDS-001` |
+| Phiên bản | v1.1 |
+| Vòng đời | Current |
+| Trạng thái nghiệp vụ | Approved — user decision 2026-10-14, bổ sung quyết định 2026-07-13 |
+| Implementation | Source implemented; production migration applied and schema/RPC/grants verified; app release pending |
+| Xác minh | Targeted Flutter tests/analyze PASS; isolated PostgreSQL reward smoke PASS; production migration/history/schema/RPC grants PASS; live role/RLS and device acceptance pending |
+| Phạm vi module | M03, M08 (ranh giới hệ điểm), M09, M15, M16 |
+| Nguồn | Kế hoạch triển khai được người dùng chốt ngày 2026-07-13 |
+| Múi giờ nghiệp vụ | `Asia/Ho_Chi_Minh` |
+
+`Implemented` ở đây chỉ xác nhận route/client/SQLite/Supabase source tồn tại và
+reachable; rollout flag, bucket private, concurrency/RLS trên Supabase sandbox
+và camera/notification trên thiết bị vẫn chưa được xác minh trong audit này.
+
+## 1. Mục tiêu và ranh giới
+
+Đợt thay đổi này chuẩn hóa việc hoàn thành nhiệm vụ hằng ngày bằng ảnh chụp
+trực tiếp, tạo hệ `Điểm chăm sóc` có thể đổi voucher và quà vật lý, đồng thời
+bổ sung khu quản trị riêng. `Điểm chăm sóc` là hệ điểm thứ ba, độc lập hoàn
+toàn với Điểm sức khỏe và Điểm Sale. Quà vật lý được trao trực tiếp; phiên bản
+này không thêm địa chỉ hoặc quy trình giao hàng.
+
+Trong phạm vi:
+
+- Cửa sổ thực hiện nhiệm vụ, bằng chứng ảnh và hoàn tác.
+- Eligibility do máy chủ cấp, hoàn thành online có kiểm chứng và cộng điểm.
+- Ví Điểm chăm sóc, lịch sử, hết hạn và quy tắc tiêu điểm.
+- Catalog voucher/quà vật lý, kho mã/tồn quà, đổi và lịch sử giao dịch.
+- Quyền và giao diện Quản trị viên cho chương trình.
+- Việt hóa mọi bề mặt production do NanoBio kiểm soát.
+
+Ngoài phạm vi:
+
+- Tích hợp API nhà cung cấp voucher.
+- Địa chỉ nhận, vận chuyển hoặc theo dõi giao hàng quà vật lý.
+- Xuất ảnh bằng chứng ra thư viện ảnh công khai.
+- Gộp ví giữa các thành viên FamilyPlus.
+- Guest hoặc thao tác offline nhận điểm có thể đổi voucher.
+
+## 2. Quy tắc nhiệm vụ và bằng chứng
+
+| ID | Quy tắc đã chốt |
+|---|---|
+| WR-BR-001 | Một mốc chỉ thao tác trong cửa sổ đóng `[start_time, start_time + 30 phút]` theo `Asia/Ho_Chi_Minh`. Trước giờ là `Chưa mở`; đúng phút 30 vẫn hợp lệ và chỉ khóa sau mốc đó. |
+| WR-BR-002 | Parser chấp nhận `HH:mm`, `HH:mm:ss` và phần giây. Giá trị ngày/giờ không hợp lệ phải khóa an toàn, không được mở nhầm nhiệm vụ. |
+| WR-BR-003 | Có thể xem ngày tương lai nhưng không được thao tác. Trạng thái phải tự làm mới ở mốc mở, mốc khóa và khi ứng dụng resume. |
+| WR-BR-004 | Hoàn thành bắt buộc chụp trực tiếp từ camera. Hủy camera, từ chối quyền hoặc lỗi xử lý ảnh không thay đổi nhiệm vụ. |
+| WR-BR-005 | Ảnh tối đa 5 MB, được chuẩn hóa JPEG, hướng xoay và loại metadata vị trí trước khi lưu hoặc tải lên. |
+| WR-BR-006 | Ảnh local nằm trong thư mục app-private `schedule_proofs`; cơ sở dữ liệu chỉ lưu đường dẫn tương đối và metadata sidecar để cloud pull không làm mất liên kết. |
+| WR-BR-007 | Ứng dụng có khu `Bằng chứng nhiệm vụ` và trang xem tất cả, gồm thumbnail, thời gian, nhiệm vụ, trạng thái `Đang hiệu lực`, `Đã hoàn tác` hoặc `Không nhận điểm`, xem toàn màn hình và tải lại cloud khi local thiếu. |
+| WR-BR-008 | Hoàn tác được phép đến hết `window_end`. Ảnh được giữ với nhãn `Đã hoàn tác`; khoản `+10` đang chờ bị đảo. Sau `window_end` không được hoàn tác. |
+| WR-BR-009 | Notification không hoàn thành nền. Hành động là `Mở để chụp ảnh` và deep-link đúng nhiệm vụ vào use case hoàn thành dùng chung. |
+
+## 3. Eligibility, xác nhận online và Điểm chăm sóc
+
+| ID | Quy tắc đã chốt |
+|---|---|
+| WR-BR-010 | Khi lịch Member được kích hoạt, máy chủ cấp eligibility bất biến cho request/quota hợp lệ, ngày tương lai, không trùng và đúng cấu trúc 10 mốc/ngày. Chỉ eligibility này được thưởng. |
+| WR-BR-011 | Luồng online là `begin` → mở camera → lưu local → upload private → `finalize`. Máy chủ dùng thời gian của mình, khóa eligibility và xác nhận proof/completion/`+10` trong transaction idempotent. |
+| WR-BR-012 | Nếu object được Storage ghi trước hạn nhưng `finalize` mất response, reconciler được hoàn tất sau hạn theo `storage.objects.created_at`. Upload đến máy chủ sau hạn không được thưởng. |
+| WR-BR-013 | Guest hoặc người dùng offline vẫn được hoàn thành và giữ ảnh local nhưng không nhận điểm có thể đổi quà; UI phải cảnh báo trước. Sau đăng nhập chỉ nhiệm vụ Guest chưa đến giờ mới có thể được đăng ký eligibility. |
+| WR-BR-014 | Mỗi eligibility hợp lệ tạo đúng một khoản `+10 Điểm chăm sóc`. Khoản này khả dụng sau `window_end` và hết hạn tại `window_end + 180 ngày` theo cấu hình version hóa. |
+| WR-BR-015 | Thay đổi thời hạn chỉ áp dụng cho khoản phát sinh sau phiên bản cấu hình mới; không hồi tố. Điểm được tiêu theo khoản sắp hết hạn trước. |
+| WR-BR-016 | Không có trần điểm theo ngày ngoài số eligibility hợp lệ. Một eligibility không được thưởng hai lần dù double tap, retry hoặc hai thiết bị. |
+| WR-BR-017 | Dữ liệu legacy `+1/-1` được hiển thị thành `+10/-10` có nhãn lịch sử nhưng không tham gia số dư đổi voucher. |
+| WR-BR-018 | Ví thuộc từng tài khoản, không gộp FamilyPlus. `Điểm chăm sóc`, Điểm sức khỏe và Điểm Sale dùng ledger, số dư, UI và mục đích khác nhau. |
+
+## 4. Voucher và giao dịch đổi điểm
+
+| ID | Quy tắc đã chốt |
+|---|---|
+| WR-BR-019 | Trang `Đổi quà` hiển thị điểm đang chờ, khả dụng, sắp hết hạn, catalog voucher/quà vật lý, giá điểm, tồn kho, lịch sử điểm và lịch sử đổi. |
+| WR-BR-020 | Đổi voucher chỉ thực hiện online và nguyên tử: khóa ví, chọn một mã còn tồn, tiêu các allocation sắp hết hạn trước, trừ điểm và cấp mã trong cùng transaction. Thiếu điểm, hết kho hoặc conflict không được trừ điểm. |
+| WR-BR-021 | Mã voucher dùng một lần được hiển thị dạng chữ và QR. Mã đã cấp được lưu trong secure storage của hệ điều hành để xem lại; cache SQLite không lưu mã rõ. |
+| WR-BR-022 | Catalog có tiêu đề/mô tả tiếng Việt có dấu, nhà cung cấp, giá điểm, cửa sổ mở, hạn voucher và gói `Free`, `Plus`, `FamilyPlus` được phép. Mặc định mọi tài khoản đăng nhập đủ điều kiện. |
+| WR-BR-023 | Không giới hạn số lần đổi theo tài khoản; giới hạn chỉ đến từ điểm khả dụng, eligibility của ưu đãi và tồn kho. |
+| WR-BR-024 | Mã chưa cấp không được trả qua API/UI. Mã trùng hoặc sai định dạng bị từ chối và kết quả nhập phải có thống kê. |
+| WR-BR-025 | Voucher giữ trạng thái `Đã cấp` hoặc `Đã hủy`; quà vật lý chuyển `Đã đổi` → `Đã nhận` sau khi Admin xác nhận đã trao. Hệ thống không tự nhận voucher là `Đã sử dụng`. |
+| WR-BR-026 | Hủy giao dịch cần lý do, xác nhận mã đã được xử lý bên ngoài, idempotency và audit. Mã bị loại vĩnh viễn; điểm được hoàn đúng một lần thành allocation mới theo chính sách hiện hành. |
+
+## 5. Quản trị, bảo mật và dữ liệu
+
+| ID | Quy tắc đã chốt |
+|---|---|
+| WR-BR-027 | Khu quản trị dùng quyền riêng `wellness_rewards.read` và `wellness_rewards.write`; UI ẩn/khóa đúng quyền nhưng backend vẫn là lớp quyết định. |
+| WR-BR-028 | Client không được DML trực tiếp ledger/kho mã. Ledger là append-only, server-owned; điểm không được push/delete qua snapshot giả. |
+| WR-BR-029 | Bucket `schedule-completion-proofs` là private; path `<owner>/<eligibility>/<attempt>.jpg`, `upsert:false`; owner chỉ đọc/upload đúng path, không có quyền client update/delete. Ảnh giữ đến khi xóa tài khoản. |
+| WR-BR-030 | Mọi RPC dùng `auth.uid()`, `search_path` cố định, idempotency key, row lock khi cần, stable error code và audit cho thao tác nhạy cảm. |
+| WR-BR-031 | Mỗi ưu đãi có loại `voucher` hoặc `physical`. Quà vật lý lưu tồn kho còn lại; voucher tiếp tục dùng kho mã hiện có. Loại đã tạo không được đổi khi sửa ưu đãi. |
+| WR-BR-032 | Đổi quà vật lý chỉ thực hiện online và nguyên tử: khóa ưu đãi/ví, kiểm tra điều kiện và điểm, trừ tồn kho, tiêu allocation FEFO, ghi redemption và ledger điểm âm trong cùng transaction. Lỗi không được trừ điểm hoặc tồn. |
+| WR-BR-033 | Idempotency trả lại đúng redemption khi gửi lại cùng khóa. Hai yêu cầu đồng thời không được overspend hoặc cấp quà vượt tồn kho. RPC voucher cũ tiếp tục hoạt động cho bản app trước. |
+| WR-BR-034 | Quà vật lý ở trạng thái `Đã đổi` sau khi người dùng xác nhận. Chỉ Admin có `wellness_rewards.write` được xác nhận đã trao để đổi sang `Đã nhận`; server ghi actor, thời gian và audit, lặp lại không nhân đôi giao dịch. |
+| WR-BR-035 | Mỗi lần đổi được ghi ở Supabase trong redemption và point ledger. SQLite v32 chỉ là bản đọc cục bộ, lưu loại quà/trạng thái và mirror dòng điểm; số dư có thẩm quyền từ Supabase. |
+| WR-BR-036 | Sau đổi thành công, app tải lại số dư, catalog, lịch sử điểm và lịch sử đổi từ Supabase rồi cập nhật SQLite. Nếu offline hoặc tải máy chủ thất bại trước giao dịch, app không thực hiện đổi. |
+
+### RPC người dùng
+
+- `register_my_schedule_reward_eligibilities`
+- `begin_my_schedule_completion`
+- `finalize_my_schedule_completion`
+- `undo_my_schedule_completion`
+- `get_my_wellness_reward_summary`
+- `list_my_wellness_point_history`
+- `list_my_reward_offers`
+- `redeem_my_reward_offer`
+- `list_my_reward_redemptions`
+- `get_my_reward_code`
+- `list_my_reward_catalog_v2`
+- `list_my_reward_redemptions_v2`
+- `redeem_my_reward_v2`
+
+### RPC Quản trị viên
+
+- `admin_list_wellness_rewards`
+- `admin_upsert_reward_offer`
+- `admin_import_reward_codes`
+- `admin_cancel_reward_redemption`
+- `admin_upsert_reward_offer_v2`
+- `admin_list_wellness_rewards_v2`
+- `admin_mark_reward_redemption_received`
+
+## 6. Việt hóa production
+
+| ID | Quy tắc đã chốt |
+|---|---|
+| WR-L10N-001 | Bốn app root V1/V2/V3/Admin dùng locale `vi_VN`, Flutter localization delegates và ARB tiếng Việt; preference `en` cũ được chuẩn hóa thành `vi` và không còn lựa chọn English. |
+| WR-L10N-002 | Mọi text, dialog, tooltip, semantics, lỗi, status, plan/permission code và nội dung động do NanoBio kiểm soát phải có tiếng Việt có dấu hoặc fallback tiếng Việt an toàn. |
+| WR-L10N-003 | Giữ nguyên brand/thuật ngữ NanoBio, Nabi, BioAI, Plus, FamilyPlus, AI, BMI, SpO₂, Face ID, VietQR, VND và đơn vị đo. `Free` hiển thị `Miễn phí`; `Admin` và `Sale` trong câu văn hiển thị `Quản trị viên` và `Cộng tác viên bán hàng`. |
+| WR-L10N-004 | Không dịch dữ liệu thật do người dùng nhập như tên, email, ghi chú hoặc mã voucher. Nút thuộc permission dialog của hệ điều hành phụ thuộc ngôn ngữ thiết bị. |
+
+## 7. Mô hình dữ liệu khái niệm
+
+| Nhóm | Dữ liệu chính |
+|---|---|
+| Schedule Reward Eligibility | owner, subject, schedule item, snapshot, window, status, immutable source request |
+| Completion Attempt / Proof | attempt, eligibility, path private, capture/upload time, MIME/size, proof/reward status |
+| Wellness Wallet / Ledger / Allocation | owner, event, delta, available/expiry time, remaining points, program version |
+| Reward Offer | Vietnamese content, provider, point cost, type, physical stock, eligible plans, availability, voucher expiry, active state |
+| Reward Code Inventory | offer, secret code, hash/normalization, state, issued redemption, expiry |
+| Reward Redemption / Spend | wallet, offer, optional voucher code, type snapshot, spent allocations, status, receive actor/time, cancel/refund audit |
+| Program Configuration | contract version, reward points, expiry days, timezone, rollout feature flag, effective time |
+
+SQLite hiện tại nâng lên v32 để lưu proof sidecar, eligibility/reward projection,
+catalog, loại/tồn quà, lịch sử đổi/đã nhận và sync state. Mã voucher rõ chỉ được
+lưu trong secure storage.
+
+## 8. Tiêu chí chấp nhận tối thiểu
+
+| ID | Kết quả phải đạt |
+|---|---|
+| WR-AC-001 | Biên trước giờ, đúng giờ, ngay trước phút 30, đúng phút 30 và ngay sau phút 30 cho trạng thái chính xác theo `Asia/Ho_Chi_Minh`. |
+| WR-AC-002 | Hủy camera, từ chối quyền, ảnh sai loại/quá 5 MB hoặc time lỗi không thay đổi nhiệm vụ và không tạo điểm. |
+| WR-AC-003 | Local completion, proof, linked task/meal và health-score projection commit nguyên tử; ảnh orphan được reconcile hoặc dọn an toàn. |
+| WR-AC-004 | Double tap, retry, hai thiết bị hoặc mất response chỉ tạo một completion/proof thưởng và một khoản `+10`. |
+| WR-AC-005 | Upload trước hạn có thể finalize sau hạn; upload sau hạn không được thưởng. |
+| WR-AC-006 | Guest/offline được giữ ảnh local nhưng không có số dư đổi voucher. |
+| WR-AC-007 | `+10` chuyển pending → available sau `window_end`, hết hạn sau 180 ngày; cấu hình mới không hồi tố và FEFO tiêu đúng. |
+| WR-AC-008 | User A không đọc/upload path user B; chặn MIME/size/path/upsert giả và direct ledger/inventory DML. |
+| WR-AC-009 | Đổi voucher atomic; thiếu điểm, hết kho hoặc conflict không làm thay đổi số dư. |
+| WR-AC-010 | Hủy giao dịch Admin idempotent, hoàn điểm đúng một lần, không trả mã về kho và có audit. |
+| WR-AC-011 | Production UI do NanoBio kiểm soát hiển thị tiếng Việt khi host là `en_US`; scanner không còn mojibake/raw exception/UI code ngoài allowlist. |
+| WR-AC-012 | Voucher cũ vẫn đổi được qua RPC cũ; catalog/histories cũ chỉ trả voucher, catalog v2 trả đủ voucher và quà vật lý. |
+| WR-AC-013 | Quà vật lý đổi online trừ đúng điểm/tồn và tạo một redemption cùng một ledger âm; thiếu điểm, hết kho hoặc lỗi transaction giữ nguyên cả hai. |
+| WR-AC-014 | Gửi lại cùng idempotency key không tạo dòng mới; hai lượt đổi đồng thời với một phần quà chỉ có tối đa một lượt thành công. |
+| WR-AC-015 | App chặn đổi khi offline; số dư, lịch sử điểm/đổi và cache SQLite được tải lại sau khi server xác nhận thành công. |
+| WR-AC-016 | Admin thiếu quyền không thể xác nhận đã trao; lần xác nhận hợp lệ ghi `received_by`, `received_at` và audit, retry không ghi trùng. |
+| WR-AC-017 | Migration SQLite v32 giữ nguyên voucher cũ và bổ sung loại quà/trạng thái nhận. |
+
+## 9. Triển khai và bằng chứng còn thiếu
+
+Thứ tự rollout bắt buộc:
+
+1. PostgreSQL 17 scratch harness với fixture tổng hợp đã kiểm tra voucher cũ,
+   quà vật lý, retry, thiếu điểm, hết tồn, concurrency, quyền Admin và audit.
+   Chưa có hosted Supabase sandbox; harness cục bộ không phải RLS acceptance.
+2. Trước production, project ref, migration history, khả năng backup và phương
+   án khôi phục đã được rà lại. Gói Free không có scheduled backup; `db dump`
+   không chạy được vì môi trường thiếu Docker. Migration được bọc transaction,
+   additive và không xóa/rewrite giao dịch; không chạy rebuild/seed.
+3. Migration `20261014130000_wellness_physical_rewards.sql` đã áp dụng lên
+   project `rnwohifdnylqfofkydfl`. Migration history local/remote khớp; schema,
+   sáu RPC v2 và quyền execute (`authenticated` có, `anon` không) đã xác minh
+   bằng truy vấn production chỉ đọc.
+4. Client/Admin chưa được phát hành. Cần live role/RLS acceptance và device
+   acceptance trước khi coi feature đã được chấp nhận end-to-end; Admin nhập
+   catalog và tồn quà thật sau khi xác nhận.
+
+Code, SQL và static/targeted test là bằng chứng source-ready, không tự chứng minh
+RLS/Storage hoặc production migration đã pass. Production migration được theo
+dõi riêng với trạng thái xác minh mới nhất.

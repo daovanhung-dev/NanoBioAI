@@ -120,6 +120,15 @@ void main() {
       expect(result.scheduleItemCount, 11);
       expect(requestStore.commitCalls, 1);
       expect(requestStore.guestInitialPlanUsed, isTrue);
+      final uuidPattern = RegExp(
+        r'^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+      );
+      expect(requestStore.savedMealIds, hasLength(5));
+      expect(requestStore.savedScheduleIds, hasLength(11));
+      expect(requestStore.savedMealIds.every(uuidPattern.hasMatch), isTrue);
+      expect(requestStore.savedScheduleIds.every(uuidPattern.hasMatch), isTrue);
+      expect(requestStore.committedMealIds, requestStore.savedMealIds);
+      expect(requestStore.committedScheduleIds, requestStore.savedScheduleIds);
       expect(repository.fetchCalls, 1);
       expect(repository.saveCalls, 0);
       expect(dailyHealthDatasource.fetchProfileCalls, 1);
@@ -129,6 +138,52 @@ void main() {
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
       expect(reminderCalls, 1);
+    },
+  );
+
+  test(
+    'single-flight protects concurrent initial guest staging for one user',
+    () async {
+      final aiService = _BlockingAIService();
+      final requestStore = _RecordingRequestStore();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'concurrent-guest',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      final first = service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      );
+      await aiService.started.future;
+      final duplicate = service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 3),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(aiService.mealStartCount, 1);
+      aiService.release.complete();
+
+      final results = await Future.wait([first, duplicate]);
+
+      expect(results[0].requestId, results[1].requestId);
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 1);
+      expect(requestStore.commitCalls, 1);
     },
   );
 
@@ -1072,6 +1127,10 @@ class _RecordingDailyHealthDatasource
 
 class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   final records = <String, PersonalScheduleAiRequestRecord>{};
+  final savedMealIds = <String>[];
+  final savedScheduleIds = <String>[];
+  final committedMealIds = <String>[];
+  final committedScheduleIds = <String>[];
   final stagedChunks = <String, Map<String, List<Map<String, dynamic>>>>{};
   final stagedSources = <String, Map<String, PlanGenerationSource>>{};
   final _stageFingerprints = <String, (String, String, String)>{};
@@ -1202,6 +1261,8 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   }) async {
     dailyCommitCalls++;
     committedDays.add(day);
+    savedMealIds.addAll(meals.map((meal) => meal.id));
+    savedScheduleIds.addAll(schedule.map((item) => item.id));
     records[requestId] = PersonalScheduleAiRequestRecord(
       requestId: requestId,
       userId: userId,
@@ -1281,6 +1342,8 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required bool markGuestInitialPlanUsed,
   }) async {
     commitCalls++;
+    committedMealIds.addAll(meals.map((meal) => meal.id));
+    committedScheduleIds.addAll(schedule.map((item) => item.id));
     if (markGuestInitialPlanUsed) {
       guestInitialPlanUsed = true;
     }
@@ -1619,6 +1682,7 @@ class _FailOnceExerciseAIService extends _RecordingAIService {
 class _BlockingAIService extends _RecordingAIService {
   final started = Completer<void>();
   final release = Completer<void>();
+  var mealStartCount = 0;
 
   @override
   Future<List<Map<String, dynamic>>> generateMealDayCodeItems({
@@ -1629,6 +1693,7 @@ class _BlockingAIService extends _RecordingAIService {
     Map<String, Object?> personalization = const {},
     required AiBackendInvocationCallback onBackendInvocation,
   }) async {
+    mealStartCount++;
     if (!started.isCompleted) started.complete();
     await release.future;
     return super.generateMealDayCodeItems(

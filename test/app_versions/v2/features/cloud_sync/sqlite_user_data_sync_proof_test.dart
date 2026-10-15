@@ -4,6 +4,8 @@ import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/use
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_staging_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -14,6 +16,7 @@ void main() {
 
   setUp(() async {
     db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
+    await db.execute('PRAGMA foreign_keys = ON');
     await db.execute(
       "CREATE TABLE users (id TEXT PRIMARY KEY, subscription_tier TEXT)",
     );
@@ -22,12 +25,8 @@ void main() {
         'CREATE TABLE $table (id TEXT PRIMARY KEY, user_id TEXT)',
       );
     }
-    await db.execute('''
-      CREATE TABLE personal_schedule_ai_requests (
-        request_id TEXT PRIMARY KEY,
-        user_id TEXT
-      )
-    ''');
+    await db.execute(PersonalScheduleAiRequestsTable.createTable);
+    await db.execute(PersonalScheduleAiStagingTable.createTable);
     await db.execute(ScheduleCompletionProofsTable.createTable);
     await db.execute(WellnessPointLedgersTable.createTable);
     await SyncOutboxSchema.create(db);
@@ -125,6 +124,82 @@ void main() {
         ),
         isEmpty,
       );
+    },
+  );
+
+  test(
+    'cloud replacement preserves staging for an active generated plan',
+    () async {
+      await SyncRuntimeState.setApplyingCloud(db, true);
+      await db.insert('users', {'id': 'auth-1', 'subscription_tier': 'free'});
+      await db.insert(PersonalScheduleAiRequestsTable.tableName, {
+        'request_id': 'active-plan',
+        'user_id': 'auth-1',
+        'actor_mode': 'initial_guest',
+        'status': 'generating',
+        'start_date': '2026-10-14',
+        'days': 7,
+        'created_at': '2026-10-14T00:00:00Z',
+        'updated_at': '2026-10-14T00:00:00Z',
+      });
+      await db.insert(PersonalScheduleAiStagingTable.tableName, {
+        'request_id': 'active-plan',
+        'chunk_key': '__meta__',
+        'input_fingerprint': 'input-v1',
+        'catalog_fingerprint': 'catalog-v1',
+        'prompt_version': 'prompt-v1',
+        'payload_json': '{}',
+        'created_at': '2026-10-14T00:00:00Z',
+        'updated_at': '2026-10-14T00:00:00Z',
+      });
+      await db.insert(PersonalScheduleAiStagingTable.tableName, {
+        'request_id': 'active-plan',
+        'chunk_key': 'meal:1',
+        'input_fingerprint': 'input-v1',
+        'catalog_fingerprint': 'catalog-v1',
+        'prompt_version': 'prompt-v1',
+        'payload_json': '[]',
+        'created_at': '2026-10-14T00:00:00Z',
+        'updated_at': '2026-10-14T00:00:00Z',
+      });
+      await SyncRuntimeState.setApplyingCloud(db, false);
+      await db.delete(SyncOutboxSchema.outboxTable);
+
+      await SqliteUserDataSyncLocalDatasource(
+        databaseOverride: db,
+      ).replaceFromCloud(
+        userId: 'auth-1',
+        snapshot: const UserDataSnapshot(
+          user: {'id': 'auth-1'},
+          tables: {
+            'personal_schedule_ai_requests': [
+              {
+                'request_id': 'active-plan',
+                'user_id': 'auth-1',
+                'actor_mode': 'initial_guest',
+                'status': 'failed',
+                'start_date': '2026-10-14',
+                'days': 7,
+                'error_code': 'stale_cloud_state',
+              },
+            ],
+          },
+        ),
+      );
+
+      final request = await db.query(
+        PersonalScheduleAiRequestsTable.tableName,
+        columns: const ['status'],
+        where: 'request_id = ?',
+        whereArgs: ['active-plan'],
+      );
+      final staging = await db.query(
+        PersonalScheduleAiStagingTable.tableName,
+        where: 'request_id = ?',
+        whereArgs: ['active-plan'],
+      );
+      expect(request.single['status'], 'generating');
+      expect(staging, hasLength(2));
     },
   );
 

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 214
+- Total worklogs: 218
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -223,3 +223,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-14 | Coding, migration source, targeted tests, project docs. | supabase-schema | M05 AUTH_PROFILE_SYNC, Supabase auth/admin provisioning. | [Worklog - Member Phone Auth And Password Approval](../../docs/worklog/2026-10-14/002-worklog-member-phone-auth-password-approval.md) |
 | 2026-10-14 | bugfix | bugfix | M05 AUTH_PROFILE_SYNC, Supabase Auth member phone signup. | [Worklog - Reproduce Member Phone Signup Failure](../../docs/worklog/2026-10-14/003-worklog-member-phone-signup-reproduction.md) |
 | 2026-10-14 | unknown | docs-context | unknown | [Worklog - Member Phone Auth With Simple Admin Password Reset](../../docs/worklog/2026-10-14/004-worklog-member-phone-simple-reset-production-smoke.md) |
+| 2026-10-14 | unknown | docs-context | unknown | [Worklog - Đổi quà vật lý và ledger thưởng](../../docs/worklog/2026-10-14/005-worklog-physical-wellness-rewards.md) |
+| 2026-10-14 | Tái hiện lỗi trên điện thoại, chẩn đoán và sửa lỗi, regression tests. | test | M02 tạo lịch AI; đồng bộ dữ liệu cục bộ/cloud. | [Worklog - Tái hiện và sửa lỗi tạo lịch trình mới](../../docs/worklog/2026-10-14/006-worklog-generated-plan-cloud-sync-race.md) |
+| 2026-10-14 | Bổ sung lối điều hướng UI vào chức năng hiện có. | docs-context | V1 Features Hub / Tiện ích; V2 Wellness Rewards route. | [Worklog - Thêm lối vào Đổi quà trong Tiện ích](../../docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md) |
+| 2026-10-15 | coding, Supabase schema, SQLite migration, UI, BD/DD/checklist/context. | supabase-schema | M03 DASHBOARD_SCHEDULE, M08 HEALTH_SCORE_HABITS; shared wellness rank. | [Worklog - Hạng cá nhân theo EXP nhiệm vụ](../../docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md) |

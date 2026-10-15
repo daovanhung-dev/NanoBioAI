@@ -68,7 +68,7 @@ void main() {
       isTrue,
     );
     expect(imported.map((row) => row['code']).toSet(), hasLength(24));
-    expect(DatabaseVersion.currentVersion, 31);
+    expect(DatabaseVersion.currentVersion, 32);
 
     final tables = (await db.rawQuery(
       "SELECT name FROM sqlite_master WHERE type = 'table'",

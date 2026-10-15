@@ -41,7 +41,7 @@ class SupabaseWellnessRewardsRemoteDatasource
   @override
   Future<List<Map<String, Object?>>> listOffers({int limit = 100}) async {
     final response = await _client().rpc(
-      'list_my_reward_offers',
+      'list_my_reward_catalog_v2',
       params: {'p_limit': limit},
     );
     return _mapList(response);
@@ -50,7 +50,7 @@ class SupabaseWellnessRewardsRemoteDatasource
   @override
   Future<List<Map<String, Object?>>> listRedemptions({int limit = 100}) async {
     final response = await _client().rpc(
-      'list_my_reward_redemptions',
+      'list_my_reward_redemptions_v2',
       params: {'p_limit': limit},
     );
     return _mapList(response);
@@ -62,7 +62,7 @@ class SupabaseWellnessRewardsRemoteDatasource
     required String idempotencyKey,
   }) async {
     final response = await _client().rpc(
-      'redeem_my_reward_offer',
+      'redeem_my_reward_v2',
       params: {'p_offer_id': offerId, 'p_idempotency_key': idempotencyKey},
     );
     return _firstMap(response);

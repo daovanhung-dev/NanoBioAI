@@ -16,4 +16,10 @@ abstract class AdminWellnessRewardsRepository {
     required String reason,
     required String idempotencyKey,
   });
+
+  Future<AdminRewardMutationResult> markRedemptionReceived({
+    required String redemptionId,
+    required String reason,
+    required String idempotencyKey,
+  });
 }

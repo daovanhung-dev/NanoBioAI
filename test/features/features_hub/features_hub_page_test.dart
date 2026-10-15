@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
+import 'package:nano_app/core/constants/routes/wellness_rewards_route_paths.dart';
 import 'package:nano_app/shared/health_features/health_feature_catalog.dart';
 
 void main() {
@@ -10,10 +11,13 @@ void main() {
     'Lịch trình cá nhân',
     'Chế độ luyện tập',
     'Nhiệm vụ hôm nay',
+    'Đổi quà',
     'Thực đơn theo tuần',
     'Dinh dưỡng',
+    'Quét món ăn AI',
     'Chỉ số cơ thể',
     'Theo dõi sức khỏe',
+    'Giám sát giấc ngủ',
     'Uống nước',
     'Mục tiêu cá nhân',
     'Tổng kết tuần',
@@ -46,11 +50,22 @@ void main() {
       expect(find.text(title), findsOneWidget, reason: title);
     }
 
-    expect(find.byKey(const Key('planned-features-toggle')), findsOneWidget);
-    expect(
-      find.byKey(const Key('advanced-health-features-toggle')),
-      findsOneWidget,
+    final plannedToggle = find.byKey(const Key('planned-features-toggle'));
+    await tester.scrollUntilVisible(
+      plannedToggle,
+      300,
+      scrollable: find.byType(Scrollable).first,
     );
+    expect(plannedToggle, findsOneWidget);
+    final advancedToggle = find.byKey(
+      const Key('advanced-health-features-toggle'),
+    );
+    await tester.scrollUntilVisible(
+      advancedToggle,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(advancedToggle, findsOneWidget);
     for (final title in plannedFeatureTitles) {
       expect(find.text(title), findsNothing, reason: title);
     }
@@ -202,6 +217,39 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('opened-M20'), findsOneWidget);
+  });
+
+  testWidgets('Đổi quà shortcut opens the wellness rewards page', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/features',
+      routes: [
+        GoRoute(
+          path: '/features',
+          builder: (context, state) => const FeaturesHubPage(),
+        ),
+        GoRoute(
+          path: WellnessRewardsRoutePaths.page,
+          builder: (context, state) => const Scaffold(
+            body: Center(child: Text('wellness-rewards-target')),
+          ),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    final tile = find.byKey(const Key('feature-tile-wellness-rewards'));
+    expect(tile, findsOneWidget);
+    expect(find.text('Đổi quà'), findsOneWidget);
+    await tester.ensureVisible(tile);
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(find.text('wellness-rewards-target'), findsOneWidget);
   });
 
   for (final size in [

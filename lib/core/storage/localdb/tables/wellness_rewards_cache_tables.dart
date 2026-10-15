@@ -53,11 +53,13 @@ class WellnessRewardOfferCacheTable {
   CREATE TABLE IF NOT EXISTS $tableName (
     id TEXT NOT NULL,
     user_id TEXT NOT NULL,
+    reward_type TEXT NOT NULL DEFAULT 'voucher',
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     provider_name TEXT NOT NULL,
     cost_points INTEGER NOT NULL,
     available_codes INTEGER NOT NULL DEFAULT 0,
+    stock_count INTEGER NOT NULL DEFAULT 0,
     eligible_plan_codes TEXT NOT NULL DEFAULT '[]',
     available_from TEXT,
     available_until TEXT,
@@ -112,6 +114,7 @@ class WellnessRewardRedemptionCacheTable {
     id TEXT NOT NULL,
     user_id TEXT NOT NULL,
     offer_id TEXT NOT NULL,
+    reward_type TEXT NOT NULL DEFAULT 'voucher',
     title TEXT NOT NULL,
     provider_name TEXT NOT NULL,
     points_spent INTEGER NOT NULL,
@@ -119,6 +122,7 @@ class WellnessRewardRedemptionCacheTable {
     voucher_expires_at TEXT,
     created_at TEXT,
     cancelled_at TEXT,
+    received_at TEXT,
     synced_at TEXT NOT NULL,
     PRIMARY KEY(user_id, id)
   )

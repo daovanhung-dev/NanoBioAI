@@ -16,6 +16,7 @@ import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositor
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/services/schedule_timing_resolver.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/schedule_horizon_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
@@ -24,6 +25,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/exercise_tasks_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/exercise_candidate_selector.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_candidate_selector.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/data/datasources/nutrition_profile_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutrition_profile_entity.dart';
@@ -121,6 +123,8 @@ typedef GeneratedPlanProgressCallback =
 class GeneratedPlanService {
   static const _tag = 'GENERATED_PLAN';
   static final Map<String, Future<GeneratedPlanResult>> _inFlightByUser = {};
+  static final Map<String, Future<GeneratedPlanResult>>
+  _inFlightInitialGuestPlansByUser = {};
 
   final DashboardRepository dashboardRepository;
   final DailyHealthTrackingLocalDatasource dailyHealthDatasource;
@@ -348,8 +352,12 @@ class GeneratedPlanService {
     String? requestId,
     GeneratedPlanProgressCallback? onProgress,
   }) async {
+    final profile = await dailyHealthDatasource.fetchLatestProfile();
+    final activeRequest = _inFlightInitialGuestPlansByUser[profile.userId];
+    if (activeRequest != null) return activeRequest;
+
     aiService.resetTransientModelCooldowns();
-    return _generatePlan(
+    final request = _generatePlan(
       actorMode: GeneratedPlanActorModes.initialGuest,
       requestId: requestId,
       days: days,
@@ -358,7 +366,19 @@ class GeneratedPlanService {
       markGuestInitialPlanUsed: true,
       routinePreferences: null,
       onProgress: onProgress,
+      profileOverride: profile,
     );
+    _inFlightInitialGuestPlansByUser[profile.userId] = request;
+    try {
+      return await request;
+    } finally {
+      if (identical(
+        _inFlightInitialGuestPlansByUser[profile.userId],
+        request,
+      )) {
+        _inFlightInitialGuestPlansByUser.remove(profile.userId);
+      }
+    }
   }
 
   void _reportProgress(
@@ -431,6 +451,7 @@ class GeneratedPlanService {
     required bool markGuestInitialPlanUsed,
     required DailyRoutinePreferences? routinePreferences,
     GeneratedPlanProgressCallback? onProgress,
+    DailyHealthProfileEntity? profileOverride,
   }) async {
     if (days < 1 || days > 7) {
       throw RangeError.range(days, 1, 7, 'days');
@@ -442,7 +463,8 @@ class GeneratedPlanService {
     );
     AppLogger.action(_tag, 'Generate next plan');
 
-    final profile = await dailyHealthDatasource.fetchLatestProfile();
+    final profile =
+        profileOverride ?? await dailyHealthDatasource.fetchLatestProfile();
     final userId = profile.userId;
     final resolvedRequestId = requestId == null || requestId.trim().isEmpty
         ? _defaultRequestId(actorMode: actorMode, userId: userId)
@@ -790,22 +812,27 @@ class GeneratedPlanService {
         }
 
         final dayDate = resolvedStartDate.add(Duration(days: day - 1));
-        final dayMeals = const MealPlanAiNormalizer()
-            .normalize(
-              items: _rebaseChunkToDayOne(stagedChunks[mealKey]!),
-              catalog: scheduleCatalog,
-              userId: userId,
-              startDate: dayDate,
-              days: 1,
-              createdAt: now().toIso8601String(),
-            )
-            .map((meal) {
-              final range = timingResolver
-                  .resolve(preferences, dayDate)
-                  .mealRange(meal.mealOrder);
-              return meal.copyWith(startTime: range.start, endTime: range.end);
-            })
-            .toList(growable: false);
+        final dayMeals =
+            _stableGeneratedMealIds(
+                  const MealPlanAiNormalizer().normalize(
+                    items: _rebaseChunkToDayOne(stagedChunks[mealKey]!),
+                    catalog: scheduleCatalog,
+                    userId: userId,
+                    startDate: dayDate,
+                    days: 1,
+                    createdAt: now().toIso8601String(),
+                  ),
+                )
+                .map((meal) {
+                  final range = timingResolver
+                      .resolve(preferences, dayDate)
+                      .mealRange(meal.mealOrder);
+                  return meal.copyWith(
+                    startTime: range.start,
+                    endTime: range.end,
+                  );
+                })
+                .toList(growable: false);
         final dayExercises = const ExerciseTasksAiNormalizer()
             .normalize(
               items: _rebaseChunkToDayOne(stagedChunks[exerciseKey]!),
@@ -833,16 +860,18 @@ class GeneratedPlanService {
               );
             })
             .toList(growable: false);
-        final daySchedule = const LifestyleScheduleTimelineBuilder().generate(
-          profile: profile,
-          meals: dayMeals,
-          exercises: timedDayExercises,
-          catalog: scheduleCatalog,
-          startDate: dayDate,
-          days: 1,
-          createdAt: now().toIso8601String(),
-          routinePreferences: preferences,
-          timingResolver: timingResolver,
+        final daySchedule = _stableGeneratedScheduleIds(
+          const LifestyleScheduleTimelineBuilder().generate(
+            profile: profile,
+            meals: dayMeals,
+            exercises: timedDayExercises,
+            catalog: scheduleCatalog,
+            startDate: dayDate,
+            days: 1,
+            createdAt: now().toIso8601String(),
+            routinePreferences: preferences,
+            timingResolver: timingResolver,
+          ),
         );
         scheduleDatasource.validateGeneratedSchedule(
           daySchedule,
@@ -899,23 +928,28 @@ class GeneratedPlanService {
       ];
       final createdAt = now().toIso8601String();
       failureStage = 'normalize_meals';
-      final meals = const MealPlanAiNormalizer()
-          .normalize(
-            items: mealCodeItems,
-            catalog: scheduleCatalog,
-            userId: userId,
-            startDate: resolvedStartDate,
-            days: days,
-            createdAt: createdAt,
-          )
-          .map((meal) {
-            final date = _requiredDate(meal.planDate);
-            final range = timingResolver
-                .resolve(preferences, date)
-                .mealRange(meal.mealOrder);
-            return meal.copyWith(startTime: range.start, endTime: range.end);
-          })
-          .toList(growable: false);
+      final meals =
+          _stableGeneratedMealIds(
+                const MealPlanAiNormalizer().normalize(
+                  items: mealCodeItems,
+                  catalog: scheduleCatalog,
+                  userId: userId,
+                  startDate: resolvedStartDate,
+                  days: days,
+                  createdAt: createdAt,
+                ),
+              )
+              .map((meal) {
+                final date = _requiredDate(meal.planDate);
+                final range = timingResolver
+                    .resolve(preferences, date)
+                    .mealRange(meal.mealOrder);
+                return meal.copyWith(
+                  startTime: range.start,
+                  endTime: range.end,
+                );
+              })
+              .toList(growable: false);
       AppLogger.info(_tag, 'Generated ${meals.length} meal records');
 
       failureStage = 'normalize_exercises';
@@ -953,16 +987,18 @@ class GeneratedPlanService {
 
       failureStage = 'build_schedule';
       final catalog = scheduleCatalog;
-      final schedule = const LifestyleScheduleTimelineBuilder().generate(
-        profile: profile,
-        meals: meals,
-        exercises: timedExercises,
-        catalog: catalog,
-        startDate: resolvedStartDate,
-        days: days,
-        createdAt: createdAt,
-        routinePreferences: preferences,
-        timingResolver: timingResolver,
+      final schedule = _stableGeneratedScheduleIds(
+        const LifestyleScheduleTimelineBuilder().generate(
+          profile: profile,
+          meals: meals,
+          exercises: timedExercises,
+          catalog: catalog,
+          startDate: resolvedStartDate,
+          days: days,
+          createdAt: createdAt,
+          routinePreferences: preferences,
+          timingResolver: timingResolver,
+        ),
       );
       failureStage = 'validate_schedule';
       scheduleDatasource.validateGeneratedSchedule(
@@ -1077,6 +1113,54 @@ class GeneratedPlanService {
         );
       }
     }
+  }
+
+  List<MealPlanModel> _stableGeneratedMealIds(List<MealPlanModel> meals) => [
+    for (final meal in meals)
+      meal.copyWith(id: _stableGeneratedCloudId(meal.id)),
+  ];
+
+  List<LifestyleScheduleItemModel> _stableGeneratedScheduleIds(
+    List<LifestyleScheduleItemModel> items,
+  ) => [
+    for (final item in items)
+      item.copyWith(id: _stableGeneratedCloudId(item.id)),
+  ];
+
+  String _stableGeneratedCloudId(String localId) {
+    // Cloud sync uses UUIDs for row keys. Deterministic UUID v5 IDs keep the
+    // daily save and final commit aligned after a cloud pull re-keys rows.
+    const namespace = <int>[
+      0x7c,
+      0x4e,
+      0x2d,
+      0x80,
+      0x0e,
+      0x8a,
+      0x4c,
+      0x12,
+      0x9e,
+      0x43,
+      0x97,
+      0xe3,
+      0x26,
+      0xb0,
+      0x7e,
+      0x91,
+    ];
+    final bytes = sha1
+        .convert([...namespace, ...utf8.encode(localId)])
+        .bytes
+        .take(16)
+        .toList();
+    bytes[6] = (bytes[6] & 0x0f) | 0x50;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex = bytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-${hex.substring(16, 20)}-'
+        '${hex.substring(20)}';
   }
 
   Map<String, int> _usedCodeCounts(

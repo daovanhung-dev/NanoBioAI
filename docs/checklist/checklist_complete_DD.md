@@ -30,7 +30,7 @@ phải đọc ở cột verification.
 | M05 `AUTH_PROFILE_SYNC` | Approved | Implemented | Focused-tests-pass; Production-API-signup-login-pass; Android-interaction-unverified | Member signup/sign-in use normalized Vietnam phone and internal email/password Auth aliases; Admin staff keep email login. Admin can reset member passwords to `12345678`; members change passwords themselves in Settings. Seven existing Auth identities still need the guarded alias migration before phone login works for those accounts. |
 | M06 `MEMBERSHIP_QUOTA` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Effective access, trusted quota gateway/RPC, and scheduled membership-expiry reconciliation source exist. |
 | M07 `AI_CHAT` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Text/Sequential Voice are reachable; iOS/cross-device continuity and quota sandbox remain unverified. |
-| M08 `HEALTH_SCORE_HABITS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Health-score route/repository/ledger source exists. |
+| M08 `HEALTH_SCORE_HABITS` | Approved | Implemented | Focused-tests-pass; Production-schema/RPC-verified; Runtime/RLS-unverified | Health-score route/repository/ledger source exists; rewards migration is live, while authenticated redemption acceptance is pending. |
 | M09 `SCHEDULE_NOTIFICATIONS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Bootstrap/scheduler/actions are reachable; real-device delivery is unverified here. |
 | M10 `ADVANCED_TRACKING_GOALS` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Advanced hydration slice exists; broader multi-goal/plan-adjustment scope is absent. |
 | M11 `FAMILYPLUS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | FamilyPlus route/repository/RPC source exists. |
@@ -38,7 +38,7 @@ phải đọc ở cột verification.
 | M13 `PAYMENT_MEMBERSHIP` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | VietQR/manual-review source is reachable; bank UAT is unverified. |
 | M14 `SALE_POINTS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Wallet/conversion/Admin adjustment source is reachable. |
 | M15 `ADMIN_DASHBOARD` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin dashboard and permissioned drill-down are reachable. |
-| M16 `ADMIN_OPS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Permissioned operations, Admin Web membership-period display/adjustment, and RPC mappings are reachable; Supabase sandbox/deploy evidence remains pending. |
+| M16 `ADMIN_OPS` | Approved | Implemented | Focused-tests-pass; Production-schema/RPC-grants-verified; Runtime/RLS-unverified | Permissioned operations and reward RPC mappings are reachable; live Admin role/audit behavior and device acceptance remain pending. |
 | M17 `RECONCILIATION` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Manual run/status exists; limited discrepancy generation and no scheduled runner. |
 | M18 `REPORTING` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Catalog/export request exists; no artifact producer/download path. |
 | M19 `AUDIT_SECURITY` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Access/RLS/audit surface exists; full support/retention/response scope is absent. |
@@ -236,6 +236,23 @@ Rollout gate: `wellness_rewards_rollout.enabled` phải giữ `false` cho đến
 migration 16, private bucket runtime, RLS, catalog/inventory seed và smoke
 acceptance đạt trên một dự án Supabase sandbox thật.
 
+### Cập nhật implementation evidence 2026-10-14 — Đổi quà vật lý
+
+| Module | Source/targeted evidence mới | Evidence còn thiếu |
+|---|---|---|
+| M08 `HEALTH_SCORE_HABITS` | SQLite v32 giữ nguyên voucher cache, thêm loại quà/trạng thái nhận; redeem ghi ledger âm với ID từ Supabase rồi controller refresh toàn bộ dashboard. | Live authenticated redemption và cross-device acceptance. |
+| M15 `ADMIN_DASHBOARD` / M16 `ADMIN_OPS` | UI tạo/sửa quà vật lý, tồn kho, danh sách giao dịch và xác nhận đã trao qua permission/write RPC/audit. | Live Admin role action, audit row behavior và device acceptance. |
+| Supabase rewards | Migration atomically thêm type/stock/received fields và RPC v2; PostgreSQL 17 scratch harness xác minh voucher route, balance/stock, replay, insufficient/out-of-stock, concurrent stock=1, Admin denied/received/audit. | Scratch harness dùng helper Auth/Admin stub; chưa thay cho Supabase RLS/role acceptance. |
+| Verification | 26 Dart files targeted analyze PASS; 39 user/Admin/SQLite tests PASS. | Live role/RLS and app device acceptance remain pending. |
+
+Production preflight xác nhận project `rnwohifdnylqfofkydfl`, history trước write
+đến `20261014110000`, và gói Free không có scheduled backups. Không có production
+dump do `supabase db dump --linked` cần Docker. Migration transactional, additive,
+không xóa/rewrite dữ liệu; đã apply đúng một migration. Read-only verification
+xác nhận history local/remote khớp, các cột mới và sáu RPC v2 tồn tại, quyền
+execute được cấp cho `authenticated` và không cấp cho `anon`. Đây không phải
+kiểm chứng RLS/role behavior hay giao dịch người dùng trên production.
+
 | Module | Required implementation evidence before production acceptance |
 |---|---|
 | M01 `ONBOARDING_PROFILE` | Supabase sandbox/RLS profile sync evidence and consent/audit smoke evidence. |
@@ -267,6 +284,13 @@ acceptance đạt trên một dự án Supabase sandbox thật.
 | M27 `LAB_RESULT_TRACKING` | First approve DD, original unit/range/source, user-confirmed AI extraction, import/retention policy, RLS and tests. |
 | M28 `PREVENTIVE_CARE` | First approve DD, Vietnam source/version policy, M09 reminder contract, FamilyPlus/RLS and tests. |
 | M29 `AI_HEALTH_TRENDS` | First approve DD and M06/M07/M19 consent/quota/safety/evaluation/provenance contract before AI implementation evidence. |
+
+### Delta M03/M08 — Hạng cá nhân theo EXP nhiệm vụ (2026-10-15)
+
+- [x] BD v1.0 và DD delta chốt +10 EXP mỗi task server-confirmed, decay 100 EXP mỗi 7 ngày, ngưỡng 0/600/1.200/2.600/5.200 và tách biệt các loại điểm khác.
+- [x] Supabase migration/canonical SQL có trigger evidence, ledger, undo, decay và RPC chỉ đọc tài khoản hiện tại.
+- [x] SQLite v33 lưu snapshot theo user; Dashboard/Settings dùng chung rank card và hiển thị guest/offline state.
+- [ ] Supabase sandbox RLS/idempotency smoke và Android/iOS UI acceptance còn cần thực hiện trước rollout.
 
 ## Quy tac Agent khi coding
 

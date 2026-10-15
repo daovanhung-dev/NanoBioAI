@@ -95,12 +95,33 @@ class SupabaseWellnessRewardsRepository implements WellnessRewardsRepository {
       final userId = currentUserId();
       if (userId != null && userId.isNotEmpty) {
         try {
-          await localDatasource.upsertRedemption(
-            userId: userId,
-            redemption: redemption,
-          );
+          final ledgerId = map['point_ledger_id']?.toString().trim() ?? '';
+          final availablePoints = _optionalInt(map['available_points']);
+          if (ledgerId.isNotEmpty && availablePoints != null) {
+            await localDatasource.applySuccessfulRedemption(
+              userId: userId,
+              redemption: redemption,
+              pointHistory: WellnessPointHistoryEntry(
+                id: ledgerId,
+                pointsDelta: -redemption.pointsSpent,
+                eventType: 'redemption',
+                status: 'redeemed',
+                title:
+                    '${redemption.isPhysical ? 'Đổi quà' : 'Đổi ưu đãi'}: '
+                    '${redemption.title}',
+                isRedeemable: true,
+                createdAt: redemption.createdAt,
+              ),
+              availablePoints: availablePoints,
+            );
+          } else {
+            await localDatasource.upsertRedemption(
+              userId: userId,
+              redemption: redemption,
+            );
+          }
         } catch (_) {
-          // Giao dịch máy chủ đã thành công; cache chỉ là projection đọc.
+          // Server ledger remains authoritative if the SQLite projection fails.
         }
       }
       return redemption;
@@ -163,6 +184,8 @@ WellnessRewardException _safePostgrestError(PostgrestException error) {
     'offer_not_found',
     'offer_required',
     'offer_window_invalid',
+    'reward_stock_invalid',
+    'reward_type_invalid',
     'redemption_not_found',
     'redemption_required',
     'wellness_rewards_disabled',
@@ -180,4 +203,10 @@ WellnessRewardException _safePostgrestError(PostgrestException error) {
     }
   }
   return WellnessRewardException.fromCode('unknown');
+}
+
+int? _optionalInt(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '');
 }

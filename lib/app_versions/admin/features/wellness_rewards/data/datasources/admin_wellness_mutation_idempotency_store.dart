@@ -211,6 +211,8 @@ class AdminWellnessMutationFingerprint {
       'description': command.description.trim(),
       'provider_name': command.providerName.trim(),
       'cost_points': command.costPoints,
+      'reward_type': command.rewardType,
+      'stock_count': command.stockCount,
       'eligible_plan_codes': plans,
       'available_from': command.availableFrom?.toUtc().toIso8601String(),
       'available_until': command.availableUntil?.toUtc().toIso8601String(),
@@ -244,6 +246,17 @@ class AdminWellnessMutationFingerprint {
       'redemption_id': redemptionId.trim(),
       'reason': reason.trim(),
       'external_revocation_confirmed': true,
+    });
+  }
+
+  static String receivedRedemption({
+    required String redemptionId,
+    required String reason,
+  }) {
+    return _canonical({
+      'redemption_id': redemptionId.trim(),
+      'reason': reason.trim(),
+      'status': 'received',
     });
   }
 

@@ -430,3 +430,26 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Hosted Phone Auth/email settings were not changed. Both reviewed additive migrations were applied to the authorized project; phone unique-index and service-role RPC grants were verified.
 - [x] Production API signup and password login passed for a synthetic test member (phone ending 6453). Android interactive signup/reset was not run because the connected app lacks Flutter Driver support.
 - [ ] Review and convert the seven existing Auth identities through the guarded alias migration before existing members move to phone login; do not edit passwords, IDs, or contact email.
+
+### Delta Đổi quà vật lý — 2026-10-14
+
+- [x] BD v1.1 và M16 implementation delta ghi catalog voucher/quà, tồn kho,
+  trạng thái `redeemed` → `received`, ledger, SQLite v32 và recovery boundary.
+- [x] User/Admin UI, RPC/repository contracts, offline gate, idempotent Admin
+  receive action và local cache mirror đã được triển khai.
+- [x] Targeted Dart analyze và test user/Admin/SQLite pass; migration chạy trong
+  PostgreSQL 17 sandbox cục bộ với fixture tổng hợp và concurrency harness.
+- [x] Recheck đúng project/history/recovery; apply đúng migration
+  `20261014130000_wellness_physical_rewards.sql` lên production; read-only xác
+  minh schema, sáu RPC v2, grants (`authenticated`/không `anon`) và history local/remote khớp.
+- [ ] Supabase production role/RLS smoke và app device acceptance.
+
+### Delta Hạng cá nhân theo EXP nhiệm vụ — 2026-10-15
+
+- [x] Trigger server ghi nhận completion/undo từ proof và health-checkin evidence; account/ledger độc lập với Care Points.
+- [x] RPC xử lý mọi kỳ trừ đã đến hạn trước khi trả hạng; không nhận user id từ client.
+- [x] Shared repository ưu tiên RPC, fallback snapshot user-scoped; thẻ tích hợp Dashboard/Settings, khách và lỗi có trạng thái riêng.
+- [x] Migration SQLite v32→v33 và kiểm tra contract/test nguồn được bổ sung.
+- [x] Targeted Dart tests, format/analyze và PostgreSQL 17 disposable migration smoke đã qua.
+- [x] SQLite v32→v33 migration tests pass bằng thư viện native giải nén tạm trong `/tmp`.
+- [ ] Supabase sandbox và tương tác UI acceptance trên thiết bị còn chờ.

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/food_scan_route_paths.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
+import 'package:nano_app/core/constants/routes/wellness_rewards_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/health_features/health_feature_catalog.dart';
 
@@ -128,6 +129,14 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
       AppColors.error,
       AppColors.pastelRose,
       () => context.push(V1RoutePaths.todayTasks),
+    ),
+    _FeatureAction(
+      'wellness-rewards',
+      'Đổi quà',
+      Icons.redeem_rounded,
+      AppColors.warning,
+      AppColors.pastelAmber,
+      () => context.push(WellnessRewardsRoutePaths.page),
     ),
     _FeatureAction(
       'meal-plan',
