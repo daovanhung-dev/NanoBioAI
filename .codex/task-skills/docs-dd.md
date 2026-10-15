@@ -2,12 +2,13 @@
 
 - Canonical key: docs-dd
 - Workflow: .codex/workflows/docs-dd.md
-- Generated from 5 worklog(s).
+- Generated from 6 worklog(s).
 
 ## When To Read
 
 - Historical task type: docs-dd (4)
 - Historical task type: Sua docs/thiet ke lai tai lieu (1)
+- Historical task type: coding + DD (1)
 
 ## Common Modules
 
@@ -15,6 +16,7 @@
 - docs/DD: 1
 - docs/DD/product_flow, docs/checklist: 1
 - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.: 1
+- M22 MEDICATION_ADHERENCE; tích hợp M01 ONBOARDING_PROFILE và M09 SCHEDULE_NOTIFICATIONS.: 1
 
 ## Work Pattern
 
@@ -37,3 +39,4 @@
 - [Worklog - DD develop checklist](../../docs/worklog/2026-06-22/005-worklog-dd-develop-checklist.md) - docs/DD/product_flow, docs/checklist/checklist_develop_DD.md, source access/membership/quota/v3/sale.
 - [Worklog - Create project DD from BD v2](../../docs/worklog/2026-06-28/002-worklog-create-project-dd.md) - docs/DD M01-M19
 - [Worklog - DD docs M01-M19 100 percent](../../docs/worklog/2026-06-30/003-worklog-dd-docs-100-percent.md) - docs/DD M01-M19
+- [Worklog - Nhắc uống thuốc từ onboarding](../../docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md) - M22 MEDICATION_ADHERENCE; tích hợp M01 ONBOARDING_PROFILE và M09 SCHEDULE_NOTIFICATIONS.

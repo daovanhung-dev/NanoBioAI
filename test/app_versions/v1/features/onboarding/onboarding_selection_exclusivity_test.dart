@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/conditions_step.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/controllers/onboarding_controller.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/domain/entities/onboarding_entity.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/goals_step.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/onboarding_compact_ui.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/onboarding_stitch_components.dart';
@@ -9,6 +11,33 @@ import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboardin
 import 'package:nano_app/core/theme/theme.dart';
 
 void main() {
+  test(
+    'medicine reminders are optional but incomplete entries block the step',
+    () {
+      expect(const OnboardingState().canContinueStep(5), isTrue);
+      expect(
+        const OnboardingState(
+          medicationReminders: [
+            MedicationReminderInput(medicineName: '', reminderMinutes: []),
+          ],
+        ).canContinueStep(5),
+        isFalse,
+      );
+      final complete = const OnboardingState(
+        medicationReminders: [
+          MedicationReminderInput(
+            medicineName: 'Medicine one',
+            reminderMinutes: [480],
+          ),
+        ],
+      );
+      expect(complete.canContinueStep(5), isTrue);
+      expect(complete.toEntity().medicationReminders.single.reminderMinutes, [
+        480,
+      ]);
+    },
+  );
+
   testWidgets(
     'weight goals replace each other while compatible goals remain selected',
     (tester) async {

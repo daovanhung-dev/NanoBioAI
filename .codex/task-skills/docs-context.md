@@ -2,7 +2,7 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 66 worklog(s).
+- Generated from 67 worklog(s).
 
 ## When To Read
 
@@ -20,6 +20,7 @@
 - Historical task type: coding, localization, platform branding và validation (1)
 - Historical task type: coding và UI. (1)
 - Historical task type: Bổ sung lối điều hướng UI vào chức năng hiện có. (1)
+- Historical task type: coding + docs (1)
 
 ## Common Modules
 

@@ -7,6 +7,8 @@ import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_staging_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/wellness_point_ledgers_table.dart';
+import 'package:nano_app/core/storage/localdb/migrations/migration_v34.dart';
+import 'package:nano_app/core/storage/localdb/tables/medication_reminders_table.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -26,6 +28,7 @@ void main() {
       );
     }
     await db.execute(PersonalScheduleAiRequestsTable.createTable);
+    await MigrationV34.run(db);
     await db.execute(PersonalScheduleAiStagingTable.createTable);
     await db.execute(ScheduleCompletionProofsTable.createTable);
     await db.execute(WellnessPointLedgersTable.createTable);
@@ -66,6 +69,65 @@ void main() {
       expect(proofs.single['local_path'], 'schedule_proofs/proof-1.jpg');
     },
   );
+
+  test(
+    'confirmed Guest merge rekeys local reminders outside the cloud snapshot',
+    () async {
+      await db.insert('users', {'id': 'guest-1', 'subscription_tier': 'free'});
+      await db.insert(MedicationRemindersTable.tableName, {
+        'id': 'med-guest',
+        'user_id': 'guest-1',
+        'medicine_name': 'Local medicine',
+        'times_json': '[480,900]',
+        'enabled': 1,
+        'created_at': '2026-10-15T00:00:00Z',
+        'updated_at': '2026-10-15T00:00:00Z',
+      });
+      final datasource = SqliteUserDataSyncLocalDatasource(
+        databaseOverride: db,
+      );
+
+      await datasource.replaceFromCloud(
+        userId: 'auth-1',
+        snapshot: const UserDataSnapshot(user: {'id': 'auth-1'}, tables: {}),
+        removeLocalUserId: 'guest-1',
+        preserveLocalMedicationReminders: true,
+      );
+
+      final reminders = await db.query(MedicationRemindersTable.tableName);
+      expect(reminders, hasLength(1));
+      expect(reminders.single['user_id'], 'auth-1');
+      expect(reminders.single['medicine_name'], 'Local medicine');
+      final snapshot = await datasource.readSnapshot('auth-1');
+      expect(
+        snapshot?.tables.containsKey(MedicationRemindersTable.tableName),
+        isFalse,
+      );
+    },
+  );
+
+  test('using existing cloud data removes guest medicine reminders', () async {
+    await db.insert('users', {'id': 'guest-1', 'subscription_tier': 'free'});
+    await db.insert(MedicationRemindersTable.tableName, {
+      'id': 'med-guest',
+      'user_id': 'guest-1',
+      'medicine_name': 'Guest medicine',
+      'times_json': '[480]',
+      'enabled': 1,
+      'created_at': '2026-10-15T00:00:00Z',
+      'updated_at': '2026-10-15T00:00:00Z',
+    });
+
+    await SqliteUserDataSyncLocalDatasource(
+      databaseOverride: db,
+    ).replaceFromCloud(
+      userId: 'auth-1',
+      snapshot: const UserDataSnapshot(user: {'id': 'auth-1'}, tables: {}),
+      removeLocalUserId: 'guest-1',
+    );
+
+    expect(await db.query(MedicationRemindersTable.tableName), isEmpty);
+  });
 
   test(
     'server-owned wellness ledger is replaced from cloud without outbox',

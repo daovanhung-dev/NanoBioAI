@@ -14,6 +14,8 @@ import 'package:nano_app/core/storage/localdb/tables/lifestyle_habits_table.dart
 import 'package:nano_app/core/storage/localdb/tables/medical_treatments_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/survey_answers_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/users_table.dart';
+import 'package:nano_app/core/storage/localdb/migrations/migration_v34.dart';
+import 'package:nano_app/core/storage/localdb/tables/medication_reminders_table.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -132,6 +134,65 @@ void main() {
       expect(lifestyle['skip_breakfast'], 0);
     });
 
+    test(
+      'saves multiple local medicine reminders with multiple daily times',
+      () async {
+        final userId = await datasource.saveOnboarding(
+          _entity(
+            medicationReminders: const [
+              MedicationReminderInput(
+                medicineName: 'Medicine one',
+                reminderMinutes: [480, 900, 480],
+              ),
+              MedicationReminderInput(
+                medicineName: 'Medicine two',
+                reminderMinutes: [720],
+              ),
+            ],
+          ),
+        );
+
+        final rows = await db.query(
+          MedicationRemindersTable.tableName,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+          orderBy: 'medicine_name ASC',
+        );
+        expect(rows, hasLength(2));
+        expect(rows.first['medicine_name'], 'Medicine one');
+        expect(jsonDecode(rows.first['times_json']! as String), [480, 900]);
+        expect(rows.first['enabled'], 1);
+
+        final snapshot = await SqliteUserDataSyncLocalDatasource(
+          databaseOverride: db,
+        ).readSnapshot(userId);
+        expect(
+          snapshot?.tables.containsKey(MedicationRemindersTable.tableName),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'rejects an incomplete medicine reminder before writing onboarding',
+      () async {
+        await expectLater(
+          datasource.saveOnboarding(
+            _entity(
+              medicationReminders: const [
+                MedicationReminderInput(
+                  medicineName: 'Medicine one',
+                  reminderMinutes: [],
+                ),
+              ],
+            ),
+          ),
+          throwsFormatException,
+        );
+        expect(await db.query('users'), isEmpty);
+      },
+    );
+
     test('markOnboardingCompleted updates local completion state', () async {
       final userId = await datasource.saveOnboarding(_entity());
 
@@ -217,6 +278,7 @@ Future<void> _createOnboardingSchema(Database db) async {
   await db.execute(FoodAllergiesTable.createTable);
   await db.execute(MedicalTreatmentsTable.createTable);
   await db.execute(SurveyAnswersTable.createTable);
+  await MigrationV34.run(db);
 
   const realOnboardingTables = {
     'health_profiles',
@@ -292,6 +354,7 @@ OnboardingEntity _entity({
   String treatmentName = 'therapy',
   String medicationName = 'med-a',
   String treatmentNote = 'weekly',
+  List<MedicationReminderInput> medicationReminders = const [],
 }) {
   return OnboardingEntity(
     email: email,
@@ -315,6 +378,7 @@ OnboardingEntity _entity({
     treatmentName: treatmentName,
     medicationName: medicationName,
     treatmentNote: treatmentNote,
+    medicationReminders: medicationReminders,
     concernText: 'private concern',
     agreed: true,
   );

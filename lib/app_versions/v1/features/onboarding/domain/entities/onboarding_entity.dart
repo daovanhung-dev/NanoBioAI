@@ -27,6 +27,7 @@ class OnboardingEntity {
   final String treatmentName;
   final String medicationName;
   final String treatmentNote;
+  final List<MedicationReminderInput> medicationReminders;
 
   final String concernText;
   final bool agreed;
@@ -54,6 +55,7 @@ class OnboardingEntity {
     required this.treatmentName,
     required this.medicationName,
     required this.treatmentNote,
+    this.medicationReminders = const [],
     required this.concernText,
     required this.agreed,
   });
@@ -69,4 +71,27 @@ class OnboardingEntity {
       treatmentName.trim().isNotEmpty ||
       medicationName.trim().isNotEmpty ||
       treatmentNote.trim().isNotEmpty;
+}
+
+class MedicationReminderInput {
+  final String medicineName;
+  final List<int> reminderMinutes;
+
+  const MedicationReminderInput({
+    required this.medicineName,
+    required this.reminderMinutes,
+  });
+
+  bool get isValid =>
+      medicineName.trim().isNotEmpty &&
+      reminderMinutes.isNotEmpty &&
+      reminderMinutes.every((minute) => minute >= 0 && minute < 1440);
+
+  MedicationReminderInput copyWith({
+    String? medicineName,
+    List<int>? reminderMinutes,
+  }) => MedicationReminderInput(
+    medicineName: medicineName ?? this.medicineName,
+    reminderMinutes: reminderMinutes ?? this.reminderMinutes,
+  );
 }

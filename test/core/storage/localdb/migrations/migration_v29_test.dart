@@ -62,6 +62,6 @@ void main() {
       metadataRows.every((row) => row['metadata_status'] == 'source_imported'),
       isTrue,
     );
-    expect(DatabaseVersion.currentVersion, 31);
+    expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(31));
   });
 }

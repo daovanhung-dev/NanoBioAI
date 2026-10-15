@@ -7,9 +7,9 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-10-14 |
+| Ngay cap nhat | 2026-10-15 |
 | Lifecycle | Current |
-| Source-truth baseline | `25018e8` |
+| Source-truth baseline | `598daf04` + M22 local reminder slice |
 | Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
 | Muc dich | Ghi handoff coding theo capability reachable; khong dung DD Approved/phan tram de claim runtime complete. |
 
@@ -19,7 +19,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 |---|---|---|
 | Implemented | M01-M03, M05-M09, M11-M16 | Source reachable; device/provider/Supabase acceptance vẫn đọc là Runtime-unverified/Sandbox-unverified. |
 | Partial | M04, M10, M17-M19 | Có luồng reachable nhưng chưa bao phủ toàn bộ capability DD/BD; xem gap tại `docs/DD/README.md`. |
-| Placeholder | M20-M29 | Chỉ catalog, access gate và trang đang phát triển; không persistence/API/AI/notification nghiệp vụ. |
+| Placeholder | M20-M21, M23-M29 | Chỉ catalog/access shell; M22 local reminder slice follows its approved DD. |
 | Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
 
 ### M02 Implementation Addendum — 2026-10-13
@@ -53,8 +53,9 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
   expiry reconciliation, and verify expired subscriptions sync users to Free,
   preserve permanent/canceled records, retain another active plan, and restore
   access after a new grant.
-- [ ] M20-M29: keep the reachable shell data-free until each module has an
-  approved DD and safety/privacy/data contracts.
+- [ ] M20-M21/M23-M29: keep the reachable shell data-free until each module
+      has an approved DD and safety/privacy/data contracts. M22 is limited to
+      the approved local reminder slice in its DD.
 
 ## Current Blocker Addendum — 2026-10-01
 
@@ -171,8 +172,8 @@ session evidence. They do not override the current coding handoff above.
 - [ ] Sau do doc file nay de tiep tuc note dang do cua phien truoc.
 - [ ] DD docs M01-M19 da Approved/100%; khi coding, chi claim production acceptance sau khi co implementation evidence backlog pass.
 - [ ] Sau moi phien coding, cap nhat `docs/checklist/checklist_complete_DD.md` va ghi task tiep theo vao file nay.
-- [ ] M20-M29 hien co DD 0% va business coding 0%; UI catalog shell/placeholder khong duoc tinh la nghiep vu da coding.
-- [ ] Khong tao form, persistence, API/AI, notification, schema/RLS hoac device integration M20-M29 truoc khi DD module Approved.
+- [ ] M20-M21/M23-M29 hien co DD 0% va business coding 0%; M22 chi co local reminder slice duoc duyet; UI catalog shell/placeholder khong duoc tinh la nghiep vu da coding.
+- [ ] Khong tao form/persistence/API/AI/notification/schema cho M20-M21/M23-M29 truoc khi DD Approved; M22 chi theo DD limited scope.
 
 ## Advanced Health M20-M29 Coding Gate
 
@@ -182,7 +183,7 @@ Status BD chung: `Draft - UI catalog shell approved`.
 |---|---|---:|---:|---|---|
 | M20 `BLOOD_PRESSURE_TRACKING` | Free | 0% | 0% | Catalog card + development placeholder | Clinical/source, lifecycle, FamilyPlus, schema/API/RLS/test DD |
 | M21 `HEART_OXYGEN_TRACKING` | Free | 0% | 0% | Catalog card + development placeholder | Device limitation/escalation, lifecycle, schema/API/RLS/test DD |
-| M22 `MEDICATION_ADHERENCE` | Free | 0% | 0% | Catalog card + development placeholder | Medication boundary, M09 reminder, privacy/RLS/test DD |
+| M22 `MEDICATION_ADHERENCE` | Free | 100% (limited DD) | Partial | Optional Guest medication reminders in onboarding; Settings adds/renames/edits/pauses/deletes local schedules; targeted analysis passes; SQLite and M09 only | Re-run SQLite FFI tests when `libsqlite3.so` is available, and verify device delivery; broader adherence remains Draft |
 | M23 `GLUCOSE_TRACKING` | Plus | 0% | 0% | Catalog card + development placeholder | Clinical/unit/threshold, entitlement, FamilyPlus/RLS/test DD |
 | M24 `SYMPTOM_PAIN_JOURNAL` | Plus | 0% | 0% | Catalog card + development placeholder | Escalation, free-text privacy, AI boundary/RLS/test DD |
 | M25 `WOMENS_CYCLE_HEALTH` | Plus | 0% | 0% | Catalog card + development placeholder | Sensitive/minor/FamilyPlus/revoke/retention/RLS/test DD |

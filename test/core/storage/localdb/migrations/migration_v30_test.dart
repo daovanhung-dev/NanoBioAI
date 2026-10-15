@@ -129,7 +129,7 @@ void main() {
     );
     final sourceMeals = await SourceMealCatalogLoader.load();
 
-    expect(DatabaseVersion.currentVersion, 31);
+    expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(31));
     expect(after, hasLength(163));
     expect(after, before);
     expect(

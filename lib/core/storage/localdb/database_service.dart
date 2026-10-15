@@ -54,6 +54,8 @@ import 'migrations/migration_v30.dart';
 import 'migrations/migration_v31.dart';
 import 'migrations/migration_v32.dart';
 import 'migrations/migration_v33.dart';
+import 'migrations/migration_v34.dart';
+import 'migrations/migration_v35.dart';
 import 'seeders/ai_catalog_seeder.dart';
 import 'seeders/meal_catalog_seeder.dart';
 
@@ -175,6 +177,8 @@ class DatabaseService {
             if (oldVersion < 31 && newVersion >= 31) await MigrationV31.run(db);
             if (oldVersion < 32 && newVersion >= 32) await MigrationV32.run(db);
             if (oldVersion < 33 && newVersion >= 33) await MigrationV33.run(db);
+            if (oldVersion < 34 && newVersion >= 34) await MigrationV34.run(db);
+            if (oldVersion < 35 && newVersion >= 35) await MigrationV35.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -223,6 +227,7 @@ class DatabaseService {
             if (version >= 31) await MigrationV31.ensureSchema(db);
             if (version >= 32) await MigrationV32.ensureSchema(db);
             if (version >= 33) await MigrationV33.ensureSchema(db);
+            if (version >= 34) await MigrationV34.ensureSchema(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -305,6 +310,7 @@ class DatabaseService {
       await db.execute(statement);
     }
     await db.execute(WellnessRankSummaryCacheTable.createTable);
+    await MigrationV34.run(db);
     await NabiNotificationTables.create(db);
     await SleepSafetyTables.create(db);
     await db.execute(NutritionLogsTable.createTable);

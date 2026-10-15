@@ -12,6 +12,8 @@ import 'package:nano_app/app_versions/v1/features/settings/domain/entities/setti
 import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/notification_settings_page.dart';
 import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/settings_page.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/notification_settings_provider.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/domain/entities/medication_reminder.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/providers/medication_reminder_settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/router/v1_router.dart';
@@ -68,6 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(NotificationSettingsPage), findsOneWidget);
+    expect(find.text('Nhắc uống thuốc'), findsOneWidget);
     expect(
       find.byKey(const Key('notification_settings_back_button')),
       findsOneWidget,
@@ -159,6 +162,12 @@ ProviderContainer _createContainer() {
       notificationSettingsControllerProvider.overrideWith(
         _TestNotificationSettingsController.new,
       ),
+      medicationReminderSettingsProvider.overrideWith(
+        _TestMedicationReminderSettingsController.new,
+      ),
+      medicationReminderPermissionDeniedProvider.overrideWith(
+        (ref) async => false,
+      ),
     ],
   );
 }
@@ -189,6 +198,12 @@ class _TestNotificationSettingsController
       legacyPushEnabled: false,
     );
   }
+}
+
+class _TestMedicationReminderSettingsController
+    extends MedicationReminderSettingsController {
+  @override
+  Future<List<MedicationReminder>> build() async => const [];
 }
 
 class _TestAdminAccessController extends AdminAccessController {

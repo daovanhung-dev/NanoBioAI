@@ -22,6 +22,8 @@
 | Phiên bản | Ngày | Nội dung | Trạng thái |
 |---|---|---|---|
 | 1.0 | 13/07/2026 | Khởi tạo BD riêng cho M20–M29; chốt UI catalog shell và mô tả nghiệp vụ dự kiến để làm nguồn cho DD sau này. | Draft - UI catalog shell approved |
+| 1.1 | 15/10/2026 | Phê duyệt lát cắt nhắc giờ dùng thuốc cục bộ trong onboarding cho Guest; M22 adherence đầy đủ vẫn Draft. | M22 local reminder slice approved by explicit user instruction |
+| 1.2 | 15/10/2026 | Xác nhận sau onboarding, người dùng thêm/xóa lịch, đổi tên thuốc và chỉnh giờ trong Cài đặt thông báo. | M22 Settings management clarified by explicit user instruction |
 
 ## Quan hệ tài liệu và thứ tự ưu tiên
 
@@ -269,10 +271,26 @@
 
 ## M22 — MEDICATION_ADHERENCE / Lịch dùng thuốc
 
+### Phạm vi được duyệt bổ sung — 2026-10-15
+
+- Guest có thể nhập tên thuốc và một hoặc nhiều giờ nhắc mỗi ngày tại onboarding;
+  lịch lưu cục bộ trên thiết bị hiện tại. Sau khi hoàn tất onboarding, người
+  dùng thêm/xóa thuốc và lịch nhắc, đổi tên thuốc, chỉnh giờ, tạm dừng hoặc bật
+  lại trong Cài đặt thông báo.
+- Mỗi giờ tạo một nhắc lặp hằng ngày cho tới khi người dùng tắt hoặc xóa lịch.
+  Thông báo chỉ dùng nội dung chung, không hiển thị tên thuốc.
+- Khi người dùng xác nhận hợp nhất dữ liệu Guest vào tài khoản mới, bản ghi lịch
+  được chuyển chủ sở hữu cục bộ trên thiết bị nhưng bị loại khỏi snapshot cloud.
+  Chọn dùng dữ liệu cloud hiện có thì không nhập lịch Guest.
+- Lát cắt này không lưu liều/dạng thuốc, không ghi sự kiện đã uống/bỏ qua,
+  không cung cấp tư vấn/AI, không hỗ trợ FamilyPlus hay đồng bộ nhiều thiết bị.
+- Chỉ các hành vi trong addendum này được duyệt để tạo DD và coding; phần
+  adherence còn lại dưới đây vẫn là nghiệp vụ dự kiến chưa được duyệt.
+
 ### Mục tiêu, actor và tier
 
 - Mục tiêu: Giúp Member ghi danh sách thuốc do họ nhập, lịch dùng theo chỉ dẫn hiện có và trạng thái đã dùng/bỏ qua.
-- Actor: Free, Plus, FamilyPlus; notification thuộc M09; AI không quyết định thuốc.
+- Actor của nghiệp vụ dự kiến: Free, Plus, FamilyPlus; notification thuộc M09; AI không quyết định thuốc. Guest chỉ thuộc lát cắt cục bộ đã duyệt ở trên.
 - Tier: Free; Plus/FamilyPlus kế thừa.
 
 ### Input dự kiến

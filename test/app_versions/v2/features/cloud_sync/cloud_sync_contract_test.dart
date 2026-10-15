@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_tables.dart';
 import 'package:nano_app/core/storage/localdb/sync/sync_outbox_schema.dart';
+import 'package:nano_app/core/storage/localdb/tables/medication_reminders_table.dart';
 
 void main() {
   group('cloud sync source contract', () {
@@ -76,6 +77,14 @@ void main() {
         expect(allTableNames, isNot(contains('payment_events')));
         expect(allTableNames, isNot(contains('sale_profiles')));
         expect(allTableNames, isNot(contains('family_groups')));
+        expect(
+          SyncOutboxSchema.genericIdUserOwnedTables,
+          isNot(contains(MedicationRemindersTable.tableName)),
+        );
+        expect(
+          allTableNames,
+          isNot(contains(MedicationRemindersTable.tableName)),
+        );
       },
     );
 

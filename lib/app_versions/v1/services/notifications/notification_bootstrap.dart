@@ -6,11 +6,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/data/repositories/sqlite_medication_reminder_repository.dart';
+import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/core/storage/localdb/tables/nabi_notification_tables.dart';
+import 'package:nano_app/features/nabi/data/notifications/nabi_health_reminder_repositories.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'active_notification_subject.dart';
+import 'medication_reminder_coordinator.dart';
 import 'nabi_companion_notification_payload.dart';
 import 'nabi_health_reminder_coordinator.dart';
 import 'notification_action_handler.dart';
@@ -45,6 +51,13 @@ class NotificationBootstrap {
 
   static NabiHealthReminderCoordinator _careCoordinator() =>
       NabiHealthReminderCoordinator(scheduler: _scheduler);
+
+  static MedicationReminderCoordinator _medicationCoordinator() =>
+      MedicationReminderCoordinator(
+        repository: const SqliteMedicationReminderRepository(),
+        scheduler: _scheduler,
+        masterEnabled: _medicationMasterEnabled,
+      );
 
   static Future<void> initialize() {
     if (_initialized) return Future<void>.value();
@@ -93,6 +106,14 @@ class NotificationBootstrap {
     final subject = await resolveActiveNotificationSubject(
       requestedSubjectUserId: subjectUserId,
     );
+    try {
+      await _medicationCoordinator().refresh(subjectUserId: subject);
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Medication reminder refresh failed; errorType=${error.runtimeType}',
+      );
+    }
     final service = await ReminderScheduleService.create(
       scheduler: _scheduler,
       activeSubjectUserId: () async => subject,
@@ -111,6 +132,58 @@ class NotificationBootstrap {
     await coordinator.refresh(subjectUserId: subject);
   }
 
+  /// Called after the user adds an onboarding medicine schedule. Permission
+  /// denial keeps the local reminder and never blocks onboarding completion.
+  static Future<bool> requestMedicationReminderPermissionAndEnable({
+    String? subjectUserId,
+  }) async {
+    await initialize();
+    final subject = await resolveActiveNotificationSubject(
+      requestedSubjectUserId: subjectUserId,
+    );
+    if (subject == null) return false;
+    final reminders = await const SqliteMedicationReminderRepository()
+        .listForUser(subject);
+    if (reminders.isEmpty) return true;
+
+    final shared = await SharedPreferences.getInstance();
+    var granted = false;
+    try {
+      granted = await _scheduler.requestPermissions();
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Medication reminder permission request failed; errorType=${error.runtimeType}',
+      );
+    }
+    if (!granted) {
+      await shared.setBool('medication_reminder_permission_denied', true);
+      return false;
+    }
+
+    final preferencesRepository =
+        const SqliteNabiHealthReminderPreferencesRepository();
+    final preferences = await preferencesRepository.loadOrCreate(
+      actorKey: subject,
+      legacyPushEnabled: shared.getBool('push_enabled') ?? false,
+    );
+    await preferencesRepository.save(
+      preferences.copyWith(masterEnabled: true, updatedAt: DateTime.now()),
+    );
+    await shared.setBool('push_enabled', true);
+    await shared.setBool('medication_reminder_permission_denied', false);
+    try {
+      await _medicationCoordinator().refresh(subjectUserId: subject);
+      await scheduleGeneratedReminders(subjectUserId: subject);
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Onboarding reminder scheduling failed; errorType=${error.runtimeType}',
+      );
+    }
+    return true;
+  }
+
   static Future<void> refreshHealthCareReminders({
     String? subjectUserId,
   }) async {
@@ -126,6 +199,14 @@ class NotificationBootstrap {
     final service = await ReminderScheduleService.create(scheduler: _scheduler);
     await service.clearPendingReminders(subjectUserId: subject);
     await _careCoordinator().clear(subjectUserId: subject);
+    try {
+      await _medicationCoordinator().refresh(subjectUserId: subject);
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Medication reminder clear failed; errorType=${error.runtimeType}',
+      );
+    }
   }
 
   static Future<void> handleNotificationResponse(
@@ -133,6 +214,10 @@ class NotificationBootstrap {
   ) async {
     try {
       await initialize();
+      if (MedicationReminderCoordinator.isMedicationPayload(response.payload)) {
+        await _medicationCoordinator().handleResponse(response.payload);
+        return;
+      }
       final companion = NabiCompanionNotificationPayload.tryParse(
         response.payload,
       );
@@ -156,6 +241,24 @@ class NotificationBootstrap {
         stackTrace,
       );
     }
+  }
+
+  static Future<bool> _medicationMasterEnabled(String ownerId) async {
+    final db = await DatabaseService.database;
+    await NabiNotificationTables.ensureHealthReminderSchema(db);
+    final rows = await db.query(
+      NabiNotificationTables.carePreferences,
+      columns: const ['master_enabled'],
+      where: 'actor_key = ?',
+      whereArgs: [ownerId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) {
+      final value = rows.first['master_enabled'];
+      return value == true || value == 1 || value?.toString() == 'true';
+    }
+    final shared = await SharedPreferences.getInstance();
+    return shared.getBool('push_enabled') ?? false;
   }
 
   static bool _isSleepSafetyArmPayload(String? payload) {

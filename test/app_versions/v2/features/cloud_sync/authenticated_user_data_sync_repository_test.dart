@@ -48,8 +48,13 @@ void main() {
         expect(remote.pushedAuthUserId, 'auth-1');
         expect(local.replacedUserId, 'auth-1');
         expect(local.removedLocalUserId, 'guest-1');
+        expect(local.preservedMedicationReminders, isTrue);
         expect(await AppPrefs.pendingGuestUserId(), isNull);
         expect(await AppPrefs.pendingGuestSyncActionFor('auth-1'), isNull);
+        expect(
+          await AppPrefs.shouldPreserveGuestMedicationRemindersFor('auth-1'),
+          isFalse,
+        );
 
         final routeState = const AuthRouteStateResolver().resolve(
           session: const AuthSessionSnapshot(
@@ -92,6 +97,7 @@ void main() {
       expect(remote.pushedSnapshot, isNull);
       expect(local.replacedUserId, 'auth-1');
       expect(local.removedLocalUserId, 'guest-1');
+      expect(local.preservedMedicationReminders, isFalse);
       expect(await AppPrefs.pendingGuestUserId(), isNull);
     });
 
@@ -266,6 +272,7 @@ void main() {
 
         expect(retry.status, UserDataSyncStatus.success);
         expect(local.replacedUserId, 'auth-1');
+        expect(local.preservedMedicationReminders, isTrue);
         expect(await AppPrefs.pendingGuestUserId(), isNull);
         expect(await AppPrefs.pendingGuestSyncActionFor('auth-1'), isNull);
       },
@@ -393,6 +400,7 @@ class _FakeLocalDatasource implements UserDataSyncLocalDatasource {
 
   String? replacedUserId;
   String? removedLocalUserId;
+  bool preservedMedicationReminders = false;
 
   _FakeLocalDatasource(
     this.snapshots, {
@@ -410,6 +418,7 @@ class _FakeLocalDatasource implements UserDataSyncLocalDatasource {
     required String userId,
     required UserDataSnapshot snapshot,
     String? removeLocalUserId,
+    bool preserveLocalMedicationReminders = false,
   }) async {
     if (pendingOnReplace > 0) {
       throw LocalSyncPendingWriteException(pendingOnReplace);
@@ -417,5 +426,6 @@ class _FakeLocalDatasource implements UserDataSyncLocalDatasource {
     events?.add('local:replace');
     replacedUserId = userId;
     removedLocalUserId = removeLocalUserId;
+    preservedMedicationReminders = preserveLocalMedicationReminders;
   }
 }

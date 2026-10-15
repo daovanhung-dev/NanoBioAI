@@ -5,6 +5,8 @@ import 'package:nano_app/app_versions/v1/features/settings/providers/notificatio
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/domain/notifications/nabi_health_reminder_preferences.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/domain/entities/medication_reminder.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/providers/medication_reminder_settings_provider.dart';
 
 class NotificationSettingsPage extends ConsumerWidget {
   const NotificationSettingsPage({super.key});
@@ -146,6 +148,10 @@ class _NotificationSettingsBody extends ConsumerWidget {
                       },
                     ),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _MedicationReminderSettingsSection(
+                  masterEnabled: preferences.masterEnabled,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _SectionTitle('Các loại nhắc nhở'),
@@ -335,6 +341,480 @@ class _NotificationSettingsBody extends ConsumerWidget {
     );
   }
 }
+
+class _MedicationReminderSettingsSection extends ConsumerWidget {
+  const _MedicationReminderSettingsSection({required this.masterEnabled});
+
+  final bool masterEnabled;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reminders = ref.watch(medicationReminderSettingsProvider);
+    final denied = ref.watch(medicationReminderPermissionDeniedProvider);
+    final controller = ref.read(medicationReminderSettingsProvider.notifier);
+    final colors = context.semanticColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('Nhắc uống thuốc'),
+        const SizedBox(height: AppSpacing.sm),
+        _SettingsCard(
+          children: [
+            Text(
+              'Lịch được lưu trên thiết bị. Bạn có thể thêm thuốc và lịch nhắc, đổi tên thuốc, sửa giờ, tạm dừng hoặc xóa lịch tại đây. Thông báo chỉ hiện nội dung chung, không hiện tên thuốc.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+            if (!masterEnabled)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Công tắc tổng thông báo đang tắt. Lịch thuốc vẫn được giữ và sẽ nhắc lại khi bạn bật công tắc phía trên.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            denied.maybeWhen(
+              data: (wasDenied) => wasDenied
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.sm),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.notifications_off_outlined,
+                            color: colors.warning,
+                            size: 20,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              'Lịch vẫn được lưu. Hãy bật quyền thông báo trên thiết bị để nhận nhắc uống thuốc.',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
+            denied.maybeWhen(
+              data: (wasDenied) => wasDenied
+                  ? Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        key: const Key('medication_reminder_retry_permission'),
+                        onPressed: () async {
+                          final granted = await controller.requestPermission();
+                          ref.invalidate(
+                            notificationSettingsControllerProvider,
+                          );
+                          if (!context.mounted || granted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Hãy bật quyền thông báo trong cài đặt thiết bị rồi thử lại.',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.settings_outlined),
+                        label: const Text('Thử bật quyền thông báo'),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+              orElse: () => const SizedBox.shrink(),
+            ),
+            const Divider(),
+            reminders.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.all(AppSpacing.sm),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (_, __) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Chưa tải được lịch nhắc thuốc'),
+                trailing: IconButton(
+                  tooltip: 'Thử tải lại',
+                  onPressed: () =>
+                      ref.invalidate(medicationReminderSettingsProvider),
+                  icon: const Icon(Icons.refresh_rounded),
+                ),
+              ),
+              data: (items) => Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      key: const Key('settings_add_medication_reminder'),
+                      onPressed: () async {
+                        final draft = await _createMedicationReminder(context);
+                        if (draft == null) return;
+                        await controller.create(
+                          medicineName: draft.medicineName,
+                          minutes: draft.minutes,
+                        );
+                        ref.invalidate(notificationSettingsControllerProvider);
+                      },
+                      icon: const Icon(Icons.add_alarm_rounded),
+                      label: const Text('Thêm thuốc và lịch nhắc'),
+                    ),
+                  ),
+                  if (items.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Bạn chưa có lịch nhắc uống thuốc.'),
+                      ),
+                    )
+                  else
+                    for (final reminder in items)
+                      _MedicationReminderSettingsRow(
+                        reminder: reminder,
+                        onEnabledChanged: (enabled) async {
+                          await controller.setEnabled(reminder, enabled);
+                        },
+                        onNameChanged: (name) =>
+                            controller.updateMedicineName(reminder, name),
+                        onTimesChanged: (minutes) =>
+                            controller.updateTimes(reminder, minutes),
+                        onDelete: () => controller.delete(reminder),
+                      ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _MedicationReminderSettingsRow extends StatelessWidget {
+  const _MedicationReminderSettingsRow({
+    required this.reminder,
+    required this.onEnabledChanged,
+    required this.onNameChanged,
+    required this.onTimesChanged,
+    required this.onDelete,
+  });
+
+  final MedicationReminder reminder;
+  final ValueChanged<bool> onEnabledChanged;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<List<int>> onTimesChanged;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.semanticColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          key: Key('medication_reminder_${reminder.id}'),
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.medication_outlined, color: colors.primary),
+          title: Text(reminder.medicineName),
+          subtitle: Text(reminder.enabled ? 'Đang bật' : 'Đang tạm dừng'),
+          trailing: Switch.adaptive(
+            value: reminder.enabled,
+            onChanged: onEnabledChanged,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 48, bottom: AppSpacing.xs),
+          child: Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            children: [
+              for (final minute in reminder.reminderMinutes)
+                InputChip(
+                  label: Text(_formatReminderTime(minute)),
+                  tooltip: 'Chạm để sửa giờ',
+                  onPressed: () => _editReminderTime(
+                    context,
+                    minute,
+                    reminder.reminderMinutes,
+                    onTimesChanged,
+                  ),
+                  onDeleted: reminder.reminderMinutes.length > 1
+                      ? () => onTimesChanged(
+                          reminder.reminderMinutes
+                              .where((value) => value != minute)
+                              .toList(growable: false),
+                        )
+                      : null,
+                ),
+              ActionChip(
+                avatar: const Icon(Icons.edit_outlined, size: 18),
+                label: const Text('Sửa tên thuốc'),
+                onPressed: () async {
+                  final name = await _editMedicineName(
+                    context,
+                    reminder.medicineName,
+                  );
+                  if (name != null) onNameChanged(name);
+                },
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Thêm giờ'),
+                onPressed: () => _editReminderTime(
+                  context,
+                  null,
+                  reminder.reminderMinutes,
+                  onTimesChanged,
+                ),
+              ),
+              IconButton(
+                tooltip: 'Xóa lịch nhắc ${reminder.medicineName}',
+                onPressed: onDelete,
+                icon: Icon(Icons.delete_outline_rounded, color: colors.error),
+              ),
+            ],
+          ),
+        ),
+        const Divider(indent: 48),
+      ],
+    );
+  }
+}
+
+class _MedicationReminderDraft {
+  final String medicineName;
+  final List<int> minutes;
+
+  const _MedicationReminderDraft({
+    required this.medicineName,
+    required this.minutes,
+  });
+}
+
+Future<_MedicationReminderDraft?> _createMedicationReminder(
+  BuildContext context,
+) => showDialog<_MedicationReminderDraft>(
+  context: context,
+  builder: (_) => const _CreateMedicationReminderDialog(),
+);
+
+class _CreateMedicationReminderDialog extends StatefulWidget {
+  const _CreateMedicationReminderDialog();
+
+  @override
+  State<_CreateMedicationReminderDialog> createState() =>
+      _CreateMedicationReminderDialogState();
+}
+
+class _CreateMedicationReminderDialogState
+    extends State<_CreateMedicationReminderDialog> {
+  final TextEditingController _nameController = TextEditingController();
+  final Set<int> _minutes = {};
+  bool _submitted = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _addTime() async {
+    final initialTime = _minutes.isEmpty
+        ? const TimeOfDay(hour: 8, minute: 0)
+        : TimeOfDay(hour: _minutes.last ~/ 60, minute: _minutes.last % 60);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      helpText: 'Chọn giờ nhắc uống thuốc',
+    );
+    if (picked == null) return;
+    setState(() => _minutes.add(picked.hour * 60 + picked.minute));
+  }
+
+  void _save() {
+    setState(() => _submitted = true);
+    final medicineName = _nameController.text.trim();
+    if (medicineName.isEmpty || _minutes.isEmpty) return;
+    Navigator.of(context).pop(
+      _MedicationReminderDraft(
+        medicineName: medicineName,
+        minutes: _minutes.toList()..sort(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Thêm thuốc và lịch nhắc'),
+      content: SizedBox(
+        width: 380,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                key: const Key('settings_medication_name_input'),
+                controller: _nameController,
+                autofocus: true,
+                maxLength: 80,
+                textCapitalization: TextCapitalization.sentences,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Tên thuốc',
+                  hintText: 'Nhập tên thuốc',
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  for (final minute in (_minutes.toList()..sort()))
+                    InputChip(
+                      label: Text(_formatReminderTime(minute)),
+                      onDeleted: _minutes.length > 1
+                          ? () => setState(() => _minutes.remove(minute))
+                          : null,
+                    ),
+                  ActionChip(
+                    avatar: const Icon(Icons.add_rounded, size: 18),
+                    label: Text(_minutes.isEmpty ? 'Chọn giờ' : 'Thêm giờ'),
+                    onPressed: _addTime,
+                  ),
+                ],
+              ),
+              if (_submitted && _nameController.text.trim().isEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Hãy nhập tên thuốc.',
+                  style: TextStyle(color: context.semanticColors.error),
+                ),
+              ],
+              if (_submitted && _minutes.isEmpty) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Hãy chọn ít nhất một giờ nhắc.',
+                  style: TextStyle(color: context.semanticColors.error),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Hủy'),
+        ),
+        FilledButton(
+          key: const Key('settings_save_medication_reminder'),
+          onPressed: _save,
+          child: const Text('Lưu lịch'),
+        ),
+      ],
+    );
+  }
+}
+
+Future<String?> _editMedicineName(BuildContext context, String currentName) =>
+    showDialog<String>(
+      context: context,
+      builder: (_) => _EditMedicationNameDialog(currentName: currentName),
+    );
+
+class _EditMedicationNameDialog extends StatefulWidget {
+  const _EditMedicationNameDialog({required this.currentName});
+
+  final String currentName;
+
+  @override
+  State<_EditMedicationNameDialog> createState() =>
+      _EditMedicationNameDialogState();
+}
+
+class _EditMedicationNameDialogState extends State<_EditMedicationNameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.currentName,
+  );
+  bool _submitted = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _submitted = true);
+      return;
+    }
+    Navigator.of(context).pop(name);
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Sửa tên thuốc'),
+    content: TextField(
+      key: const Key('settings_edit_medication_name_input'),
+      controller: _controller,
+      autofocus: true,
+      maxLength: 80,
+      textCapitalization: TextCapitalization.sentences,
+      onChanged: (_) {
+        if (_submitted) setState(() {});
+      },
+      decoration: InputDecoration(
+        labelText: 'Tên thuốc',
+        errorText: _submitted && _controller.text.trim().isEmpty
+            ? 'Hãy nhập tên thuốc.'
+            : null,
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Hủy'),
+      ),
+      FilledButton(onPressed: _save, child: const Text('Lưu tên')),
+    ],
+  );
+}
+
+Future<void> _editReminderTime(
+  BuildContext context,
+  int? currentMinute,
+  List<int> existingMinutes,
+  ValueChanged<List<int>> onChanged,
+) async {
+  final picked = await showTimePicker(
+    context: context,
+    initialTime: currentMinute == null
+        ? const TimeOfDay(hour: 8, minute: 0)
+        : TimeOfDay(hour: currentMinute ~/ 60, minute: currentMinute % 60),
+    helpText: 'Chọn giờ nhắc uống thuốc',
+  );
+  if (picked == null) return;
+  final minute = picked.hour * 60 + picked.minute;
+  onChanged({...existingMinutes, minute}.toList()..sort());
+}
+
+String _formatReminderTime(int minute) =>
+    '${(minute ~/ 60).toString().padLeft(2, '0')}:${(minute % 60).toString().padLeft(2, '0')}';
 
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({required this.children});

@@ -8,6 +8,8 @@ class AppPrefs {
   static const String _pendingGuestSyncAuthUserIdKey =
       'pending_guest_sync_auth_user_id';
   static const String _pendingGuestSyncActionKey = 'pending_guest_sync_action';
+  static const String _pendingGuestReminderTransferAuthUserIdKey =
+      'pending_guest_reminder_transfer_auth_user_id';
 
   static Future<void> setOnboardingCompleted(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -70,6 +72,27 @@ class AppPrefs {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_pendingGuestSyncAuthUserIdKey);
     await prefs.remove(_pendingGuestSyncActionKey);
+    await prefs.remove(_pendingGuestReminderTransferAuthUserIdKey);
+  }
+
+  static Future<void> setPendingGuestMedicationReminderTransfer({
+    required String authUserId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _pendingGuestReminderTransferAuthUserIdKey,
+      authUserId.trim(),
+    );
+  }
+
+  static Future<bool> shouldPreserveGuestMedicationRemindersFor(
+    String authUserId,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs
+            .getString(_pendingGuestReminderTransferAuthUserIdKey)
+            ?.trim() ==
+        authUserId.trim();
   }
 
   static Future<void> setLastCloudSyncAt(DateTime value) async {

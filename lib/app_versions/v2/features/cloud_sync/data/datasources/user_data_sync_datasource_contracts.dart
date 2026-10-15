@@ -7,6 +7,7 @@ abstract interface class UserDataSyncLocalDatasource {
     required String userId,
     required UserDataSnapshot snapshot,
     String? removeLocalUserId,
+    bool preserveLocalMedicationReminders = false,
   });
 }
 

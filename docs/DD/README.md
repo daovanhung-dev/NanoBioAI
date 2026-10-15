@@ -9,17 +9,18 @@
 | Daily Proof and Wellness Rewards Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (`BD-BIOAI-WELLNESS-REWARDS-001`) |
 | Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
-| Source-truth Baseline | `25018e8` |
-| Last Updated | 2026-10-06 |
+| Source-truth Baseline | `598daf04` |
+| Last Updated | 2026-10-15 |
 | Lifecycle | Current |
-| DD decision | M01-M19/M30-M31 Approved; M32 Draft; M20-M29 Draft without module DD |
+| DD decision | M01-M19/M30-M31 Approved; M22 approved for local reminders only; M32 Draft; remaining M20-M29 scope Draft |
 | Implementation | Partial aggregate; see module matrix |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
 
 ## Purpose
-This folder contains split module DDs for M01-M19 and M30. `Approved` records a
+This folder contains split module DDs for M01-M19, the limited M22 reminder
+slice, and M30. `Approved` records a
 business/DD decision only; it does not mean runtime complete. The matrix below
-is the current source-derived status. M20-M29 have a reachable catalog/access
+is the current source-derived status. M20-M21 and M23-M29 have a reachable catalog/access
 placeholder but no module DD or business implementation. M30 has SQLite,
 engine/repository/controller and Supabase source, but no app-shell trigger or
 presentation wiring, so it is `Source-only`.
@@ -37,7 +38,7 @@ presentation wiring, so it is `Source-only`.
 
 ## Stitch Green Wellness Readiness — 2026-08-08
 
-The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_system/DD_READINESS.md) records pending decisions. It is a Draft gate document, not an Approved module DD or addendum. M20-M29 remain `Placeholder`; the shell is real reachable code but is not health-data/AI business behavior.
+The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_system/DD_READINESS.md) records pending decisions. It is a Draft gate document, not an Approved module DD or addendum. M20-M21 and M23-M29 remain `Placeholder`; the M22 reminder slice is the only approved business behavior in this range.
 
 ## Module Map
 
@@ -51,7 +52,7 @@ The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_sy
 | M06 | [Membership and quota](./membership_quota/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Effective-access providers and trusted quota gateways/RPC source |
 | M07 | [AI Chat](./ai_chat/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Auth-protected text/voice routes, controllers and REST/STT/TTS sources |
 | M08 | [Health score and habits](./health_score_habits/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V2 health-score route/providers/repository and ledger SQL source |
-| M09 | [Schedule notifications](./schedule_notifications/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Notification bootstrap, scheduler, lifecycle refresh and action handler |
+| M09 | [Schedule notifications](./schedule_notifications/README.md) | Approved | Implemented | Static-verified; coordinator tests pass; SQLite FFI/device unverified; Sandbox-unverified | Notification bootstrap, scheduler, lifecycle refresh, action handler and M22 generic daily reminder adapter |
 | M10 | [Advanced tracking and goals](./advanced_tracking_goals/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable V3 advanced-hydration goal/roadmap slice; broader multi-goal/plan adjustment in BD is absent |
 | M11 | [FamilyPlus](./familyplus/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | V3 FamilyPlus route/page/repository and family RPC source |
 | M12 | [Sale and direct referral](./referral_direct/README.md) | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Protected Sale route, registration/referral repository and RPC source |
@@ -62,6 +63,7 @@ The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_sy
 | M17 | [Reconciliation](./reconciliation/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable Admin reconciliation run/status flow; source only detects a limited discrepancy class and has no scheduled runner |
 | M18 | [Statistics and reporting](./reporting/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Reachable report catalog/export-request flow; no report file producer/download path |
 | M19 | [Audit, security, and support](./audit_security/README.md) | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Auth/access/RLS/audit event surface exists; full support/ticket, retention and response scope is not end-to-end |
+| M22 | [Medication adherence — local reminders only](./medication_adherence/README.md) | Approved for M22-F01/F02 only | Partial | Targeted analysis passes for onboarding, Settings, and reminder provider; SQLite FFI/device unverified | Guest onboarding capture, local SQLite, M09 daily alert and Settings create/rename/edit/pause/delete; broader M22 remains Draft |
 | M30 | [Nabi companion notifications](./nabi_companion_notifications/README.md) | Approved | Source-only | Static-verified; Runtime-unverified; Sandbox-unverified | SQLite v15/current v20 tables, catalog/engine/local repository/controller and Supabase RPC/RLS source; no app-shell trigger/presentation wiring |
 
 ## M31/M32 Module Registry Addendum — 2026-10-06
@@ -93,7 +95,7 @@ The addendum is the higher-priority source for conflicts limited to this feature
 |---|---|---|---|---|---|
 | M20 | Not created | BLOOD_PRESSURE_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
 | M21 | Not created | HEART_OXYGEN_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
-| M22 | Not created | MEDICATION_ADHERENCE | Draft | Placeholder | Static-verified; Runtime-unverified |
+| M22 | [Created](./medication_adherence/README.md) | MEDICATION_ADHERENCE | Approved for M22-F01/F02 only | Partial | Targeted analysis/coordinator tests pass; SQLite FFI and device delivery unverified |
 | M23 | Not created | GLUCOSE_TRACKING | Draft | Placeholder | Static-verified; Runtime-unverified |
 | M24 | Not created | SYMPTOM_PAIN_JOURNAL | Draft | Placeholder | Static-verified; Runtime-unverified |
 | M25 | Not created | WOMENS_CYCLE_HEALTH | Draft | Placeholder | Static-verified; Runtime-unverified |
@@ -102,7 +104,7 @@ The addendum is the higher-priority source for conflicts limited to this feature
 | M28 | Not created | PREVENTIVE_CARE | Draft | Placeholder | Static-verified; Runtime-unverified |
 | M29 | Not created | AI_HEALTH_TRENDS | Draft | Placeholder | Static-verified; Runtime-unverified |
 
-Coding gate for M20-M29: only the UI catalog shell and shared development placeholder described by AHF-BR-001..006 are approved. Do not create DD folders or implement health-data/AI behavior until each module DD is approved.
+Coding gate: M20-M21 and M23-M29 remain limited to the UI catalog shell and shared development placeholder described by AHF-BR-001..006. M22 is approved only for the local Guest medication-reminder slice in its DD; all broader M22 health-data/adherence behavior remains Draft.
 
 ## Reading Order
 1. Read this file first.

@@ -8,14 +8,14 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 |---|---|
 | Current BD | `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md` (`BD-BIOAI-PRODUCT-FLOW-002`) |
 | Advanced Health BD | `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) |
-| Current DD folder | `docs/DD/` contains approved M01-M19 and M30; M20-M29 folders do not exist |
-| Ngay cap nhat | 2026-08-24 |
+| Current DD folder | `docs/DD/` contains M01-M19, limited M22 medication reminder DD, and M30; other M20-M29 folders do not exist |
+| Ngay cap nhat | 2026-10-15 |
 | Lifecycle | Current |
-| DD decision | M01-M19/M30 Approved; M20-M29 Draft and no module DD |
+| DD decision | M01-M19/M30 Approved; M22 approved for M22-F01/F02 local reminders only; remaining M20-M29 scope Draft |
 | Implementation | See `docs/DD/README.md`; DD approval does not imply runtime completion |
-| Verification | Static-verified at `25018e8`; Runtime-unverified; Sandbox-unverified |
+| Verification | Static-verified at `598daf04`; M22 coordinator tests pass; SQLite FFI/device verification pending |
 
-## Current DD Decision Registry v2.0 M01-M19
+## Current DD Decision Registry v2.0 M01-M19, M22, and M30
 
 The status column below is the DD decision state only. It must not be read as
 an implementation or production-acceptance claim.
@@ -50,7 +50,7 @@ UI catalog cards and the shared development placeholder are approved shell work 
 |---:|---|---|---|---|---|---|
 | 20 | DD-BLOOD_PRESSURE_TRACKING-001 | M20 `BLOOD_PRESSURE_TRACKING` | Draft / Placeholder | `docs/DD/blood_pressure_tracking/` | No | Reachable catalog/access/coming-soon shell only; create DD after AHF-Q blockers are resolved. |
 | 21 | DD-HEART_OXYGEN_TRACKING-001 | M21 `HEART_OXYGEN_TRACKING` | Draft / Placeholder | `docs/DD/heart_oxygen_tracking/` | No | Reachable shell only; device limitations and safety copy require approval. |
-| 22 | DD-MEDICATION_ADHERENCE-001 | M22 `MEDICATION_ADHERENCE` | Draft / Placeholder | `docs/DD/medication_adherence/` | No | Reachable shell only; medication/reminder boundaries require DD. |
+| 22 | DD-MEDICATION_ADHERENCE-001 | M22 `MEDICATION_ADHERENCE` | Approved limited slice / Partial implementation | `docs/DD/medication_adherence/` | 2026-10-15 | F01/F02 local Guest reminders only; SQLite FFI and device delivery remain unverified; broader adherence remains Draft. |
 | 23 | DD-GLUCOSE_TRACKING-001 | M23 `GLUCOSE_TRACKING` | Draft / Placeholder | `docs/DD/glucose_tracking/` | No | Reachable shell only; thresholds/unit/clinical policy require approval. |
 | 24 | DD-SYMPTOM_PAIN_JOURNAL-001 | M24 `SYMPTOM_PAIN_JOURNAL` | Draft / Placeholder | `docs/DD/symptom_pain_journal/` | No | Reachable shell only; escalation and free-text privacy require approval. |
 | 25 | DD-WOMENS_CYCLE_HEALTH-001 | M25 `WOMENS_CYCLE_HEALTH` | Draft / Placeholder | `docs/DD/womens_cycle_health/` | No | Reachable shell only; sensitive/FamilyPlus/minor policy requires approval. |
@@ -72,7 +72,8 @@ UI catalog cards and the shared development placeholder are approved shell work 
 | 31 | DD-SLEEP-SAFETY-MONITORING-001 | M31 SLEEP_SAFETY_MONITORING | Approved / Implemented | docs/DD/sleep_safety_monitoring/ | 2026-08-24 | Source is documented; runtime/device/Supabase evidence remains separate. |
 | 32 | DD-FITNESS-TRAINING-001 | M32 FITNESS_TRAINING | Draft / In Progress | docs/DD/fitness_training/ | 2026-10-01 | PO-directed pilot implementation present; Tech, Privacy, Clinical and QA sign-off plus device/Sandbox acceptance remain pending. |
 
-M20-M29 remain without module DD. M32 is a separate Draft module with pilot
+M20-M21 and M23-M29 remain without module DD. M22 has an approved DD only for
+the local Guest reminder slice. M32 is a separate Draft module with pilot
 runtime code; it is not release-approved.
 
 ## Deleted Historical DD Claims

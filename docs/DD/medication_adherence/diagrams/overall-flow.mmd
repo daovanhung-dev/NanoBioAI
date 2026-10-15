@@ -1,0 +1,11 @@
+flowchart LR
+  User --> Onboarding[Optional medicine name and daily times]
+  Onboarding --> LocalDB[(SQLite local-only reminders)]
+  LocalDB --> M09[M09 daily notification coordinator]
+  M09 --> OS[Generic daily OS notification]
+  OS --> Settings[Notification Settings management]
+  Settings --> LocalDB
+  Merge[User confirms Guest merge] --> ReKey[Re-key local owner only]
+  ReKey --> LocalDB
+  LocalDB -. excluded .-> Cloud[Cloud snapshot / SyncOutbox]
+

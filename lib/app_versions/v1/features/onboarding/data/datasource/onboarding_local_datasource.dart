@@ -6,6 +6,8 @@ import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatch
 import 'package:sqflite/sqflite.dart';
 
 import 'package:nano_app/core/storage/localdb/database_service.dart';
+import 'package:nano_app/core/storage/localdb/tables/medication_reminders_table.dart';
+import 'package:nano_app/app_versions/v1/features/medication_reminders/data/repositories/sqlite_medication_reminder_repository.dart';
 
 import '../../domain/entities/onboarding_entity.dart';
 import '../models/onboarding_model.dart';
@@ -30,6 +32,11 @@ class OnboardingLocalDatasource {
     AppLogger.info(_tag, 'Converting entity to model');
 
     final model = OnboardingModel.fromEntity(entity);
+    if (model.medicationReminders.any((reminder) => !reminder.isValid)) {
+      throw const FormatException(
+        'Each medication reminder needs a name and at least one valid time',
+      );
+    }
     final authenticatedUserId = _nonEmpty(userIdOverride);
     final durableGuestUserId = _nonEmpty(existingGuestUserId);
 
@@ -116,6 +123,11 @@ class OnboardingLocalDatasource {
         ]) {
           await txn.delete(table, where: 'user_id = ?', whereArgs: [userId]);
         }
+        await txn.delete(
+          MedicationRemindersTable.tableName,
+          where: 'user_id = ?',
+          whereArgs: [userId],
+        );
 
         AppLogger.success(_tag, 'Old health data deleted');
 
@@ -178,6 +190,21 @@ class OnboardingLocalDatasource {
           AppLogger.success(_tag, 'Medical treatment inserted');
         } else {
           AppLogger.info(_tag, 'No treatment data to insert');
+        }
+
+        for (final reminder in model.medicationReminders) {
+          final minutes = SqliteMedicationReminderRepository.normalizeMinutes(
+            reminder.reminderMinutes,
+          );
+          await txn.insert(MedicationRemindersTable.tableName, {
+            'id': SqliteMedicationReminderRepository.newLocalId(),
+            'user_id': userId,
+            'medicine_name': reminder.medicineName.trim(),
+            'times_json': jsonEncode(minutes),
+            'enabled': 1,
+            'created_at': now,
+            'updated_at': now,
+          }, conflictAlgorithm: ConflictAlgorithm.replace);
         }
 
         final surveyRows = _surveyRows(model, userId, now);

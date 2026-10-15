@@ -9,9 +9,9 @@ Commit de xuat: docs(checklist): danh dau DD docs M01-M19 hoan thanh 100 phan tr
 | Nguon | `docs/DD/README.md`, cac module `docs/DD/<module>/`, Approved addendum `BD-BIOAI-WELLNESS-REWARDS-001`, Advanced Health BD `BD-BIOAI-ADVANCED-HEALTH-001`, va `docs/refactor/stitch_nanobio_design_system/DD_READINESS.md` |
 | Pham vi | BioAI / NanoBio: approved DD M01-M19 and M30, Approved delta daily proof/wellness rewards cho M03/M08/M09/M15/M16, planned DD backlog M20-M29, va pending Stitch Green Wellness modules/deltas |
 | Loai tru | Module template folder; UI catalog shell/placeholder khong tinh vao DD completeness hoac business coding progress. |
-| Ngay cap nhat | 2026-10-14 |
+| Ngay cap nhat | 2026-10-15 |
 | Lifecycle | Current |
-| Source-truth baseline | `25018e8` + uncommitted M05 auth changes |
+| Source-truth baseline | `598daf04` + M22 approved local reminder slice implemented |
 | Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
 | Muc dich | Theo doi rieng DD decision, implementation theo source va verification; khong dung phan tram tai lieu de suy ra runtime hoan tat. |
 
@@ -44,7 +44,7 @@ phải đọc ở cột verification.
 | M19 `AUDIT_SECURITY` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Access/RLS/audit surface exists; full support/retention/response scope is absent. |
 | M20 `BLOOD_PRESSURE_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
 | M21 `HEART_OXYGEN_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
-| M22 `MEDICATION_ADHERENCE` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
+| M22 `MEDICATION_ADHERENCE` | Approved for M22-F01/F02 only | Partial | Targeted analysis passes for onboarding, Settings, and reminder provider; earlier coordinator/cloud-contract, Settings navigation, and onboarding exclusivity tests pass; SQLite FFI tests blocked by missing `libsqlite3.so`; device delivery unverified | Local Guest onboarding reminders, SQLite, M09 and Settings create/rename/edit/pause/delete slice only; broader M22 remains Draft. |
 | M23 `GLUCOSE_TRACKING` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
 | M24 `SYMPTOM_PAIN_JOURNAL` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
 | M25 `WOMENS_CYCLE_HEALTH` | Draft; no module DD | Placeholder | Static-verified; Runtime-unverified | Catalog/access/coming-soon shell only. |
@@ -131,7 +131,7 @@ They must not override the current matrix or be used to claim runtime complete.
 | M19 `AUDIT_SECURITY` | Approved - DD docs complete | 0 | 100 | 100 | Audit/security contracts cover Admin groups, Super Admin sensitive edits, point adjustment, reconciliation classify, reason/idempotency requirements, audit writes, and DTO tests blocking raw metadata, secrets, raw payment evidence, and health payloads. | Security response, retention, and sandbox audit rows remain production acceptance backlog. | Verify audit rows for payment, Sale, reconciliation, point adjustment, Admin list privacy, and retention in sandbox. |
 | M20 `BLOOD_PRESSURE_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M20/UC-25 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Clinical source/threshold, data lifecycle, FamilyPlus, schema/API/RLS and test design are unresolved. | Resolve relevant AHF-Q items, create and approve DD before business coding. |
 | M21 `HEART_OXYGEN_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M21/UC-26 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Device accuracy/limitation, escalation, data lifecycle, schema/API/RLS and tests are unresolved. | Approve safety/device policy, then create DD. |
-| M22 `MEDICATION_ADHERENCE` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M22/UC-27 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Medication boundary, schedule versioning, M09 reminder contract, privacy and tests are unresolved. | Approve medication/reminder policy, then create DD. |
+| M22 `MEDICATION_ADHERENCE` | Approved limited-scope DD | DD 100% | Partial | Targeted analysis passes for onboarding, Settings, and reminder provider; earlier coordinator/cloud-contract tests and Settings navigation/onboarding exclusivity tests pass; SQLite persistence tests could not run because `libsqlite3.so` is unavailable; device delivery unverified | DD-MEDICATION_ADHERENCE-001 covers optional local Guest reminders, same-device merge re-key, generic M09 delivery, and Settings add/rename/edit/pause/delete; broader adherence remains Draft. | Repository, migration, onboarding persistence, and cloud re-key SQLite tests remain blocked by missing FFI library; device acceptance remains pending. | Re-run SQLite-focused tests where libsqlite3 is installed, then verify permission handling and daily delivery on device. |
 | M23 `GLUCOSE_TRACKING` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M23/UC-28 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Unit/threshold/clinical policy, entitlement, data lifecycle, RLS and tests are unresolved. | Approve clinical/access policy, then create DD. |
 | M24 `SYMPTOM_PAIN_JOURNAL` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M24/UC-29 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Escalation, free-text privacy, symptom catalog, AI boundary and tests are unresolved. | Approve safety/privacy policy, then create DD. |
 | M25 `WOMENS_CYCLE_HEALTH` | Not started - source BD Draft | AHF-Q open | 0 | 0 | Detailed BD M25/UC-30 exists; only catalog shell is approved. No DD folder or business implementation evidence. | Sensitive data, minor/pregnancy, FamilyPlus disclosure/revoke, retention/delete and tests are unresolved. | Approve privacy/clinical policy, then create DD. |
@@ -149,7 +149,7 @@ They must not override the current matrix or be used to claim runtime complete.
 | Health formulas Q-14 | Approved for DD docs | Wellness-reference only; production must keep version config and disclaimer copy. |
 | Sale/payment/payout | Approved for DD docs | Manual payment/payout approval, 24h hold, 24h refund/cancel, listed-price commission, owner-only FamilyPlus commission. |
 | Admin/privacy | Approved for DD docs | Full Admin group model, Super Admin-only sensitive edits, Sale privacy-limited phone/basic customer info. |
-| Advanced Health M20-M29 | BD Draft; UI catalog shell approved only | M20-M29 DD completeness 0% and business coding progress 0%; placeholder UI is not feature completion. |
+| Advanced Health M20-M29 | BD Draft except approved M22 local reminder slice | M20-M21/M23-M29 remain at 0%; M22 F01/F02 is separately tracked in its DD. Placeholder UI is not feature completion. |
 
 ## Stitch Green Wellness Wave 0 — Pending DD/Addenda
 
@@ -276,7 +276,7 @@ kiểm chứng RLS/role behavior hay giao dịch người dùng trên production
 | M19 `AUDIT_SECURITY` | Security response, retention, and sandbox audit rows evidence. |
 | M20 `BLOOD_PRESSURE_TRACKING` | First approve DD, clinical/source policy, manual data contract, FamilyPlus/RLS and tests; then collect implementation/sandbox evidence. |
 | M21 `HEART_OXYGEN_TRACKING` | First approve DD, device limitation/escalation policy, manual data contract, FamilyPlus/RLS and tests. |
-| M22 `MEDICATION_ADHERENCE` | First approve DD, no-prescribing boundary, schedule/event/M09 contract, privacy/RLS and tests. |
+| M22 `MEDICATION_ADHERENCE` | Complete the approved local reminder slice and focused tests; broader adherence still needs a separate DD and approval. |
 | M23 `GLUCOSE_TRACKING` | First approve DD, clinical/unit/threshold policy, entitlement, FamilyPlus/RLS and tests. |
 | M24 `SYMPTOM_PAIN_JOURNAL` | First approve DD, escalation/free-text/AI boundary, FamilyPlus/RLS and tests. |
 | M25 `WOMENS_CYCLE_HEALTH` | First approve DD, sensitive/minor/FamilyPlus/revoke/retention policy, RLS and tests. |
@@ -298,7 +298,7 @@ kiểm chứng RLS/role behavior hay giao dịch người dùng trên production
 - Sau do doc `docs/checklist/checklist_task_coding.md` de lay note cong viec tu phien truoc.
 - Q-01..Q-18 khong con la PO blocker; khong invent rule khac neu conflict voi accepted decision registry.
 - DD completeness da la 100% cho M01-M19; chi tang coding progress khi co code/test/SQL/sandbox evidence moi.
-- M20-M29 hien co DD completeness 0% va business coding progress 0%. UI catalog shell/placeholder khong duoc tinh la DD hoac business feature completion.
+- M20-M21/M23-M29 hien co DD completeness 0% va business coding progress 0%. M22 DD chi duoc Approved cho F01/F02 local reminder slice; cac phan M22 khac van Draft. UI catalog shell/placeholder khong duoc tinh la DD hoac business feature completion.
 - Khong tao DD folder hoac coding health data/AI cho M20-M29 den khi module tuong ung co DD Approved va cac safety/privacy blocker duoc chot.
 - Runtime/sandbox/RLS/API/audit evidence phai ghi worklog va cap nhat backlog truoc khi claim production acceptance.
 

@@ -6,6 +6,7 @@ import 'package:nano_app/core/storage/localdb/sync/sync_runtime_state.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_staging_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_completion_proofs_table.dart';
+import 'package:nano_app/core/storage/localdb/tables/medication_reminders_table.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/user_data_snapshot.dart';
@@ -50,11 +51,25 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
     required String userId,
     required UserDataSnapshot snapshot,
     String? removeLocalUserId,
+    bool preserveLocalMedicationReminders = false,
   }) async {
     if (!snapshot.hasUser) return;
 
     final db = await _db();
     await db.transaction((txn) async {
+      final guestMedicationReminders =
+          preserveLocalMedicationReminders &&
+              removeLocalUserId != null &&
+              removeLocalUserId.isNotEmpty &&
+              removeLocalUserId != userId &&
+              await _tableExists(txn, MedicationRemindersTable.tableName)
+          ? await txn.query(
+              MedicationRemindersTable.tableName,
+              where: 'user_id = ?',
+              whereArgs: [removeLocalUserId],
+            )
+          : const <Map<String, Object?>>[];
+
       final pendingCount =
           Sqflite.firstIntValue(
             await txn.rawQuery(
@@ -129,6 +144,13 @@ class SqliteUserDataSyncLocalDatasource implements UserDataSyncLocalDatasource {
             where: 'id = ?',
             whereArgs: [userId],
           );
+        }
+
+        for (final reminder in guestMedicationReminders) {
+          await txn.insert(MedicationRemindersTable.tableName, {
+            ...reminder,
+            'user_id': userId,
+          }, conflictAlgorithm: ConflictAlgorithm.replace);
         }
 
         for (final table in UserDataSyncTables.localUserOwnedTables) {

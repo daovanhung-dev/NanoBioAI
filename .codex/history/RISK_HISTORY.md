@@ -1132,3 +1132,21 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Chưa fix: repository-wide context validation reports a missing source-truth manifest and stale paths in unrelated historical files; these are outside the onboarding change.
 - docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Cần kiểm tra tiếp: hot reload và nghiệm thu trên thiết bị chưa thực hiện; không có app đang chạy để hot reload.
 - docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md :: - Bằng chứng kiểm chứng: 10 focused tests, targeted analyze và diff whitespace check đều PASS; repository-wide context validator has pre-existing unrelated failures.
+- docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md :: - `flutter test test/core/storage/localdb/migrations/migration_v34_test.dart test/app_versions/v1/features/medication_reminders/sqlite_medication_reminder_repository_test.dart test/app_versions/v1/features/onboarding/onboarding_local_datasource_test.dart test/app_versions/v2/features/cloud_sync/sqlite_user_data_sync_proof_test.dart`: BLOCKED - `sqflite_common_ffi` không nạp được `libsqlite3.so`; các assertion SQLite chưa chạy.
+- docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và stale path trong các context/historical file không thuộc task.
+- docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md :: ## Lỗi/Rủi ro còn lại
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: FAIL - thiếu `docs/audit/source_truth_manifest.json` và có stale path trong
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: - `flutter run -d chrome --web-port 5020`: BLOCKED - chờ debug service, Dart
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: - Dart hot reload: BLOCKED - không có Flutter app connection hoạt động.
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: - Focused tests: SKIPPED - không được yêu cầu.
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: - Chưa fix: validator toàn repo đang báo manifest thiếu và stale paths cũ ngoài
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: - Cần kiểm tra tiếp: chạy test SQLite khi có `libsqlite3.so`, rồi xác minh quyền
+- docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md :: không có app connection; validator fail vì lỗi tài liệu ngoài phạm vi.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - Dart hot restart: BLOCKED - DTD không có app connection hoạt động.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - Kiểm tra SQLite v34→v35 trên DB/device: SKIPPED - chưa chạy ứng dụng; migration được kiểm tra tĩnh.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - Focused tests: SKIPPED - không chạy test suite trong task này.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - thiếu `docs/audit/source_truth_manifest.json` và báo stale path ở history/task-skill cũ ngoài phạm vi.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - Chưa fix: chưa có khẩu phần/định lượng dinh dưỡng đáng tin cậy trong asset; mô tả nêu rõ giới hạn thay vì tự thêm số.
+- docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md :: - Cần kiểm tra tiếp: migration trên DB SQLite thật và xác minh chi tiết món trên app đang chạy; môi trường hiện không có app kết nối DTD. Validator context cũng đang bị chặn bởi manifest thiếu và stale path có sẵn ở file ngoài phạm vi.

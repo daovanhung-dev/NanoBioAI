@@ -123,12 +123,9 @@ abstract final class MealDetailContentFormatter {
 
     return MealDetailContent(
       mealName: _prefer(detail?.mealName, meal.mealName),
-      // Unreviewed source recipes may carry condition-specific claims. Keep
-      // their cooking/provenance data available for an already persisted meal,
-      // but do not render those claims in the release UI.
-      description: catalogClaimsReviewed
-          ? _prefer(detail?.description, meal.description)
-          : '',
+      // Catalog descriptions now contain recipe composition and nutrition
+      // context; eligibility gates below still protect condition claims.
+      description: detail?.description.trim() ?? '',
       topicName: catalogClaimsReviewed
           ? _prefer(detail?.healthTopicName, meal.topicName)
           : '',

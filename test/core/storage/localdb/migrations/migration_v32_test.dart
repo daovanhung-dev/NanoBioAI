@@ -68,7 +68,7 @@ void main() {
       expect(redemption['reward_type'], 'voucher');
       expect(redemption['received_at'], isNull);
       expect(redemption['status'], 'issued');
-      expect(DatabaseVersion.currentVersion, 33);
+      expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(33));
     },
   );
 

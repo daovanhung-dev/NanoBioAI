@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 219
+- Total worklogs: 222
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -228,3 +228,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-14 | Bổ sung lối điều hướng UI vào chức năng hiện có. | docs-context | V1 Features Hub / Tiện ích; V2 Wellness Rewards route. | [Worklog - Thêm lối vào Đổi quà trong Tiện ích](../../docs/worklog/2026-10-14/007-worklog-wellness-rewards-features-hub-entry.md) |
 | 2026-10-15 | coding, Supabase schema, SQLite migration, UI, BD/DD/checklist/context. | supabase-schema | M03 DASHBOARD_SCHEDULE, M08 HEALTH_SCORE_HABITS; shared wellness rank. | [Worklog - Hạng cá nhân theo EXP nhiệm vụ](../../docs/worklog/2026-10-15/001-worklog-wellness-rank-experience.md) |
 | 2026-10-15 | coding | coding | M01 ONBOARDING_PROFILE | [Worklog - Ràng buộc lựa chọn đối nghịch trong onboarding](../../docs/worklog/2026-10-15/002-worklog-onboarding-selection-exclusivity.md) |
+| 2026-10-15 | coding + DD | docs-dd | M22 MEDICATION_ADHERENCE; tích hợp M01 ONBOARDING_PROFILE và M09 SCHEDULE_NOTIFICATIONS. | [Worklog - Nhắc uống thuốc từ onboarding](../../docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md) |
+| 2026-10-15 | coding + docs | docs-context | M22 MEDICATION_ADHERENCE; onboarding copy M01. | [Worklog - Quản lý lịch nhắc thuốc trong Cài đặt](../../docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md) |
+| 2026-10-15 | coding | coding | meal catalog, meal plan prompt, SQLite v35. | [Worklog - Mô tả dinh dưỡng cho danh mục món ăn](../../docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md) |

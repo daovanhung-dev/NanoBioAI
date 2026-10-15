@@ -24,6 +24,7 @@ class OnboardingModel extends OnboardingEntity {
     required super.treatmentName,
     required super.medicationName,
     required super.treatmentNote,
+    super.medicationReminders,
     required super.concernText,
     required super.agreed,
   });
@@ -52,6 +53,7 @@ class OnboardingModel extends OnboardingEntity {
       treatmentName: entity.treatmentName,
       medicationName: entity.medicationName,
       treatmentNote: entity.treatmentNote,
+      medicationReminders: entity.medicationReminders,
       concernText: entity.concernText,
       agreed: entity.agreed,
     );

@@ -1,5 +1,13 @@
 # CHANGELOG — SCHEDULE_NOTIFICATIONS / Thông báo lịch trình
 
+## [v1.6] - 2026-10-15
+### Added
+- Added the M09 adapter contract for M22 local daily medication reminders: generic notification content, coalesced same-minute alerts, owner/schedule validation on tap, and Settings navigation.
+- Kept medicine rows, permission recovery, and same-device Guest merge ownership in M22; no M09 notification-history or cloud rows are created.
+
+### Validation
+- Affected Dart analysis and coordinator tests passed. SQLite FFI persistence tests could not run because this environment has no `libsqlite3.so`; device delivery is unverified.
+
 ## [v1.4] - 2026-07-15
 ### Changed
 - Notifications now consume resolver-owned schedule times and the deep-link contract uses the inclusive completion boundary.

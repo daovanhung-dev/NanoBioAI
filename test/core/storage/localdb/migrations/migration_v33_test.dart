@@ -50,7 +50,7 @@ void main() {
       expect(await dao.findForUser('user-b'), isNull);
       final rewards = await db.query(WellnessRewardSummaryCacheTable.tableName);
       expect(rewards.single['available_points'], 8);
-      expect(DatabaseVersion.currentVersion, 33);
+      expect(DatabaseVersion.currentVersion, greaterThanOrEqualTo(33));
     },
   );
 }

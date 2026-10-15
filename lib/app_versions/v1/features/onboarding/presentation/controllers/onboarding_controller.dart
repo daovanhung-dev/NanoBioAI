@@ -5,6 +5,7 @@ import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
 
@@ -46,6 +47,7 @@ class OnboardingState {
   final String treatmentName;
   final String medicationName;
   final String treatmentNote;
+  final List<MedicationReminderInput> medicationReminders;
 
   final String concernText;
   final bool agreed;
@@ -79,6 +81,7 @@ class OnboardingState {
     this.treatmentName = '',
     this.medicationName = '',
     this.treatmentNote = '',
+    this.medicationReminders = const [],
     this.concernText = '',
     this.agreed = false,
     this.routinePreferences = DailyRoutinePreferences.defaultValue,
@@ -108,7 +111,7 @@ class OnboardingState {
       2 => canContinueGoals,
       3 => canContinueConditions,
       4 => canContinueLifestyle,
-      5 => true,
+      5 => medicationReminders.every((reminder) => reminder.isValid),
       6 => routinePreferences.validate().isEmpty,
       7 => agreed,
       _ => canSave,
@@ -117,7 +120,11 @@ class OnboardingState {
 
   bool get canContinueCurrentStep => canContinueStep(currentStep);
 
-  bool get canSave => canContinueBasicInfo && routineConfirmed && agreed;
+  bool get canSave =>
+      canContinueBasicInfo &&
+      medicationReminders.every((reminder) => reminder.isValid) &&
+      routineConfirmed &&
+      agreed;
 
   OnboardingEntity toEntity() {
     return OnboardingEntity(
@@ -142,6 +149,15 @@ class OnboardingState {
       treatmentName: treatmentName.trim(),
       medicationName: medicationName.trim(),
       treatmentNote: treatmentNote.trim(),
+      medicationReminders: medicationReminders
+          .map(
+            (reminder) => MedicationReminderInput(
+              medicineName: reminder.medicineName.trim(),
+              reminderMinutes: reminder.reminderMinutes.toSet().toList()
+                ..sort(),
+            ),
+          )
+          .toList(growable: false),
       concernText: concernText.trim(),
       agreed: agreed,
     );
@@ -174,6 +190,7 @@ class OnboardingState {
     String? treatmentName,
     String? medicationName,
     String? treatmentNote,
+    List<MedicationReminderInput>? medicationReminders,
     String? concernText,
     bool? agreed,
     DailyRoutinePreferences? routinePreferences,
@@ -207,6 +224,7 @@ class OnboardingState {
       treatmentName: treatmentName ?? this.treatmentName,
       medicationName: medicationName ?? this.medicationName,
       treatmentNote: treatmentNote ?? this.treatmentNote,
+      medicationReminders: medicationReminders ?? this.medicationReminders,
       concernText: concernText ?? this.concernText,
       agreed: agreed ?? this.agreed,
       routinePreferences: routinePreferences ?? this.routinePreferences,
@@ -424,6 +442,67 @@ class OnboardingController extends Notifier<OnboardingState> {
   void updateTreatmentNote(String value) {
     _logFieldPresence('treatmentNote', value);
     state = state.copyWith(treatmentNote: value);
+  }
+
+  void addMedicationReminder() {
+    state = state.copyWith(
+      medicationReminders: [
+        ...state.medicationReminders,
+        const MedicationReminderInput(medicineName: '', reminderMinutes: []),
+      ],
+    );
+  }
+
+  void updateMedicationReminderName(int index, String value) {
+    final reminders = [...state.medicationReminders];
+    if (index < 0 || index >= reminders.length) return;
+    reminders[index] = reminders[index].copyWith(medicineName: value);
+    state = state.copyWith(medicationReminders: reminders);
+  }
+
+  void addMedicationReminderTime(int index, int minute) {
+    final reminders = [...state.medicationReminders];
+    if (index < 0 ||
+        index >= reminders.length ||
+        minute < 0 ||
+        minute >= 1440) {
+      return;
+    }
+    final times = {...reminders[index].reminderMinutes, minute}.toList()
+      ..sort();
+    reminders[index] = reminders[index].copyWith(reminderMinutes: times);
+    state = state.copyWith(medicationReminders: reminders);
+  }
+
+  void removeMedicationReminderTime(int index, int minute) {
+    final reminders = [...state.medicationReminders];
+    if (index < 0 || index >= reminders.length) return;
+    final times = reminders[index].reminderMinutes
+        .where((value) => value != minute)
+        .toList(growable: false);
+    reminders[index] = reminders[index].copyWith(reminderMinutes: times);
+    state = state.copyWith(medicationReminders: reminders);
+  }
+
+  void changeMedicationReminderTime(int index, int oldMinute, int newMinute) {
+    if (newMinute < 0 || newMinute >= 1440) return;
+    final reminders = [...state.medicationReminders];
+    if (index < 0 || index >= reminders.length) return;
+    final times =
+        reminders[index].reminderMinutes
+            .where((value) => value != oldMinute)
+            .toSet()
+          ..add(newMinute);
+    final sortedTimes = times.toList()..sort();
+    reminders[index] = reminders[index].copyWith(reminderMinutes: sortedTimes);
+    state = state.copyWith(medicationReminders: reminders);
+  }
+
+  void removeMedicationReminder(int index) {
+    final reminders = [...state.medicationReminders];
+    if (index < 0 || index >= reminders.length) return;
+    reminders.removeAt(index);
+    state = state.copyWith(medicationReminders: reminders);
   }
 
   void updateConcernText(String value) {
@@ -683,6 +762,17 @@ class OnboardingController extends Notifier<OnboardingState> {
       await AppPrefs.setOnboardingCompleted(true);
       completionPreferenceSaved = true;
       AppLogger.success(_tag, 'Onboarding completed flag set');
+
+      if (entity.medicationReminders.isNotEmpty) {
+        try {
+          await NotificationBootstrap.requestMedicationReminderPermissionAndEnable();
+        } catch (error) {
+          AppLogger.warning(
+            _tag,
+            'Medication reminder setup did not finish; errorType=${error.runtimeType}',
+          );
+        }
+      }
 
       final savedLog = generationSource.isBasicSuggestion
           ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi dịch vụ sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'

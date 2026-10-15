@@ -12,7 +12,7 @@
 | Source evidence | Notification bootstrap, scheduler, lifecycle refresh, native envelope and action handler are reachable |
 | Owner | Product Owner / Tech Lead |
 | Created Date | 2026-06-28 |
-| Last Updated | 2026-08-17 |
+| Last Updated | 2026-10-15 |
 | Source BD | docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md (BD-BIOAI-PRODUCT-FLOW-002), BD sections 6/M09, 13, Appendix A UC-04 |
 | Approved Addendum | docs/BD/wellness_rewards/BD_BioAI_Daily_Proof_Wellness_Rewards_v1.0.md (BD-BIOAI-WELLNESS-REWARDS-001) |
 
@@ -29,6 +29,7 @@ Lên lịch nhắc theo plan/item và xử lý thao tác mở nhiệm vụ hoặ
 - [Assets](./assets/README.md)
 - [Change History](./history/CHANGELOG.md)
 - [Implementation Delta 2026-08-17 — Notification Defer](./Implementation_Delta_2026-08-17_Notification_Defer.md)
+- [Implementation Delta 2026-10-15 — M22 local medication reminders](./Implementation_Delta_2026-10-15_M22_Medication_Reminders.md)
 - [Implementation Delta 2026-08-16 — Daily Health Hub](./Implementation_Delta_2026-08-16_Daily_Health_Hub.md)
 - [Implementation Delta 2026-07-15 — Logbug 14-7-26](./Implementation_Delta_2026-07-15_Logbug_14-7-26.md)
 - [Implementation Delta 2026-07-13](./Implementation_Delta_2026-07-13.md)
@@ -39,6 +40,7 @@ Lên lịch nhắc theo plan/item và xử lý thao tác mở nhiệm vụ hoặ
 - Delta 2026-08-17: “Để sau” = defer 30 phút, source vẫn pending, không cộng điểm; legacy `skipped` chỉ là compatibility input.
 - Delta 2026-08-16: manual health task tái sử dụng scheduler hiện tại và hỗ trợ opt-out reminder theo item.
 - Delta 2026-07-13: hành động mở nhiệm vụ không hoàn thành nền.
+- Delta 2026-10-15: M09 schedules generic recurring medication alerts from the local M22 owner-scoped repository and opens Notification Settings on a validated tap.
 
 ## Dependent Modules
 - PERSONAL_SCHEDULE_AI: source plan items.

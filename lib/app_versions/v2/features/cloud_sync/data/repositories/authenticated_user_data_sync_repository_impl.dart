@@ -166,7 +166,9 @@ class AuthenticatedUserDataSyncRepositoryImpl
       action: effectiveAction.name,
     );
 
-    var pushedGuest = false;
+    var pushedGuest = await AppPrefs.shouldPreserveGuestMedicationRemindersFor(
+      authUserId,
+    );
     if (!cloudHasData && effectiveAction == GuestMergeAction.mergeNow) {
       final guestSnapshot = await localDatasource.readSnapshot(guestUserId);
       if (guestSnapshot == null || !guestSnapshot.hasUser) {
@@ -186,6 +188,9 @@ class AuthenticatedUserDataSyncRepositoryImpl
           authUserId,
         );
         pushedGuest = true;
+        await AppPrefs.setPendingGuestMedicationReminderTransfer(
+          authUserId: authUserId,
+        );
         await AppPrefs.setPendingGuestSyncDecision(
           authUserId: authUserId,
           action: GuestMergeAction.useExistingCloud.name,
@@ -215,6 +220,7 @@ class AuthenticatedUserDataSyncRepositoryImpl
         userId: authUserId,
         snapshot: cloudSnapshot,
         removeLocalUserId: guestUserId,
+        preserveLocalMedicationReminders: pushedGuest,
       );
       await AppPrefs.clearPendingGuestUserId();
       await AppPrefs.clearPendingGuestSyncDecision();

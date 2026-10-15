@@ -47,6 +47,7 @@ class NotificationSettingsController
     await _mutate((value) => value.copyWith(masterEnabled: enabled));
     final shared = await SharedPreferences.getInstance();
     await shared.setBool('push_enabled', enabled);
+    await shared.setBool('medication_reminder_permission_denied', false);
     ref.invalidate(settingsPreferencesControllerProvider);
     await NotificationBootstrap.scheduleGeneratedReminders(
       subjectUserId: state.value?.actorKey,

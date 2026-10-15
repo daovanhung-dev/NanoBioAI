@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
@@ -18,8 +20,22 @@ abstract class ReminderNotificationScheduler {
   Future<void> cancel(int id);
 }
 
+abstract interface class MedicationDailyNotificationScheduler {
+  Future<void> scheduleDailyReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+  });
+
+  Future<void> cancelMedicationReminders({String? ownerId});
+}
+
 class LocalReminderNotificationScheduler
-    implements ReminderNotificationScheduler {
+    implements
+        ReminderNotificationScheduler,
+        MedicationDailyNotificationScheduler {
   LocalReminderNotificationScheduler({
     FlutterLocalNotificationsPlugin? plugin,
     void Function(NotificationResponse response)? onForegroundResponse,
@@ -39,7 +55,9 @@ class LocalReminderNotificationScheduler
   @override
   Future<void> initialize() async {
     if (_initialized) return;
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     final darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -135,8 +153,8 @@ class LocalReminderNotificationScheduler
       return;
     }
     try {
-      final canScheduleExact =
-          await androidPlugin.canScheduleExactNotifications();
+      final canScheduleExact = await androidPlugin
+          .canScheduleExactNotifications();
       if (canScheduleExact ?? false) return;
       final granted = await androidPlugin.requestExactAlarmsPermission();
       if (granted ?? false) {
@@ -289,6 +307,60 @@ class LocalReminderNotificationScheduler
     );
   }
 
+  @override
+  Future<void> scheduleDailyReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+  }) async {
+    await initialize();
+    final androidScheduleMode = await _resolveAndroidScheduleMode();
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(scheduledAt, tz.local),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          NotificationChannels.reminderId,
+          NotificationChannels.reminderName,
+          channelDescription: NotificationChannels.reminderDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          channelAction: AndroidNotificationChannelAction.createIfNotExists,
+        ),
+        iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: androidScheduleMode,
+      payload: payload,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  @override
+  Future<void> cancelMedicationReminders({String? ownerId}) async {
+    await initialize();
+    final pending = await _plugin.pendingNotificationRequests();
+    for (final request in pending) {
+      final payload = request.payload;
+      if (payload == null || payload.isEmpty) continue;
+      try {
+        final decoded = jsonDecode(payload);
+        if (decoded is! Map || decoded['type'] != 'medication_reminder') {
+          continue;
+        }
+        final payloadOwner = decoded['owner_id']?.toString();
+        if (ownerId != null && payloadOwner != ownerId) continue;
+        await _plugin.cancel(request.id);
+      } catch (_) {
+        // A malformed payload is not treated as a medication notification.
+      }
+    }
+  }
+
   Future<AndroidScheduleMode> _resolveAndroidScheduleMode() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return AndroidScheduleMode.inexactAllowWhileIdle;
@@ -305,8 +377,8 @@ class LocalReminderNotificationScheduler
       return AndroidScheduleMode.inexactAllowWhileIdle;
     }
     try {
-      final canScheduleExact =
-          await androidPlugin.canScheduleExactNotifications();
+      final canScheduleExact = await androidPlugin
+          .canScheduleExactNotifications();
       if (canScheduleExact ?? false) {
         return AndroidScheduleMode.exactAllowWhileIdle;
       }

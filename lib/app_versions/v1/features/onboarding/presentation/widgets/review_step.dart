@@ -56,6 +56,8 @@ class ReviewStep extends ConsumerWidget {
         'Theo dõi: ${_preview(_splitValues(state.treatmentName))}',
       if (_splitValues(state.medicationName).isNotEmpty)
         'Thuốc: ${_preview(_splitValues(state.medicationName))}',
+      if (state.medicationReminders.isNotEmpty)
+        'Lịch nhắc: ${_preview(state.medicationReminders.map((reminder) => '${reminder.medicineName.trim()} (${reminder.reminderMinutes.map(_formatReminderMinute).join(', ')})').toList(growable: false))}',
       if (_splitValues(state.concernText).isNotEmpty)
         'Quan tâm: ${_preview(_splitValues(state.concernText))}',
       if (state.allergyNote.trim().isNotEmpty)
@@ -335,6 +337,9 @@ class ReviewStep extends ConsumerWidget {
       );
   }
 }
+
+String _formatReminderMinute(int minute) =>
+    '${(minute ~/ 60).toString().padLeft(2, '0')}:${(minute % 60).toString().padLeft(2, '0')}';
 
 class _ReadinessHero extends StatelessWidget {
   const _ReadinessHero({required this.ready, required this.name});
