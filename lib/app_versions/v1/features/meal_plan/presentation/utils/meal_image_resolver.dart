@@ -1,16 +1,28 @@
+import 'package:flutter/services.dart';
+
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_plan_entity.dart';
 
-/// Resolves meal names to the exact source-backed images extracted from
-/// "Sức Khỏe Từ Nhà Bếp".
+/// Resolves code-keyed catalog images and legacy source-book images.
 ///
-/// The resolver intentionally performs no fuzzy/substring matching. A meal is
-/// allowed to use an image only when its normalized canonical name produces a
-/// filename that exists in [_knownAssetFiles]. Unknown meals return `null` so
-/// the UI can render a neutral placeholder instead of a potentially wrong dish.
+/// The resolver intentionally performs no fuzzy/substring matching. New
+/// catalog images are keyed by recipe code and verified against the Flutter
+/// asset manifest. The current source-book catalog keeps its exact-name map.
 abstract final class MealImageResolver {
   static const String basePath = 'assets/images/meals/pdf_health_book';
   static const String assetRoot = basePath;
+  static const String catalogV1AssetPath = 'assets/images/meals/catalog_v1';
   static const String _fallbackAssetPath = '$basePath/__unknown_meal__.webp';
+  static const List<String> _catalogImageExtensions = [
+    'webp',
+    'png',
+    'jpg',
+    'jpeg',
+  ];
+  static final RegExp _safeRecipeCode = RegExp(
+    r'^[A-Za-z0-9][A-Za-z0-9_-]{0,179}$',
+  );
+  static Future<Set<String>>? _assetNamesFuture;
+  static final Map<String, Future<List<String>>> _assetPathsForMealCache = {};
 
   static const Set<String> _knownAssetFiles = <String>{
     'canh_bi_dao_nau_tom.webp',
@@ -139,10 +151,8 @@ abstract final class MealImageResolver {
     'trung_ga_hap_mat_ong.webp',
   };
 
-  /// Compatibility API used by the existing MealPhoto widget.
-  ///
-  /// Unknown meals intentionally return a guaranteed-missing sentinel path so
-  /// Image.asset invokes its errorBuilder instead of displaying a wrong dish.
+  /// Compatibility API for older call sites that resolve only a meal name.
+  /// Unknown meals return a missing sentinel path for their error builder.
   static String assetPathFor(MealPlanEntity meal) {
     return assetPathForName(meal.mealName);
   }
@@ -150,6 +160,43 @@ abstract final class MealImageResolver {
   /// Compatibility API retained for older call sites.
   static String assetPathForName(String mealName) {
     return resolveAssetPath(mealName) ?? _fallbackAssetPath;
+  }
+
+  /// Returns image candidates for one recipe, preferring a code-keyed asset.
+  ///
+  /// Code-keyed files let the expanded catalog keep separate images for
+  /// recipes with the same display name. Existing source-book images remain a
+  /// fallback for the current catalog.
+  static Future<List<String>> assetPathsForMeal(MealPlanEntity meal) {
+    final cacheKey = '${meal.catalogCode}\u0000${meal.mealName}';
+    return _assetPathsForMealCache.putIfAbsent(
+      cacheKey,
+      () => _resolveAssetPathsForMeal(meal),
+    );
+  }
+
+  static Future<List<String>> _resolveAssetPathsForMeal(
+    MealPlanEntity meal,
+  ) async {
+    final assetNames = await (_assetNamesFuture ??=
+        AssetManifest.loadFromAssetBundle(
+          rootBundle,
+        ).then((manifest) => manifest.listAssets().toSet()));
+    final candidates = <String>[];
+    final code = meal.catalogCode.trim();
+    if (_safeRecipeCode.hasMatch(code)) {
+      for (final extension in _catalogImageExtensions) {
+        final path = '$catalogV1AssetPath/$code.$extension';
+        if (assetNames.contains(path)) candidates.add(path);
+      }
+    }
+    final namePath = resolveAssetPath(meal.mealName);
+    if (namePath != null &&
+        assetNames.contains(namePath) &&
+        !candidates.contains(namePath)) {
+      candidates.add(namePath);
+    }
+    return List.unmodifiable(candidates);
   }
 
   /// Compatibility alias for the previous resolver API.

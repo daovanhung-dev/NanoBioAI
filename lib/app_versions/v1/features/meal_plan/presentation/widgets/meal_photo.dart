@@ -18,30 +18,44 @@ class MealPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetPath = MealImageResolver.resolveAssetPath(meal.mealName);
+    final assetPathsFuture = MealImageResolver.assetPathsForMeal(meal);
     final radius = BorderRadius.circular(borderRadius);
 
-    if (assetPath == null) {
-      return _buildFramedPhoto(
-        radius: radius,
-        child: _MealPhotoFallback(mealName: meal.mealName),
-      );
-    }
+    return FutureBuilder<List<String>>(
+      future: assetPathsFuture,
+      builder: (context, snapshot) {
+        final assetPaths = snapshot.data;
+        if (snapshot.hasError || assetPaths == null || assetPaths.isEmpty) {
+          return _buildFramedPhoto(
+            radius: radius,
+            child: _MealPhotoFallback(mealName: meal.mealName),
+          );
+        }
 
-    return Semantics(
-      image: true,
-      label: 'Ảnh món ${meal.mealName}',
-      child: _buildFramedPhoto(
-        radius: radius,
-        child: Image.asset(
-          assetPath,
-          fit: BoxFit.cover,
-          filterQuality: FilterQuality.medium,
-          errorBuilder: (context, error, stackTrace) => _MealPhotoFallback(
-            mealName: meal.mealName,
+        return Semantics(
+          image: true,
+          label: 'Ảnh món ${meal.mealName}',
+          child: _buildFramedPhoto(
+            radius: radius,
+            child: _buildImageCandidate(assetPaths, 0),
           ),
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageCandidate(List<String> assetPaths, int index) {
+    return Image.asset(
+      assetPaths[index],
+      fit: BoxFit.cover,
+      filterQuality: FilterQuality.medium,
+      errorBuilder: (context, error, stackTrace) {
+        final nextIndex = index + 1;
+        if (nextIndex < assetPaths.length) {
+          return _buildImageCandidate(assetPaths, nextIndex);
+        }
+        return _MealPhotoFallback(mealName: meal.mealName);
+      },
     );
   }
 
@@ -51,11 +65,7 @@ class MealPhoto extends StatelessWidget {
   }) {
     return ClipRRect(
       borderRadius: radius,
-      child: SizedBox(
-        width: double.infinity,
-        height: height,
-        child: child,
-      ),
+      child: SizedBox(width: double.infinity, height: height, child: child),
     );
   }
 }
@@ -71,9 +81,7 @@ class _MealPhotoFallback extends StatelessWidget {
       label: 'Chưa có ảnh món $mealName',
       child: ExcludeSemantics(
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: context.semanticColors.primarySoft,
-          ),
+          decoration: BoxDecoration(color: context.semanticColors.primarySoft),
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.cardPadding),
