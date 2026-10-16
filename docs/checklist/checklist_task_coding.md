@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-10-15 |
+| Ngay cap nhat | 2026-10-16 |
 | Lifecycle | Current |
 | Source-truth baseline | `598daf04` + M22 local reminder slice |
 | Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
@@ -30,9 +30,44 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 - Retry lịch hiện có một lượt đầu và tối đa năm lần thử lại trên chuỗi model đã cấu hình. Mỗi lỗi/response rỗng/JSON sai đều qua retry; sau sáu lượt lỗi cho một ngày bữa, ngày đó tách thành 5 slot. Slot resume từ staging, mỗi slot có cùng retry rồi mới dùng local fallback đã lọc; ngày sau vẫn tạo bữa theo lượt ngày. Giới hạn staging/backend tăng lên 300 (worst case 294 lượt cho 7 ngày); Gemini/device và deploy Supabase chưa xác minh. Chi tiết: `docs/features/ai-generated-plan/006-feature-model-escalation-meal-slot-split.md`.
 - M02 weekly meal uniqueness: prompt gửi cả mã và tên món đã dùng; normalizer và cả hai nhánh local fallback từ chối lặp code/name; staging đổi sang `personal_schedule_v8_weekly_meal_uniqueness`. Thiếu lựa chọn eligible duy nhất thì generation fail closed. Test suite và fresh device QA còn cần chạy trước khi nâng verification status; targeted analyzer đã PASS. Chi tiết: `docs/features/ai-generated-plan/008-feature-weekly-meal-uniqueness.md`.
 
+### M02 Prompt Budget for Expanded Meal Catalog — 2026-10-16
+
+> Snapshot before the later 2026-10-16 user decision to integrate the workspace JSON. The current source state is recorded in “M02 Candidate Catalog Runtime” below.
+
+- Prompt giữ mã và tên của toàn bộ món từ SQLite; nếu JSON catalog vượt 1.000.000 byte, rút ngắn rồi có thể bỏ `nutrition_summary` theo giới hạn UTF-8. Danh sách mã/tên vượt ngân sách sẽ báo lỗi, không lược món âm thầm.
+- Staging prompt version tăng từ `personal_schedule_v8_weekly_meal_uniqueness` qua `personal_schedule_v9_catalog_prompt_byte_budget` để không tiếp tục các chunk đã tạo dưới ngữ cảnh cũ.
+- Audit asset hiện có: 163 món, 20 nhóm tên trùng, mọi `meal_type` là `unclassified`, serving size và sáu trường dinh dưỡng cơ bản trống, 0 `is_plan_eligible`; 124 ảnh legacy phủ theo slug tên. Ảnh món candidate nằm ngoài phạm vi; giao diện giữ trạng thái ảnh dự phòng.
+- Intake contract và validator hiện yêu cầu package hợp nhất đúng 3.163 dòng, gồm đủ 163 mã hiện tại và 3.000 mã mới; ảnh không nằm trong cổng nhập. Chưa tạo migration v36 vì JSON candidate chưa đủ rights, dinh dưỡng, loại bữa, công thức và rà soát dị ứng/chống chỉ định.
+- JSON workspace `assets/data/nabi_3000_mon_viet_moi.json`: 3.000 mã duy nhất; toàn bộ `is_active=true`, `is_plan_eligible=false`, `unclassified`, `estimated_unverified`, `awaiting_professional_review`, `ai_generated_needs_review`; 466 dòng thiếu `water_ml`. Không sao chép `is_active=true` để cho phép chọn món.
+- Prompt, AI normalizer, bộ lọc candidate cá nhân và fallback dùng chung cổng eligibility; chỉ các dòng legacy `source_imported` trong namespace mã `src_` giữ tương thích, còn candidate bị chặn tới khi qua `source_verified` cùng evidence. JSON candidate bị loại khỏi Flutter asset bundle. Sau khi AI trả mã, chi tiết vẫn được hydrate từ SQLite.
+- Archive trong Downloads từng được ghi nhận có ảnh và trạng thái `is_active=false`; đây là gói khác. Chi tiết và hash serialization cũ trong feature doc áp dụng cho archive đó, không phải JSON workspace.
+- Prompt version hiện tăng lên `personal_schedule_v10_catalog_eligibility_gate`. Tập trung 21 test catalog/normalizer/prompt/asset và 7 test AIService prompt/fallback PASS; analyzer Dart không lỗi. Toàn bộ `ai_service_test.dart` còn 14 lỗi ở kỳ vọng logging/exception trong các ca chat và lỗi model. Release APK chưa build được do `GeneratedPluginRegistrant.java` tham chiếu thiếu `IntegrationTestPlugin`; Flutter asset output hiện tại là 73 MB, không phải APK size. Không có app đang chạy để hot-reload; Linux target thiếu CMake. Gemini thật, Edge deploy và QA thiết bị không thuộc bằng chứng cục bộ.
+
+### M02 Onboarding Candidate Pool — 2026-10-16
+
+> Snapshot lịch sử trước khi người dùng yêu cầu tích hợp JSON workspace 3.000 món. Trạng thái hiện tại ở mục “M02 Candidate Catalog Runtime — 2026-10-16”.
+
+- Personal schedule generation uses a separate `wellnessSchedule` candidate policy so unverified legacy nutrition/condition fields do not empty the pool for general goals and self-reported conditions. Strict selection remains the default for other callers. Staging version is now `personal_schedule_v11_wellness_candidate_policy`.
+- Explicit/unsupported allergies, unparsed allergy details, and avoid-food constraints remain fail-closed. Verified condition-conflict tags still exclude a conflicting item. The meal prompt directs the model to give general wellness suggestions and not claim treatment suitability, disease safety, or unverified nutrition values.
+- A synthetic onboarding schedule with `lose_weight` and `diabetes` completes with 5 meals and 2 activities; all five meal types receive eligible codes. Selector tests load the actual 163-row legacy source asset and confirm unreviewed peanut allergy still empties the pool.
+- Focused suite: 52 tests PASS; targeted Dart analysis: no issues. Device/Gemini acceptance was not run. The 3,000 workspace candidate remains excluded from Flutter assets and is not selectable pending rights and data review; no SQLite v36 import was made.
+
+### M02 Candidate Catalog Runtime — 2026-10-16
+
+- Theo chỉ thị người dùng, thêm JSON `assets/data/nabi_3000_mon_viet_moi.json` vào Flutter assets; giữ nguyên file nguồn và 163 món cũ. Catalog hiện có 3.163 mã duy nhất. SQLite v36 seed đủ 3.163 khi cài mới; migration v36 insert-only 3.000 candidate khi nâng từ v35 và kiểm tra hash/bảo toàn hàng cũ, dữ liệu người dùng.
+- AI nhận code/name candidate trong policy `wellnessSchedule`; không gửi description, ingredients, steps hoặc nutrition. Prompt giữ danh sách mã/tên trong giới hạn 1.000.000 byte. Món AI chọn được hydrate từ SQLite; nutrition chưa xác minh không đi vào snapshot/số hiển thị. Strict selector, allergy chưa xác minh và avoid-food chưa rà soát tiếp tục chặn candidate.
+- Candidate giữ nguyên `is_plan_eligible=false`, `meal_type=unclassified`, `estimated_unverified`, `awaiting_professional_review`, `ai_generated_needs_review`; quyền phân phối và chất lượng chuyên môn chưa được xác minh. Việc code/name được gửi theo chỉ thị không phải bằng chứng license hoặc an toàn y khoa.
+- Prompt staging version: `personal_schedule_v12_unreviewed_wellness_candidates`. Các lượt tạo dở theo phiên bản cũ không được trộn với catalog này.
+- Local verification: 6 storage/migration/bundle tests, 46 selector/normalizer/schedule/detail tests và 2 AIService prompt/fallback tests PASS; `flutter build bundle --no-pub` PASS. Candidate JSON 8,084,717 bytes; code/name JSON 321,212 bytes. Gemini thật, device và Supabase quota chưa kiểm tra.
+- Physical runtime continuation: attached to the active `flutter run` session on Xiaomi 220333QPG Android 11, synced current files and hot-restarted. On-device SQLite moved from v35 to v36 and now has 3,163 meals (3,000 candidate + 163 legacy) and 40 exercises; existing profile, survey, staging, and other local rows remained. The existing profile is incomplete (`onboarding_status=in_progress`); its prior `initial_guest` request failed with 0 meals and exercises under staging prompt v10. No new Gemini request has been sent.
+- Evidence: `docs/test/real-device-3000-meal-onboarding-2026-10-16/README.md`. End-to-end onboarding and schedule generation still need an Android UI control surface; Gemini/quota result is not verified.
+
 ### Next implementation tasks
 
-- [ ] M02: chạy test prompt/normalizer/fallback/generated-plan đã cập nhật; sau đó QA lịch 7 ngày bằng hồ sơ tổng hợp, xác minh 35 món khác nhau và trạng thái tiếp tục khi catalog eligible không đủ.
+- [x] M02: chạy `flutter analyze`, format check và diff check cho các file thay đổi; cập nhật worklog/history.
+- [x] M02: xác nhận phiên Flutter trên Xiaomi khởi động lại và SQLite v36 seed đủ 3.163 món/40 bài tập, giữ profile local.
+- [ ] M02: hoàn tất onboarding đang `in_progress`, gọi một lịch 7 ngày qua Edge Function -> Gemini và xác minh 35 món/14 hoạt động cùng quota; đang thiếu Android UI control surface trong CUA.
+- [ ] M02: thu thập rights/provenance và review công thức/dinh dưỡng/dị ứng trước khi tuyên bố candidate đã được xác minh hoặc bật cho policy strict.
 - [ ] M30: wire typed business snapshots/time ticks into
   `nabiNotificationControllerProvider`, render the M30 presentation state in the
   user app shell, and replace no-op navigation/native gateways with the existing

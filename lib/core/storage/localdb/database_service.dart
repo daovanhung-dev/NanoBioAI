@@ -56,6 +56,7 @@ import 'migrations/migration_v32.dart';
 import 'migrations/migration_v33.dart';
 import 'migrations/migration_v34.dart';
 import 'migrations/migration_v35.dart';
+import 'migrations/migration_v36.dart';
 import 'seeders/ai_catalog_seeder.dart';
 import 'seeders/meal_catalog_seeder.dart';
 
@@ -179,6 +180,7 @@ class DatabaseService {
             if (oldVersion < 33 && newVersion >= 33) await MigrationV33.run(db);
             if (oldVersion < 34 && newVersion >= 34) await MigrationV34.run(db);
             if (oldVersion < 35 && newVersion >= 35) await MigrationV35.run(db);
+            if (oldVersion < 36 && newVersion >= 36) await MigrationV36.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,

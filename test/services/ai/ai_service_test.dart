@@ -175,7 +175,7 @@ void main() {
   });
 
   group('AI prompts', () {
-    test('meal prompt includes every SQLite code and name only', () {
+    test('meal prompt includes only selectable SQLite code and name rows', () {
       final prompt = MealPlanPrompt.generate(
         startDate: DateTime(2026, 6, 18),
         startDay: 1,
@@ -193,15 +193,18 @@ void main() {
         prompt,
         contains(
           jsonEncode([
-            {'code': 'meal_prompt_active', 'name': 'Yến mạch trứng'},
-            {'code': 'meal_prompt_inactive', 'name': 'Yến mạch trứng'},
+            {
+              'code': 'meal_prompt_active',
+              'name': 'Yến mạch trứng',
+              'nutrition_summary': 'Bữa ăn thử',
+            },
           ]),
         ),
       );
       expect(prompt, isNot(contains('Đào Văn Hùng')));
       expect(prompt, isNot(contains('user_id')));
       expect(prompt, isNot(contains('Dị ứng thực phẩm:')));
-      expect(prompt, contains('meal_prompt_inactive'));
+      expect(prompt, isNot(contains('meal_prompt_inactive')));
       expect(prompt, isNot(contains('"is_plan_eligible":')));
       expect(prompt, isNot(contains('"cooking_instructions":')));
       expect(prompt, contains('không tự tạo món hoặc mã mới'));
@@ -240,7 +243,7 @@ void main() {
       expect(prompt, isNot(_containsMojibake));
     });
 
-    test('meal prompt includes every provided row exactly once', () {
+    test('meal prompt includes every selectable provided row exactly once', () {
       final prompt = MealPlanPrompt.generate(
         startDate: DateTime(2026, 6, 18),
         startDay: 1,
@@ -257,6 +260,73 @@ void main() {
       expect(_countOccurrences(prompt, '"code":"candidate-10"'), 1);
       expect(_countOccurrences(prompt, '"code":"candidate-11"'), 1);
     });
+
+    test(
+      'meal prompt excludes unreviewed candidates without schedule eligibility',
+      () {
+        final prompt = MealPlanPrompt.generate(
+          startDate: DateTime(2026, 6, 18),
+          startDay: 1,
+          days: 1,
+          catalog: [
+            _promptMeal(code: 'eligible-meal'),
+            _unreviewedCandidateMeal(),
+          ],
+          usedMealCodeCounts: const {'nabi_vn_candidate': 1},
+        );
+
+        expect(prompt, contains('eligible-meal'));
+        expect(prompt, isNot(contains('nabi_vn_candidate')));
+        expect(prompt, isNot(contains('Món chờ rà soát')));
+      },
+    );
+
+    test(
+      'local fallback can use only explicitly eligible wellness candidates',
+      () async {
+        final candidates = [
+          for (var index = 1; index <= 5; index++)
+            _unreviewedCandidateMeal(
+              code: 'nabi_vn_candidate_$index',
+              name: 'Món wellness $index',
+            ),
+        ];
+        final candidateCatalog = AiCatalogBundle(
+          meals: [...catalog.meals, ...candidates],
+          exercises: catalog.exercises,
+          scheduleTasks: catalog.scheduleTasks,
+        );
+        final eligibleCodesByType = {
+          for (final slot in MealPlanAiNormalizer.mealSlots)
+            slot.type: candidates.map((meal) => meal.code).toSet(),
+        };
+        final service = AIService(
+          textGenerator: ({required modelName, required prompt}) async => '[]',
+        );
+
+        final result = await service.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 1,
+          catalog: candidateCatalog,
+          usedCodeCounts: const {},
+          eligibleFallbackCodesByType: eligibleCodesByType,
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(result.value, hasLength(5));
+        expect(
+          result.value.map((item) => item['meal_code']).toSet(),
+          hasLength(5),
+        );
+        expect(
+          result.value.every(
+            (item) => item['meal_code'].toString().startsWith('nabi_vn_'),
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test(
       'production meal prompt includes all 163 SQLite code/name pairs',
@@ -287,24 +357,15 @@ void main() {
         );
         expect(meals, hasLength(163));
         expect(meals.where((meal) => meal.isActive), hasLength(163));
-        final catalogPayload = [
-          for (final meal in meals) {'code': meal.code, 'name': meal.mealName},
-        ];
-        expect(prompt, contains(jsonEncode(catalogPayload)));
-        expect(
-          catalogPayload.map((row) => row['code']).toSet(),
-          hasLength(163),
-        );
-        expect(
-          catalogPayload.every(
-            (row) =>
-                row.keys.toSet().containsAll({'code', 'name'}) &&
-                row.length == 2,
-          ),
-          isTrue,
-        );
-        for (final row in catalogPayload) {
-          expect(_countOccurrences(prompt, '"code":"${row['code']}"'), 1);
+        expect(meals.map((meal) => meal.code).toSet(), hasLength(163));
+        for (final meal in meals) {
+          expect(_countOccurrences(prompt, '"code":"${meal.code}"'), 1);
+          expect(
+            prompt,
+            contains(
+              '"code":"${meal.code}","name":${jsonEncode(meal.mealName)}',
+            ),
+          );
         }
       },
     );
@@ -1023,23 +1084,22 @@ void main() {
       ]);
     });
 
-    test(
-      'slot AI may use active catalog items outside local fallback subset',
-      () async {
-        final slot = MealPlanAiNormalizer.mealSlots.first;
-        final meal = catalog
-            .mealsForType(slot.type)
-            .firstWhere((candidate) => candidate.isActive);
-        final service = AIService(
-          modelNames: const ['fake-model'],
-          catalogLoader: () async => catalog,
-          textGenerator: ({required modelName, required prompt}) async =>
-              jsonEncode([
-                {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
-              ]),
-        );
+    test('slot AI output outside the eligible subset fails closed', () async {
+      final slot = MealPlanAiNormalizer.mealSlots.first;
+      final meal = catalog
+          .mealsForType(slot.type)
+          .firstWhere((candidate) => candidate.isActive);
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async =>
+            jsonEncode([
+              {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
+            ]),
+      );
 
-        final result = await service.generateMealSlotCodeItemWithSource(
+      await expectLater(
+        service.generateMealSlotCodeItemWithSource(
           startDate: DateTime(2026, 6, 18),
           day: 2,
           mealType: slot.type,
@@ -1048,10 +1108,50 @@ void main() {
           dayMealCodes: const {},
           eligibleFallbackCodesByType: {slot.type: const {}},
           onBackendInvocation: () async {},
+        ),
+        throwsStateError,
+      );
+    });
+
+    test(
+      'active unreviewed candidate is rejected and excluded from fallback',
+      () async {
+        final safeMeal = catalog.meals.firstWhere(
+          (meal) => meal.mealType == 'breakfast',
+        );
+        final candidate = _unreviewedCandidateMeal();
+        final candidateCatalog = AiCatalogBundle(
+          meals: [...catalog.meals, candidate],
+          exercises: catalog.exercises,
+          scheduleTasks: catalog.scheduleTasks,
+        );
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => candidateCatalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            expect(prompt, isNot(contains(candidate.code)));
+            return jsonEncode([
+              {'day': 2, 'meal_type': 'breakfast', 'meal_code': candidate.code},
+            ]);
+          },
         );
 
-        expect(result.source, PlanGenerationSource.ai);
-        expect(result.value.single['meal_code'], meal.code);
+        final result = await service.generateMealSlotCodeItemWithSource(
+          startDate: DateTime(2026, 6, 18),
+          day: 2,
+          mealType: 'breakfast',
+          catalog: candidateCatalog,
+          usedCodeCounts: const {},
+          dayMealCodes: const {},
+          eligibleFallbackCodesByType: {
+            'breakfast': {candidate.code, safeMeal.code},
+          },
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.localFallback);
+        expect(result.value.single['meal_code'], safeMeal.code);
+        expect(result.value.single['meal_code'], isNot(candidate.code));
       },
     );
 
@@ -1734,19 +1834,58 @@ MealCatalogItemModel _promptMeal({required String code, bool isActive = true}) {
     healthTopicName: 'Ăn uống cân bằng',
     healthTopicDescription: 'Chủ đề dinh dưỡng',
     ingredients: const ['yến mạch 40 g', 'trứng 1 quả'],
+    cookingSteps: const ['Nấu chín'],
     servingSize: '1 bát',
     allergenTags: const ['trứng'],
     avoidConditionTags: const ['đái tháo đường'],
-    nutritionStatus: 'estimated_from_ingredients',
-    constraintMetadataStatus: 'awaiting_professional_review',
-    metadataStatus: 'source_imported',
-    isPlanEligible: false,
-    sourceHash: 'sha256-test',
+    nutritionStatus: 'approved',
+    verifiedNutrients: const {'energy_kcal': 420},
+    nutritionEvidenceSource: 'test-source',
+    nutritionEvidenceDate: '2026-10-16',
+    nutritionEvidenceVersion: 'v1',
+    constraintMetadataStatus: 'approved',
+    allergenEvidenceSource: '',
+    allergenVerificationStatus: 'unknown',
+    metadataStatus: 'approved',
+    isPlanEligible: true,
+    sourceName: '',
+    sourceHash: '',
     isActive: isActive,
     createdAt: '2026-06-18T00:00:00Z',
     updatedAt: '2026-06-18T00:00:00Z',
   );
 }
+
+MealCatalogItemModel _unreviewedCandidateMeal({
+  String code = 'nabi_vn_candidate',
+  String name = 'Món chờ rà soát',
+}) => MealCatalogItemModel(
+  code: code,
+  mealType: 'unclassified',
+  mealName: name,
+  description: 'Mô tả chưa xác minh',
+  cookingInstructions: 'Bước nấu chưa duyệt',
+  calories: 350,
+  protein: 12,
+  carbs: 40,
+  fat: 10,
+  fiber: 5,
+  waterMl: 0,
+  nutritionStatus: 'estimated_unverified',
+  nutritionEvidenceSource: '',
+  ingredients: const ['nguyên liệu chưa rà soát'],
+  cookingSteps: const ['Bước chưa rà soát'],
+  servingSize: '1 phần chưa xác minh',
+  constraintMetadataStatus: 'awaiting_professional_review',
+  metadataStatus: 'ai_generated_needs_review',
+  isPlanEligible: false,
+  sourceName: MealCatalogItemModel.unreviewedWellnessCandidateSourceName,
+  sourceHash: List.filled(64, 'b').join(),
+  allergenVerificationStatus: 'unknown',
+  isActive: true,
+  createdAt: '2026-10-16T00:00:00Z',
+  updatedAt: '2026-10-16T00:00:00Z',
+);
 
 ExerciseCatalogItemModel _promptExercise({
   required String code,
@@ -1774,7 +1913,7 @@ List<MealCatalogItemModel> _longNameMealCatalog() => [
     MealCatalogItemModel(
       code: 'large-${slot.type}',
       mealType: slot.type,
-      mealName: List.filled(7000, 'x').join(),
+      mealName: '${slot.type} ${List.filled(7000, 'x').join()}',
       description: '',
       cookingInstructions: '',
       calories: 0,

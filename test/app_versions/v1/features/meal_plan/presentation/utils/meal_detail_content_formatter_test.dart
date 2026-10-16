@@ -24,10 +24,7 @@ void main() {
 
   test('uses estimated snapshot status when catalog detail is unavailable', () {
     final content = MealDetailContentFormatter.fromMeal(
-      _meal(
-        nutritionStatus: 'estimated_from_ingredients',
-        sodiumMg: 90,
-      ),
+      _meal(nutritionStatus: 'estimated_from_ingredients', sodiumMg: 90),
     );
 
     expect(content.isEstimated, isTrue);
@@ -42,76 +39,89 @@ void main() {
     expect(content.sodiumMg, isNull);
     expect(content.ironMg, isNull);
   });
+
+  test('hides nutrition estimates that have not been verified', () {
+    final content = MealDetailContentFormatter.fromMeal(
+      _meal(
+        detail: _detail(
+          nutritionStatus: 'estimated_unverified',
+          sodiumMg: 120,
+          potassiumMg: 410,
+        ),
+        nutritionStatus: 'estimated_unverified',
+      ),
+    );
+
+    expect(content.showNutrition, isFalse);
+  });
 }
 
 MealPlanEntity _meal({
   MealCatalogDetailEntity? detail,
   String nutritionStatus = '',
   double? sodiumMg,
-}) =>
-    MealPlanEntity(
-      id: 'meal-1',
-      userId: 'user-1',
-      planDate: '2026-08-16',
-      mealType: 'breakfast',
-      mealName: 'Cháo yến mạch',
-      description: '',
-      calories: 300,
-      protein: 10,
-      carbs: 50,
-      fat: 7,
-      fiber: 5,
-      waterMl: 0,
-      sodiumMg: sodiumMg,
-      nutritionStatus: nutritionStatus,
-      mealOrder: 1,
-      catalogDetail: detail,
-      isCompleted: false,
-      aiGenerated: true,
-      createdAt: '2026-08-16T00:00:00Z',
-      updatedAt: '2026-08-16T00:00:00Z',
-    );
+}) => MealPlanEntity(
+  id: 'meal-1',
+  userId: 'user-1',
+  planDate: '2026-08-16',
+  mealType: 'breakfast',
+  mealName: 'Cháo yến mạch',
+  description: '',
+  calories: 300,
+  protein: 10,
+  carbs: 50,
+  fat: 7,
+  fiber: 5,
+  waterMl: 0,
+  sodiumMg: sodiumMg,
+  nutritionStatus: nutritionStatus,
+  mealOrder: 1,
+  catalogDetail: detail,
+  isCompleted: false,
+  aiGenerated: true,
+  createdAt: '2026-08-16T00:00:00Z',
+  updatedAt: '2026-08-16T00:00:00Z',
+);
 
 MealCatalogDetailEntity _detail({
   required String nutritionStatus,
   double? sodiumMg,
   double? potassiumMg,
-}) =>
-    MealCatalogDetailEntity(
-      code: 'meal-1',
-      mealType: 'breakfast',
-      mealName: 'Cháo yến mạch',
-      description: '',
-      cookingInstructions: '',
-      calories: 300,
-      protein: 10,
-      carbs: 50,
-      fat: 7,
-      fiber: 5,
-      waterMl: 0,
-      sodiumMg: sodiumMg,
-      potassiumMg: potassiumMg,
-      healthTopicCode: '',
-      healthTopicName: '',
-      healthTopicDescription: '',
-      chapterNumber: null,
-      chapterName: '',
-      ingredients: const ['50g yến mạch'],
-      cookingSteps: const [],
-      benefits: '',
-      servingSize: '1 khẩu phần (ước tính)',
-      allergenTags: const [],
-      avoidConditionTags: const [],
-      nutritionStatus: nutritionStatus,
-      constraintMetadataStatus: 'awaiting_professional_review',
-      metadataStatus: 'source_imported',
-      isPlanEligible: false,
-      sourceName: 'Sức Khỏe Từ Nhà Bếp',
-      sourcePage: null,
-      sourceChapter: '',
-      sourceTopic: '',
-      sourceRecipeOrder: 1,
-      sourceHash: 'hash',
-      version: 1,
-      isActive: true,
-    );
+}) => MealCatalogDetailEntity(
+  code: 'meal-1',
+  mealType: 'breakfast',
+  mealName: 'Cháo yến mạch',
+  description: '',
+  cookingInstructions: '',
+  calories: 300,
+  protein: 10,
+  carbs: 50,
+  fat: 7,
+  fiber: 5,
+  waterMl: 0,
+  sodiumMg: sodiumMg,
+  potassiumMg: potassiumMg,
+  healthTopicCode: '',
+  healthTopicName: '',
+  healthTopicDescription: '',
+  chapterNumber: null,
+  chapterName: '',
+  ingredients: const ['50g yến mạch'],
+  cookingSteps: const [],
+  benefits: '',
+  servingSize: '1 khẩu phần (ước tính)',
+  allergenTags: const [],
+  avoidConditionTags: const [],
+  nutritionStatus: nutritionStatus,
+  constraintMetadataStatus: 'awaiting_professional_review',
+  metadataStatus: 'source_imported',
+  isPlanEligible: false,
+  sourceName: 'Sức Khỏe Từ Nhà Bếp',
+  sourcePage: null,
+  sourceChapter: '',
+  sourceTopic: '',
+  sourceRecipeOrder: 1,
+  sourceHash: 'hash',
+  version: 1,
+  isActive: true,
+);

@@ -4,12 +4,12 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 67 worklog(s)
-- coding - Coding: 42 worklog(s)
+- docs-context - Context and docs update: 70 worklog(s)
+- coding - Coding: 44 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
 - supabase-schema - Supabase schema and RLS: 38 worklog(s)
-- test - Test and verification: 18 worklog(s)
-- find-issues - Review and find issues: 7 worklog(s)
+- test - Test and verification: 21 worklog(s)
+- find-issues - Review and find issues: 9 worklog(s)
 - docs-dd - Design docs: 6 worklog(s)
 - fix-issues - Fix documented issue: 3 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
@@ -17,10 +17,11 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 52
+- unknown: 54
 - M32 FITNESS_TRAINING: 5
 - M31 SLEEP_SAFETY_MONITORING: 3
 - M31 SLEEP_SAFETY_MONITORING.: 3
+- M02 PERSONAL_SCHEDULE_AI, meal catalog.: 3
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
@@ -28,7 +29,6 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - M01 ONBOARDING_PROFILE: 2
 - M02 PERSONAL_SCHEDULE_AI: 2
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
-- M05 AI / runtime configuration / onboarding: 2
 
 ## Reusable Project Skills
 

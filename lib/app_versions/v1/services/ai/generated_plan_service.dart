@@ -579,6 +579,10 @@ class GeneratedPlanService {
                 mealType: slot.type,
                 conditions: profile.conditions.toSet(),
                 goals: profile.goals.toSet(),
+                selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
+                unparsedAllergyDetails: dashboardData.allergyNote
+                    .trim()
+                    .isNotEmpty,
                 additionalAllergies: dashboardData.allergyName.trim().isEmpty
                     ? const {}
                     : {dashboardData.allergyName.trim()},
@@ -606,7 +610,8 @@ class GeneratedPlanService {
       );
 
       failureStage = 'prepare_staging';
-      const promptVersion = 'personal_schedule_v8_weekly_meal_uniqueness';
+      const promptVersion =
+          'personal_schedule_v12_unreviewed_wellness_candidates';
       final inputFingerprint = _inputFingerprint(
         userId: userId,
         startDate: resolvedStartDate,
@@ -740,6 +745,7 @@ class GeneratedPlanService {
                     mealType: slot.type,
                     usedCodeCounts: dayUsedCounts,
                     dayMealCodes: dayMealCodes,
+                    eligibleCodesByType: fallbackMealCodesByType,
                   );
               slotItems.addAll(validatedSlot);
               final mealCode = validatedSlot.single['meal_code']! as String;
@@ -757,6 +763,7 @@ class GeneratedPlanService {
               startDay: day,
               days: 1,
               usedCodeCounts: mealUsedCounts,
+              eligibleCodesByType: fallbackMealCodesByType,
             );
             mealSource = PlanGenerationSource.combine(slotSources);
           }
@@ -821,6 +828,7 @@ class GeneratedPlanService {
                     startDate: dayDate,
                     days: 1,
                     createdAt: now().toIso8601String(),
+                    eligibleCodesByType: fallbackMealCodesByType,
                   ),
                 )
                 .map((meal) {
@@ -937,6 +945,7 @@ class GeneratedPlanService {
                   startDate: resolvedStartDate,
                   days: days,
                   createdAt: createdAt,
+                  eligibleCodesByType: fallbackMealCodesByType,
                 ),
               )
               .map((meal) {

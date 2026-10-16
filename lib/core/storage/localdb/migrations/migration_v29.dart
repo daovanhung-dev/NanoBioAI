@@ -6,6 +6,6 @@ class MigrationV29 {
   const MigrationV29._();
 
   static Future<void> run(DatabaseExecutor db) async {
-    await MealCatalogSeeder.seed(db);
+    await MealCatalogSeeder.seedLegacy(db);
   }
 }

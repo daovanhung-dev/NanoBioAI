@@ -99,6 +99,9 @@ String normalizeFoodEvidenceName(String value) =>
     value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
 class MealCatalogItemModel {
+  static const unreviewedWellnessCandidateSourceName =
+      'NaBi Vietnam original-recipe compilation (AI-assisted, unverified)';
+
   final String code;
   final String mealType;
   final String mealName;
@@ -152,6 +155,103 @@ class MealCatalogItemModel {
   final bool isActive;
   final String createdAt;
   final String updatedAt;
+
+  /// Whether the row can be sent to or selected by meal-plan generation.
+  ///
+  /// The 163 locally imported source-book rows remain usable for backward
+  /// compatibility. New source-verified rows must opt in and carry reviewed
+  /// nutrition, constraint, and allergen status. The explicitly user-directed
+  /// unreviewed wellness catalog is handled by a separate, narrower policy.
+  bool get isSelectableForMealPlanAi {
+    if (!isActive) return false;
+
+    final metadata = metadataStatus.trim().toLowerCase();
+    final nutrition = nutritionStatus.trim().toLowerCase();
+    if (const {
+      'ai_generated_needs_review',
+      'pending_review',
+      'awaiting_professional_review',
+      'rejected',
+    }.contains(metadata)) {
+      return false;
+    }
+
+    final candidateSource =
+        sourceName ==
+        'NaBi Vietnam original-recipe compilation (AI-assisted, unverified)';
+    if (metadata != 'source_verified' &&
+        (candidateSource || code.trim().toLowerCase().startsWith('nabi_vn_'))) {
+      return false;
+    }
+
+    // Preserve the existing source-book catalog, whose src_ rows predate the
+    // explicit plan-eligibility and review fields. Other imports must use the
+    // reviewed source_verified path below.
+    if (metadata == 'source_imported') {
+      return code.trim().toLowerCase().startsWith('src_') && !candidateSource;
+    }
+
+    if (nutrition == 'estimated_unverified' ||
+        nutrition == 'missing_source_data') {
+      return false;
+    }
+
+    if (!isPlanEligible) return false;
+    if (metadata == 'source_verified') {
+      return const {
+            'breakfast',
+            'morning_snack',
+            'lunch',
+            'afternoon_snack',
+            'dinner',
+          }.contains(mealType.trim().toLowerCase()) &&
+          nutrition == 'verified' &&
+          verifiedNutrients != null &&
+          nutritionEvidenceSource.trim().isNotEmpty &&
+          nutritionEvidenceDate.trim().isNotEmpty &&
+          nutritionEvidenceVersion.trim().isNotEmpty &&
+          ingredients.isNotEmpty &&
+          cookingSteps.isNotEmpty &&
+          servingSize.trim().isNotEmpty &&
+          sourceName.trim().isNotEmpty &&
+          RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(sourceHash.trim()) &&
+          constraintMetadataStatus.trim().toLowerCase() == 'verified' &&
+          const {
+            'verified_none',
+            'verified_present',
+          }.contains(allergenVerificationStatus.trim().toLowerCase()) &&
+          allergenEvidenceSource.trim().isNotEmpty;
+    }
+    return true;
+  }
+
+  /// Whether this user-authorized, unreviewed menu item may be considered only
+  /// for a general wellness schedule. This does not mark its evidence as
+  /// reviewed or make it eligible for strict nutrition/medical use.
+  bool get isUnreviewedWellnessScheduleCandidate {
+    return isActive &&
+        !isPlanEligible &&
+        code.trim().toLowerCase().startsWith('nabi_vn_') &&
+        mealType.trim().toLowerCase() == 'unclassified' &&
+        metadataStatus.trim().toLowerCase() == 'ai_generated_needs_review' &&
+        nutritionStatus.trim().toLowerCase() == 'estimated_unverified' &&
+        constraintMetadataStatus.trim().toLowerCase() ==
+            'awaiting_professional_review' &&
+        allergenVerificationStatus.trim().toLowerCase() == 'unknown' &&
+        allergenEvidenceSource.trim().isEmpty &&
+        verifiedNutrients == null &&
+        nutritionEvidenceSource.trim().isEmpty &&
+        nutritionFoodIds.isEmpty &&
+        nutritionEvidenceDate.trim().isEmpty &&
+        nutritionEvidenceVersion.trim().isEmpty &&
+        sourceName.trim() == unreviewedWellnessCandidateSourceName &&
+        ingredients.isNotEmpty &&
+        cookingSteps.isNotEmpty &&
+        RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(sourceHash.trim());
+  }
+
+  bool get isSelectableForGeneralWellnessSchedule =>
+      isSelectableForMealPlanAi || isUnreviewedWellnessScheduleCandidate;
 
   const MealCatalogItemModel({
     required this.code,

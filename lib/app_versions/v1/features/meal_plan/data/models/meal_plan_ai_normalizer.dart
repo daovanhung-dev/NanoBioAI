@@ -68,6 +68,7 @@ class MealPlanAiNormalizer {
     required DateTime startDate,
     int days = 7,
     required String createdAt,
+    Map<String, Set<String>>? eligibleCodesByType,
   }) {
     final validItems = validateCodeItems(
       items: items,
@@ -75,6 +76,7 @@ class MealPlanAiNormalizer {
       startDay: 1,
       days: days,
       usedCodeCounts: const {},
+      eligibleCodesByType: eligibleCodesByType,
     );
     final byDayAndType = <int, Map<String, Map<String, dynamic>>>{};
     for (final item in validItems) {
@@ -101,6 +103,8 @@ class MealPlanAiNormalizer {
           throw FormatException('Unknown meal_code: ${map['meal_code']}');
         }
         const factor = 1.0;
+        final hasReviewedNutrition =
+            !catalogItem.isUnreviewedWellnessScheduleCandidate;
         result.add(
           MealPlanModel(
             id: 'meal_${userId}_${date}_${slot.order}',
@@ -109,19 +113,43 @@ class MealPlanAiNormalizer {
             mealType: slot.type,
             mealName: catalogItem.mealName,
             description: catalogItem.description,
-            calories: (catalogItem.calories * factor).round(),
-            protein: _scaled(catalogItem.protein, factor),
-            carbs: _scaled(catalogItem.carbs, factor),
-            fat: _scaled(catalogItem.fat, factor),
-            fiber: _scaled(catalogItem.fiber, factor),
-            waterMl: (catalogItem.waterMl * factor).round(),
-            sugarG: _scaledNullable(catalogItem.sugarG, factor),
-            saturatedFatG: _scaledNullable(catalogItem.saturatedFatG, factor),
-            sodiumMg: _scaledNullable(catalogItem.sodiumMg, factor),
-            cholesterolMg: _scaledNullable(catalogItem.cholesterolMg, factor),
-            potassiumMg: _scaledNullable(catalogItem.potassiumMg, factor),
-            calciumMg: _scaledNullable(catalogItem.calciumMg, factor),
-            ironMg: _scaledNullable(catalogItem.ironMg, factor),
+            calories: hasReviewedNutrition
+                ? (catalogItem.calories * factor).round()
+                : 0,
+            protein: hasReviewedNutrition
+                ? _scaled(catalogItem.protein, factor)
+                : 0,
+            carbs: hasReviewedNutrition
+                ? _scaled(catalogItem.carbs, factor)
+                : 0,
+            fat: hasReviewedNutrition ? _scaled(catalogItem.fat, factor) : 0,
+            fiber: hasReviewedNutrition
+                ? _scaled(catalogItem.fiber, factor)
+                : 0,
+            waterMl: hasReviewedNutrition
+                ? (catalogItem.waterMl * factor).round()
+                : 0,
+            sugarG: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.sugarG, factor)
+                : null,
+            saturatedFatG: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.saturatedFatG, factor)
+                : null,
+            sodiumMg: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.sodiumMg, factor)
+                : null,
+            cholesterolMg: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.cholesterolMg, factor)
+                : null,
+            potassiumMg: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.potassiumMg, factor)
+                : null,
+            calciumMg: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.calciumMg, factor)
+                : null,
+            ironMg: hasReviewedNutrition
+                ? _scaledNullable(catalogItem.ironMg, factor)
+                : null,
             nutritionStatus: catalogItem.nutritionStatus,
             mealOrder: slot.order,
             startTime: slot.startTime,
@@ -133,9 +161,13 @@ class MealPlanAiNormalizer {
             topicName: catalogItem.healthTopicName,
             ingredients: catalogItem.ingredients,
             cookingSteps: catalogItem.cookingSteps,
-            benefits: catalogItem.benefits,
-            allergenTags: catalogItem.allergenTags,
-            conditionTags: catalogItem.avoidConditionTags,
+            benefits: hasReviewedNutrition ? catalogItem.benefits : '',
+            allergenTags: hasReviewedNutrition
+                ? catalogItem.allergenTags
+                : const [],
+            conditionTags: hasReviewedNutrition
+                ? catalogItem.avoidConditionTags
+                : const [],
             provenanceSource: catalogItem.sourceName,
             sourceHash: catalogItem.sourceHash,
             catalogSchemaVersion: catalogItem.version,
@@ -197,8 +229,12 @@ class MealPlanAiNormalizer {
       if (catalogItem == null) {
         throw FormatException('Unknown meal_code: $mealCode');
       }
-      if (!catalogItem.isActive) {
-        throw FormatException('Inactive meal_code: $mealCode');
+      final isExplicitlyAllowed =
+          eligibleCodesByType?[mealType]?.contains(mealCode) == true;
+      if (!catalogItem.isSelectableForMealPlanAi &&
+          !(isExplicitlyAllowed &&
+              catalogItem.isUnreviewedWellnessScheduleCandidate)) {
+        throw FormatException('Unapproved or ineligible meal_code: $mealCode');
       }
       if (catalogItem.mealName.trim().isEmpty) {
         throw FormatException('Meal catalog name is empty: $mealCode');
@@ -206,6 +242,11 @@ class MealPlanAiNormalizer {
       if (catalogItem.mealType != mealType &&
           catalogItem.mealType != 'unclassified') {
         throw FormatException('meal_code $mealCode is not valid for $mealType');
+      }
+      if (eligibleCodesByType != null && !isExplicitlyAllowed) {
+        throw FormatException(
+          'meal_code $mealCode is not eligible for $mealType',
+        );
       }
       final dayItems = byDayAndType.putIfAbsent(day, () => {});
       if (dayItems.containsKey(mealType)) {
@@ -273,8 +314,13 @@ class MealPlanAiNormalizer {
     }
     final mealCode = _readString(map['meal_code']).toLowerCase();
     final catalogItem = catalog.mealsByCode[mealCode];
-    if (catalogItem == null || !catalogItem.isActive) {
-      throw FormatException('Unknown or inactive meal_code: $mealCode');
+    final isExplicitlyAllowed =
+        eligibleCodesByType?[slot.type]?.contains(mealCode) == true;
+    if (catalogItem == null ||
+        (!catalogItem.isSelectableForMealPlanAi &&
+            !(isExplicitlyAllowed &&
+                catalogItem.isUnreviewedWellnessScheduleCandidate))) {
+      throw FormatException('Unknown or ineligible meal_code: $mealCode');
     }
     if (catalogItem.mealName.trim().isEmpty) {
       throw FormatException('Meal catalog name is empty: $mealCode');
@@ -285,8 +331,7 @@ class MealPlanAiNormalizer {
         'meal_code $mealCode is not valid for ${slot.type}',
       );
     }
-    if (eligibleCodesByType != null &&
-        eligibleCodesByType[slot.type]?.contains(mealCode) != true) {
+    if (eligibleCodesByType != null && !isExplicitlyAllowed) {
       throw FormatException(
         'meal_code $mealCode is not eligible for ${slot.type}',
       );

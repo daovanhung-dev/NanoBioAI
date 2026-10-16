@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 18 worklog(s).
+- Generated from 21 worklog(s).
 
 ## When To Read
 
@@ -22,10 +22,13 @@
 - Historical task type: Bugfix, diagnostics, focused tests, device reproduction attempt. (1)
 - Historical task type: Bugfix, phân loại lỗi, kiểm chứng trên thiết bị thật. (1)
 - Historical task type: Tái hiện lỗi trên điện thoại, chẩn đoán và sửa lỗi, regression tests. (1)
+- Historical task type: bugfix, test tap trung, cap nhat handoff (1)
+- Historical task type: coding, migration, focused tests, docs/context. (1)
+- Historical task type: test/runtime verification. (1)
 
 ## Common Modules
 
-- unknown: 3
+- unknown: 5
 - M08 HEALTH_SCORE_HABITS.: 1
 - M15 ADMIN_DASHBOARD, M16 ADMIN_OPS.: 1
 - lib/features/nabi/, lib/app_versions/v1/features/nabi/, AI chat v1: 1

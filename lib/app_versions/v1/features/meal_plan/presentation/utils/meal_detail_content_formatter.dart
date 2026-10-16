@@ -70,8 +70,13 @@ abstract final class MealDetailContentFormatter {
     final detailStatus = detail?.nutritionStatus.trim() ?? '';
     final snapshotStatus = meal.nutritionStatus.trim();
     final catalogClaimsReviewed = detail?.isPlanEligible != false;
+    final nutritionIsUnreviewed =
+        detailStatus == 'estimated_unverified' ||
+        snapshotStatus == 'estimated_unverified';
     final useCatalogNutrition =
-        detail != null && detailStatus != 'missing_source_data';
+        detail != null &&
+        detailStatus != 'missing_source_data' &&
+        detailStatus != 'estimated_unverified';
 
     final calories = useCatalogNutrition ? detail.calories : meal.calories;
     final protein = useCatalogNutrition ? detail.protein : meal.protein;
@@ -148,6 +153,7 @@ abstract final class MealDetailContentFormatter {
           ? 'Dinh dưỡng ước tính • 1 khẩu phần'
           : 'Dinh dưỡng • 1 khẩu phần',
       showNutrition:
+          !nutritionIsUnreviewed &&
           effectiveStatus != 'missing_source_data' &&
           _hasAnyNutrition(
             calories: calories,

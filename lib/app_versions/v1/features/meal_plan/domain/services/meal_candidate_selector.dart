@@ -1,6 +1,15 @@
 import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutrition_profile_entity.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 
+enum MealCandidateSelectionPolicy {
+  /// Require reviewed constraint and nutrition evidence for personalized picks.
+  strict,
+
+  /// Build a general wellness schedule when legacy recipes lack health evidence.
+  /// Explicit allergies and foods to avoid remain hard eligibility constraints.
+  wellnessSchedule,
+}
+
 class MealCandidateSelector {
   const MealCandidateSelector();
 
@@ -53,6 +62,8 @@ class MealCandidateSelector {
     bool unparsedAllergyDetails = false,
     Set<String> excludedCodes = const {},
     int? limit,
+    MealCandidateSelectionPolicy selectionPolicy =
+        MealCandidateSelectionPolicy.strict,
   }) {
     final normalizedType = normalizeMealCatalogType(mealType ?? '');
     final restrictions = profile.restrictions
@@ -116,17 +127,26 @@ class MealCandidateSelector {
         'improve digestion',
       }),
     );
+    final enforceReviewedWellnessEvidence =
+        selectionPolicy == MealCandidateSelectionPolicy.strict;
     final anyPersonalConstraint =
         allergyRestrictions.isNotEmpty ||
         avoidRestrictions.isNotEmpty ||
-        conditionTokens.isNotEmpty ||
         unparsedAllergyDetails ||
-        needsVerifiedNutrition ||
-        needsConditionReview;
+        (enforceReviewedWellnessEvidence &&
+            (conditionTokens.isNotEmpty ||
+                needsVerifiedNutrition ||
+                needsConditionReview));
 
     final candidates = catalog
         .where((meal) {
-          if (!meal.isActive || meal.code.trim().isEmpty) return false;
+          final isSelectable =
+              selectionPolicy == MealCandidateSelectionPolicy.wellnessSchedule
+              ? meal.isSelectableForGeneralWellnessSchedule
+              : meal.isSelectableForMealPlanAi;
+          if (!isSelectable || meal.code.trim().isEmpty) {
+            return false;
+          }
           if (_isFixtureCode(meal.code) || excludedCodes.contains(meal.code)) {
             return false;
           }
@@ -140,7 +160,8 @@ class MealCandidateSelector {
           if (!anyPersonalConstraint) return true;
 
           // Empty/unreviewed tags are unknown. Do not use them to infer safety.
-          if ((conditionTokens.isNotEmpty || needsConditionReview) &&
+          if (enforceReviewedWellnessEvidence &&
+              (conditionTokens.isNotEmpty || needsConditionReview) &&
               meal.constraintMetadataStatus != 'verified') {
             return false;
           }
@@ -149,7 +170,8 @@ class MealCandidateSelector {
                   meal.ingredients.isEmpty)) {
             return false;
           }
-          if (needsVerifiedNutrition &&
+          if (enforceReviewedWellnessEvidence &&
+              needsVerifiedNutrition &&
               !_hasRequiredNutritionForGoals(meal, goalTokens)) {
             return false;
           }
@@ -170,7 +192,11 @@ class MealCandidateSelector {
           }
           if (_conflictsWithAllergies(meal, allergyRestrictions)) return false;
           if (_conflictsWithAvoidFoods(meal, avoidRestrictions)) return false;
-          if (_conflictsWithConditions(meal, conditionTokens)) return false;
+          if ((enforceReviewedWellnessEvidence ||
+                  meal.constraintMetadataStatus == 'verified') &&
+              _conflictsWithConditions(meal, conditionTokens)) {
+            return false;
+          }
           return true;
         })
         .toList(growable: false);

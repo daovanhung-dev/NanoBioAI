@@ -13,13 +13,27 @@ void main() {
     final seeder = File(
       'lib/core/storage/localdb/seeders/meal_catalog_seeder.dart',
     ).readAsStringSync();
+    final migrationV36 = File(
+      'lib/core/storage/localdb/migrations/migration_v36.dart',
+    ).readAsStringSync();
 
     expect(databaseService, contains('MealCatalogSeeder.seed(db)'));
     expect(databaseService, contains('MigrationV29.run(db)'));
-    expect(migration, contains('MealCatalogSeeder.seed(db)'));
+    expect(migration, contains('MealCatalogSeeder.seedLegacy(db)'));
     expect(seeder, contains('SourceMealCatalogLoader.load'));
-    expect(seeder, contains('expectedMealCount = 163'));
+    expect(
+      seeder,
+      contains(
+        'expectedMealCount =\n      expectedLegacyMealCount + expectedCandidateMealCount',
+      ),
+    );
+    expect(seeder, contains('UnreviewedWellnessMealCatalogLoader.load'));
     expect(seeder, contains("['code', 'source_hash']"));
+    expect(migrationV36, contains('expectedCandidateMealCount = 3000'));
+    expect(
+      migrationV36,
+      contains('Migration v36 changed existing catalog row'),
+    );
   });
 
   test('app runtime no longer refreshes meal catalog from Supabase', () {

@@ -558,13 +558,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required int day,
     required AiCatalogBundle catalog,
     required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
     Map<String, Object?> personalization = const {},
     required AiBackendInvocationCallback onBackendInvocation,
   }) async {
     if (day < 1 || day > 7) {
       throw RangeError.range(day, 1, 7, 'day');
     }
-    _ensureMealCatalogAvailable(catalog);
+    _ensureMealCatalogAvailable(
+      catalog,
+      eligibleCodesByType: eligibleCodesByType,
+    );
     final traceId = AITraceLogger.nextTraceId('meal-day-$day');
     final prompt = MealPlanPrompt.generate(
       startDate: startDate,
@@ -572,6 +576,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       days: 1,
       catalog: catalog.meals,
       usedMealCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleCodesByType,
       personalization: personalization,
     );
     final result = await _generateMealChunk(
@@ -580,6 +585,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       prompt: prompt,
       chunk: _AIChunk(startDay: day, days: 1),
       usedCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleCodesByType,
       traceId: traceId,
       onBackendInvocation: onBackendInvocation,
     );
@@ -633,7 +639,10 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     if (day < 1 || day > 7) {
       throw RangeError.range(day, 1, 7, 'day');
     }
-    _ensureMealCatalogAvailable(catalog);
+    _ensureMealCatalogAvailable(
+      catalog,
+      eligibleCodesByType: eligibleFallbackCodesByType,
+    );
     try {
       return AIGenerationResult(
         value: await generateMealDayCodeItems(
@@ -641,6 +650,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           day: day,
           catalog: catalog,
           usedCodeCounts: usedCodeCounts,
+          eligibleCodesByType: eligibleFallbackCodesByType,
           personalization: personalization,
           onBackendInvocation: onBackendInvocation,
         ),
@@ -687,7 +697,10 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     if (day < 1 || day > 7) {
       throw RangeError.range(day, 1, 7, 'day');
     }
-    _ensureMealCatalogAvailable(catalog);
+    _ensureMealCatalogAvailable(
+      catalog,
+      eligibleCodesByType: eligibleFallbackCodesByType,
+    );
     final slotIndex = MealPlanAiNormalizer.mealSlots.indexWhere(
       (candidate) => candidate.type == mealType.trim().toLowerCase(),
     );
@@ -703,6 +716,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       onlyMealType: slot.type,
       catalog: catalog.meals,
       usedMealCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleFallbackCodesByType,
       personalization: personalization,
     );
     try {
@@ -731,6 +745,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             mealType: slot.type,
             usedCodeCounts: usedCodeCounts,
             dayMealCodes: dayMealCodes,
+            eligibleCodesByType: eligibleFallbackCodesByType,
           );
         },
       );
@@ -826,7 +841,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             .mealsForType(slot.type)
             .where(
               (meal) =>
-                  meal.isActive &&
+                  _isSelectableMealForScheduleRequest(
+                    meal,
+                    mealType: slot.type,
+                    eligibleCodesByType: eligibleCodesByType,
+                  ) &&
                   meal.code.trim().isNotEmpty &&
                   meal.mealName.trim().isNotEmpty &&
                   (eligibleCodesByType == null ||
@@ -924,7 +943,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             .mealsForType(slot.type)
             .where(
               (meal) =>
-                  meal.isActive &&
+                  _isSelectableMealForScheduleRequest(
+                    meal,
+                    mealType: slot.type,
+                    eligibleCodesByType: eligibleCodesByType,
+                  ) &&
                   meal.code.trim().isNotEmpty &&
                   meal.mealName.trim().isNotEmpty &&
                   !dayMealCodes.contains(meal.code) &&
@@ -1003,6 +1026,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String prompt,
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
     required String traceId,
     AiBackendInvocationCallback? onBackendInvocation,
   }) async {
@@ -1040,6 +1064,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             startDay: chunk.startDay,
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
+            eligibleCodesByType: eligibleCodesByType,
           );
           AITraceLogger.info(
             _tag,
@@ -1089,11 +1114,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
   }
 
-  void _ensureMealCatalogAvailable(AiCatalogBundle catalog) {
+  void _ensureMealCatalogAvailable(
+    AiCatalogBundle catalog, {
+    Map<String, Set<String>>? eligibleCodesByType,
+  }) {
     for (final slot in MealPlanAiNormalizer.mealSlots) {
       final hasCandidate = catalog.meals.any(
         (item) =>
-            item.isActive &&
+            (item.isSelectableForMealPlanAi ||
+                (item.isUnreviewedWellnessScheduleCandidate &&
+                    eligibleCodesByType?[slot.type]?.contains(item.code) ==
+                        true)) &&
             item.code.trim().isNotEmpty &&
             item.mealName.trim().isNotEmpty &&
             (item.mealType == slot.type || item.mealType == 'unclassified'),
@@ -1104,6 +1135,16 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         );
       }
     }
+  }
+
+  bool _isSelectableMealForScheduleRequest(
+    MealCatalogItemModel meal, {
+    required String mealType,
+    required Map<String, Set<String>>? eligibleCodesByType,
+  }) {
+    return meal.isSelectableForMealPlanAi ||
+        (meal.isUnreviewedWellnessScheduleCandidate &&
+            eligibleCodesByType?[mealType]?.contains(meal.code) == true);
   }
 
   void _ensureExerciseCatalogAvailable(AiCatalogBundle catalog) {

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 222
+- Total worklogs: 232
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -231,3 +231,13 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-15 | coding + DD | docs-dd | M22 MEDICATION_ADHERENCE; tích hợp M01 ONBOARDING_PROFILE và M09 SCHEDULE_NOTIFICATIONS. | [Worklog - Nhắc uống thuốc từ onboarding](../../docs/worklog/2026-10-15/003-worklog-medication-reminders-onboarding.md) |
 | 2026-10-15 | coding + docs | docs-context | M22 MEDICATION_ADHERENCE; onboarding copy M01. | [Worklog - Quản lý lịch nhắc thuốc trong Cài đặt](../../docs/worklog/2026-10-15/004-worklog-settings-medication-reminder-management.md) |
 | 2026-10-15 | coding | coding | meal catalog, meal plan prompt, SQLite v35. | [Worklog - Mô tả dinh dưỡng cho danh mục món ăn](../../docs/worklog/2026-10-15/005-worklog-meal-catalog-descriptions.md) |
+| 2026-10-16 | coding | coding | M02 PERSONAL_SCHEDULE_AI, meal catalog prompt. | [Worklog - Ngân sách prompt cho catalog 3.000 món](../../docs/worklog/2026-10-16/001-worklog-meal-catalog-prompt-budget.md) |
+| 2026-10-16 | coding | coding | M02 PERSONAL_SCHEDULE_AI, meal catalog/image assets. | [Worklog - Chuẩn bị tiếp nhận catalog món 3.000 dòng](../../docs/worklog/2026-10-16/002-worklog-meal-catalog-intake-readiness.md) |
+| 2026-10-16 | data intake review/documentation. | find-issues | M02 PERSONAL_SCHEDULE_AI, meal catalog. | [Worklog - Rà soát candidate catalog 3.000 món](../../docs/worklog/2026-10-16/003-worklog-meal-catalog-candidate-review.md) |
+| 2026-10-16 | research/docs trong goal mở rộng meal catalog. | docs-context | M02 PERSONAL_SCHEDULE_AI, meal catalog và prompt catalog. | [Worklog - Nghiên cứu nguồn mở và ngân sách catalog AI](../../docs/worklog/2026-10-16/004-worklog-open-recipe-source-research.md) |
+| 2026-10-16 | research/docs trong goal mở rộng meal catalog. | docs-context | M02 PERSONAL_SCHEDULE_AI, meal catalog. | [Worklog - Đánh giá nguồn recipe có license thương mại](../../docs/worklog/2026-10-16/005-worklog-paid-recipe-dataset-research.md) |
+| 2026-10-16 | research/docs trong goal mở rộng meal catalog. | find-issues | M02 PERSONAL_SCHEDULE_AI, meal catalog. | [Worklog - Rà soát thêm nguồn công thức tiếng Việt và nguồn mở](../../docs/worklog/2026-10-16/006-worklog-vietnamese-open-recipe-source-review.md) |
+| 2026-10-16 | coding, targeted verification, worklog/context | docs-context | M02 PERSONAL_SCHEDULE_AI, meal catalog | [Worklog - M02 meal catalog eligibility gate](../../docs/worklog/2026-10-16/007-worklog-meal-catalog-eligibility-gate.md) |
+| 2026-10-16 | bugfix, test tap trung, cap nhat handoff | test | M02 personal schedule AI, onboarding | [Worklog - M02 onboarding schedule candidate pool](../../docs/worklog/2026-10-16/008-worklog-onboarding-schedule-candidate-pool-fix.md) |
+| 2026-10-16 | coding, migration, focused tests, docs/context. | test | unknown | [Worklog - Tích hợp 3.000 món cho lịch AI wellness](../../docs/worklog/2026-10-16/009-worklog-use-3000-wellness-catalog.md) |
+| 2026-10-16 | test/runtime verification. | test | unknown | [Worklog - Xiaomi runtime seed verification](../../docs/worklog/2026-10-16/010-worklog-real-device-catalog-seed.md) |

@@ -85,7 +85,10 @@ void main() {
     'generateInitialGuestPlan allows guest before auth quota gates',
     () async {
       final repository = _RecordingDashboardRepository();
-      final dailyHealthDatasource = _RecordingDailyHealthDatasource();
+      final dailyHealthDatasource = _RecordingDailyHealthDatasource(
+        goals: const ['lose_weight'],
+        conditions: const ['diabetes'],
+      );
       final scheduleDatasource = _RecordingScheduleDatasource();
       final aiService = _RecordingAIService();
       final requestStore = _RecordingRequestStore();
@@ -120,6 +123,9 @@ void main() {
       expect(result.scheduleItemCount, 11);
       expect(requestStore.commitCalls, 1);
       expect(requestStore.guestInitialPlanUsed, isTrue);
+      expect(requestStore.promptVersions, [
+        'personal_schedule_v12_unreviewed_wellness_candidates',
+      ]);
       final uuidPattern = RegExp(
         r'^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
       );
@@ -137,7 +143,56 @@ void main() {
       expect(scheduleDatasource.seedCalls, 0);
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
+      expect(aiService.lastEligibleCodesByType, isNotNull);
+      expect(
+        aiService.lastEligibleCodesByType!.values.every(
+          (codes) => codes.isNotEmpty,
+        ),
+        isTrue,
+      );
       expect(reminderCalls, 1);
+    },
+  );
+
+  test(
+    'initial wellness schedule accepts eligible unreviewed SQLite candidates',
+    () async {
+      final aiService = _RecordingAIService();
+      final service = GeneratedPlanService(
+        dashboardRepository: _RecordingDashboardRepository(),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          goals: const ['lose_weight'],
+          conditions: const ['diabetes'],
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: _UnreviewedCandidateCatalogDatasource(),
+        requestStore: _RecordingRequestStore(),
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: const _FakeScheduleHorizonReader(),
+        currentUserId: () => null,
+        scheduleReminders: () async {},
+      );
+
+      final result = await service.generateInitialGuestPlan(
+        days: 1,
+        startDate: DateTime(2026, 1, 2),
+      );
+
+      expect(result.mealCount, 5);
+      expect(aiService.lastEligibleCodesByType, isNotNull);
+      expect(
+        aiService.lastEligibleCodesByType!.values.every(
+          (codes) =>
+              codes.length == 5 &&
+              codes.every((code) => code.startsWith('nabi_vn_')),
+        ),
+        isTrue,
+      );
     },
   );
 
@@ -1105,9 +1160,15 @@ class _RecordingDashboardRepository implements DashboardRepository {
 class _RecordingDailyHealthDatasource
     extends DailyHealthTrackingLocalDatasource {
   final String userId;
+  final List<String> goals;
+  final List<String> conditions;
   int fetchProfileCalls = 0;
 
-  _RecordingDailyHealthDatasource({this.userId = 'guest-1'});
+  _RecordingDailyHealthDatasource({
+    this.userId = 'guest-1',
+    this.goals = const [],
+    this.conditions = const [],
+  });
 
   @override
   Future<DailyHealthProfileEntity> fetchLatestProfile() async {
@@ -1115,8 +1176,8 @@ class _RecordingDailyHealthDatasource
     return DailyHealthProfileEntity(
       userId: userId,
       fullName: 'NabiGuest',
-      goals: [],
-      conditions: [],
+      goals: goals,
+      conditions: conditions,
       habits: [],
       sleepQuality: 'good',
       activityLevel: 'moderate',
@@ -1129,6 +1190,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   final records = <String, PersonalScheduleAiRequestRecord>{};
   final savedMealIds = <String>[];
   final savedScheduleIds = <String>[];
+  final promptVersions = <String>[];
   final committedMealIds = <String>[];
   final committedScheduleIds = <String>[];
   final stagedChunks = <String, Map<String, List<Map<String, dynamic>>>>{};
@@ -1180,6 +1242,7 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required String catalogFingerprint,
     required String promptVersion,
   }) async {
+    promptVersions.add(promptVersion);
     final next = (inputFingerprint, catalogFingerprint, promptVersion);
     if (_stageFingerprints[requestId] != next) {
       stagedChunks.remove(requestId);
@@ -1438,6 +1501,7 @@ class _RecordingScheduleDatasource extends LifestyleScheduleLocalDatasource {
 class _RecordingAIService extends AIService {
   int mealCalls = 0;
   int exerciseCalls = 0;
+  Map<String, Set<String>>? lastEligibleCodesByType;
   final callOrder = <String>[];
   final failuresRemainingByDay = <int, int>{};
   String? failSlotOnceFor;
@@ -1453,10 +1517,12 @@ class _RecordingAIService extends AIService {
     required int day,
     required AiCatalogBundle catalog,
     required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
     Map<String, Object?> personalization = const {},
     required AiBackendInvocationCallback onBackendInvocation,
   }) async {
     mealCalls++;
+    lastEligibleCodesByType = eligibleCodesByType;
     callOrder.add('meal:$day');
     final failuresRemaining = failuresRemainingByDay[day] ?? 0;
     if (failuresRemaining > 0) {
@@ -1471,6 +1537,12 @@ class _RecordingAIService extends AIService {
               catalog
                   .mealsForType(slot.type)
                   .where((item) => !usedToday.contains(item.code))
+                  .where(
+                    (item) =>
+                        eligibleCodesByType == null ||
+                        eligibleCodesByType[slot.type]?.contains(item.code) ==
+                            true,
+                  )
                   .toList()
                 ..sort((left, right) {
                   final count = (usedCodeCounts[left.code] ?? 0).compareTo(
@@ -1690,6 +1762,7 @@ class _BlockingAIService extends _RecordingAIService {
     required int day,
     required AiCatalogBundle catalog,
     required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
     Map<String, Object?> personalization = const {},
     required AiBackendInvocationCallback onBackendInvocation,
   }) async {
@@ -1701,6 +1774,7 @@ class _BlockingAIService extends _RecordingAIService {
       day: day,
       catalog: catalog,
       usedCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleCodesByType,
       personalization: personalization,
       onBackendInvocation: onBackendInvocation,
     );
@@ -1888,6 +1962,50 @@ class _FakeCatalogDatasource extends AiCatalogLocalDatasource {
       },
     );
   }
+}
+
+class _UnreviewedCandidateCatalogDatasource extends _FakeCatalogDatasource {
+  @override
+  Future<AiCatalogBundle> loadScheduleCatalogBundle() async {
+    final base = await super.loadScheduleCatalogBundle();
+    return AiCatalogBundle(
+      meals: [
+        for (final slot in MealPlanAiNormalizer.mealSlots)
+          _unreviewedScheduleCandidate(slot.type),
+      ],
+      exercises: base.exercises,
+      scheduleTasks: base.scheduleTasks,
+      ingredientEvidenceByName: base.ingredientEvidenceByName,
+    );
+  }
+}
+
+MealCatalogItemModel _unreviewedScheduleCandidate(String slotType) {
+  return MealCatalogItemModel(
+    code: 'nabi_vn_candidate_$slotType',
+    mealType: 'unclassified',
+    mealName: 'Món wellness $slotType',
+    description: 'Công thức kiểm thử chưa rà soát.',
+    cookingInstructions: 'Nấu chín theo bước đã lưu.',
+    calories: 350,
+    protein: 12,
+    carbs: 40,
+    fat: 10,
+    fiber: 5,
+    waterMl: 0,
+    ingredients: const ['nguyên liệu kiểm thử'],
+    cookingSteps: const ['Nấu chín theo hướng dẫn.'],
+    allergenVerificationStatus: 'unknown',
+    nutritionStatus: 'estimated_unverified',
+    constraintMetadataStatus: 'awaiting_professional_review',
+    metadataStatus: 'ai_generated_needs_review',
+    isPlanEligible: false,
+    sourceName: MealCatalogItemModel.unreviewedWellnessCandidateSourceName,
+    sourceHash: List.filled(64, 'c').join(),
+    isActive: true,
+    createdAt: '2026-01-01T00:00:00.000',
+    updatedAt: '2026-01-01T00:00:00.000',
+  );
 }
 
 class _SevenDayCatalogDatasource extends _FakeCatalogDatasource {
@@ -2082,6 +2200,7 @@ class _GuardedAIService extends AIService {
     required int day,
     required AiCatalogBundle catalog,
     required Map<String, int> usedCodeCounts,
+    Map<String, Set<String>>? eligibleCodesByType,
     Map<String, Object?> personalization = const {},
     required AiBackendInvocationCallback onBackendInvocation,
   }) async {

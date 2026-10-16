@@ -7,6 +7,7 @@ import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.da
 import 'package:nano_app/core/storage/localdb/daos/ai_catalog_dao.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
+import 'package:nano_app/core/storage/localdb/seeders/meal_catalog_seeder.dart';
 import 'package:nano_app/core/storage/localdb/tables/exercise_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/schedule_task_catalog_table.dart';
@@ -16,21 +17,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test(
-    'schedule DAO returns all 163 meals and all 40 exercises to prompts',
+    'schedule DAO returns all 3163 meals and all 40 exercises to prompts',
     () async {
-      final decoded =
-          jsonDecode(
-                await rootBundle.loadString('assets/data/meal_catalog_v1.json'),
-              )
-              as Map<String, dynamic>;
-      final meals = (decoded['recipes'] as List)
-          .whereType<Map>()
-          .map(
-            (row) => MealCatalogItemModel.fromSourceJson(
-              Map<String, Object?>.from(row),
-              timestamp: '2026-06-18T00:00:00Z',
-            ),
-          )
+      final meals = await MealCatalogSeeder.loadAll();
+      final candidateMeals = meals
+          .where((item) => item.isUnreviewedWellnessScheduleCandidate)
           .toList(growable: false);
       final draftExerciseSource =
           jsonDecode(
@@ -72,11 +63,19 @@ void main() {
       });
 
       final bundle = await AiCatalogDao(database).loadScheduleCatalogBundle();
-      expect(bundle.meals, hasLength(163));
+      expect(bundle.meals, hasLength(3163));
       expect(bundle.exercises, hasLength(40));
-      expect(bundle.meals.map((item) => item.code).toSet(), hasLength(163));
+      expect(bundle.meals.map((item) => item.code).toSet(), hasLength(3163));
+      expect(candidateMeals, hasLength(3000));
+      expect(candidateMeals.every((item) => !item.isPlanEligible), isTrue);
+      expect(
+        candidateMeals.every(
+          (item) => item.metadataStatus == 'ai_generated_needs_review',
+        ),
+        isTrue,
+      );
       expect(bundle.exercises.map((item) => item.code).toSet(), hasLength(40));
-      expect(bundle.meals.where((item) => item.isActive), hasLength(163));
+      expect(bundle.meals.where((item) => item.isActive), hasLength(3163));
       expect(bundle.exercises.where((item) => item.isActive), hasLength(16));
       expect(bundle.exercises.where((item) => !item.isActive), hasLength(24));
       expect(database.queryWhere[MealCatalogTable.tableName], isNull);
@@ -88,14 +87,38 @@ void main() {
         days: 1,
         catalog: bundle.meals,
         usedMealCodeCounts: const {},
+        eligibleCodesByType: {
+          for (final type in const [
+            'breakfast',
+            'morning_snack',
+            'lunch',
+            'afternoon_snack',
+            'dinner',
+          ])
+            type: candidateMeals.map((item) => item.code).toSet(),
+        },
       );
-      final mealPairs = [
-        for (final item in bundle.meals)
-          {'code': item.code, 'name': item.mealName},
-      ];
-      expect(mealPrompt, contains(jsonEncode(mealPairs)));
-      for (final item in bundle.meals) {
-        expect(mealPrompt, contains('"code":"${item.code}"'));
+      const catalogMarker = 'Không bỏ hoặc đổi mã, tên món:\n';
+      final catalogStart =
+          mealPrompt.indexOf(catalogMarker) + catalogMarker.length;
+      final promptRows =
+          (jsonDecode(mealPrompt.substring(catalogStart).trim()) as List)
+              .cast<Map<String, dynamic>>();
+      final candidatePromptRows = promptRows
+          .where((item) => item['code'].toString().startsWith('nabi_vn_'))
+          .toList(growable: false);
+      expect(candidatePromptRows, hasLength(3000));
+      expect(
+        candidatePromptRows.every((item) => item.keys.toSet().length == 2),
+        isTrue,
+      );
+      expect(promptRows, hasLength(3163));
+      expect(mealPrompt.length, lessThan(1000000));
+      final candidateNames = {
+        for (final item in candidateMeals) item.code: item.mealName,
+      };
+      for (final item in candidatePromptRows) {
+        expect(item['name'], candidateNames[item['code']]);
       }
 
       final exercisePrompt = ExerciseTasksPrompt.generate(

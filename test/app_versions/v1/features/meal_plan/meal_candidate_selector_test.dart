@@ -2,17 +2,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_candidate_selector.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutrition_profile_entity.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
+import 'package:nano_app/core/storage/localdb/seeders/source_meal_catalog_loader.dart';
+import 'package:nano_app/core/storage/localdb/seeders/unreviewed_wellness_meal_catalog_loader.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   const selector = MealCandidateSelector();
 
-  test('full-plan generation keeps active local catalog meals', () {
+  test('full-plan generation keeps eligible legacy and local meals', () {
     final candidates = selector.eligibleMeals(
       catalog: <MealCatalogItemModel>[
         _meal(code: 'approved'),
         _meal(code: 'draft', metadataStatus: 'pending_review'),
         _meal(code: 'reference', isPlanEligible: false),
         _meal(code: 'unclassified', mealType: 'unclassified'),
+        _meal(
+          code: 'candidate',
+          metadataStatus: 'ai_generated_needs_review',
+          nutritionStatus: 'estimated_unverified',
+          isPlanEligible: false,
+        ),
+        _meal(code: 'unaudited-import', metadataStatus: 'source_imported'),
         _meal(code: 'fixture-meal-breakfast-v1'),
         _meal(code: 'inactive', isActive: false),
       ],
@@ -21,7 +31,36 @@ void main() {
 
     expect(
       candidates.map((item) => item.code),
-      orderedEquals(['approved', 'draft', 'reference', 'unclassified']),
+      orderedEquals(['approved', 'unclassified']),
+    );
+  });
+
+  test('source-verified meal requires reviewed eligible metadata', () {
+    final reviewed = _meal(
+      code: 'reviewed',
+      metadataStatus: 'source_verified',
+      nutritionStatus: 'verified',
+      constraintStatus: 'verified',
+      allergenStatus: 'verified_none',
+      isPlanEligible: true,
+    );
+    final notReviewed = _meal(
+      code: 'not-reviewed',
+      metadataStatus: 'source_verified',
+      nutritionStatus: 'verified',
+      constraintStatus: 'awaiting_professional_review',
+      allergenStatus: 'unknown',
+      isPlanEligible: true,
+    );
+
+    expect(
+      selector
+          .eligibleMeals(
+            catalog: [reviewed, notReviewed],
+            profile: NutritionProfileEntity.empty('user-1'),
+          )
+          .map((meal) => meal.code),
+      ['reviewed'],
     );
   });
 
@@ -192,6 +231,71 @@ void main() {
     },
   );
 
+  test(
+    'wellness schedule remains available when legacy nutrition evidence is missing',
+    () async {
+      final candidates = selector.eligibleMeals(
+        catalog: await SourceMealCatalogLoader.load(),
+        profile: NutritionProfileEntity.empty('user-1'),
+        goals: const {'lose_weight'},
+        conditions: const {'diabetes'},
+        selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
+      );
+
+      expect(candidates, hasLength(163));
+      expect(candidates.every((meal) => meal.code.startsWith('src_')), isTrue);
+    },
+  );
+
+  test('wellness schedule still blocks unreviewed allergy data', () async {
+    final profile = NutritionProfileEntity.empty('user-1').copyWith(
+      restrictions: const <FoodRestrictionEntity>[
+        FoodRestrictionEntity(type: 'allergy', itemName: 'peanut'),
+      ],
+    );
+
+    expect(
+      selector.eligibleMeals(
+        catalog: await SourceMealCatalogLoader.load(),
+        profile: profile,
+        selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
+      ),
+      isEmpty,
+    );
+  });
+
+  test(
+    'wellness schedule accepts all 3000 candidates and fails closed on allergy',
+    () async {
+      final candidates = await UnreviewedWellnessMealCatalogLoader.load();
+      final profile = NutritionProfileEntity.empty('user-1');
+
+      final selected = selector.eligibleMeals(
+        catalog: candidates,
+        profile: profile,
+        goals: const {'lose_weight'},
+        conditions: const {'diabetes'},
+        selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
+      );
+
+      expect(selected, hasLength(3000));
+      expect(selected.map((meal) => meal.code).toSet(), hasLength(3000));
+      expect(selected.every((meal) => !meal.isPlanEligible), isTrue);
+      expect(
+        selector.eligibleMeals(
+          catalog: candidates,
+          profile: profile.copyWith(
+            restrictions: const [
+              FoodRestrictionEntity(type: 'allergy', itemName: 'peanut'),
+            ],
+          ),
+          selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
+        ),
+        isEmpty,
+      );
+    },
+  );
+
   test('unparsed allergy note blocks every candidate', () {
     expect(
       selector.eligibleMeals(
@@ -208,6 +312,8 @@ MealCatalogItemModel _meal({
   required String code,
   String mealType = 'breakfast',
   String metadataStatus = 'approved',
+  String nutritionStatus = 'approved',
+  String sourceName = '',
   bool isPlanEligible = true,
   bool isActive = true,
   List<String> ingredients = const [],
@@ -229,16 +335,36 @@ MealCatalogItemModel _meal({
     fat: 8,
     fiber: 4,
     waterMl: 0,
-    ingredients: ingredients,
+    ingredients: ingredients.isEmpty ? const ['gạo'] : ingredients,
     cookingSteps: const ['Bước 1'],
+    servingSize: '1 khẩu phần',
+    verifiedNutrients: metadataStatus == 'source_verified'
+        ? const {'energy_kcal': 300}
+        : verifiedNutrients,
+    nutritionEvidenceSource: metadataStatus == 'source_verified'
+        ? 'reviewed source'
+        : '',
+    nutritionEvidenceDate: metadataStatus == 'source_verified'
+        ? '2026-10-16'
+        : '',
+    nutritionEvidenceVersion: metadataStatus == 'source_verified' ? 'v1' : '',
+    allergenEvidenceSource: metadataStatus == 'source_verified'
+        ? 'reviewed source'
+        : '',
     allergenTags: allergenTags,
     allergenVerificationStatus: allergenStatus,
     avoidConditionTags: avoidConditionTags,
     metadataStatus: metadataStatus,
+    nutritionStatus: nutritionStatus,
     constraintMetadataStatus: constraintStatus,
-    verifiedNutrients: verifiedNutrients,
     isPlanEligible: isPlanEligible,
     isActive: isActive,
+    sourceName: metadataStatus == 'source_verified'
+        ? 'Reviewed source'
+        : sourceName,
+    sourceHash: metadataStatus == 'source_verified'
+        ? List.filled(64, 'a').join()
+        : '',
     createdAt: '2026-08-02T00:00:00Z',
     updatedAt: '2026-08-02T00:00:00Z',
   );

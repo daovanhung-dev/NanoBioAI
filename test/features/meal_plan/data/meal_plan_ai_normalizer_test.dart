@@ -111,6 +111,121 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('rejects active candidate meals that have not passed review', () {
+    final candidate = _unreviewedCandidate();
+    final candidateCatalog = AiCatalogBundle(
+      meals: [...catalog.meals, candidate],
+      exercises: catalog.exercises,
+      scheduleTasks: catalog.scheduleTasks,
+    );
+    final items = _items().take(MealPlanAiNormalizer.mealsPerDay).toList();
+    items.first['meal_code'] = candidate.code;
+
+    expect(
+      () => const MealPlanAiNormalizer().validateCodeItems(
+        items: items,
+        catalog: candidateCatalog,
+        startDay: 1,
+        days: 1,
+        usedCodeCounts: const {},
+      ),
+      throwsFormatException,
+    );
+  });
+
+  test(
+    'hydrates explicitly eligible wellness candidate without unverified nutrition',
+    () {
+      final candidate = _unreviewedCandidate();
+      final candidateCatalog = AiCatalogBundle(
+        meals: [...catalog.meals, candidate],
+        exercises: catalog.exercises,
+        scheduleTasks: catalog.scheduleTasks,
+      );
+      final items = _items().take(MealPlanAiNormalizer.mealsPerDay).toList();
+      items.first['meal_code'] = candidate.code;
+      final eligibleCodesByType = {
+        for (final item in items)
+          item['meal_type'] as String: {item['meal_code'] as String},
+      };
+
+      final meals = const MealPlanAiNormalizer().normalize(
+        items: items,
+        catalog: candidateCatalog,
+        userId: 'u1',
+        startDate: DateTime(2026, 6, 18),
+        days: 1,
+        createdAt: '2026-06-17T08:00:00',
+        eligibleCodesByType: eligibleCodesByType,
+      );
+
+      final hydrated = meals.first;
+      expect(hydrated.catalogCode, candidate.code);
+      expect(hydrated.mealName, candidate.mealName);
+      expect(hydrated.ingredients, candidate.ingredients);
+      expect(hydrated.cookingInstructions, candidate.cookingInstructions);
+      expect(hydrated.calories, 0);
+      expect(hydrated.protein, 0);
+      expect(hydrated.sodiumMg, isNull);
+      expect(hydrated.nutritionStatus, 'estimated_unverified');
+      expect(hydrated.benefits, isEmpty);
+    },
+  );
+
+  test('accepts a source-verified eligible meal with reviewed constraints', () {
+    final reviewed = MealCatalogItemModel(
+      code: 'reviewed_breakfast',
+      mealType: 'breakfast',
+      mealName: 'Bữa sáng đã duyệt',
+      description: 'Mô tả',
+      cookingInstructions: 'Chế biến',
+      calories: 320,
+      protein: 12,
+      carbs: 42,
+      fat: 8,
+      fiber: 4,
+      waterMl: 0,
+      nutritionStatus: 'verified',
+      verifiedNutrients: const {'energy_kcal': 320},
+      nutritionEvidenceSource: 'reviewed source',
+      nutritionEvidenceDate: '2026-10-16',
+      nutritionEvidenceVersion: 'v1',
+      constraintMetadataStatus: 'verified',
+      allergenVerificationStatus: 'verified_none',
+      allergenEvidenceSource: 'reviewed source',
+      metadataStatus: 'source_verified',
+      isPlanEligible: true,
+      sourceName: 'Reviewed source',
+      sourceHash: List.filled(64, 'a').join(),
+      ingredients: const ['gạo'],
+      cookingSteps: const ['Nấu chín'],
+      servingSize: '1 khẩu phần',
+      createdAt: '2026-10-16T00:00:00Z',
+      updatedAt: '2026-10-16T00:00:00Z',
+    );
+    final reviewedCatalog = AiCatalogBundle(
+      meals: [...catalog.meals, reviewed],
+      exercises: catalog.exercises,
+      scheduleTasks: catalog.scheduleTasks,
+    );
+
+    expect(
+      const MealPlanAiNormalizer().validateCodeItemForSlot(
+        item: {'day': 1, 'meal_type': 'breakfast', 'meal_code': reviewed.code},
+        catalog: reviewedCatalog,
+        day: 1,
+        mealType: 'breakfast',
+        usedCodeCounts: const {},
+        eligibleCodesByType: {
+          'breakfast': {reviewed.code},
+        },
+      ),
+      [
+        {'day': 1, 'meal_type': 'breakfast', 'meal_code': reviewed.code},
+      ],
+    );
+  });
 }
 
 List<Map<String, Object?>> _items() {
@@ -133,3 +248,30 @@ List<Map<String, Object?>> _items() {
         },
   ];
 }
+
+MealCatalogItemModel _unreviewedCandidate() => MealCatalogItemModel(
+  code: 'nabi_vn_candidate',
+  mealType: 'unclassified',
+  mealName: 'Món chờ rà soát',
+  description: 'Mô tả',
+  cookingInstructions: 'Bước nấu chưa duyệt',
+  calories: 350,
+  protein: 12,
+  carbs: 40,
+  fat: 10,
+  fiber: 5,
+  waterMl: 0,
+  nutritionStatus: 'estimated_unverified',
+  constraintMetadataStatus: 'awaiting_professional_review',
+  metadataStatus: 'ai_generated_needs_review',
+  isPlanEligible: false,
+  sourceName:
+      'NaBi Vietnam original-recipe compilation (AI-assisted, unverified)',
+  sourceHash: List.filled(64, 'b').join(),
+  allergenVerificationStatus: 'unknown',
+  ingredients: const ['nguyên liệu chưa rà soát'],
+  cookingSteps: const ['Bước chưa rà soát'],
+  isActive: true,
+  createdAt: '2026-10-16T00:00:00Z',
+  updatedAt: '2026-10-16T00:00:00Z',
+);
