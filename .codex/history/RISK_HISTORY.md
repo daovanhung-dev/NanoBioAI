@@ -1196,3 +1196,42 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-16/009-worklog-use-3000-wellness-catalog.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL on pre-existing repository issues: missing `docs/audit/source_truth_manifest.json` and stale backticked paths in generated history/task-skill entries; no path from this worklog was reported.
 - docs/worklog/2026-10-16/010-worklog-real-device-catalog-seed.md :: `initial_guest` trước đó là `failed`, chưa commit bữa/hoạt động nào và staging
 - docs/worklog/2026-10-16/010-worklog-real-device-catalog-seed.md :: `initial_guest` status `failed`, `meal_count=0`, `exercise_count=0`; prior
+- docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md :: - `pwsh -NoProfile -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và các stale backticked path ở worklog/task-skill cũ, ngoài phạm vi thay đổi của phiên này.
+- docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md :: - DTD discovery/connect và hot reload: SKIPPED, không có app Flutter đang kết nối; chưa có bằng chứng hiển thị trên thiết bị.
+- docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md :: - Chưa fix: Mới có 10/3.000 ảnh. Ảnh được tạo bằng AI theo phong cách ảnh chụp; rà soát trực quan không chứng minh đây là ảnh chụp hiện trường hoặc xác nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md :: - Cần kiểm tra tiếp: Chạy app trên thiết bị hoặc app đang kết nối để xác nhận ảnh tải trong thẻ, chi tiết và bộ chọn thay món; xem xét dung lượng bundle khi số lượng asset tăng.
+- docs/worklog/2026-10-16/012-worklog-meal-image-generation-0011-0015.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/012-worklog-meal-image-generation-0011-0015.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/012-worklog-meal-image-generation-0011-0015.md :: - Chưa fix: Còn 2.985 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay chứng nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/012-worklog-meal-image-generation-0011-0015.md :: - Cần kiểm tra tiếp: Tiếp tục từ mã `nabi_vn_0016`; xác nhận ảnh hiển thị trên thiết bị vẫn là bước chưa được chứng minh trong phiên trước.
+- docs/worklog/2026-10-16/013-worklog-meal-image-generation-0016-0020.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/013-worklog-meal-image-generation-0016-0020.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/013-worklog-meal-image-generation-0016-0020.md :: - Chưa fix: Còn 2.980 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay chứng nhận chuyên gia ẩm thực. 20 PNG hiện chiếm khoảng 51 MB, tương đương khoảng 7,5 GB nếu mở rộng tuyến tính lên 3.000 món; cần giải quyết dung lượng/phân phối trước khi đóng gói toàn bộ vào app.
+- docs/worklog/2026-10-16/013-worklog-meal-image-generation-0016-0020.md :: - Cần kiểm tra tiếp: Tiếp tục từ mã `nabi_vn_0021`; xác nhận hiển thị trên thiết bị vẫn chưa được chứng minh.
+- docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md :: - `docs/meal_catalog/IMAGE_GENERATION_GUIDE.md` - số ảnh hiện có và rủi ro dung lượng.
+- docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md :: - Chưa fix: Còn 2.975 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay chứng nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md :: - Cần kiểm tra tiếp: Giải quyết tối ưu dung lượng/phân phối trước khi đóng gói toàn catalog; tiếp tục từ mã `nabi_vn_0026`.
+- docs/worklog/2026-10-16/015-worklog-meal-image-generation-0026-0030.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/015-worklog-meal-image-generation-0026-0030.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/015-worklog-meal-image-generation-0026-0030.md :: - Chưa fix: Còn 2.970 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay chứng nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/015-worklog-meal-image-generation-0026-0030.md :: - Cần kiểm tra tiếp: Cần giải quyết dung lượng/phân phối ảnh trước khi đóng gói toàn catalog; tiếp tục từ mã `nabi_vn_0031`.
+- docs/worklog/2026-10-16/016-worklog-meal-image-generation-0031-0035.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/016-worklog-meal-image-generation-0031-0035.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/016-worklog-meal-image-generation-0031-0035.md :: - Chưa fix: Còn 2.965 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay xác nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/016-worklog-meal-image-generation-0031-0035.md :: - Cần kiểm tra tiếp: Giải quyết dung lượng/phân phối trước khi đóng gói toàn catalog; tiếp tục từ `nabi_vn_0036`.
+- docs/worklog/2026-10-16/017-worklog-meal-image-generation-0036-0040.md :: - Test Flutter: SKIPPED, phiên này chỉ thêm ảnh và cập nhật tài liệu; không sửa mã runtime.
+- docs/worklog/2026-10-16/017-worklog-meal-image-generation-0036-0040.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/017-worklog-meal-image-generation-0036-0040.md :: - Chưa fix: Còn 2.960 món chưa có ảnh; ảnh được tạo bằng AI và rà soát trực quan, không phải ảnh chụp hiện trường hay xác nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/017-worklog-meal-image-generation-0036-0040.md :: - Cần kiểm tra tiếp: Giải quyết dung lượng/phân phối trước khi đóng gói toàn catalog; tiếp tục từ mã `nabi_vn_0041`.
+- docs/worklog/2026-10-16/018-worklog-meal-image-generation-0041-0045.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/018-worklog-meal-image-generation-0041-0045.md :: - Chưa fix: còn 2.955 món cần ảnh; 45 ảnh hiện tại là ảnh AI photorealistic, không phải ảnh chụp hiện trường và chưa được chuyên gia ẩm thực xác nhận.
+- docs/worklog/2026-10-16/018-worklog-meal-image-generation-0041-0045.md :: - Cần kiểm tra tiếp: dung lượng ước tính khoảng 7,9 GB cho 3.000 ảnh cần chiến lược nén/phân phối trước khi đóng gói toàn bộ catalog; tiếp tục từ `nabi_vn_0046`.
+- docs/worklog/2026-10-16/019-worklog-meal-image-generation-0046-0050.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/019-worklog-meal-image-generation-0046-0050.md :: - Chưa fix: còn 2.950 món cần ảnh; ảnh AI photorealistic chưa phải ảnh chụp hiện trường hoặc xác nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/019-worklog-meal-image-generation-0046-0050.md :: - Cần kiểm tra tiếp: dung lượng tuyến tính gần 7,92 GB khi đủ 3.000 PNG; cần phương án nén/phân phối trước khi bundle toàn catalog; tiếp tục từ `nabi_vn_0051`.
+- docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Chưa fix: còn 2.945 món cần ảnh; ảnh được AI tạo theo phong cách photorealistic, không phải ảnh chụp hiện trường hay xác nhận chuyên gia ẩm thực.
+- docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Cần kiểm tra tiếp: 3.000 ảnh PNG ước tính gần 7,87 GB; cần phương án nén/phân phối trước khi bundle toàn catalog; tiếp tục từ `nabi_vn_0056`.

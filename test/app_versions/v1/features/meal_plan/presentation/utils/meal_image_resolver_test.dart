@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/utils/meal_image_resolver.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('MealImageResolver', () {
     test('resolves verified Vietnamese dish names exactly', () {
       expect(
@@ -35,6 +37,19 @@ void main() {
         MealImageResolver.assetPathForName('Món hoàn toàn mới'),
         'assets/images/meals/pdf_health_book/__unknown_meal__.webp',
       );
+    });
+
+    test('resolves a generated recipe image by stable catalog code', () {
+      const code = 'nabi_vn_0001_thit_ba_chi_nuong_mat_ong_toi_kem_ca_tim';
+      final imagePath = 'assets/images/meals/catalog_v1/$code.png';
+
+      final paths = MealImageResolver.resolveAssetPaths(
+        availableAssets: {imagePath},
+        catalogCode: code,
+        mealName: 'Thịt ba chỉ nướng mật ong tỏi kèm cà tím',
+      );
+
+      expect(paths, [imagePath]);
     });
   });
 }

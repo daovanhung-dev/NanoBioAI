@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 70 worklog(s)
+- docs-context - Context and docs update: 85 worklog(s)
 - coding - Coding: 44 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
 - supabase-schema - Supabase schema and RLS: 38 worklog(s)
@@ -18,17 +18,17 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 ## Frequent Modules
 
 - unknown: 54
+- catalog nabi_3000_mon_viet_moi.json.: 6
 - M32 FITNESS_TRAINING: 5
 - M31 SLEEP_SAFETY_MONITORING: 3
 - M31 SLEEP_SAFETY_MONITORING.: 3
 - M02 PERSONAL_SCHEDULE_AI, meal catalog.: 3
+- catalog nabi_3000_mon_viet_moi.json và meal-plan UI.: 3
+- catalog nabi_3000_mon_viet_moi.json và asset thực đơn.: 3
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
 - docs/DD M01-M19: 2
-- M01 ONBOARDING_PROFILE: 2
-- M02 PERSONAL_SCHEDULE_AI: 2
-- M15 ADMIN_DASHBOARD, M16 ADMIN_OPS: 2
 
 ## Reusable Project Skills
 

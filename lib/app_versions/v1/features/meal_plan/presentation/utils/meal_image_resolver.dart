@@ -168,31 +168,51 @@ abstract final class MealImageResolver {
   /// recipes with the same display name. Existing source-book images remain a
   /// fallback for the current catalog.
   static Future<List<String>> assetPathsForMeal(MealPlanEntity meal) {
-    final cacheKey = '${meal.catalogCode}\u0000${meal.mealName}';
-    return _assetPathsForMealCache.putIfAbsent(
-      cacheKey,
-      () => _resolveAssetPathsForMeal(meal),
+    return assetPathsForCatalogItem(
+      catalogCode: meal.catalogCode,
+      mealName: meal.mealName,
     );
   }
 
-  static Future<List<String>> _resolveAssetPathsForMeal(
-    MealPlanEntity meal,
-  ) async {
-    final assetNames = await (_assetNamesFuture ??=
-        AssetManifest.loadFromAssetBundle(
-          rootBundle,
-        ).then((manifest) => manifest.listAssets().toSet()));
+  static Future<List<String>> assetPathsForCatalogItem({
+    required String catalogCode,
+    required String mealName,
+  }) {
+    final normalizedCode = catalogCode.trim();
+    final cacheKey = '$normalizedCode\u0000$mealName';
+    return _assetPathsForMealCache.putIfAbsent(
+      cacheKey,
+      () async => resolveAssetPaths(
+        availableAssets: await (_assetNamesFuture ??=
+            AssetManifest.loadFromAssetBundle(
+              rootBundle,
+            ).then((manifest) => manifest.listAssets().toSet())),
+        catalogCode: normalizedCode,
+        mealName: mealName,
+      ),
+    );
+  }
+
+  /// Resolves catalog and exact-name image candidates against an asset list.
+  ///
+  /// This pure helper keeps code-keyed lookup testable without loading the
+  /// Flutter asset bundle.
+  static List<String> resolveAssetPaths({
+    required Set<String> availableAssets,
+    required String catalogCode,
+    required String mealName,
+  }) {
     final candidates = <String>[];
-    final code = meal.catalogCode.trim();
+    final code = catalogCode.trim();
     if (_safeRecipeCode.hasMatch(code)) {
       for (final extension in _catalogImageExtensions) {
         final path = '$catalogV1AssetPath/$code.$extension';
-        if (assetNames.contains(path)) candidates.add(path);
+        if (availableAssets.contains(path)) candidates.add(path);
       }
     }
-    final namePath = resolveAssetPath(meal.mealName);
+    final namePath = resolveAssetPath(mealName);
     if (namePath != null &&
-        assetNames.contains(namePath) &&
+        availableAssets.contains(namePath) &&
         !candidates.contains(namePath)) {
       candidates.add(namePath);
     }

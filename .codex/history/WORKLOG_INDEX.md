@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 232
+- Total worklogs: 247
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -241,3 +241,18 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-16 | bugfix, test tap trung, cap nhat handoff | test | M02 personal schedule AI, onboarding | [Worklog - M02 onboarding schedule candidate pool](../../docs/worklog/2026-10-16/008-worklog-onboarding-schedule-candidate-pool-fix.md) |
 | 2026-10-16 | coding, migration, focused tests, docs/context. | test | unknown | [Worklog - Tích hợp 3.000 món cho lịch AI wellness](../../docs/worklog/2026-10-16/009-worklog-use-3000-wellness-catalog.md) |
 | 2026-10-16 | test/runtime verification. | test | unknown | [Worklog - Xiaomi runtime seed verification](../../docs/worklog/2026-10-16/010-worklog-real-device-catalog-seed.md) |
+| 2026-10-16 | Tạo ảnh, tích hợp UI, kiểm tra và ghi nhận tiến độ. | docs-context | meal_plan và catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo và tích hợp ảnh món Việt 0001-0010](../../docs/worklog/2026-10-16/011-worklog-meal-image-generation-0001-0010.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0011-0015](../../docs/worklog/2026-10-16/012-worklog-meal-image-generation-0011-0015.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0016-0020](../../docs/worklog/2026-10-16/013-worklog-meal-image-generation-0016-0020.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0021-0025](../../docs/worklog/2026-10-16/014-worklog-meal-image-generation-0021-0025.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0026-0030](../../docs/worklog/2026-10-16/015-worklog-meal-image-generation-0026-0030.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0031-0035](../../docs/worklog/2026-10-16/016-worklog-meal-image-generation-0031-0035.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. | docs-context | catalog nabi_3000_mon_viet_moi.json. | [Worklog - Tạo ảnh món Việt 0036-0040](../../docs/worklog/2026-10-16/017-worklog-meal-image-generation-0036-0040.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ và xác nhận đường hiển thị ảnh món ăn. | docs-context | catalog nabi_3000_mon_viet_moi.json và meal-plan UI. | [Worklog - Tạo ảnh món Việt 0041-0045](../../docs/worklog/2026-10-16/018-worklog-meal-image-generation-0041-0045.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ và xác nhận hiển thị trong asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và meal-plan UI. | [Worklog - Tạo ảnh món Việt 0046-0050](../../docs/worklog/2026-10-16/019-worklog-meal-image-generation-0046-0050.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ và xác nhận hiển thị trong asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và meal-plan UI. | [Worklog - Tạo ảnh món Việt 0051-0055](../../docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md) |
+| 2026-10-16 | Tạo theo lô, rà soát trực quan và nối ảnh theo mã catalog. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0056-0065](../../docs/worklog/2026-10-16/021-worklog-meal-image-generation-0056-0065.md) |
+| 2026-10-16 | Tạo ảnh theo lô, rà soát theo công thức và xác nhận hiển thị qua asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và ảnh thực đơn. | [Worklog - Tạo ảnh món Việt 0066-0075](../../docs/worklog/2026-10-16/022-worklog-meal-image-generation-0066-0075.md) |
+| 2026-10-16 | Tạo lô ảnh, rà soát trực quan, nối asset và kiểm tra hiển thị từ asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và luồng thực đơn. | [Worklog - Tạo ảnh món Việt 0076-0085](../../docs/worklog/2026-10-16/023-worklog-meal-image-generation-0076-0085.md) |
+| 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0086-0095](../../docs/worklog/2026-10-16/024-worklog-meal-image-generation-0086-0095.md) |
+| 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0096-0105](../../docs/worklog/2026-10-16/025-worklog-meal-image-generation-0096-0105.md) |

@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: "none"
 
-version: 1.0.1+4
+version: 1.0.1+6
 
 environment:
   sdk: ^3.9.2
@@ -97,6 +97,7 @@ flutter:
     - assets/data/fitness_training/
     - assets/data/fitness_training/images/atlas/
     - assets/images/
+    - assets/images/meals/catalog_v1/
     - assets/images/meals/pdf_health_book/
     - assets/icons/
     - assets/icons/custom/

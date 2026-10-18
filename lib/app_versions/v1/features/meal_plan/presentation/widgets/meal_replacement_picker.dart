@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_replacement_entities.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/presentation/widgets/meal_photo.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 Future<MealReplacementResult?> showMealReplacementPicker({
@@ -7,7 +8,8 @@ Future<MealReplacementResult?> showMealReplacementPicker({
   required Future<List<MealReplacementCandidateEntity>> candidatesFuture,
   required Future<MealReplacementResult> Function(
     MealReplacementCandidateEntity candidate,
-  ) onConfirm,
+  )
+  onConfirm,
 }) {
   return showModalBottomSheet<MealReplacementResult>(
     context: context,
@@ -31,7 +33,8 @@ class MealReplacementPickerSheet extends StatefulWidget {
   final Future<List<MealReplacementCandidateEntity>> candidatesFuture;
   final Future<MealReplacementResult> Function(
     MealReplacementCandidateEntity candidate,
-  ) onConfirm;
+  )
+  onConfirm;
 
   @override
   State<MealReplacementPickerSheet> createState() =>
@@ -142,6 +145,14 @@ class _MealReplacementPickerSheetState
                           ),
                           child: Row(
                             children: [
+                              MealPhoto.catalogItem(
+                                catalogCode: candidate.code,
+                                mealName: candidate.mealName,
+                                width: 64,
+                                height: 64,
+                                borderRadius: AppRadius.md,
+                              ),
+                              const SizedBox(width: AppSpacing.md),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +161,9 @@ class _MealReplacementPickerSheetState
                                       candidate.mealName,
                                       style: AppTextStyles.heading4,
                                     ),
-                                    if (candidate.healthTopicName.trim().isNotEmpty)
+                                    if (candidate.healthTopicName
+                                        .trim()
+                                        .isNotEmpty)
                                       Text(
                                         candidate.healthTopicName,
                                         style: AppTextStyles.bodySmall.copyWith(
@@ -165,7 +178,9 @@ class _MealReplacementPickerSheetState
                                           _PickerPill(
                                             '${candidate.calories} kcal',
                                           ),
-                                        if (candidate.servingSize.trim().isNotEmpty)
+                                        if (candidate.servingSize
+                                            .trim()
+                                            .isNotEmpty)
                                           _PickerPill(candidate.servingSize),
                                       ],
                                     ),
@@ -271,7 +286,11 @@ class _PickerMessage extends StatelessWidget {
           children: [
             Icon(icon, size: 42, color: context.semanticColors.primary),
             const SizedBox(height: AppSpacing.md),
-            Text(title, textAlign: TextAlign.center, style: AppTextStyles.heading3),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.heading3,
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               subtitle,

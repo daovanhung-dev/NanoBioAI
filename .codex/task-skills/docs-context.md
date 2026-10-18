@@ -2,16 +2,19 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 70 worklog(s).
+- Generated from 85 worklog(s).
 
 ## When To Read
 
 - Historical task type: unknown (38)
 - Historical task type: docs-context (10)
+- Historical task type: Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. (6)
 - Historical task type: docs (5)
 - Historical task type: bugfix / M31 SLEEP_SAFETY_MONITORING. (2)
 - Historical task type: bugfix M02 PERSONAL_SCHEDULE_AI. (2)
 - Historical task type: research/docs trong goal mở rộng meal catalog. (2)
+- Historical task type: Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ và xác nhận hiển thị trong asset bundle. (2)
+- Historical task type: Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. (2)
 - Historical task type: docs/context update (1)
 - Historical task type: coding - pha khao sat/checklist/plan, chua coding runtime (1)
 - Historical task type: coding / visual asset integration (1)
@@ -23,17 +26,22 @@
 - Historical task type: Bổ sung lối điều hướng UI vào chức năng hiện có. (1)
 - Historical task type: coding + docs (1)
 - Historical task type: coding, targeted verification, worklog/context (1)
+- Historical task type: Tạo ảnh, tích hợp UI, kiểm tra và ghi nhận tiến độ. (1)
+- Historical task type: Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ và xác nhận đường hiển thị ảnh món ăn. (1)
+- Historical task type: Tạo theo lô, rà soát trực quan và nối ảnh theo mã catalog. (1)
+- Historical task type: Tạo ảnh theo lô, rà soát theo công thức và xác nhận hiển thị qua asset bundle. (1)
+- Historical task type: Tạo lô ảnh, rà soát trực quan, nối asset và kiểm tra hiển thị từ asset bundle. (1)
 
 ## Common Modules
 
 - unknown: 42
+- catalog nabi_3000_mon_viet_moi.json.: 6
+- catalog nabi_3000_mon_viet_moi.json và meal-plan UI.: 3
+- catalog nabi_3000_mon_viet_moi.json và asset thực đơn.: 3
 - .codex: 2
 - docs/issues, docs/todo: 1
 - authentication: 1
 - .codex project workflow: 1
-- Product Flow, Membership, Quota, FamilyPlus, Sale/referral, DD workflow.: 1
-- .codex, workflow router, domain context, worklog learning, project skill.: 1
-- .codex, history learning, task-skills, project skill: 1
 
 ## Work Pattern
 

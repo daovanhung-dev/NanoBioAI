@@ -9,16 +9,36 @@ class MealPhoto extends StatelessWidget {
     super.key,
     required this.meal,
     this.height = 164,
+    this.width,
     this.borderRadius = AppRadius.xl,
-  });
+  }) : catalogCode = null,
+       mealName = null;
 
-  final MealPlanEntity meal;
+  const MealPhoto.catalogItem({
+    super.key,
+    required this.catalogCode,
+    required this.mealName,
+    this.height = 164,
+    this.width,
+    this.borderRadius = AppRadius.xl,
+  }) : meal = null;
+
+  final MealPlanEntity? meal;
+  final String? catalogCode;
+  final String? mealName;
   final double height;
+  final double? width;
   final double borderRadius;
+
+  String get _resolvedCode => meal?.catalogCode ?? catalogCode ?? '';
+  String get _resolvedMealName => meal?.mealName ?? mealName ?? '';
 
   @override
   Widget build(BuildContext context) {
-    final assetPathsFuture = MealImageResolver.assetPathsForMeal(meal);
+    final assetPathsFuture = MealImageResolver.assetPathsForCatalogItem(
+      catalogCode: _resolvedCode,
+      mealName: _resolvedMealName,
+    );
     final radius = BorderRadius.circular(borderRadius);
 
     return FutureBuilder<List<String>>(
@@ -28,13 +48,13 @@ class MealPhoto extends StatelessWidget {
         if (snapshot.hasError || assetPaths == null || assetPaths.isEmpty) {
           return _buildFramedPhoto(
             radius: radius,
-            child: _MealPhotoFallback(mealName: meal.mealName),
+            child: _MealPhotoFallback(mealName: _resolvedMealName),
           );
         }
 
         return Semantics(
           image: true,
-          label: 'Ảnh món ${meal.mealName}',
+          label: 'Ảnh món $_resolvedMealName',
           child: _buildFramedPhoto(
             radius: radius,
             child: _buildImageCandidate(assetPaths, 0),
@@ -54,7 +74,7 @@ class MealPhoto extends StatelessWidget {
         if (nextIndex < assetPaths.length) {
           return _buildImageCandidate(assetPaths, nextIndex);
         }
-        return _MealPhotoFallback(mealName: meal.mealName);
+        return _MealPhotoFallback(mealName: _resolvedMealName);
       },
     );
   }
@@ -65,7 +85,11 @@ class MealPhoto extends StatelessWidget {
   }) {
     return ClipRRect(
       borderRadius: radius,
-      child: SizedBox(width: double.infinity, height: height, child: child),
+      child: SizedBox(
+        width: width ?? double.infinity,
+        height: height,
+        child: child,
+      ),
     );
   }
 }
