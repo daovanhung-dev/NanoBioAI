@@ -17,6 +17,8 @@ Canonical project-local skill. The repo-discovered wrapper at `.agents/skills/na
 6. If the selected task is creating or updating a module DD from BD, read `.codex/skills/create-dd-from-bd/SKILL.md`.
 7. If the user only says "doc context" or "read .codex" without a work type, follow `.codex/workflows/context-read.md`.
 
+For work under `iot/xiaozhi-esp32/`, first read `.codex/domains/xiaozhi-esp32.md`, then the subproject `AGENTS.md` and `iot/xiaozhi-esp32/docs/agent-context/README.md`. Keep this imported project separate from NanoBioAI app runtime unless a task explicitly asks for integration.
+
 ## Workflow Selection
 
 Use `references/context-router.md` for trigger phrases and workflow/domain routing.

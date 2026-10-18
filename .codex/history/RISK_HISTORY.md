@@ -1235,3 +1235,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Chưa fix: còn 2.945 món cần ảnh; ảnh được AI tạo theo phong cách photorealistic, không phải ảnh chụp hiện trường hay xác nhận chuyên gia ẩm thực.
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Cần kiểm tra tiếp: 3.000 ảnh PNG ước tính gần 7,87 GB; cần phương án nén/phân phối trước khi bundle toàn catalog; tiếp tục từ `nabi_vn_0056`.
+- docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL - con thieu `docs/audit/source_truth_manifest.json` va stale path trong history/task-skill Nabi ngoai pham vi; sau khi sua, khong con bao path moi cua XiaoZhi.
+- docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Flutter/ESP-IDF build va test: SKIPPED - chi nhap snapshot/context, khong sua runtime code.
+- docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Chua fix: validator repository-wide van phat hien source-truth manifest thieu va cac tham chieu stale khong thuoc thay doi nay.
+- docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Can kiem tra tiep: chay build firmware va kiem tra tren OSTB 3ST khi co task rieng; task nay khong thuc hien build hay device QA.

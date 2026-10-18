@@ -13,5 +13,6 @@ Use one domain context file by default.
 | UI/theme/Nabicopy               | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
 | Daily health tracking           | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`                                          |
 | Lifestyle schedule/timeline     | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`                                             |
+| XiaoZhi ESP32 / phone-local AI  | `.codex/domains/xiaozhi-esp32.md`              | `iot/xiaozhi-esp32/`                                                                        |
 
 If a task crosses domains, read the primary domain first, then the second domain only after confirming the dependency by `rg`.

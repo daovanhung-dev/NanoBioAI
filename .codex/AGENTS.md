@@ -10,6 +10,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini REST client noi bo (khong co Gemini Dart SDK), local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 36`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
+- Embedded project: `iot/xiaozhi-esp32/` is an independent XiaoZhi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
 
 Source-of-truth order for current-state claims: code reachable from
 `lib/main.dart` -> executable SQLite/Supabase source -> package/platform config
@@ -67,6 +68,11 @@ Use `.codex/workflows/README.md` to choose the primary workflow:
 
 Do not mix modes unless the user explicitly asks for a chain.
 
+For work inside `iot/xiaozhi-esp32/`, also read
+`.codex/domains/xiaozhi-esp32.md`, `iot/xiaozhi-esp32/AGENTS.md`, and
+`iot/xiaozhi-esp32/docs/agent-context/README.md` before selecting task-specific
+source. Preserve the imported snapshot and any existing changes.
+
 ## Task Skill Router
 
 After choosing the workflow, read `.codex/task-skills/README.md` and then the matching task file if present. If no exact task key exists, continue with the workflow and record the missing/needed task-skill in the worklog self-review.
@@ -90,6 +96,7 @@ Use `.codex/domains/README.md` and read one domain file by default:
 - UI/theme/Nabicopy
 - Daily health tracking
 - Lifestyle schedule/timeline
+- XiaoZhi ESP32 firmware and phone-local AI
 
 Add a second domain only after `rg` proves cross-domain impact.
 

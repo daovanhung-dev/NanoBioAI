@@ -49,6 +49,7 @@ bioai.db
 .pub-cache/
 .pub/
 pubspec.lock
+!/iot/xiaozhi-esp32/phone_app/pubspec.lock
 
 # Coverage
 /coverage/

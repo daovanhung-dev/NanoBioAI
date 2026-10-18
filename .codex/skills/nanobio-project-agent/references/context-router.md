@@ -31,6 +31,7 @@ Read `.codex/history/OPEN_RISKS.md` only for release readiness, auth, Supabase, 
 | update .codex/docs/checklist/project map/history | `docs-context.md` |
 | scaffold/refactor version folders | `refactor-scaffold.md` |
 | Supabase SQL/RLS/membership/quota/family/sale schema | `supabase-schema.md` |
+| XiaoZhi ESP32 or phone-local AI project | matching workflow plus `.codex/domains/xiaozhi-esp32.md`; read `iot/xiaozhi-esp32/AGENTS.md` and its `iot/xiaozhi-esp32/docs/agent-context/README.md` before project source |
 
 ## Expansion Rule
 

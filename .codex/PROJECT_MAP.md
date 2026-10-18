@@ -14,6 +14,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - Canonical UI/motion design: `.codex/design/`
 - Shared services: `lib/services/`
 - Shared widgets: `lib/shared/widgets/`
+- Independent embedded project snapshot: `iot/xiaozhi-esp32/` (ESP-IDF firmware and Android phone-local AI app)
 - Tests: `test/`
 - BD/DD docs: `docs/BD/`, `docs/DD/`
 - Supabase build/seed and draft docs: `docs/supabase/01_build_system.sql`,
@@ -35,6 +36,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | Create/update/read DD                | `.codex/workflows/docs-dd.md`           | product/domain as needed |
 | Update `.codex`/maps/checklists      | `.codex/workflows/docs-context.md`      | optional                 |
 | Design/refactor toàn UI/motion/sound   | `.codex/workflows/docs-context.md`      | UI/theme/NabiCopy        |
+| XiaoZhi ESP32 firmware or phone app    | matching project workflow + subproject `AGENTS.md` | `.codex/domains/xiaozhi-esp32.md` |
 | Refactor scaffold/version boundaries | `.codex/workflows/refactor-scaffold.md` | access/membership        |
 | Supabase schema/RLS/quota/sale       | `.codex/workflows/supabase-schema.md`   | access/membership        |
 
@@ -51,6 +53,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | UI / Theme / NabiCopy                 | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
 | Daily Health Tracking                 | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`, `test/features/daily_health_tracking/`  |
 | Lifestyle Schedule                    | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`, `test/features/lifestyle_schedule/`        |
+| XiaoZhi ESP32 / phone-local AI         | `.codex/domains/xiaozhi-esp32.md`              | `iot/xiaozhi-esp32/`                                                                            |
 
 ## Critical Files
 

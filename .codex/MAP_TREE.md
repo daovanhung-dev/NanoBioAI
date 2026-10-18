@@ -58,6 +58,7 @@ project inventory. Use `rg --files` for the current truth.
 - `.codex/domains/ui-nami.md`
 - `.codex/domains/health-tracking.md`
 - `.codex/domains/lifestyle-schedule.md`
+- `.codex/domains/xiaozhi-esp32.md`
 
 ## Generated Memory
 
@@ -101,6 +102,7 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 - Current docs entrypoint and source audit: `docs/README.md`, `docs/audit/`
 - UI design source: `.codex/design/`
 - Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`
+- Imported XiaoZhi project: `iot/xiaozhi-esp32/` (see `.codex/domains/xiaozhi-esp32.md` and its own `AGENTS.md`)
 
 M32 design records: docs/BD/fitness_training/ and docs/DD/fitness_training/
 (Draft; PO-directed pilot runtime is in progress; reviewer approvals remain pending).

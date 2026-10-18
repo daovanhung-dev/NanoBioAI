@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 247
+- Total worklogs: 248
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -256,3 +256,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-16 | Tạo lô ảnh, rà soát trực quan, nối asset và kiểm tra hiển thị từ asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và luồng thực đơn. | [Worklog - Tạo ảnh món Việt 0076-0085](../../docs/worklog/2026-10-16/023-worklog-meal-image-generation-0076-0085.md) |
 | 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0086-0095](../../docs/worklog/2026-10-16/024-worklog-meal-image-generation-0086-0095.md) |
 | 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0096-0105](../../docs/worklog/2026-10-16/025-worklog-meal-image-generation-0096-0105.md) |
+| 2026-10-18 | docs-context va nhap snapshot local | docs-context | iot/xiaozhi-esp32/, .codex/ | [Worklog - Nhap XiaoZhi ESP32 va noi context agent](../../docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md) |
