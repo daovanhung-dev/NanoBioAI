@@ -13,7 +13,10 @@ class PreparedFoodScanImage {
   final String path;
   final String mimeType;
 
-  const PreparedFoodScanImage({required this.path, this.mimeType = 'image/jpeg'});
+  const PreparedFoodScanImage({
+    required this.path,
+    this.mimeType = 'image/jpeg',
+  });
 }
 
 class FoodScanImageService {
@@ -64,6 +67,22 @@ class FoodScanImageService {
     }
   }
 
+  Future<PreparedFoodScanImage?> retrieveLostImage({
+    required String userId,
+  }) async {
+    try {
+      final picked = await pickerService.retrieveLostImage();
+      if (picked == null) return null;
+      return await prepare(picked, userId: userId);
+    } on ImagePickerServiceException catch (error) {
+      throw FoodScanException(
+        code: 'IMAGE_RECOVERY_FAILED',
+        userMessage: error.userMessage,
+        cause: error,
+      );
+    }
+  }
+
   Future<PreparedFoodScanImage> prepare(
     XFile source, {
     required String userId,
@@ -103,8 +122,7 @@ class FoodScanImageService {
         path.join(appDir.path, 'food_scans', safeUser),
       );
       await targetDir.create(recursive: true);
-      final filename =
-          'food_scan_${_now().toUtc().microsecondsSinceEpoch}.jpg';
+      final filename = 'food_scan_${_now().toUtc().microsecondsSinceEpoch}.jpg';
       final target = File(path.join(targetDir.path, filename));
       await target.writeAsBytes(encoded, flush: true);
       return PreparedFoodScanImage(path: target.path);

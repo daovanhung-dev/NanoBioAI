@@ -20,6 +20,8 @@ class LocalAiRuntimeService {
 
   Future<bool> loadSelectedTextModel() async => false;
 
+  Future<bool> hasInstalledSelectedTextModel() async => false;
+
   Future<void> installAndSelectTextModel(String modelId) async {
     throw const LocalAiUnsupportedPlatformException();
   }
@@ -27,6 +29,8 @@ class LocalAiRuntimeService {
   Future<void> cancelDownload(String modelId) async {}
 
   Future<void> unload() async {}
+
+  Future<T> withModelUnloaded<T>(Future<T> Function() action) => action();
 
   Future<int> selectedContextSize() async =>
       localAiTextModelById(localAiDefaultModelId).contextSize;

@@ -16,6 +16,7 @@ class LocalAiSetupGate extends StatefulWidget {
 
 class _LocalAiSetupGateState extends State<LocalAiSetupGate> {
   bool _checking = true;
+  bool _modelAvailable = false;
   String? _selectedModelId;
   String? _startupMessage;
 
@@ -38,14 +39,15 @@ class _LocalAiSetupGateState extends State<LocalAiSetupGate> {
         return;
       }
 
-      final ready = await runtime.loadSelectedTextModel();
+      final ready = await runtime.hasInstalledSelectedTextModel();
       if (!mounted) return;
       setState(() {
         _checking = false;
         _selectedModelId = modelId;
+        _modelAvailable = ready;
         if (!ready) {
           _startupMessage =
-              'Nabi chưa mở được model đã chọn. Bạn có thể tải lại hoặc chọn model khác.';
+              'Không tìm thấy model đã chọn trên thiết bị. Bạn có thể tải lại hoặc chọn model khác.';
         }
       });
     } catch (_) {
@@ -63,7 +65,7 @@ class _LocalAiSetupGateState extends State<LocalAiSetupGate> {
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) return widget.child;
-    if (!_checking && LocalAiRuntimeService.instance.loadedModelId != null) {
+    if (!_checking && _modelAvailable) {
       return widget.child;
     }
     return MaterialApp(
@@ -75,7 +77,10 @@ class _LocalAiSetupGateState extends State<LocalAiSetupGate> {
           : LocalAiModelSetupPage(
               initialModelId: _selectedModelId ?? localAiDefaultModelId,
               startupMessage: _startupMessage,
-              onInstalled: () => setState(() => _checking = false),
+              onInstalled: () => setState(() {
+                _checking = false;
+                _modelAvailable = true;
+              }),
             ),
     );
   }

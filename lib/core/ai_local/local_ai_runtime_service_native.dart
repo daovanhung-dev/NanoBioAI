@@ -84,11 +84,35 @@ class LocalAiRuntimeService {
     }
   }
 
+  /// Checks the selected text model files without loading them into memory.
+  Future<bool> hasInstalledSelectedTextModel() async {
+    final modelId = await selectedModelId();
+    if (modelId == null) return false;
+    final model = localAiTextModelById(modelId);
+    return await _installedPath(model.asset) != null;
+  }
+
   Future<void> cancelDownload(String modelId) async {
     _activeDownloads.remove(modelId)?.close();
   }
 
   Future<void> unload() => _withOperation(_unload);
+
+  /// Keeps local inference out of memory for the full duration of [action].
+  ///
+  /// This is used while Android's image picker is in the foreground on
+  /// memory-constrained devices. Holding the operation lease prevents a queued
+  /// text request from loading the model again before the picker returns.
+  Future<T> withModelUnloaded<T>(Future<T> Function() action) async {
+    final release = await _acquireOperation();
+    try {
+      await _unload();
+      progress.value = null;
+      return await action();
+    } finally {
+      await release();
+    }
+  }
 
   Future<int> selectedContextSize() async {
     final modelId = await selectedModelId();

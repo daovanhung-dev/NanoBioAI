@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
+import 'package:nano_app/core/ai_local/local_ai_runtime_service.dart';
 import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
@@ -39,6 +40,14 @@ final foodScanServiceProvider = Provider<FoodScanService>((ref) {
 final foodScanImageServiceProvider = Provider<FoodScanImageService>((ref) {
   return FoodScanImageService();
 });
+
+typedef FoodScanRunWithModelUnloaded =
+    Future<T> Function<T>(Future<T> Function() action);
+
+final foodScanWithLocalModelUnloadedProvider =
+    Provider<FoodScanRunWithModelUnloaded>((ref) {
+      return LocalAiRuntimeService.instance.withModelUnloaded;
+    });
 
 final foodScanConsentProvider = FutureProvider.family<bool, String>((
   ref,
@@ -134,9 +143,13 @@ class FoodScanController extends Notifier<FoodScanState> {
       errorMessage: null,
     );
     try {
-      final prepared = camera
-          ? await _images.pickCamera(userId: userId)
-          : await _images.pickGallery(userId: userId);
+      // Keep the model unloaded and prevent queued AI work from reloading it
+      // while the system picker is foregrounded on low-memory devices.
+      final prepared = await ref.read(foodScanWithLocalModelUnloadedProvider)(
+        () => camera
+            ? _images.pickCamera(userId: userId)
+            : _images.pickGallery(userId: userId),
+      );
       if (prepared == null) {
         state = state.copyWith(phase: FoodScanPhase.idle);
         return;
@@ -149,6 +162,29 @@ class FoodScanController extends Notifier<FoodScanState> {
       _fail(error.userMessage);
     } catch (_) {
       _fail('Nabi chưa thể chọn ảnh lúc này. Bạn thử lại nhé.');
+    }
+  }
+
+  Future<void> recoverLostPickerImage(String userId) async {
+    if (state.busy || state.imagePath != null) return;
+    state = state.copyWith(
+      phase: FoodScanPhase.selectingImage,
+      errorMessage: null,
+    );
+    try {
+      final prepared = await _images.retrieveLostImage(userId: userId);
+      if (prepared == null) {
+        state = state.copyWith(phase: FoodScanPhase.idle);
+        return;
+      }
+      state = FoodScanState(
+        phase: FoodScanPhase.readyToAnalyze,
+        imagePath: prepared.path,
+      );
+    } on FoodScanException catch (error) {
+      _fail(error.userMessage);
+    } catch (_) {
+      _fail('Nabi chưa thể khôi phục ảnh vừa chọn. Bạn thử chọn lại nhé.');
     }
   }
 

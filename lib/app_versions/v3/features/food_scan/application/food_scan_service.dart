@@ -27,7 +27,8 @@ class FoodScanService {
        healthContextDatasource =
            healthContextDatasource ?? const FoodScanHealthContextDatasource(),
        localRepository = localRepository ?? FoodScanLocalRepository(),
-       nutritionResolver = nutritionResolver ?? const FoodScanNutritionResolver(),
+       nutritionResolver =
+           nutritionResolver ?? const FoodScanNutritionResolver(),
        ruleEngine = ruleEngine ?? const FoodScanHealthRuleEngine(),
        now = now ?? DateTime.now;
 
@@ -39,7 +40,9 @@ class FoodScanService {
     if (!vision.isFoodImage) throw const FoodScanException.notFood();
 
     final resolved = nutritionResolver.resolve(vision.items);
-    if (resolved.items.isEmpty || resolved.total.caloriesKcal <= 0) {
+    if (vision.nutritionIncompleteIndexes.isNotEmpty ||
+        resolved.items.isEmpty ||
+        resolved.total.caloriesKcal <= 0) {
       throw const FoodScanException(
         code: 'NUTRITION_UNAVAILABLE',
         userMessage:
@@ -151,7 +154,10 @@ class FoodScanService {
       );
     }
     final context = await healthContextDatasource.load(userId);
-    final rules = ruleEngine.evaluate(healthContext: context, items: result.items);
+    final rules = ruleEngine.evaluate(
+      healthContext: context,
+      items: result.items,
+    );
     final health = await aiDatasource.evaluateHealth(
       healthContext: context,
       items: result.items,

@@ -3,47 +3,62 @@ import 'package:nano_app/app_versions/v3/features/food_scan/application/food_sca
 import 'package:nano_app/app_versions/v3/features/food_scan/domain/entities/food_scan_models.dart';
 
 void main() {
-  test('vision prompt requires multiple foods, allergens and structured JSON', () {
-    final prompt = FoodScanPrompts.vision();
-    expect(prompt, contains('is_food_image'));
-    expect(prompt, contains('estimated_weight_g'));
-    expect(prompt, contains('possible_allergens'));
-    expect(prompt, contains('nutrition_label'));
-    expect(prompt, contains('JSON'));
-  });
+  test(
+    'vision prompt requires multiple foods, allergens and structured JSON',
+    () {
+      final prompt = FoodScanPrompts.vision();
+      expect(prompt, contains('is_food_image'));
+      expect(prompt, contains('estimated_weight_g'));
+      expect(prompt, contains('possible_allergens'));
+      expect(prompt, contains('nutrition_label'));
+      expect(prompt, contains('carbohydrates_g'));
+      expect(prompt, contains('plain bread, a roll, bun, baguette'));
+      expect(prompt, contains('Calories must be greater than zero'));
+      expect(prompt, contains('macro grams must be zero or greater'));
+      expect(prompt, contains('JSON'));
+      expect(prompt.length, lessThan(2000));
+      expect(prompt, isNot(contains('biotin_b7_mcg')));
+    },
+  );
 
-  test('health prompt keeps medical safety boundaries and per-condition review', () {
-    const item = FoodScanItem(
-      id: '1',
-      name: 'Cơm trắng',
-      normalizedName: 'com trang',
-      estimatedWeightGrams: 180,
-      confirmedWeightGrams: 180,
-      portionDescription: '1 bát',
-      cookingMethod: 'nấu',
-      ingredients: ['gạo'],
-      possibleAllergens: [],
-      confidence: .9,
-      nutrition: NutritionEstimate(caloriesKcal: 234),
-      nutritionSource: 'internal_catalog',
-    );
+  test(
+    'health prompt keeps medical safety boundaries and per-condition review',
+    () {
+      const item = FoodScanItem(
+        id: '1',
+        name: 'Cơm trắng',
+        normalizedName: 'com trang',
+        estimatedWeightGrams: 180,
+        confirmedWeightGrams: 180,
+        portionDescription: '1 bát',
+        cookingMethod: 'nấu',
+        ingredients: ['gạo'],
+        possibleAllergens: [],
+        confidence: .9,
+        nutrition: NutritionEstimate(caloriesKcal: 234),
+        nutritionSource: 'internal_catalog',
+      );
 
-    final prompt = FoodScanPrompts.health(
-      healthContext: {
-        'health_conditions': [
-          {'condition_name': 'Ví dụ bệnh', 'severity_level': 1},
-        ],
-      },
-      items: const [item],
-      totalNutrition: const NutritionEstimate(caloriesKcal: 234),
-      deterministicWarnings: const [],
-    );
+      final prompt = FoodScanPrompts.health(
+        healthContext: {
+          'health_conditions': [
+            {'condition_name': 'Ví dụ bệnh', 'severity_level': 1},
+          ],
+        },
+        items: const [item],
+        totalNutrition: const NutritionEstimate(caloriesKcal: 234),
+        deterministicWarnings: const [],
+      );
 
-    expect(prompt, contains('Không khuyên người dùng tự ngừng/bỏ/dừng thuốc'));
-    expect(prompt, contains('Không nói "an toàn tuyệt đối"'));
-    expect(prompt, contains('Phân tích riêng từng bệnh lý'));
-    expect(prompt, contains('suitability_score'));
-  });
+      expect(
+        prompt,
+        contains('Không khuyên người dùng tự ngừng/bỏ/dừng thuốc'),
+      );
+      expect(prompt, contains('Không nói "an toàn tuyệt đối"'));
+      expect(prompt, contains('Phân tích riêng từng bệnh lý'));
+      expect(prompt, contains('suitability_score'));
+    },
+  );
   test('health result keeps daily goal comparison for UI', () {
     final evaluation = FoodHealthEvaluation.fromJson({
       'overall': {
@@ -82,5 +97,4 @@ void main() {
     expect(evaluation.summary, isNot(contains('ngừng thuốc ngay')));
     expect(evaluation.summary, contains('bác sĩ'));
   });
-
 }

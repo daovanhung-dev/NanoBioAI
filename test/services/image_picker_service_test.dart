@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nano_app/services/image_picker/image_picker_service.dart';
@@ -31,13 +32,16 @@ void main() {
   });
 
   group('ImagePickerService - camera permission', () {
-    test('legacy camera call keeps null behavior when permission is denied', () async {
-      final deniedService = ImagePickerService(
-        cameraPermissionRequest: () async => PermissionStatus.denied,
-      );
+    test(
+      'legacy camera call keeps null behavior when permission is denied',
+      () async {
+        final deniedService = ImagePickerService(
+          cameraPermissionRequest: () async => PermissionStatus.denied,
+        );
 
-      expect(await deniedService.pickFromCamera(), isNull);
-    });
+        expect(await deniedService.pickFromCamera(), isNull);
+      },
+    );
 
     test('denied camera permission throws a visible typed error', () async {
       final deniedService = ImagePickerService(
@@ -62,27 +66,95 @@ void main() {
       );
     });
 
-    test('permanently denied camera permission guides user to Settings', () async {
-      final deniedService = ImagePickerService(
-        cameraPermissionRequest: () async => PermissionStatus.permanentlyDenied,
+    test(
+      'permanently denied camera permission guides user to Settings',
+      () async {
+        final deniedService = ImagePickerService(
+          cameraPermissionRequest: () async =>
+              PermissionStatus.permanentlyDenied,
+        );
+
+        await expectLater(
+          deniedService.pickFromCameraWithPermissionFeedback(),
+          throwsA(
+            isA<ImagePickerServiceException>()
+                .having(
+                  (error) => error.kind,
+                  'kind',
+                  ImagePickerFailureKind.permission,
+                )
+                .having(
+                  (error) => error.userMessage,
+                  'message',
+                  contains('Cài đặt'),
+                ),
+          ),
+        );
+      },
+    );
+  });
+
+  group('ImagePickerService - lost image recovery', () {
+    test(
+      'returns an image recovered after Android activity recreation',
+      () async {
+        final picker = _FakeImagePicker(
+          () async => LostDataResponse(
+            file: XFile('/recovered/meal.jpg'),
+            type: RetrieveType.image,
+          ),
+        );
+        final recoveryService = ImagePickerService(picker: picker);
+
+        final recovered = await recoveryService.retrieveLostImage();
+
+        expect(recovered?.path, '/recovered/meal.jpg');
+      },
+    );
+
+    test('returns null when there is no lost image', () async {
+      final picker = _FakeImagePicker(() async => LostDataResponse.empty());
+      final recoveryService = ImagePickerService(picker: picker);
+
+      expect(await recoveryService.retrieveLostImage(), isNull);
+    });
+
+    test('maps platform recovery errors to a safe message', () async {
+      final picker = _FakeImagePicker(
+        () async => LostDataResponse(
+          exception: PlatformException(
+            code: 'internal_picker_failure',
+            message: 'private platform details',
+          ),
+        ),
       );
+      final recoveryService = ImagePickerService(picker: picker);
 
       await expectLater(
-        deniedService.pickFromCameraWithPermissionFeedback(),
+        recoveryService.retrieveLostImage(),
         throwsA(
           isA<ImagePickerServiceException>()
               .having(
-                (error) => error.kind,
-                'kind',
-                ImagePickerFailureKind.permission,
+                (error) => error.userMessage,
+                'user message',
+                contains('khôi phục ảnh'),
               )
               .having(
-                (error) => error.userMessage,
-                'message',
-                contains('Cài đặt'),
+                (error) => error.toString(),
+                'safe string representation',
+                isNot(contains('private platform details')),
               ),
         ),
       );
+    });
+
+    test('treats unsupported lost-data recovery as no image', () async {
+      final picker = _FakeImagePicker(() async {
+        throw UnimplementedError('unsupported platform');
+      });
+      final recoveryService = ImagePickerService(picker: picker);
+
+      expect(await recoveryService.retrieveLostImage(), isNull);
     });
   });
 
@@ -154,4 +226,13 @@ void main() {
       expect(error.toString(), isNot(contains('internal details')));
     });
   });
+}
+
+class _FakeImagePicker extends ImagePicker {
+  final Future<LostDataResponse> Function() _retrieveLostData;
+
+  _FakeImagePicker(this._retrieveLostData);
+
+  @override
+  Future<LostDataResponse> retrieveLostData() => _retrieveLostData();
 }

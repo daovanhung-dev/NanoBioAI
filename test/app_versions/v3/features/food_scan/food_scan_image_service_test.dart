@@ -59,4 +59,47 @@ void main() {
       );
     },
   );
+
+  test(
+    'prepares an image recovered from a killed Android picker activity',
+    () async {
+      final source = File(
+        path.join(sourceDirectory.path, 'recovered_meal.jpg'),
+      );
+      final rawImage = image_codec.Image(width: 800, height: 600);
+      image_codec.fill(rawImage, color: image_codec.ColorRgb8(200, 120, 40));
+      await source.writeAsBytes(image_codec.encodeJpg(rawImage));
+
+      final recoveryService = FoodScanImageService(
+        pickerService: ImagePickerService(
+          picker: _LostImagePicker(source.path),
+        ),
+        rootDirectory: () async => root,
+        now: () => DateTime.utc(2026, 8, 31, 1, 2, 3),
+      );
+
+      final prepared = await recoveryService.retrieveLostImage(
+        userId: 'user/1',
+      );
+
+      expect(prepared, isNotNull);
+      expect(
+        prepared!.path,
+        contains('food_scans${Platform.pathSeparator}user_1'),
+      );
+      expect(await File(prepared.path).exists(), isTrue);
+    },
+  );
+}
+
+class _LostImagePicker extends ImagePicker {
+  final String imagePath;
+
+  _LostImagePicker(this.imagePath);
+
+  @override
+  Future<LostDataResponse> retrieveLostData() async {
+    final image = XFile(imagePath);
+    return LostDataResponse(file: image, type: RetrieveType.image);
+  }
 }

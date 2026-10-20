@@ -1299,3 +1299,9 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Đã giảm rủi ro: native inference tranh CPU với UI trên Xiaomi RAM thấp.
 - docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Chưa fix: device verifier/MIUI chặn cài APK unverified qua ADB, nên chưa lặp lại acceptance trên release.
 - docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Cần kiểm tra tiếp: cài release sau khi có luồng ADB/phân phối được verifier chấp nhận; lặp lại onboarding synthetic và đối chiếu 77 item/source.
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: - `flutter test` focused suite: SKIPPED sau thay doi nutrition fallback; 27 tests da pass truoc thay doi cuoi.
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL - thieu `docs/audit/source_truth_manifest.json` va co stale path trong history/task-skill cu, ngoai Food Scan.
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: - Chua fix: inference tren thiet bi nay mat gan 155 giay, PSS cao va swap; chua danh gia nhiet do/quay lien tuc hay thiet bi RAM thap hon.
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: - Can kiem tra tiep: QA nhieu mon/anh va ho so suc khoe day du; danh gia suc khoe tren luot nay hien can thu lai.
+- docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md :: - Chat luong dau ra: tot - ket qua nutrition da chay duoc voi anh Camera that va ket qua fail-closed neu core fields van thieu.

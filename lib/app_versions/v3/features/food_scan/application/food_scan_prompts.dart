@@ -1,126 +1,46 @@
 import 'dart:convert';
 
+import 'dart:convert';
+
 import '../domain/entities/food_scan_models.dart';
 
 class FoodScanPrompts {
   const FoodScanPrompts._();
 
-  static const visionPromptVersion = 'food_vision_v1_2026_08';
+  static const visionPromptVersion = 'food_vision_v6_2026_10';
   static const healthPromptVersion = 'food_health_v1_2026_08';
 
   static String vision() => '''
-SYSTEM ROLE
-Bạn là Nabi Food Vision Engine của NanoBio.
+Analyze the food photo. Return one compact JSON object only, without Markdown. Write text values in Vietnamese. Set input_type to cooked_meal, raw_food, packaged_food, nutrition_label, beverage, mixed, not_food, or unclear. A visible edible item is food even when it is plain bread, a roll, bun, baguette, sandwich, fruit, snack, or drink. A hand or background does not make it not_food. If its exact name is unclear, use a general Vietnamese food name. Keep separate foods separate and mention only visible ingredients. Do not diagnose disease.
 
-LANGUAGE
-Toàn bộ text trong JSON phải bằng tiếng Việt.
+For each visible food, estimate its portion weight in grams and calories/macros for that portion. Always include calories_kcal, protein_g, carbohydrates_g, and fat_g as JSON numbers, never text or null. Calories must be greater than zero; macro grams must be zero or greater, and use zero only when appropriate for the visible food. These are approximate estimates. Estimate the actual visible portion; do not invent hidden ingredients. List only visually supported ingredients and plausible allergens in their arrays; never say a food is allergy-safe. Omit optional nutrients you cannot estimate from the image. If the image is not food, set is_food_image=false and foods=[].
 
-MỤC TIÊU
-Phân tích ảnh thực phẩm để tạo dữ liệu có cấu trúc cho hệ thống dinh dưỡng.
-Kết quả chỉ là ước tính từ ảnh. Không chẩn đoán bệnh và không giả vờ biết chính xác khối lượng.
-
-TASK 1 — PHÂN LOẠI ẢNH
-input_type chỉ được là một trong:
-cooked_meal, raw_food, packaged_food, nutrition_label, beverage, mixed, not_food, unclear.
-
-TASK 2 — NHẬN DIỆN
-- Nhận diện tất cả món/thực phẩm nhìn thấy, kể cả nhiều món trong cùng ảnh.
-- Không gộp các món riêng biệt.
-- Dùng tên phổ biến bằng tiếng Việt.
-- Xác định cách chế biến có khả năng nếu nhìn thấy.
-- Liệt kê nguyên liệu khả kiến và sauce/topping nếu có.
-- Với bao bì/nhãn dinh dưỡng, đọc các số nhìn thấy được nhưng không tự tạo số bị che hoặc mờ.
-
-TASK 3 — KHẨU PHẦN
-Cho mỗi món:
-- estimated_weight_g
-- portion_description
-- confidence từ 0 đến 1
-Nếu khó ước lượng khối lượng, hạ confidence.
-
-TASK 4 — DINH DƯỠNG FALLBACK
-Ước tính càng nhiều chất dưới đây càng tốt. Nếu không đủ căn cứ, dùng null thay vì bịa số:
-calories_kcal, protein_g, carbohydrates_g, fat_g, fiber_g, sugar_g, sodium_mg,
-saturated_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, trans_fat_g,
-cholesterol_mg, potassium_mg, calcium_mg, iron_mg, magnesium_mg, phosphorus_mg,
-zinc_mg, copper_mg, manganese_mg, selenium_mcg,
-vitamin_a_mcg_rae, vitamin_c_mg, vitamin_d_mcg, vitamin_e_mg, vitamin_k_mcg,
-vitamin_b1_mg, vitamin_b2_mg, vitamin_b3_mg, vitamin_b5_mg, vitamin_b6_mg,
-biotin_b7_mcg, folate_b9_mcg, vitamin_b12_mcg, choline_mg,
-omega3_g, omega6_g, water_g.
-
-TASK 5 — DỊ ỨNG KHẢ KIẾN
-Chỉ liệt kê chất gây dị ứng có khả năng xuất hiện. Không kết luận "an toàn" chỉ vì không nhìn thấy thành phần.
-
-TASK 6 — QUALITY
-Trả image_quality, image_quality_reason, analysis_confidence và assumptions.
-Nếu không phải ảnh thực phẩm, is_food_image=false và foods phải rỗng.
-
-OUTPUT
-Chỉ trả đúng một JSON object, không Markdown, không code fence, không giải thích ngoài JSON.
-Schema bắt buộc:
-{
-  "is_food_image": true,
-  "input_type": "cooked_meal",
-  "image_quality": "good",
-  "image_quality_reason": "",
-  "analysis_confidence": 0.8,
-  "foods": [
-    {
-      "name": "Tên món tiếng Việt",
-      "normalized_hint": "tên chuẩn hóa ngắn",
-      "estimated_weight_g": 150,
-      "portion_description": "khoảng 1 phần",
-      "cooking_method": "",
-      "ingredients": [],
-      "possible_allergens": [],
-      "confidence": 0.8,
-      "fallback_nutrition": {
-        "calories_kcal": 0,
-        "protein_g": 0,
-        "carbohydrates_g": 0,
-        "fat_g": 0,
-        "fiber_g": null,
-        "sugar_g": null,
-        "sodium_mg": null,
-        "saturated_fat_g": null,
-        "monounsaturated_fat_g": null,
-        "polyunsaturated_fat_g": null,
-        "trans_fat_g": null,
-        "cholesterol_mg": null,
-        "potassium_mg": null,
-        "calcium_mg": null,
-        "iron_mg": null,
-        "magnesium_mg": null,
-        "phosphorus_mg": null,
-        "zinc_mg": null,
-        "copper_mg": null,
-        "manganese_mg": null,
-        "selenium_mcg": null,
-        "vitamin_a_mcg_rae": null,
-        "vitamin_c_mg": null,
-        "vitamin_d_mcg": null,
-        "vitamin_e_mg": null,
-        "vitamin_k_mcg": null,
-        "vitamin_b1_mg": null,
-        "vitamin_b2_mg": null,
-        "vitamin_b3_mg": null,
-        "vitamin_b5_mg": null,
-        "vitamin_b6_mg": null,
-        "biotin_b7_mcg": null,
-        "folate_b9_mcg": null,
-        "vitamin_b12_mcg": null,
-        "choline_mg": null,
-        "omega3_g": null,
-        "omega6_g": null,
-        "water_g": null
-      }
-    }
-  ],
-  "assumptions": [],
-  "warnings": []
-}
+Use this short shape and include its required keys:
+{"is_food_image":true,"input_type":"cooked_meal","analysis_confidence":0.8,"foods":[{"name":"Bánh mì","normalized_hint":"banh mi","estimated_weight_g":120,"portion_description":"1 ổ bánh mì","ingredients":[],"possible_allergens":[],"fallback_nutrition":{"calories_kcal":320,"protein_g":10,"carbohydrates_g":55,"fat_g":6}}]}
 ''';
+
+  static String visionNutritionFallback(List<FoodScanItem> items) {
+    final foods = items
+        .asMap()
+        .entries
+        .map(
+          (entry) => {
+            'index': entry.key,
+            'name': entry.value.name,
+            'estimated_weight_g': entry.value.estimatedWeightGrams,
+            'portion_description': entry.value.portionDescription,
+          },
+        )
+        .toList(growable: false);
+
+    return '''
+Estimate approximate calories and macros for each already-identified visible food portion below. Use only the listed food and weight; do not add hidden ingredients or extra foods. Keep the same order and index. Return only one compact JSON object, with numeric values (not strings or null) for all four fields. Calories must be greater than zero; macros must be zero or greater. These are estimates, not measured values.
+INPUT
+${jsonEncode({'foods': foods})}
+OUTPUT SHAPE
+{"foods":[{"index":0,"calories_kcal":320,"protein_g":10,"carbohydrates_g":55,"fat_g":6}]}
+''';
+  }
 
   static String health({
     required Map<String, Object?> healthContext,

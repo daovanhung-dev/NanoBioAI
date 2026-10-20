@@ -1,13 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
+import 'package:image/image.dart' as image_codec;
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 
 import '../../application/food_scan_prompts.dart';
 import '../../domain/entities/food_scan_models.dart';
 import '../../domain/food_scan_exception.dart';
+
+const foodScanVisionMaxImageDimension = 1024;
 
 class FoodVisionAnalysis {
   final bool isFoodImage;
@@ -16,6 +20,7 @@ class FoodVisionAnalysis {
   final String imageQualityReason;
   final double confidence;
   final List<FoodScanItem> items;
+  final List<int> nutritionIncompleteIndexes;
   final List<String> assumptions;
   final List<String> warnings;
 
@@ -26,6 +31,7 @@ class FoodVisionAnalysis {
     required this.imageQualityReason,
     required this.confidence,
     required this.items,
+    this.nutritionIncompleteIndexes = const [],
     required this.assumptions,
     required this.warnings,
   });
@@ -48,7 +54,7 @@ class FoodScanAiDatasource {
     }
 
     try {
-      final imageBytes = await file.readAsBytes();
+      final imageBytes = _prepareVisionImage(await file.readAsBytes());
       final text = await client.generateText(
         model: _model(),
         messages: [
@@ -60,12 +66,45 @@ class FoodScanAiDatasource {
           ),
         ],
         generationConfig: const AiGenerationConfig(
+          maxOutputTokens: 192,
           temperature: 0.15,
           topP: 0.8,
           responseFormat: AiResponseFormat.json,
         ),
       );
-      return _parseVision(text);
+      var analysis = _parseVision(text);
+      if (analysis.isFoodImage &&
+          analysis.nutritionIncompleteIndexes.isNotEmpty) {
+        final missingIndexes = analysis.nutritionIncompleteIndexes;
+        final missingItems = missingIndexes
+            .map((index) => analysis.items[index])
+            .toList(growable: false);
+        final nutritionText = await client.generateText(
+          model: _model(),
+          messages: [
+            AiMessage.user(
+              FoodScanPrompts.visionNutritionFallback(missingItems),
+            ),
+          ],
+          generationConfig: const AiGenerationConfig(
+            maxOutputTokens: 384,
+            temperature: 0.1,
+            topP: 0.8,
+            responseFormat: AiResponseFormat.json,
+          ),
+        );
+        try {
+          analysis = _mergeNutritionFallback(
+            analysis,
+            nutritionText,
+            targetIndexes: missingIndexes,
+          );
+        } on FormatException {
+          // Keep the vision result; FoodScanService will reject it if the
+          // required energy estimate is still unavailable.
+        }
+      }
+      return analysis;
     } on FoodScanException {
       rethrow;
     } on AiInferenceException catch (error) {
@@ -78,6 +117,30 @@ class FoodScanAiDatasource {
         cause: error,
       );
     }
+  }
+
+  Uint8List _prepareVisionImage(Uint8List sourceBytes) {
+    final decoded = image_codec.decodeImage(sourceBytes);
+    if (decoded == null) {
+      throw const FormatException('Food Scan image could not be decoded.');
+    }
+    final oriented = image_codec.bakeOrientation(decoded);
+    if (oriented.width <= foodScanVisionMaxImageDimension &&
+        oriented.height <= foodScanVisionMaxImageDimension) {
+      return sourceBytes;
+    }
+
+    final resized = oriented.width >= oriented.height
+        ? image_codec.copyResize(
+            oriented,
+            width: foodScanVisionMaxImageDimension,
+          )
+        : image_codec.copyResize(
+            oriented,
+            height: foodScanVisionMaxImageDimension,
+          );
+    resized.exif.clear();
+    return Uint8List.fromList(image_codec.encodeJpg(resized, quality: 85));
   }
 
   Future<FoodHealthEvaluation> evaluateHealth({
@@ -162,17 +225,25 @@ class FoodScanAiDatasource {
     final inputType = _readString(json['input_type']) ?? 'unclear';
     final foods = json['foods'];
     final items = <FoodScanItem>[];
+    final nutritionIncompleteIndexes = <int>[];
     if (foods is List) {
       for (final raw in foods.whereType<Map>()) {
         final row = raw.map((key, value) => MapEntry(key.toString(), value));
+        final nutrition = _nutritionMap(row);
         final item = FoodScanItem.fromJson({
           ...row,
           'id': _uuidV4(),
-          'normalized_name': row['normalized_hint'],
-          'nutrition': row['fallback_nutrition'],
+          'normalized_name': row['normalized_hint'] ?? row['normalized_name'],
+          // Some local vision models follow the same fields under `nutrition`
+          // even when the prompt asks for `fallback_nutrition`. Preserve that
+          // estimate instead of replacing it with null.
+          'nutrition': nutrition,
           'nutrition_source': 'ai_fallback',
         });
         if (item.name.trim().isEmpty) continue;
+        if (!_hasCompleteCoreNutrition(nutrition)) {
+          nutritionIncompleteIndexes.add(items.length);
+        }
         items.add(item);
       }
     }
@@ -209,9 +280,112 @@ class FoodScanAiDatasource {
           .clamp(0, 1)
           .toDouble(),
       items: items.take(20).toList(growable: false),
+      nutritionIncompleteIndexes: nutritionIncompleteIndexes
+          .where((index) => index < 20)
+          .toList(growable: false),
       assumptions: _readStrings(json['assumptions']),
       warnings: _readStrings(json['warnings']),
     );
+  }
+
+  FoodVisionAnalysis _mergeNutritionFallback(
+    FoodVisionAnalysis analysis,
+    String source, {
+    required List<int> targetIndexes,
+  }) {
+    final json = _decodeObject(source);
+    final foods = json['foods'];
+    if (foods is! List) {
+      throw const FormatException('Nutrition response must contain foods.');
+    }
+
+    final items = analysis.items.toList(growable: false);
+    final remaining = <int>{...targetIndexes};
+    for (final raw in foods.whereType<Map>()) {
+      final row = raw.map((key, value) => MapEntry(key.toString(), value));
+      final outputIndex = _readDouble(row['index']);
+      if (outputIndex == null || outputIndex != outputIndex.roundToDouble()) {
+        continue;
+      }
+      final responseIndex = outputIndex.toInt();
+      if (responseIndex < 0 || responseIndex >= targetIndexes.length) continue;
+
+      final itemIndex = targetIndexes[responseIndex];
+      if (itemIndex < 0 || itemIndex >= items.length) continue;
+      final calories = _readDouble(row['calories_kcal']);
+      final protein = _readDouble(row['protein_g']);
+      final carbohydrates = _readDouble(row['carbohydrates_g']);
+      final fat = _readDouble(row['fat_g']);
+      if (calories == null ||
+          !calories.isFinite ||
+          calories <= 0 ||
+          protein == null ||
+          !protein.isFinite ||
+          protein < 0 ||
+          carbohydrates == null ||
+          !carbohydrates.isFinite ||
+          carbohydrates < 0 ||
+          fat == null ||
+          !fat.isFinite ||
+          fat < 0) {
+        continue;
+      }
+
+      final item = items[itemIndex];
+      final mergedNutrition = NutritionEstimate.fromJson({
+        ...item.nutrition.toJson(),
+        'calories_kcal': calories,
+        'protein_g': protein,
+        'carbohydrates_g': carbohydrates,
+        'fat_g': fat,
+      }).sanitized();
+      items[itemIndex] = item.copyWith(nutrition: mergedNutrition);
+      remaining.remove(itemIndex);
+    }
+
+    return FoodVisionAnalysis(
+      isFoodImage: analysis.isFoodImage,
+      inputType: analysis.inputType,
+      imageQuality: analysis.imageQuality,
+      imageQualityReason: analysis.imageQualityReason,
+      confidence: analysis.confidence,
+      items: items,
+      nutritionIncompleteIndexes: remaining.toList(growable: false),
+      assumptions: analysis.assumptions,
+      warnings: analysis.warnings,
+    );
+  }
+
+  Map<String, Object?> _nutritionMap(Map<String, Object?> row) {
+    final nested = row['fallback_nutrition'] ?? row['nutrition'];
+    if (nested is Map) {
+      return nested.map((key, value) => MapEntry(key.toString(), value));
+    }
+
+    const coreKeys = ['calories_kcal', 'protein_g', 'carbohydrates_g', 'fat_g'];
+    return {
+      for (final key in coreKeys)
+        if (row.containsKey(key)) key: row[key],
+    };
+  }
+
+  bool _hasCompleteCoreNutrition(Map<String, Object?> nutrition) {
+    final calories = _readDouble(nutrition['calories_kcal']);
+    final protein = _readDouble(nutrition['protein_g']);
+    final carbohydrates = _readDouble(nutrition['carbohydrates_g']);
+    final fat = _readDouble(nutrition['fat_g']);
+    return calories != null &&
+        calories.isFinite &&
+        calories > 0 &&
+        protein != null &&
+        protein.isFinite &&
+        protein >= 0 &&
+        carbohydrates != null &&
+        carbohydrates.isFinite &&
+        carbohydrates >= 0 &&
+        fat != null &&
+        fat.isFinite &&
+        fat >= 0;
   }
 
   Map<String, Object?> _decodeObject(String source) {

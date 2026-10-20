@@ -100,27 +100,27 @@ const localAiTextModels = <LocalAiTextModel>[
 
 const localAiVisionAssets = <LocalAiModelAsset>[
   LocalAiModelAsset(
-    id: 'qwen2-vl-2b-q4',
-    fileName: 'Qwen2-VL-2B-Instruct-Q4_K_M.gguf',
+    id: 'smolvlm-500m-q8',
+    fileName: 'SmolVLM-500M-Instruct-Q8_0.gguf',
     sourceUrl:
-        'https://huggingface.co/ggml-org/Qwen2-VL-2B-Instruct-GGUF/resolve/bb307c036e8a1ed7b663bbd0c35b41c4c9294cfd/Qwen2-VL-2B-Instruct-Q4_K_M.gguf?download=true',
-    sizeBytes: 986046944,
-    sha256: '5745685d2e607a82a0696c1118e56a2a1ae0901da450fd9cd4f161c6b62867d7',
+        'https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF/resolve/72e986006ef53e37cdd3f6d4241c90b0f01df376/SmolVLM-500M-Instruct-Q8_0.gguf?download=true',
+    sizeBytes: 436806912,
+    sha256: '9d4612de6a42214499e301494a3ecc2be0abdd9de44e663bda63f1152fad1bf4',
   ),
   LocalAiModelAsset(
-    id: 'qwen2-vl-2b-q4-mmproj',
-    fileName: 'mmproj-Qwen2-VL-2B-Instruct-Q8_0.gguf',
+    id: 'smolvlm-500m-q8-mmproj',
+    fileName: 'mmproj-SmolVLM-500M-Instruct-Q8_0.gguf',
     sourceUrl:
-        'https://huggingface.co/ggml-org/Qwen2-VL-2B-Instruct-GGUF/resolve/bb307c036e8a1ed7b663bbd0c35b41c4c9294cfd/mmproj-Qwen2-VL-2B-Instruct-Q8_0.gguf?download=true',
-    sizeBytes: 709883360,
-    sha256: 'a0ad91f00a7a80dcf84d719a61b00ee2e07b71794f4ee2dfa81a254621a8c418',
+        'https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF/resolve/72e986006ef53e37cdd3f6d4241c90b0f01df376/mmproj-SmolVLM-500M-Instruct-Q8_0.gguf?download=true',
+    sizeBytes: 108783360,
+    sha256: 'd1eb8b6b23979205fdf63703ed10f788131a3f812c7b1f72e0119d5d81295150',
   ),
 ];
 
-const localAiVisionModelId = 'qwen2-vl-2b-q4';
+const localAiVisionModelId = 'smolvlm-500m-q8';
 const localAiVisionContextSize = 4096;
-const localAiVisionDownloadBytes = 1695930304;
-const localAiVisionRecommendedRamBytes = 6 * 1024 * 1024 * 1024;
+const localAiVisionDownloadBytes = 545590272;
+const localAiVisionRecommendedRamBytes = 4 * 1024 * 1024 * 1024;
 
 LocalAiTextModel localAiTextModelById(String id) => localAiTextModels
     .firstWhere((model) => model.id == id, orElse: () => localAiTextModels[1]);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -105,13 +106,32 @@ class _AccessRequired extends StatelessWidget {
   }
 }
 
-class _FoodScanWorkbench extends ConsumerWidget {
+class _FoodScanWorkbench extends ConsumerStatefulWidget {
   final String userId;
 
   const _FoodScanWorkbench({required this.userId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_FoodScanWorkbench> createState() => _FoodScanWorkbenchState();
+}
+
+class _FoodScanWorkbenchState extends ConsumerState<_FoodScanWorkbench> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(
+        ref
+            .read(foodScanControllerProvider.notifier)
+            .recoverLostPickerImage(widget.userId),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = widget.userId;
     final state = ref.watch(foodScanControllerProvider);
     final consent = ref.watch(foodScanConsentProvider(userId));
     final colors = context.semanticColors;
@@ -172,7 +192,7 @@ class _FoodScanWorkbench extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  'Ảnh và thông tin hồ sơ sức khỏe liên quan được xử lý trên thiết bị, không gửi tới dịch vụ AI. Lần đầu quét, Nabi tải thêm model nhận diện ảnh khoảng 1,58 GB; hãy dùng Wi-Fi và bảo đảm đủ dung lượng. Ảnh JPEG được làm sạch metadata EXIF/GPS. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
+                  'Ảnh và thông tin hồ sơ sức khỏe liên quan được xử lý trên thiết bị, không gửi tới dịch vụ AI. Lần đầu quét, Nabi tải thêm model nhận diện ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}; hãy dùng Wi-Fi và bảo đảm đủ dung lượng. Ảnh JPEG được làm sạch metadata EXIF/GPS. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                     height: 1.5,
@@ -201,7 +221,7 @@ class _ConsentCard extends StatelessWidget {
           Text('Phân tích món ăn bằng AI', style: AppTextStyles.heading4),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nabi xử lý ảnh món ăn và phần hồ sơ sức khỏe liên quan ngay trên thiết bị để nhận diện thực phẩm, ước tính dinh dưỡng và cá nhân hóa đánh giá. Không gửi ảnh hoặc hồ sơ này tới dịch vụ AI. Lần đầu quét, ứng dụng tải thêm model nhận diện ảnh khoảng 1,58 GB; bạn nên dùng Wi-Fi và bảo đảm đủ dung lượng. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
+            'Nabi xử lý ảnh món ăn và phần hồ sơ sức khỏe liên quan ngay trên thiết bị để nhận diện thực phẩm, ước tính dinh dưỡng và cá nhân hóa đánh giá. Không gửi ảnh hoặc hồ sơ này tới dịch vụ AI. Lần đầu quét, ứng dụng tải thêm model nhận diện ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}; bạn nên dùng Wi-Fi và bảo đảm đủ dung lượng. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
             style: AppTextStyles.bodyMedium.copyWith(height: 1.55),
           ),
           const SizedBox(height: AppSpacing.lg),

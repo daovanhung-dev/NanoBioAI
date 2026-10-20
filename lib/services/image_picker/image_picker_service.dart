@@ -123,6 +123,39 @@ class ImagePickerService {
     }
   }
 
+  /// Recovers an image when Android destroys the app while its picker intent
+  /// is open. This method is unsupported on web and safely returns null there.
+  Future<XFile?> retrieveLostImage() async {
+    try {
+      final response = await _picker.retrieveLostData();
+      if (response.isEmpty) return null;
+      if (response.exception != null) {
+        throw ImagePickerServiceException(
+          kind: ImagePickerFailureKind.pick,
+          userMessage:
+              'Nabi chưa thể khôi phục ảnh bạn vừa chọn. Bạn thử chọn lại nhé.',
+          cause: response.exception,
+        );
+      }
+
+      final files = response.files;
+      if (files != null && files.isNotEmpty) return files.first;
+      return response.file;
+    } on UnimplementedError {
+      // image_picker only implements lost-data recovery on Android.
+      return null;
+    } on ImagePickerServiceException {
+      rethrow;
+    } catch (error) {
+      throw ImagePickerServiceException(
+        kind: ImagePickerFailureKind.pick,
+        userMessage:
+            'Nabi chưa thể khôi phục ảnh bạn vừa chọn. Bạn thử chọn lại nhé.',
+        cause: error,
+      );
+    }
+  }
+
   /// Validate image format and size
   /// Checks if image is PNG or JPEG and less than 5MB
   /// Returns true if valid, false otherwise

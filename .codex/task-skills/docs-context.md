@@ -2,7 +2,7 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 89 worklog(s).
+- Generated from 90 worklog(s).
 
 ## When To Read
 
@@ -34,6 +34,7 @@
 - Historical task type: docs-context va nhap snapshot local (1)
 - Historical task type: cải tiến luồng hiển thị AI Chat (1)
 - Historical task type: tính năng giao diện và trạng thái AI Chat (1)
+- Historical task type: Nap context, dieu tra bug, fix va QA tren Android that. (1)
 
 ## Common Modules
 
