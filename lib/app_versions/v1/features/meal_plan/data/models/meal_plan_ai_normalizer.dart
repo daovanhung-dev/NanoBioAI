@@ -103,8 +103,10 @@ class MealPlanAiNormalizer {
           throw FormatException('Unknown meal_code: ${map['meal_code']}');
         }
         const factor = 1.0;
+        final isCustomProposal = catalogItem.isApprovedCustomScheduleMeal;
         final hasReviewedNutrition =
-            !catalogItem.isUnreviewedWellnessScheduleCandidate;
+            !catalogItem.isUnreviewedWellnessScheduleCandidate &&
+            !isCustomProposal;
         result.add(
           MealPlanModel(
             id: 'meal_${userId}_${date}_${slot.order}',
@@ -150,12 +152,14 @@ class MealPlanAiNormalizer {
             ironMg: hasReviewedNutrition
                 ? _scaledNullable(catalogItem.ironMg, factor)
                 : null,
-            nutritionStatus: catalogItem.nutritionStatus,
+            nutritionStatus: isCustomProposal
+                ? 'not_assessed'
+                : catalogItem.nutritionStatus,
             mealOrder: slot.order,
             startTime: slot.startTime,
             endTime: slot.endTime,
             cookingInstructions: catalogItem.cookingInstructions,
-            catalogCode: catalogItem.code,
+            catalogCode: isCustomProposal ? '' : catalogItem.code,
             servingSize: catalogItem.servingSize,
             topicCode: catalogItem.healthTopicCode,
             topicName: catalogItem.healthTopicName,
@@ -168,8 +172,10 @@ class MealPlanAiNormalizer {
             conditionTags: hasReviewedNutrition
                 ? catalogItem.avoidConditionTags
                 : const [],
-            provenanceSource: catalogItem.sourceName,
-            sourceHash: catalogItem.sourceHash,
+            provenanceSource: isCustomProposal
+                ? 'Nabi AI · người dùng đã duyệt'
+                : catalogItem.sourceName,
+            sourceHash: isCustomProposal ? '' : catalogItem.sourceHash,
             catalogSchemaVersion: catalogItem.version,
             isCompleted: false,
             aiGenerated: true,
@@ -233,7 +239,8 @@ class MealPlanAiNormalizer {
           eligibleCodesByType?[mealType]?.contains(mealCode) == true;
       if (!catalogItem.isSelectableForMealPlanAi &&
           !(isExplicitlyAllowed &&
-              catalogItem.isUnreviewedWellnessScheduleCandidate)) {
+              (catalogItem.isUnreviewedWellnessScheduleCandidate ||
+                  catalogItem.isApprovedCustomScheduleMeal))) {
         throw FormatException('Unapproved or ineligible meal_code: $mealCode');
       }
       if (catalogItem.mealName.trim().isEmpty) {
@@ -262,7 +269,7 @@ class MealPlanAiNormalizer {
       if (nameKey.isNotEmpty && !usedMealNames.add(nameKey)) {
         throw const FormatException('Duplicate meal_name across the week.');
       }
-      counts[mealCode] = 1;
+      counts.update(mealCode, (value) => value + 1, ifAbsent: () => 1);
       dayItems[mealType] = {
         'day': day,
         'meal_type': mealType,
@@ -319,7 +326,8 @@ class MealPlanAiNormalizer {
     if (catalogItem == null ||
         (!catalogItem.isSelectableForMealPlanAi &&
             !(isExplicitlyAllowed &&
-                catalogItem.isUnreviewedWellnessScheduleCandidate))) {
+                (catalogItem.isUnreviewedWellnessScheduleCandidate ||
+                    catalogItem.isApprovedCustomScheduleMeal)))) {
       throw FormatException('Unknown or ineligible meal_code: $mealCode');
     }
     if (catalogItem.mealName.trim().isEmpty) {
@@ -343,7 +351,7 @@ class MealPlanAiNormalizer {
       ...dayMealCodes,
     };
     if (usedCodes.contains(mealCode)) {
-      throw const FormatException('Duplicate meal_code across the week.');
+      throw FormatException('Duplicate meal_code across the week.');
     }
     final usedMealNames = mealNameKeysForCodes(catalog.meals, usedCodes);
     final nameKey = mealNameUniquenessKey(catalogItem.mealName);

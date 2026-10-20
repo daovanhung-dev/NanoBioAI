@@ -34,6 +34,8 @@ dependencies:
   sqflite: ^2.4.2
   path: ^1.9.1
   path_provider: ^2.1.5
+  llamadart: 0.13.1
+  llamadart_llama_cpp_flutter: 0.13.0
 
   # Supabase
   supabase_flutter: ^2.12.4

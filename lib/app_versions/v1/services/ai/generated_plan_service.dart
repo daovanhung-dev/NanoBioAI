@@ -17,6 +17,7 @@ import 'package:nano_app/app_versions/v1/features/daily_routine/domain/services/
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/data/datasources/daily_health_tracking_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/lifestyle_schedule_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models/lifestyle_schedule_item_model.dart';
+import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/lifestyle_schedule_item_entity.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/schedule_horizon_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
@@ -26,7 +27,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/models
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/services/exercise_candidate_selector.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
-import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_candidate_selector.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_catalog_prefilter.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/data/datasources/nutrition_profile_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutrition_profile_entity.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
@@ -35,6 +36,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/application
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_trace_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/schedule_ai_personalization_context.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
@@ -68,9 +70,54 @@ class GuestInitialPlanAlreadyUsedException implements Exception {
 }
 
 class ScheduleCandidatesUnavailableException implements Exception {
-  final String userMessage;
+  final int days;
+  final int filteredCount;
+  final Map<String, int> eligibleCountsByType;
+  final String? _overrideUserMessage;
 
-  const ScheduleCandidatesUnavailableException(this.userMessage);
+  const ScheduleCandidatesUnavailableException(String userMessage)
+    : days = 0,
+      filteredCount = 0,
+      eligibleCountsByType = const {},
+      _overrideUserMessage = userMessage;
+
+  const ScheduleCandidatesUnavailableException.filtered({
+    required this.days,
+    required this.filteredCount,
+    required this.eligibleCountsByType,
+  }) : _overrideUserMessage = null;
+
+  String get userMessage {
+    final override = _overrideUserMessage;
+    if (override != null) return override;
+    final shortSlots = eligibleCountsByType.entries
+        .where((entry) => entry.value < days)
+        .map((entry) => '${_slotLabel(entry.key)}: ${entry.value}/$days')
+        .join(', ');
+    return 'Sau khi lọc, Nabi còn $filteredCount món; mỗi suất cần ít nhất '
+        '$days món khác nhau. Các nhóm chưa đủ: $shortSlots. Nabi đã dừng '
+        'trước khi gọi AI và lưu lịch.';
+  }
+
+  static String _slotLabel(String type) => switch (type) {
+    'breakfast' => 'bữa sáng',
+    'morning_snack' => 'bữa phụ sáng',
+    'lunch' => 'bữa trưa',
+    'afternoon_snack' => 'bữa phụ chiều',
+    'dinner' => 'bữa tối',
+    _ => type,
+  };
+
+  @override
+  String toString() => userMessage;
+}
+
+class ScheduleMealClassificationException implements Exception {
+  final MealCatalogClassificationException cause;
+
+  const ScheduleMealClassificationException(this.cause);
+
+  String get userMessage => cause.userMessage;
 
   @override
   String toString() => userMessage;
@@ -86,6 +133,9 @@ class GeneratedPlanResult {
   final bool reusedExistingRequest;
   final PlanGenerationSource generationSource;
   final List<ScheduleRewardEligibilityItem> rewardEligibilityItems;
+  final bool awaitingMealApproval;
+  final String? pendingMealProposalId;
+  final GeneratedCustomMealProposal? pendingMealProposal;
 
   const GeneratedPlanResult({
     this.requestId = '',
@@ -97,25 +147,166 @@ class GeneratedPlanResult {
     this.reusedExistingRequest = false,
     this.generationSource = PlanGenerationSource.unknown,
     this.rewardEligibilityItems = const [],
+    this.awaitingMealApproval = false,
+    this.pendingMealProposalId,
+    this.pendingMealProposal,
   });
 }
 
 @immutable
+class GeneratedPlanEventProgress {
+  final String eventId;
+  final int day;
+  final String time;
+  final String title;
+  final String status;
+
+  const GeneratedPlanEventProgress({
+    required this.eventId,
+    required this.day,
+    required this.time,
+    required this.title,
+    required this.status,
+  });
+
+  bool get isAccepted => status == 'saved' || status == 'accepted';
+}
+
+@immutable
+class GeneratedCustomMealProposal {
+  final String proposalId;
+  final String stagingKey;
+  final int day;
+  final String mealType;
+  final String name;
+  final String description;
+  final List<String> ingredients;
+  final String servingSize;
+  final List<String> cookingSteps;
+  final bool awaitingApproval;
+
+  GeneratedCustomMealProposal({
+    required this.proposalId,
+    required this.stagingKey,
+    required this.day,
+    required this.mealType,
+    required this.name,
+    required this.description,
+    required Iterable<String> ingredients,
+    required this.servingSize,
+    required Iterable<String> cookingSteps,
+    this.awaitingApproval = true,
+  }) : ingredients = List.unmodifiable(ingredients),
+       cookingSteps = List.unmodifiable(cookingSteps);
+
+  factory GeneratedCustomMealProposal.fromMap(Map<String, dynamic> value) =>
+      GeneratedCustomMealProposal(
+        proposalId: value['proposal_id']?.toString() ?? '',
+        stagingKey: value['staging_key']?.toString() ?? '',
+        day: int.tryParse(value['day']?.toString() ?? '') ?? 1,
+        mealType: value['meal_type']?.toString() ?? '',
+        name: value['meal_name']?.toString() ?? '',
+        description: value['description']?.toString() ?? '',
+        ingredients: (value['ingredients'] as List? ?? const []).map(
+          (item) => item.toString(),
+        ),
+        servingSize: value['serving_size']?.toString() ?? '',
+        cookingSteps: (value['cooking_steps'] as List? ?? const []).map(
+          (item) => item.toString(),
+        ),
+        awaitingApproval: value['status']?.toString() != 'approved',
+      );
+
+  Map<String, dynamic> toStorageMap({required String status}) => {
+    'proposal_id': proposalId,
+    'staging_key': stagingKey,
+    'day': day,
+    'meal_type': mealType,
+    'meal_name': name,
+    'description': description,
+    'ingredients': ingredients,
+    'serving_size': servingSize,
+    'cooking_steps': cookingSteps,
+    'status': status,
+  };
+}
+
+@immutable
 class GeneratedPlanProgress {
+  final String requestId;
   final int totalDays;
   final List<int> savedDays;
+  final List<MealCandidateClassification> filteredMealCandidates;
+  final GeneratedPlanMealFilterState mealFilterState;
+  final int catalogMealCount;
+  final int minimumCandidatesPerPeriod;
+  final int totalEvents;
+  final List<GeneratedPlanEventProgress> events;
+  final GeneratedCustomMealProposal? pendingMealProposal;
 
-  const GeneratedPlanProgress({
+  const GeneratedPlanProgress.empty({
     required this.totalDays,
+    this.requestId = '',
     this.savedDays = const [],
+    this.filteredMealCandidates = const [],
+    this.mealFilterState = GeneratedPlanMealFilterState.notStarted,
+    this.catalogMealCount = 0,
+    this.minimumCandidatesPerPeriod =
+        MealCatalogPrefilter.minimumCandidatesPerPeriod,
+    this.totalEvents = 0,
+    this.events = const [],
+    this.pendingMealProposal,
+  });
+
+  factory GeneratedPlanProgress({
+    required int totalDays,
+    String requestId = '',
+    Iterable<int> savedDays = const [],
+    Iterable<MealCandidateClassification> filteredMealCandidates = const [],
+    GeneratedPlanMealFilterState mealFilterState =
+        GeneratedPlanMealFilterState.notStarted,
+    int catalogMealCount = 0,
+    int minimumCandidatesPerPeriod =
+        MealCatalogPrefilter.minimumCandidatesPerPeriod,
+    int? totalEvents,
+    Iterable<GeneratedPlanEventProgress> events = const [],
+    GeneratedCustomMealProposal? pendingMealProposal,
+  }) => GeneratedPlanProgress._(
+    requestId: requestId,
+    totalDays: totalDays,
+    savedDays: List.unmodifiable(savedDays),
+    filteredMealCandidates: List.unmodifiable(filteredMealCandidates),
+    mealFilterState: mealFilterState,
+    catalogMealCount: catalogMealCount,
+    minimumCandidatesPerPeriod: minimumCandidatesPerPeriod,
+    totalEvents:
+        totalEvents ?? totalDays * LifestyleScheduleTimelineBuilder.itemsPerDay,
+    events: List.unmodifiable(events),
+    pendingMealProposal: pendingMealProposal,
+  );
+
+  const GeneratedPlanProgress._({
+    required this.requestId,
+    required this.totalDays,
+    required this.savedDays,
+    required this.filteredMealCandidates,
+    required this.mealFilterState,
+    required this.catalogMealCount,
+    required this.minimumCandidatesPerPeriod,
+    required this.totalEvents,
+    required this.events,
+    required this.pendingMealProposal,
   });
 
   int get completedDays => savedDays.length;
+  int get completedEvents => events.where((event) => event.isAccepted).length;
 
-  int get percentComplete => totalDays <= 0
+  int get percentComplete => totalEvents <= 0
       ? 0
-      : ((completedDays * 100) / totalDays).round().clamp(0, 100).toInt();
+      : ((completedEvents * 100) / totalEvents).round().clamp(0, 100).toInt();
 }
+
+enum GeneratedPlanMealFilterState { notStarted, filtering, complete }
 
 typedef GeneratedPlanProgressCallback =
     void Function(GeneratedPlanProgress progress);
@@ -125,6 +316,8 @@ class GeneratedPlanService {
   static final Map<String, Future<GeneratedPlanResult>> _inFlightByUser = {};
   static final Map<String, Future<GeneratedPlanResult>>
   _inFlightInitialGuestPlansByUser = {};
+
+  final int minimumMealCandidatesPerPeriod;
 
   final DashboardRepository dashboardRepository;
   final DailyHealthTrackingLocalDatasource dailyHealthDatasource;
@@ -146,6 +339,8 @@ class GeneratedPlanService {
   final DateTime Function() now;
 
   GeneratedPlanService({
+    this.minimumMealCandidatesPerPeriod =
+        MealCatalogPrefilter.minimumCandidatesPerPeriod,
     required this.dashboardRepository,
     required this.dailyHealthDatasource,
     required this.scheduleDatasource,
@@ -190,6 +385,7 @@ class GeneratedPlanService {
     int days = 7,
     DateTime? startDate,
     bool appendAfterExisting = true,
+    GeneratedPlanProgressCallback? onProgress,
   }) async {
     final authUserId = currentUserId();
     requireAuthenticatedGeneratedPlanUser(authUserId);
@@ -211,6 +407,7 @@ class GeneratedPlanService {
       days: days,
       requestedStartDate: startDate,
       appendAfterExisting: appendAfterExisting,
+      onProgress: onProgress,
     );
     _inFlightByUser[authUserId] = request;
     try {
@@ -228,6 +425,7 @@ class GeneratedPlanService {
     required int days,
     required DateTime? requestedStartDate,
     required bool appendAfterExisting,
+    GeneratedPlanProgressCallback? onProgress,
   }) async {
     final existing = await _existingSucceededResult(
       requestId,
@@ -236,11 +434,25 @@ class GeneratedPlanService {
     if (existing != null) return existing;
 
     final profile = await dailyHealthDatasource.fetchLatestProfile();
+    final incompleteRequestId = await requestStore.findIncompleteRequestId(
+      userId: profile.userId,
+      actorMode: GeneratedPlanActorModes.memberNew,
+      days: days,
+    );
+    final incompleteRequest = incompleteRequestId == null
+        ? null
+        : await requestStore.findByRequestId(incompleteRequestId);
+    final canResume =
+        incompleteRequest != null &&
+        incompleteRequest.userId == profile.userId &&
+        incompleteRequest.actorMode == GeneratedPlanActorModes.memberNew &&
+        incompleteRequest.days == days &&
+        incompleteRequest.startDate != null;
     final horizon = await scheduleHorizonReader.read(
       userId: profile.userId,
       today: LifestyleScheduleWindowPolicy.vietnamNow(),
     );
-    if (!horizon.canGenerate) {
+    if (!canResume && !horizon.canGenerate) {
       throw PersonalScheduleStillActiveException(horizon.remainingDays);
     }
     var planStartDate = _dateOnly(
@@ -259,6 +471,7 @@ class GeneratedPlanService {
       actorMode: GeneratedPlanActorModes.memberNew,
       days: days,
     );
+    requestIdForPlan ??= incompleteRequestId;
     if (requestIdForPlan != null) {
       final incomplete = await requestStore.findByRequestId(requestIdForPlan);
       if (incomplete != null &&
@@ -278,6 +491,85 @@ class GeneratedPlanService {
       throw const DailyRoutinePreferencesRequiredException();
     }
 
+    _reportProgress(
+      onProgress,
+      GeneratedPlanProgress(
+        requestId: requestIdForPlan,
+        totalDays: days,
+        mealFilterState: GeneratedPlanMealFilterState.filtering,
+        totalEvents: _expectedEventCount(days, preferences, planStartDate),
+      ),
+    );
+    final catalogForPreflight = await catalogDatasource
+        .loadScheduleCatalogBundle();
+    _validateMealCatalogClassifications(catalogForPreflight);
+    final dashboardForPreflight = await dashboardRepository.fetchDashboard();
+    final nutritionProfileForPreflight = await nutritionProfileDatasource.load(
+      profile.userId,
+    );
+    final preflightFilterTraceId = AITraceLogger.nextTraceId(
+      'schedule-preflight-filter',
+    );
+    final preflightFilterStopwatch = Stopwatch()..start();
+    AITraceLogger.info(
+      AITraceLogger.aiGen,
+      preflightFilterTraceId,
+      'generatePlanPreflight',
+      'MEAL_FILTER_STARTED',
+      'Started filtering the local meal catalog for preflight.',
+      data: {'catalogMealCount': catalogForPreflight.meals.length},
+    );
+    final filteredMealsForPreflight = await _filterMealsOffUi(
+      catalog: catalogForPreflight.meals,
+      profile: profile,
+      dashboard: dashboardForPreflight,
+      nutritionProfile: nutritionProfileForPreflight,
+    );
+    preflightFilterStopwatch.stop();
+    AITraceLogger.info(
+      AITraceLogger.aiGen,
+      preflightFilterTraceId,
+      'generatePlanPreflight',
+      'MEAL_FILTER_COMPLETED',
+      'Finished filtering the local meal catalog for preflight.',
+      data: {
+        'catalogMealCount': catalogForPreflight.meals.length,
+        'filteredMealCount': filteredMealsForPreflight.meals.length,
+        'durationMs': preflightFilterStopwatch.elapsedMilliseconds,
+      },
+    );
+    _logFilteredMealCounts(
+      catalogMealCount: catalogForPreflight.meals.length,
+      result: filteredMealsForPreflight,
+    );
+    _reportProgress(
+      onProgress,
+      GeneratedPlanProgress(
+        requestId: requestIdForPlan,
+        totalDays: days,
+        mealFilterState: GeneratedPlanMealFilterState.complete,
+        filteredMealCandidates: filteredMealsForPreflight.candidates,
+        catalogMealCount: catalogForPreflight.meals.length,
+        minimumCandidatesPerPeriod:
+            filteredMealsForPreflight.minimumCandidatesPerPeriod,
+        totalEvents: _expectedEventCount(days, preferences, planStartDate),
+      ),
+    );
+    if (filteredMealsForPreflight.classificationIssues.isNotEmpty) {
+      throw ScheduleMealClassificationException(
+        MealCatalogClassificationException(
+          filteredMealsForPreflight.classificationIssues,
+        ),
+      );
+    }
+    if (!filteredMealsForPreflight.hasMinimumCandidatesPerPeriod) {
+      throw ScheduleCandidatesUnavailableException(
+        _minimumCandidateMessage(
+          filteredMealsForPreflight.minimumCandidatesPerPeriod,
+        ),
+      );
+    }
+
     final decision = await quotaGateway.checkGeneration(
       userId: authUserId,
       requestId: requestIdForPlan,
@@ -295,6 +587,12 @@ class GeneratedPlanService {
       appendAfterExisting: appendAfterExisting,
       markGuestInitialPlanUsed: false,
       routinePreferences: preferences,
+      onProgress: onProgress,
+      profileOverride: profile,
+      dashboardOverride: dashboardForPreflight,
+      nutritionProfileOverride: nutritionProfileForPreflight,
+      catalogOverride: catalogForPreflight,
+      filteredMealsOverride: filteredMealsForPreflight,
     );
 
     if (result.generationSource.isFullyAiGenerated) {
@@ -381,6 +679,55 @@ class GeneratedPlanService {
     }
   }
 
+  /// Applies the user's decision to a request-scoped proposal and resumes the
+  /// same stable request. Rejecting it asks local AI for a replacement on the
+  /// next run; no schedule event is committed while a proposal is pending.
+  Future<GeneratedPlanResult> respondToCustomMealProposal({
+    required String requestId,
+    required GeneratedCustomMealProposal proposal,
+    required bool approve,
+    GeneratedPlanProgressCallback? onProgress,
+  }) async {
+    final request = await requestStore.findByRequestId(requestId);
+    if (request == null || request.startDate == null) {
+      throw StateError('Generated-plan request is no longer available.');
+    }
+    final profile = await dailyHealthDatasource.fetchLatestProfile();
+    if (request.userId != profile.userId ||
+        (request.actorMode == GeneratedPlanActorModes.memberNew &&
+            request.userId != currentUserId())) {
+      throw const DashboardGenerationAuthRequiredException();
+    }
+    if (proposal.stagingKey.isEmpty || proposal.proposalId.isEmpty) {
+      throw StateError('Generated meal proposal identity is invalid.');
+    }
+    await requestStore.updateStagedChunkItem(
+      requestId: requestId,
+      chunkKey: proposal.stagingKey,
+      itemIndex: 0,
+      expectedValues: {'proposal_id': proposal.proposalId},
+      updates: {'status': approve ? 'approved' : 'replace'},
+    );
+    if (request.actorMode == GeneratedPlanActorModes.initialGuest) {
+      return generateInitialGuestPlan(
+        days: request.days,
+        startDate: request.startDate,
+        requestId: requestId,
+        onProgress: onProgress,
+      );
+    }
+    if (request.actorMode == GeneratedPlanActorModes.memberNew) {
+      return generateNextPlan(
+        requestId: requestId,
+        days: request.days,
+        startDate: request.startDate,
+        appendAfterExisting: true,
+        onProgress: onProgress,
+      );
+    }
+    throw StateError('Generated-plan request actor is unsupported.');
+  }
+
   void _reportProgress(
     GeneratedPlanProgressCallback? onProgress,
     GeneratedPlanProgress progress,
@@ -452,6 +799,10 @@ class GeneratedPlanService {
     required DailyRoutinePreferences? routinePreferences,
     GeneratedPlanProgressCallback? onProgress,
     DailyHealthProfileEntity? profileOverride,
+    DashboardEntity? dashboardOverride,
+    NutritionProfileEntity? nutritionProfileOverride,
+    AiCatalogBundle? catalogOverride,
+    MealCatalogPrefilterResult? filteredMealsOverride,
   }) async {
     if (days < 1 || days > 7) {
       throw RangeError.range(days, 1, 7, 'days');
@@ -478,6 +829,7 @@ class GeneratedPlanService {
       _reportProgress(
         onProgress,
         GeneratedPlanProgress(
+          requestId: resolvedRequestId,
           totalDays: existing.days,
           savedDays: List<int>.generate(existing.days, (index) => index + 1),
         ),
@@ -496,9 +848,11 @@ class GeneratedPlanService {
     if (preferences == null) {
       throw const DailyRoutinePreferencesRequiredException();
     }
-    final DashboardEntity dashboardData = await dashboardRepository
-        .fetchDashboard();
-    final nutritionProfile = await nutritionProfileDatasource.load(userId);
+    final DashboardEntity dashboardData =
+        dashboardOverride ?? await dashboardRepository.fetchDashboard();
+    final nutritionProfile =
+        nutritionProfileOverride ??
+        await nutritionProfileDatasource.load(userId);
     final exercisePreferences = await exercisePreferencesDatasource.loadForUser(
       userId,
     );
@@ -512,18 +866,6 @@ class GeneratedPlanService {
       actorMode: actorMode,
       days: days,
     );
-    if (previouslySavedDays > 0) {
-      _reportProgress(
-        onProgress,
-        GeneratedPlanProgress(
-          totalDays: days,
-          savedDays: List<int>.generate(
-            previouslySavedDays,
-            (index) => index + 1,
-          ),
-        ),
-      );
-    }
     final canResumeWithPreviousDate =
         startDate == null &&
         previousRequest != null &&
@@ -536,19 +878,36 @@ class GeneratedPlanService {
         ? _dateOnly(previousRequest.startDate!)
         : fallbackStartDate;
 
-    await requestStore.markGenerating(
-      requestId: resolvedRequestId,
-      userId: userId,
-      actorMode: actorMode,
-      startDate: resolvedStartDate,
-      days: days,
-    );
-
-    AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
-
     var failureStage = 'load_catalog';
     try {
-      final fullCatalog = await catalogDatasource.loadScheduleCatalogBundle();
+      _reportProgress(
+        onProgress,
+        GeneratedPlanProgress(
+          requestId: resolvedRequestId,
+          totalDays: days,
+          savedDays: [for (var day = 1; day <= previouslySavedDays; day++) day],
+          mealFilterState: GeneratedPlanMealFilterState.filtering,
+          totalEvents: _expectedEventCount(
+            days,
+            preferences,
+            resolvedStartDate,
+          ),
+        ),
+      );
+      final fullCatalog =
+          catalogOverride ??
+          await catalogDatasource.loadScheduleCatalogBundle();
+      if (filteredMealsOverride == null) {
+        _validateMealCatalogClassifications(fullCatalog);
+      }
+      await requestStore.markGenerating(
+        requestId: resolvedRequestId,
+        userId: userId,
+        actorMode: actorMode,
+        startDate: resolvedStartDate,
+        days: days,
+      );
+      AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
       AppLogger.info(
         _tag,
         'Loaded full schedule catalog counts: '
@@ -557,13 +916,93 @@ class GeneratedPlanService {
         'selectableExercises=${fullCatalog.exercises.where((item) => item.isActive).length}',
       );
 
-      final scheduleCatalog = fullCatalog;
-      _ensureMealSlotsAvailable(scheduleCatalog);
-      final mealPersonalization = ScheduleAiPersonalizationContext.forMeals(
-        profile: profile,
-        dashboard: dashboardData,
-        nutritionProfile: nutritionProfile,
+      final mealFilterTraceId = AITraceLogger.nextTraceId('schedule-filter');
+      final mealFilterStopwatch = Stopwatch()..start();
+      AITraceLogger.info(
+        AITraceLogger.aiGen,
+        mealFilterTraceId,
+        'generatePlan',
+        'MEAL_FILTER_STARTED',
+        'Started filtering the local meal catalog.',
+        data: {'catalogMealCount': fullCatalog.meals.length},
       );
+      final filteredMeals =
+          filteredMealsOverride ??
+          await _filterMealsOffUi(
+            catalog: fullCatalog.meals,
+            profile: profile,
+            dashboard: dashboardData,
+            nutritionProfile: nutritionProfile,
+          );
+      mealFilterStopwatch.stop();
+      AITraceLogger.info(
+        AITraceLogger.aiGen,
+        mealFilterTraceId,
+        'generatePlan',
+        'MEAL_FILTER_COMPLETED',
+        'Finished filtering the local meal catalog.',
+        data: {
+          'catalogMealCount': fullCatalog.meals.length,
+          'filteredMealCount': filteredMeals.meals.length,
+          'durationMs': mealFilterStopwatch.elapsedMilliseconds,
+        },
+      );
+      if (filteredMealsOverride == null) {
+        _logFilteredMealCounts(
+          catalogMealCount: fullCatalog.meals.length,
+          result: filteredMeals,
+        );
+      }
+      _reportProgress(
+        onProgress,
+        GeneratedPlanProgress(
+          requestId: resolvedRequestId,
+          totalDays: days,
+          savedDays: [for (var day = 1; day <= previouslySavedDays; day++) day],
+          filteredMealCandidates: filteredMeals.candidates,
+          minimumCandidatesPerPeriod: filteredMeals.minimumCandidatesPerPeriod,
+          mealFilterState: GeneratedPlanMealFilterState.complete,
+          catalogMealCount: fullCatalog.meals.length,
+          totalEvents: _expectedEventCount(
+            days,
+            preferences,
+            resolvedStartDate,
+          ),
+        ),
+      );
+      final baseScheduleCatalog = AiCatalogBundle(
+        meals: filteredMeals.meals,
+        exercises: fullCatalog.exercises,
+        scheduleTasks: fullCatalog.scheduleTasks,
+        ingredientEvidenceByName: fullCatalog.ingredientEvidenceByName,
+      );
+      if (filteredMeals.classificationIssues.isNotEmpty) {
+        throw ScheduleMealClassificationException(
+          MealCatalogClassificationException(
+            filteredMeals.classificationIssues,
+          ),
+        );
+      }
+      if (!filteredMeals.hasMinimumCandidatesPerPeriod) {
+        throw ScheduleCandidatesUnavailableException(
+          _minimumCandidateMessage(filteredMeals.minimumCandidatesPerPeriod),
+        );
+      }
+      final mealPersonalization = Map<String, Object?>.of(
+        ScheduleAiPersonalizationContext.forMeals(
+          profile: profile,
+          dashboard: dashboardData,
+          nutritionProfile: nutritionProfile,
+        ),
+      );
+      if (filteredMeals.usedGeneralWellnessFallback) {
+        // These rows remain explicitly unreviewed in the catalog. Do not ask
+        // the model to personalize them to health goals or conditions whose
+        // food-safety evidence is unavailable.
+        mealPersonalization
+          ..remove('wellness_goals')
+          ..remove('user_reported_condition_categories');
+      }
       final exercisePersonalization =
           ScheduleAiPersonalizationContext.forExercise(
             profile: profile,
@@ -571,25 +1010,10 @@ class GeneratedPlanService {
             nutritionProfile: nutritionProfile,
           );
       final fallbackMealCodesByType = {
-        for (final slot in MealPlanAiNormalizer.mealSlots)
-          slot.type: const MealCandidateSelector()
-              .eligibleMeals(
-                catalog: scheduleCatalog.meals,
-                profile: nutritionProfile,
-                mealType: slot.type,
-                conditions: profile.conditions.toSet(),
-                goals: profile.goals.toSet(),
-                selectionPolicy: MealCandidateSelectionPolicy.wellnessSchedule,
-                unparsedAllergyDetails: dashboardData.allergyNote
-                    .trim()
-                    .isNotEmpty,
-                additionalAllergies: dashboardData.allergyName.trim().isEmpty
-                    ? const {}
-                    : {dashboardData.allergyName.trim()},
-              )
-              .map((meal) => meal.code)
-              .toSet(),
+        for (final entry in filteredMeals.eligibleCodesByType.entries)
+          entry.key: Set<String>.of(entry.value),
       };
+      var scheduleCatalog = baseScheduleCatalog;
       final fallbackExerciseCodes = const ExerciseCandidateSelector()
           .eligibleExercises(
             catalog: scheduleCatalog.exercises,
@@ -610,8 +1034,7 @@ class GeneratedPlanService {
       );
 
       failureStage = 'prepare_staging';
-      const promptVersion =
-          'personal_schedule_v12_unreviewed_wellness_candidates';
+      const promptVersion = 'personal_schedule_v19_compact_prompt_json_schema';
       final inputFingerprint = _inputFingerprint(
         userId: userId,
         startDate: resolvedStartDate,
@@ -633,6 +1056,25 @@ class GeneratedPlanService {
       final stagedSources = Map<String, PlanGenerationSource>.of(
         staging.chunkSources,
       );
+      _reportProgress(
+        onProgress,
+        GeneratedPlanProgress(
+          requestId: resolvedRequestId,
+          totalDays: days,
+          savedDays: [for (var day = 1; day <= previouslySavedDays; day++) day],
+          filteredMealCandidates: filteredMeals.candidates,
+          minimumCandidatesPerPeriod: filteredMeals.minimumCandidatesPerPeriod,
+          mealFilterState: GeneratedPlanMealFilterState.complete,
+          catalogMealCount: fullCatalog.meals.length,
+          totalEvents: _expectedEventCount(
+            days,
+            preferences,
+            resolvedStartDate,
+          ),
+          events: _eventsFromStaging(stagedChunks),
+          pendingMealProposal: _pendingMealProposal(stagedChunks),
+        ),
+      );
       var persistedMealCount = 0;
       var persistedExerciseCount = 0;
       var persistedScheduleItemCount = 0;
@@ -652,6 +1094,106 @@ class GeneratedPlanService {
       }
 
       for (var day = 1; day <= days; day++) {
+        for (final slot in MealPlanAiNormalizer.mealSlots) {
+          if ((filteredMeals.eligibleCountsByType[slot.type] ?? 0) > 0) {
+            continue;
+          }
+          final customKey = 'custom:$day:${slot.type}';
+          var customPayload = stagedChunks[customKey]?.single;
+          if (customPayload == null || customPayload['status'] == 'replace') {
+            failureStage = 'generate_custom_meal_${slot.type}_day_$day';
+            final customResult = await aiService
+                .generateCustomMealProposalWithSource(
+                  day: day,
+                  mealType: slot.type,
+                  personalization: mealPersonalization,
+                  onBackendInvocation: countBackendInvocation,
+                );
+            final proposal = GeneratedCustomMealProposal(
+              proposalId:
+                  '$resolvedRequestId:$day:${slot.type}:${now().toUtc().microsecondsSinceEpoch}',
+              stagingKey: customKey,
+              day: day,
+              mealType: slot.type,
+              name: customResult.value['meal_name']!.toString(),
+              description: customResult.value['description']!.toString(),
+              ingredients: (customResult.value['ingredients'] as List)
+                  .cast<String>(),
+              servingSize: customResult.value['serving_size']!.toString(),
+              cookingSteps: (customResult.value['cooking_steps'] as List)
+                  .cast<String>(),
+            );
+            customPayload = proposal.toStorageMap(status: 'awaiting_approval');
+            await requestStore.saveStagedChunk(
+              requestId: resolvedRequestId,
+              inputFingerprint: inputFingerprint,
+              catalogFingerprint: catalogFingerprint,
+              promptVersion: promptVersion,
+              chunkKey: customKey,
+              payload: [customPayload],
+              source: customResult.source,
+            );
+            stagedChunks[customKey] = [customPayload];
+            stagedSources[customKey] = customResult.source;
+          }
+
+          final proposal = GeneratedCustomMealProposal.fromMap(customPayload);
+          if (customPayload['status'] != 'approved') {
+            _reportProgress(
+              onProgress,
+              GeneratedPlanProgress(
+                requestId: resolvedRequestId,
+                totalDays: days,
+                savedDays: [
+                  for (var saved = 1; saved <= previouslySavedDays; saved++)
+                    saved,
+                ],
+                filteredMealCandidates: filteredMeals.candidates,
+                minimumCandidatesPerPeriod:
+                    filteredMeals.minimumCandidatesPerPeriod,
+                mealFilterState: GeneratedPlanMealFilterState.complete,
+                catalogMealCount: fullCatalog.meals.length,
+                totalEvents: _expectedEventCount(
+                  days,
+                  preferences,
+                  resolvedStartDate,
+                ),
+                events: _eventsFromStaging(stagedChunks),
+                pendingMealProposal: proposal,
+              ),
+            );
+            return GeneratedPlanResult(
+              requestId: resolvedRequestId,
+              startDate: resolvedStartDate,
+              days: days,
+              mealCount: previousRequest?.mealCount ?? 0,
+              exerciseCount: previousRequest?.exerciseCount ?? 0,
+              scheduleItemCount: previousRequest?.scheduleItemCount ?? 0,
+              generationSource: PlanGenerationSource.unknown,
+              awaitingMealApproval: true,
+              pendingMealProposalId: proposal.proposalId,
+              pendingMealProposal: proposal,
+            );
+          }
+
+          final approvedCustomMeal = _approvedCustomMealCatalogItem(
+            proposal: proposal,
+            requestId: resolvedRequestId,
+          );
+          scheduleCatalog = AiCatalogBundle(
+            meals: [
+              ...scheduleCatalog.meals.where(
+                (meal) => meal.code != approvedCustomMeal.code,
+              ),
+              approvedCustomMeal,
+            ],
+            exercises: scheduleCatalog.exercises,
+            scheduleTasks: scheduleCatalog.scheduleTasks,
+            ingredientEvidenceByName: scheduleCatalog.ingredientEvidenceByName,
+          );
+          fallbackMealCodesByType[slot.type]!.add(approvedCustomMeal.code);
+        }
+
         final mealKey = 'meal:$day';
         if (!stagedChunks.containsKey(mealKey)) {
           final mealUsedCounts = _usedCodeCounts(
@@ -681,7 +1223,6 @@ class GeneratedPlanService {
                     catalog: scheduleCatalog,
                     usedCodeCounts: mealUsedCounts,
                     eligibleFallbackCodesByType: fallbackMealCodesByType,
-                    allowLocalFallback: false,
                     personalization: mealPersonalization,
                     onBackendInvocation: countBackendInvocation,
                   );
@@ -886,6 +1427,62 @@ class GeneratedPlanService {
           startDate: dayDate,
           days: 1,
         );
+        final orderedDaySchedule = [...daySchedule]
+          ..sort((left, right) {
+            final time = left.startTime.compareTo(right.startTime);
+            return time != 0 ? time : left.sortOrder.compareTo(right.sortOrder);
+          });
+        for (
+          var eventIndex = 0;
+          eventIndex < orderedDaySchedule.length;
+          eventIndex++
+        ) {
+          final item = orderedDaySchedule[eventIndex];
+          final eventPayload = <String, dynamic>{
+            'event_id': item.id,
+            'day': day,
+            'time': item.startTime,
+            'title': _progressEventTitle(item),
+            'status': 'saved',
+            'order': eventIndex + 1,
+          };
+          final eventKey = 'event:$day:${item.id}';
+          await requestStore.saveStagedChunk(
+            requestId: resolvedRequestId,
+            inputFingerprint: inputFingerprint,
+            catalogFingerprint: catalogFingerprint,
+            promptVersion: promptVersion,
+            chunkKey: eventKey,
+            payload: [eventPayload],
+            source: PlanGenerationSource.unknown,
+          );
+          stagedChunks[eventKey] = [eventPayload];
+          stagedSources[eventKey] = PlanGenerationSource.unknown;
+
+          // Keep the final percentage change until the day transaction commits;
+          // earlier events are visible while their day is being staged.
+          if (!(day == days && eventIndex == orderedDaySchedule.length - 1)) {
+            _reportProgress(
+              onProgress,
+              GeneratedPlanProgress(
+                requestId: resolvedRequestId,
+                totalDays: days,
+                savedDays: [for (var saved = 1; saved < day; saved++) saved],
+                filteredMealCandidates: filteredMeals.candidates,
+                minimumCandidatesPerPeriod:
+                    filteredMeals.minimumCandidatesPerPeriod,
+                mealFilterState: GeneratedPlanMealFilterState.complete,
+                catalogMealCount: fullCatalog.meals.length,
+                totalEvents: _expectedEventCount(
+                  days,
+                  preferences,
+                  resolvedStartDate,
+                ),
+                events: _eventsFromStaging(stagedChunks),
+              ),
+            );
+          }
+        }
         persistedMealCount += dayMeals.length;
         persistedExerciseCount += timedDayExercises.length;
         persistedScheduleItemCount += daySchedule.length;
@@ -894,6 +1491,10 @@ class GeneratedPlanService {
             stagedSources['meal:$sourceDay'] ?? PlanGenerationSource.unknown,
             stagedSources['exercise:$sourceDay'] ??
                 PlanGenerationSource.unknown,
+            for (final slot in MealPlanAiNormalizer.mealSlots)
+              if (stagedSources['custom:$sourceDay:${slot.type}']
+                  case final source?)
+                source,
           ],
         ]);
         await requestStore.saveGeneratedPlanDay(
@@ -914,8 +1515,20 @@ class GeneratedPlanService {
         _reportProgress(
           onProgress,
           GeneratedPlanProgress(
+            requestId: resolvedRequestId,
             totalDays: days,
             savedDays: List<int>.generate(day, (index) => index + 1),
+            filteredMealCandidates: filteredMeals.candidates,
+            minimumCandidatesPerPeriod:
+                filteredMeals.minimumCandidatesPerPeriod,
+            mealFilterState: GeneratedPlanMealFilterState.complete,
+            catalogMealCount: fullCatalog.meals.length,
+            totalEvents: _expectedEventCount(
+              days,
+              preferences,
+              resolvedStartDate,
+            ),
+            events: _eventsFromStaging(stagedChunks),
           ),
         );
         _printScheduleDiagnostic(
@@ -1019,6 +1632,9 @@ class GeneratedPlanService {
         for (var day = 1; day <= days; day++) ...[
           stagedSources['meal:$day'] ?? PlanGenerationSource.unknown,
           stagedSources['exercise:$day'] ?? PlanGenerationSource.unknown,
+          for (final slot in MealPlanAiNormalizer.mealSlots)
+            if (stagedSources['custom:$day:${slot.type}'] case final source?)
+              source,
         ],
       ]);
 
@@ -1106,22 +1722,192 @@ class GeneratedPlanService {
     }
   }
 
-  void _ensureMealSlotsAvailable(AiCatalogBundle catalog) {
-    for (final slot in MealPlanAiNormalizer.mealSlots) {
-      final hasActiveCandidate = catalog
-          .mealsForType(slot.type)
-          .any(
-            (meal) =>
-                meal.isActive &&
-                meal.code.trim().isNotEmpty &&
-                meal.mealName.trim().isNotEmpty,
-          );
-      if (!hasActiveCandidate) {
-        throw StateError(
-          'No active local meal candidate remains for ${slot.type}.',
-        );
+  void _validateMealCatalogClassifications(AiCatalogBundle catalog) {
+    final issues = const MealCatalogPrefilter().validateClassifications(
+      catalog.meals,
+    );
+    _printScheduleDiagnostic(
+      'meal_catalog_classification_check',
+      data: {
+        'catalogMealCount': catalog.meals.length,
+        'classificationIssueCount': issues.length,
+      },
+    );
+    if (issues.isNotEmpty) {
+      throw ScheduleMealClassificationException(
+        MealCatalogClassificationException(issues),
+      );
+    }
+  }
+
+  void _logFilteredMealCounts({
+    required int catalogMealCount,
+    required MealCatalogPrefilterResult result,
+  }) {
+    _printScheduleDiagnostic(
+      'meal_catalog_filtered',
+      data: {
+        'catalogMealCount': catalogMealCount,
+        'filteredMealCount': result.candidates.length,
+        'filteredMealCountsByPeriod': {
+          for (final entry in result.eligibleCountsByPeriod.entries)
+            entry.key.name: entry.value,
+        },
+        'minimumCandidatesPerPeriod': result.minimumCandidatesPerPeriod,
+        'usedGeneralWellnessFallback': result.usedGeneralWellnessFallback,
+      },
+    );
+  }
+
+  Future<MealCatalogPrefilterResult> _filterMealsOffUi({
+    required Iterable<MealCatalogItemModel> catalog,
+    required DailyHealthProfileEntity profile,
+    required DashboardEntity dashboard,
+    required NutritionProfileEntity nutritionProfile,
+  }) => compute<_MealCatalogFilterRequest, MealCatalogPrefilterResult>(
+    _filterMealCatalogInBackground,
+    _MealCatalogFilterRequest(
+      catalog: catalog.toList(growable: false),
+      nutritionProfile: nutritionProfile,
+      conditions: profile.conditions.toSet(),
+      goals: profile.goals.toSet(),
+      additionalAllergies: dashboard.allergyName.trim().isEmpty
+          ? const {}
+          : {dashboard.allergyName.trim()},
+      unparsedAllergyDetails: _hasUnparsedAllergyNote(dashboard.allergyNote),
+      minimumCandidatesPerPeriod: minimumMealCandidatesPerPeriod,
+    ),
+    debugLabel: 'meal-catalog-prefilter',
+  );
+
+  String _minimumCandidateMessage(int minimum) =>
+      'Sau khi xét các ràng buộc bắt buộc, danh mục chưa có đủ ít nhất '
+      '$minimum món cho từng khung Sáng, Trưa và Chiều/Tối. Nabi đã dừng '
+      'trước khi gọi AI để tránh tạo lịch thiếu lựa chọn.';
+
+  int _expectedEventCount(
+    int days,
+    DailyRoutinePreferences preferences,
+    DateTime startDate,
+  ) {
+    var total = 0;
+    for (var day = 0; day < days; day++) {
+      final date = startDate.add(Duration(days: day));
+      final timing = timingResolver.resolve(preferences, date);
+      total += LifestyleScheduleTimelineBuilder.itemsPerDay;
+      if (timing.napRange != null) total++;
+    }
+    return total;
+  }
+
+  List<GeneratedPlanEventProgress> _eventsFromStaging(
+    Map<String, List<Map<String, dynamic>>> chunks,
+  ) {
+    final events = <GeneratedPlanEventProgress>[];
+    for (final entry in chunks.entries) {
+      if (!entry.key.startsWith('event:') || entry.value.isEmpty) continue;
+      final value = entry.value.single;
+      final day = int.tryParse(value['day']?.toString() ?? '');
+      final eventId = value['event_id']?.toString() ?? '';
+      if (day == null || eventId.isEmpty) continue;
+      events.add(
+        GeneratedPlanEventProgress(
+          eventId: eventId,
+          day: day,
+          time: value['time']?.toString() ?? '',
+          title: value['title']?.toString() ?? 'sự kiện lịch trình',
+          status: value['status']?.toString() ?? 'saved',
+        ),
+      );
+    }
+    events.sort((left, right) {
+      final dayOrder = left.day.compareTo(right.day);
+      if (dayOrder != 0) return dayOrder;
+      final timeOrder = left.time.compareTo(right.time);
+      return timeOrder != 0 ? timeOrder : left.eventId.compareTo(right.eventId);
+    });
+    return List.unmodifiable(events);
+  }
+
+  GeneratedCustomMealProposal? _pendingMealProposal(
+    Map<String, List<Map<String, dynamic>>> chunks,
+  ) {
+    for (final entry in chunks.entries) {
+      if (!entry.key.startsWith('custom:') || entry.value.isEmpty) continue;
+      final value = entry.value.single;
+      if (value['status']?.toString() == 'awaiting_approval') {
+        return GeneratedCustomMealProposal.fromMap(value);
       }
     }
+    return null;
+  }
+
+  MealCatalogItemModel _approvedCustomMealCatalogItem({
+    required GeneratedCustomMealProposal proposal,
+    required String requestId,
+  }) {
+    final digest = sha256
+        .convert(utf8.encode('$requestId:${proposal.proposalId}'))
+        .toString();
+    final code = 'nabi_custom_${digest.substring(0, 24)}';
+    final timestamp = now().toIso8601String();
+    return MealCatalogItemModel(
+      code: code,
+      mealType: proposal.mealType,
+      mealName: proposal.name,
+      description: proposal.description,
+      cookingInstructions: proposal.cookingSteps.join('\n'),
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      waterMl: 0,
+      ingredients: proposal.ingredients,
+      cookingSteps: proposal.cookingSteps,
+      servingSize: proposal.servingSize,
+      allergenVerificationStatus: 'unknown',
+      nutritionStatus: 'not_assessed',
+      constraintMetadataStatus: 'unknown',
+      metadataStatus: 'user_approved_custom',
+      isPlanEligible: false,
+      sourceName: '',
+      sourceHash: '',
+      isActive: true,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    );
+  }
+
+  String _progressEventTitle(LifestyleScheduleItemModel item) {
+    if (item.sourceType == LifestyleScheduleSourceTypes.mealPlan) {
+      final title = item.title.trim();
+      final colon = title.indexOf(':');
+      if (colon > 0) {
+        final mealLabel = title.substring(0, colon).trim().toLowerCase();
+        final mealName = title.substring(colon + 1).trim();
+        final label = switch (mealLabel) {
+          'ăn sáng' => 'bữa sáng',
+          'bữa phụ sáng' => 'bữa phụ sáng',
+          'ăn trưa' => 'bữa trưa',
+          'bữa phụ chiều' => 'bữa phụ chiều',
+          'ăn tối' => 'bữa tối',
+          _ => mealLabel,
+        };
+        return mealName.isEmpty ? label : '$label: $mealName';
+      }
+      return 'bữa ăn: $title';
+    }
+    if (item.sourceType == LifestyleScheduleSourceTypes.exerciseTask) {
+      return 'bài tập: ${item.title.trim()}';
+    }
+    return switch (item.sourceId) {
+      'routine_wake' => 'thời gian thức dậy',
+      'routine_water_morning' => 'thời gian uống nước',
+      'routine_sleep_prepare' => 'thời gian chuẩn bị ngủ',
+      'routine_nap' => 'thời gian ngủ trưa',
+      _ => item.title.trim().toLowerCase(),
+    };
   }
 
   List<MealPlanModel> _stableGeneratedMealIds(List<MealPlanModel> meals) => [
@@ -1370,6 +2156,9 @@ class GeneratedPlanService {
   }
 
   String _errorCode(Object error) {
+    if (error is ScheduleMealClassificationException) {
+      return 'meal_catalog_classification_invalid';
+    }
     if (error is ScheduleCandidatesUnavailableException) {
       return 'schedule_candidates_unavailable';
     }
@@ -1509,6 +2298,12 @@ class GeneratedPlanService {
       'selectableExerciseCount',
       'scheduleItemCount',
       'backendInvocationCount',
+      'catalogMealCount',
+      'filteredMealCount',
+      'filteredMealCountsByPeriod',
+      'minimumCandidatesPerPeriod',
+      'usedGeneralWellnessFallback',
+      'classificationIssueCount',
       'errorCode',
       'errorType',
     };
@@ -1538,3 +2333,35 @@ class GeneratedPlanService {
     return _dateOnly(parsed);
   }
 }
+
+class _MealCatalogFilterRequest {
+  const _MealCatalogFilterRequest({
+    required this.catalog,
+    required this.nutritionProfile,
+    required this.conditions,
+    required this.goals,
+    required this.additionalAllergies,
+    required this.unparsedAllergyDetails,
+    required this.minimumCandidatesPerPeriod,
+  });
+
+  final List<MealCatalogItemModel> catalog;
+  final NutritionProfileEntity nutritionProfile;
+  final Set<String> conditions;
+  final Set<String> goals;
+  final Set<String> additionalAllergies;
+  final bool unparsedAllergyDetails;
+  final int minimumCandidatesPerPeriod;
+}
+
+MealCatalogPrefilterResult _filterMealCatalogInBackground(
+  _MealCatalogFilterRequest request,
+) => const MealCatalogPrefilter().filter(
+  catalog: request.catalog,
+  profile: request.nutritionProfile,
+  conditions: request.conditions,
+  goals: request.goals,
+  additionalAllergies: request.additionalAllergies,
+  unparsedAllergyDetails: request.unparsedAllergyDetails,
+  minimumCandidatesPerPeriod: request.minimumCandidatesPerPeriod,
+);

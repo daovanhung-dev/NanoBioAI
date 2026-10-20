@@ -2,6 +2,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AppPrefs {
   static const String _onboardingKey = 'onboarding_completed';
+  static const String _aiChatThinkingPhraseNextIndexKey =
+      'ai_chat_thinking_phrase_next_index';
+  static const Duration _thinkingPhraseStorageTimeout = Duration(
+    milliseconds: 250,
+  );
   static const String _pendingGuestUserIdKey = 'pending_guest_user_id';
   static const String _lastCloudSyncAtKey = 'last_cloud_sync_at';
   static const String _cloudPullRetryPendingKey = 'cloud_pull_retry_pending';
@@ -10,6 +15,69 @@ class AppPrefs {
   static const String _pendingGuestSyncActionKey = 'pending_guest_sync_action';
   static const String _pendingGuestReminderTransferAuthUserIdKey =
       'pending_guest_reminder_transfer_auth_user_id';
+  static Future<void>? _thinkingPhraseInitialization;
+  static SharedPreferences? _thinkingPhrasePreferences;
+  static int? _thinkingPhraseNextIndex;
+  static bool _thinkingPhraseCursorInitialized = false;
+  static bool _useThinkingPhraseMemoryFallback = false;
+
+  /// Reserves the next local chat thinking phrase index and advances the cursor.
+  ///
+  /// Loads the cursor once, then advances it synchronously before any write.
+  /// If local preferences are unavailable, the sequence continues in memory
+  /// for the current app session.
+  static Future<int> reserveNextAiChatThinkingPhraseIndex({
+    required int phraseCount,
+  }) async {
+    if (phraseCount <= 0) {
+      throw ArgumentError.value(phraseCount, 'phraseCount');
+    }
+
+    await _initializeAiChatThinkingPhraseCursor(phraseCount);
+
+    var currentIndex = _thinkingPhraseNextIndex ?? 0;
+    if (currentIndex < 0 || currentIndex >= phraseCount) currentIndex = 0;
+    _thinkingPhraseNextIndex = (currentIndex + 1) % phraseCount;
+
+    final preferences = _thinkingPhrasePreferences;
+    if (preferences == null || _useThinkingPhraseMemoryFallback) {
+      _useThinkingPhraseMemoryFallback = true;
+      return currentIndex;
+    }
+
+    try {
+      final saved = await preferences
+          .setInt(_aiChatThinkingPhraseNextIndexKey, _thinkingPhraseNextIndex!)
+          .timeout(_thinkingPhraseStorageTimeout);
+      _useThinkingPhraseMemoryFallback = !saved;
+    } catch (_) {
+      _useThinkingPhraseMemoryFallback = true;
+    }
+
+    return currentIndex;
+  }
+
+  static Future<void> _initializeAiChatThinkingPhraseCursor(int phraseCount) {
+    if (_thinkingPhraseCursorInitialized) return Future<void>.value();
+
+    return _thinkingPhraseInitialization ??= () async {
+      try {
+        final preferences = await SharedPreferences.getInstance().timeout(
+          _thinkingPhraseStorageTimeout,
+        );
+        _thinkingPhrasePreferences = preferences;
+        final storedIndex =
+            preferences.getInt(_aiChatThinkingPhraseNextIndexKey) ?? 0;
+        _thinkingPhraseNextIndex = storedIndex >= 0 && storedIndex < phraseCount
+            ? storedIndex
+            : 0;
+      } catch (_) {
+        _thinkingPhraseNextIndex = 0;
+        _useThinkingPhraseMemoryFallback = true;
+      }
+      _thinkingPhraseCursorInitialized = true;
+    }();
+  }
 
   static Future<void> setOnboardingCompleted(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -127,5 +195,10 @@ class AppPrefs {
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    _thinkingPhrasePreferences = prefs;
+    _thinkingPhraseNextIndex = 0;
+    _thinkingPhraseInitialization = null;
+    _thinkingPhraseCursorInitialized = true;
+    _useThinkingPhraseMemoryFallback = false;
   }
 }

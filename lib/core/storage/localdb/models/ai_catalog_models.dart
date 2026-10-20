@@ -253,6 +253,13 @@ class MealCatalogItemModel {
   bool get isSelectableForGeneralWellnessSchedule =>
       isSelectableForMealPlanAi || isUnreviewedWellnessScheduleCandidate;
 
+  /// A request-scoped proposal that the user explicitly approved. It is never
+  /// persisted into or treated as an approved catalog row.
+  bool get isApprovedCustomScheduleMeal =>
+      code.trim().toLowerCase().startsWith('nabi_custom_') &&
+      metadataStatus.trim().toLowerCase() == 'user_approved_custom' &&
+      nutritionStatus.trim().toLowerCase() == 'not_assessed';
+
   const MealCatalogItemModel({
     required this.code,
     required this.mealType,

@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/interfaces/health_data_interface.dart';
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/core/ai_local/local_ai_runtime_diagnostics.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 import 'package:nano_app/core/storage/localdb/datasources/ai_catalog_local_datasource.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/domain/entities/daily_health_profile_entity.dart';
@@ -17,28 +19,10 @@ import 'ai_exceptions.dart';
 import 'ai_generation_result.dart';
 import 'ai_json_parser.dart';
 import 'ai_json_prompt_builder.dart';
-import 'gemini_rest_client.dart';
-import 'nabi_ai_backend_client.dart';
+import 'ai_text_client.dart';
 import 'ai_trace_logger.dart';
 import 'prompts/exercise_tasks_prompt.dart';
 import 'prompts/meal_plan_prompt.dart';
-
-String _providerCredentialLabel() => String.fromCharCodes(const [
-  71,
-  69,
-  77,
-  73,
-  78,
-  73,
-  95,
-  65,
-  80,
-  73,
-  95,
-  75,
-  69,
-  89,
-]);
 
 typedef AITextGenerator =
     Future<String> Function({
@@ -75,12 +59,36 @@ class AIConnectionCheckResult {
 class AIService {
   static const _tag = 'AI_SERVICE';
   static const _chunkSizes = [7];
+  static const _singleMealOutputTokens = 64;
+  static const _singleDayExerciseOutputTokens = 128;
+  static const _singleDayMealOutputTokens = 256;
+  static const _singleDayCompactMealOutputTokens = 256;
   static const _connectionCheckStatusCode = 'ai_connection_ok';
   static const _connectionCheckPrompt = '''
-Trả về đúng một mảng JSON theo schema sau:
-[{"status_code":"ai_connection_ok"}]
+Trả về đúng một item trong items theo schema sau:
+{"status_code":"ai_connection_ok"}
 Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
 ''';
+  static const Map<String, dynamic> _connectionCheckSchema = {
+    'type': 'object',
+    'properties': {
+      'items': {
+        'type': 'array',
+        'minItems': 1,
+        'maxItems': 1,
+        'items': {
+          'type': 'object',
+          'properties': {
+            'status_code': {'const': _connectionCheckStatusCode},
+          },
+          'required': ['status_code'],
+          'additionalProperties': false,
+        },
+      },
+    },
+    'required': ['items'],
+    'additionalProperties': false,
+  };
 
   late final List<_AIModelEntry> _models;
   late final Future<void> Function(Duration) _delay;
@@ -93,12 +101,10 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   final Map<String, DateTime> _modelCooldownUntil = {};
 
   AIService({
-    String? apiKeyOverride,
     List<String>? modelNames,
     Future<void> Function(Duration)? delay,
     Random? random,
     AITextGenerator? textGenerator,
-    GeminiRestClient? geminiClient,
     AiTextClient? aiClient,
     AiCatalogLoader? catalogLoader,
     DateTime Function()? now,
@@ -113,44 +119,13 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         catalogLoader ??
         const AiCatalogLocalDatasource().loadScheduleCatalogBundle;
 
-    // Tests may pass an empty override to assert the unavailable-provider
-    // path. Production app construction always routes through the trusted
-    // backend client.
+    // Explicit clients remain available to focused tests. Runtime defaults to
+    // the on-device model selected during first-run setup.
     _aiClient = _textGenerator == null
-        ? aiClient ??
-              geminiClient ??
-              (apiKeyOverride == null ? const NabiAiBackendClient() : null)
+        ? aiClient ?? const LocalAiTextClient()
         : null;
-    final hasRuntimeClient = _aiClient != null;
 
-    if (!hasRuntimeClient && _textGenerator == null) {
-      AITraceLogger.warning(
-        _tag,
-        AITraceLogger.nextTraceId('ai-service-init'),
-        'AIService.constructor',
-        'MISSING_API_KEY',
-        'AI plan generation is unavailable because the provider is not configured.',
-        data: {'source': 'unavailable'},
-        location: StackTrace.current,
-      );
-    }
-
-    final resolvedModelNames =
-        modelNames ??
-        AIModelCandidates.resolve(
-          primaryModel: _textGenerator == null
-              ? _envWithLegacy('GEMINI_PLAN_MODEL', 'GEMINI_MODEL')
-              : null,
-          fallbackModelsCsv: _textGenerator == null
-              ? _envWithLegacy(
-                  'GEMINI_PLAN_FALLBACK_MODELS',
-                  'GEMINI_FALLBACK_MODELS',
-                )
-              : null,
-          overflowModelsCsv: _textGenerator == null
-              ? AppEnv.maybeString('GEMINI_PLAN_OVERFLOW_MODELS')
-              : null,
-        );
+    final resolvedModelNames = modelNames ?? [LocalAiTextClient.modelId];
     AITraceLogger.info(
       _tag,
       AITraceLogger.nextTraceId('ai-service-init'),
@@ -202,20 +177,6 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       );
     }
 
-    if (_textGenerator == null && _aiClient == null) {
-      final message = 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
-      AITraceLogger.warning(
-        _tag,
-        traceId,
-        method,
-        'MISSING_API_KEY',
-        message,
-        data: {'source': AITraceLogger.localGen},
-        location: StackTrace.current,
-      );
-      return AIConnectionCheckResult.failure(message: message);
-    }
-
     Object? lastError;
     String? lastModelName;
     final prompt = AIJsonPromptBuilder.buildArrayPrompt(_connectionCheckPrompt);
@@ -237,15 +198,19 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           traceId: traceId,
           method: method,
           step: 'CONNECTION_CHECK_GENERATE_TEXT',
+          maxOutputTokens: 64,
+          responseJsonSchema: _connectionCheckSchema,
         ).timeout(perModelTimeout);
 
         if (text.trim().isEmpty) {
-          throw const FormatException('Gemini returned an empty response');
+          throw const FormatException('Local model returned an empty response');
         }
 
         final decoded = AIJsonParser.decodeArray(text);
         if (decoded.isEmpty) {
-          throw const FormatException('Gemini returned an empty JSON array');
+          throw const FormatException(
+            'Local model returned an empty JSON array',
+          );
         }
         AITraceLogger.info(
           _tag,
@@ -261,7 +226,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         if (first is! Map ||
             first['status_code']?.toString() != _connectionCheckStatusCode) {
           throw const FormatException(
-            'Gemini returned an invalid connection check payload',
+            'Local model returned an invalid connection check payload',
           );
         }
 
@@ -370,7 +335,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     );
 
     for (final chunk in chunks) {
-      final prompt = MealPlanPrompt.generate(
+      final preparedPrompt = await _prepareMealPrompt(
+        traceId: traceId,
         startDate: startDate,
         startDay: chunk.startDay,
         days: chunk.days,
@@ -381,7 +347,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       final chunkResult = await _generateMealChunk(
         normalizer: normalizer,
         catalog: catalog,
-        prompt: prompt,
+        prompt: preparedPrompt.prompt,
+        candidateCodes: preparedPrompt.candidateCodes,
+        candidateCodesByType: preparedPrompt.candidateCodesByType,
         chunk: chunk,
         usedCodeCounts: usedCodeCounts,
         traceId: traceId,
@@ -493,7 +461,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     );
 
     for (final chunk in chunks) {
-      final prompt = ExerciseTasksPrompt.generate(
+      final preparedPrompt = await _prepareExercisePrompt(
+        traceId: traceId,
         startDate: startDate,
         startDay: chunk.startDay,
         days: chunk.days,
@@ -504,7 +473,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       final chunkResult = await _generateExerciseChunk(
         normalizer: normalizer,
         catalog: catalog,
-        prompt: prompt,
+        prompt: preparedPrompt.prompt,
+        candidateCodes: preparedPrompt.candidateCodes,
         chunk: chunk,
         usedCodeCounts: usedCodeCounts,
         traceId: traceId,
@@ -570,7 +540,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       eligibleCodesByType: eligibleCodesByType,
     );
     final traceId = AITraceLogger.nextTraceId('meal-day-$day');
-    final prompt = MealPlanPrompt.generate(
+    final preparedPrompt = await _prepareMealPrompt(
+      traceId: traceId,
       startDate: startDate,
       startDay: day,
       days: 1,
@@ -582,7 +553,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final result = await _generateMealChunk(
       normalizer: const MealPlanAiNormalizer(),
       catalog: catalog,
-      prompt: prompt,
+      prompt: preparedPrompt.prompt,
+      candidateCodes: preparedPrompt.candidateCodes,
+      candidateCodesByType: preparedPrompt.candidateCodesByType,
       chunk: _AIChunk(startDay: day, days: 1),
       usedCodeCounts: usedCodeCounts,
       eligibleCodesByType: eligibleCodesByType,
@@ -605,7 +578,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     }
     _ensureExerciseCatalogAvailable(catalog);
     final traceId = AITraceLogger.nextTraceId('exercise-day-$day');
-    final prompt = ExerciseTasksPrompt.generate(
+    final preparedPrompt = await _prepareExercisePrompt(
+      traceId: traceId,
       startDate: startDate,
       startDay: day,
       days: 1,
@@ -616,7 +590,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     final result = await _generateExerciseChunk(
       normalizer: const ExerciseTasksAiNormalizer(),
       catalog: catalog,
-      prompt: prompt,
+      prompt: preparedPrompt.prompt,
+      candidateCodes: preparedPrompt.candidateCodes,
       chunk: _AIChunk(startDay: day, days: 1),
       usedCodeCounts: usedCodeCounts,
       traceId: traceId,
@@ -672,7 +647,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'generateMealDayCodeItemsWithSource',
         'LOCAL_CATALOG_FALLBACK',
         'Using validated local meal choices after AI generation failed.',
-        data: {'errorType': error.runtimeType.toString(), 'day': day},
+        data: {
+          'errorType': error.runtimeType.toString(),
+          'errorCode': _safeErrorCode(error),
+          'day': day,
+        },
         location: StackTrace.current,
       );
       return AIGenerationResult(
@@ -708,6 +687,17 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       throw ArgumentError.value(mealType, 'mealType');
     }
     final slot = MealPlanAiNormalizer.mealSlots[slotIndex];
+    final candidateCodesByType = _mealCandidateCodesByType(
+      catalog: catalog.meals,
+      usedCodeCounts: usedCodeCounts,
+      eligibleCodesByType: eligibleFallbackCodesByType,
+      perSlotLimit: 4,
+      minimumUniqueCount: 1,
+    );
+    final candidateCodes = candidateCodesByType[slot.type] ?? const <String>{};
+    if (candidateCodes.isEmpty) {
+      throw StateError('No eligible local meal candidates for this slot.');
+    }
     final traceId = AITraceLogger.nextTraceId('meal-slot-$day-${slot.type}');
     final prompt = MealPlanPrompt.generate(
       startDate: startDate,
@@ -718,6 +708,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       usedMealCodeCounts: usedCodeCounts,
       eligibleCodesByType: eligibleFallbackCodesByType,
       personalization: personalization,
+      candidateCodes: candidateCodes,
+      compactSelectionContext: true,
     );
     try {
       final items = await _runWithRetry<List<Map<String, dynamic>>>(
@@ -732,12 +724,23 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             traceId: traceId,
             method: 'generateMealSlotCodeItem',
             step: 'MEAL_SLOT day=$day type=${slot.type}',
+            maxOutputTokens: _singleMealOutputTokens,
+            responseJsonSchema: _codeItemsJsonSchema(
+              codeKey: 'meal_code',
+              startDay: day,
+              days: 1,
+              itemsPerDay: 1,
+              allowedCodes: candidateCodes,
+              allowedCodesByType: {slot.type: candidateCodes},
+              mealTypes: [slot.type],
+            ),
           );
           if (decoded.length != 1) {
             throw const FormatException(
               'Meal AI slot response must contain exactly one meal.',
             );
           }
+          _ensureMealCodesWithinCandidates(decoded, candidateCodes);
           return const MealPlanAiNormalizer().validateCodeItemForSlot(
             item: decoded.single,
             catalog: catalog,
@@ -766,7 +769,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           'generateMealSlotCodeItem',
           'LOCAL_SLOT_FALLBACK',
           'Using a validated local meal choice after split AI generation failed.',
-          data: {'errorType': error.runtimeType.toString(), 'day': day},
+          data: {
+            'errorType': error.runtimeType.toString(),
+            'errorCode': _safeErrorCode(error),
+            'day': day,
+          },
           location: StackTrace.current,
         );
         return AIGenerationResult(
@@ -777,6 +784,115 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         Error.throwWithStackTrace(fallbackError, fallbackStackTrace);
       }
     }
+  }
+
+  Future<AIGenerationResult<Map<String, dynamic>>>
+  generateCustomMealProposalWithSource({
+    required int day,
+    required String mealType,
+    Map<String, Object?> personalization = const {},
+    required AiBackendInvocationCallback onBackendInvocation,
+  }) async {
+    if (day < 1 || day > 7) {
+      throw RangeError.range(day, 1, 7, 'day');
+    }
+    final normalizedType = mealType.trim().toLowerCase();
+    if (!MealPlanAiNormalizer.mealSlots.any(
+      (slot) => slot.type == normalizedType,
+    )) {
+      throw ArgumentError.value(mealType, 'mealType');
+    }
+    final traceId = AITraceLogger.nextTraceId(
+      'custom-meal-$day-$normalizedType',
+    );
+    const method = 'generateCustomMealProposal';
+    final prompt =
+        '''
+Bạn đề xuất một món ăn tự nấu cho bữa $normalizedType của ngày $day.
+Danh sách món phù hợp từ danh mục sau lọc cho suất này: []. Không có món catalog nào được gửi cho suất này.
+Tôn trọng các ràng buộc cá nhân dưới đây. Chỉ đề xuất nguyên liệu và cách chế biến cụ thể; không đưa ra tuyên bố y khoa, dinh dưỡng, dị ứng hoặc điều trị.
+Trả về đúng một object trong items, theo schema:
+{"meal_type":"$normalizedType","meal_name":"...","description":"...","ingredients":["..."],"serving_size":"...","cooking_steps":["..."]}
+Không thêm mã catalog, dinh dưỡng, lợi ích sức khỏe, hoặc trường khác.
+Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
+''';
+    final value = await _runWithRetry<Map<String, dynamic>>(
+      traceId: traceId,
+      method: method,
+      label: 'TẠO MÓN CHỜ DUYỆT',
+      onBackendInvocation: onBackendInvocation,
+      operation: (entry) async {
+        final decoded = await _generateJsonArray(
+          entry,
+          prompt,
+          traceId: traceId,
+          method: method,
+          step: 'CUSTOM_MEAL day=$day type=$normalizedType',
+          maxOutputTokens: 384,
+          responseJsonSchema: _customMealProposalJsonSchema(normalizedType),
+        );
+        if (decoded.length != 1 || decoded.single is! Map) {
+          throw const FormatException(
+            'Custom meal response must contain exactly one object.',
+          );
+        }
+        final map = Map<String, dynamic>.from(decoded.single as Map);
+        const allowed = {
+          'meal_type',
+          'meal_name',
+          'description',
+          'ingredients',
+          'serving_size',
+          'cooking_steps',
+        };
+        if (map.keys.toSet().length != allowed.length ||
+            !map.keys.toSet().containsAll(allowed)) {
+          throw const FormatException('Custom meal response keys are invalid.');
+        }
+        final responseType =
+            map['meal_type']?.toString().trim().toLowerCase() ?? '';
+        final name = map['meal_name']?.toString().trim() ?? '';
+        final description = map['description']?.toString().trim() ?? '';
+        final servingSize = map['serving_size']?.toString().trim() ?? '';
+        final ingredients = _customMealTextList(map['ingredients']);
+        final cookingSteps = _customMealTextList(map['cooking_steps']);
+        if (responseType != normalizedType ||
+            name.isEmpty ||
+            name.length > 120 ||
+            description.isEmpty ||
+            description.length > 800 ||
+            servingSize.isEmpty ||
+            servingSize.length > 120 ||
+            ingredients.isEmpty ||
+            ingredients.length > 20 ||
+            cookingSteps.isEmpty ||
+            cookingSteps.length > 12) {
+          throw const FormatException(
+            'Custom meal fields are incomplete or invalid.',
+          );
+        }
+        return {
+          'meal_type': normalizedType,
+          'meal_name': name,
+          'description': description,
+          'ingredients': ingredients,
+          'serving_size': servingSize,
+          'cooking_steps': cookingSteps,
+        };
+      },
+    );
+    return AIGenerationResult(value: value, source: PlanGenerationSource.ai);
+  }
+
+  List<String> _customMealTextList(Object? value) {
+    if (value is! List) {
+      throw const FormatException('Custom meal list field is invalid.');
+    }
+    final values = value.map((item) => item?.toString().trim() ?? '').toList();
+    if (values.any((item) => item.isEmpty || item.length > 300)) {
+      throw const FormatException('Custom meal list contains invalid text.');
+    }
+    return List.unmodifiable(values);
   }
 
   Future<AIGenerationResult<List<Map<String, dynamic>>>>
@@ -818,7 +934,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         'generateExerciseDayCodeItemsWithSource',
         'LOCAL_CATALOG_FALLBACK',
         'Using validated local exercise choices after AI generation failed.',
-        data: {'errorType': error.runtimeType.toString(), 'day': day},
+        data: {
+          'errorType': error.runtimeType.toString(),
+          'errorCode': _safeErrorCode(error),
+          'day': day,
+        },
         location: StackTrace.current,
       );
       return AIGenerationResult(
@@ -1024,6 +1144,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required MealPlanAiNormalizer normalizer,
     required AiCatalogBundle catalog,
     required String prompt,
+    Set<String>? candidateCodes,
+    Map<String, Set<String>>? candidateCodesByType,
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
     Map<String, Set<String>>? eligibleCodesByType,
@@ -1031,6 +1153,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     AiBackendInvocationCallback? onBackendInvocation,
   }) async {
     const method = 'generateMealPlan';
+    final compactSingleDayMealCodes =
+        chunk.days == 1 &&
+        candidateCodesByType != null &&
+        MealPlanAiNormalizer.mealSlots.every(
+          (slot) => candidateCodesByType[slot.type]?.isNotEmpty ?? false,
+        );
     try {
       final items = await _runWithRetry<List<Map<String, dynamic>>>(
         traceId: traceId,
@@ -1038,13 +1166,55 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
         label: 'LỖI TẠO THỰC ĐƠN AI',
         onBackendInvocation: onBackendInvocation,
         operation: (entry) async {
-          final decoded = await _generateJsonArray(
+          final response = await _generateJsonArray(
             entry,
             prompt,
             traceId: traceId,
             method: method,
             step: 'MEAL_CHUNK day=${chunk.startDay}',
+            maxOutputTokens: compactSingleDayMealCodes
+                ? _singleDayCompactMealOutputTokens
+                : _mealOutputTokenBudget(chunk.days),
+            responseJsonSchema: compactSingleDayMealCodes
+                ? _compactMealCodeArrayJsonSchema(candidateCodesByType)
+                : _codeItemsJsonSchema(
+                    codeKey: 'meal_code',
+                    startDay: chunk.startDay,
+                    days: chunk.days,
+                    itemsPerDay: MealPlanAiNormalizer.mealsPerDay,
+                    allowedCodes: candidateCodes,
+                    allowedCodesByType: candidateCodesByType,
+                    mealTypes: MealPlanAiNormalizer.mealSlots.map(
+                      (slot) => slot.type,
+                    ),
+                  ),
           );
+          final compactAlignment = compactSingleDayMealCodes
+              ? _expandCompactMealCodes(
+                  response,
+                  chunk.startDay,
+                  candidateCodesByType,
+                )
+              : null;
+          final decoded = compactAlignment?.items ?? response;
+          _ensureMealCodesWithinCandidates(decoded, candidateCodes);
+          if (compactAlignment != null) {
+            AITraceLogger.info(
+              _tag,
+              traceId,
+              method,
+              'MEAL_COMPACT_SLOT_ALIGNMENT',
+              'Compact AI meal codes matched to eligible slots.',
+              data: {
+                'itemCount': decoded.length,
+                'positionMatchCount': compactAlignment.positionMatchCount,
+                'reassignedCount':
+                    MealPlanAiNormalizer.mealSlots.length -
+                    compactAlignment.positionMatchCount,
+              },
+              location: StackTrace.current,
+            );
+          }
           AITraceLogger.info(
             _tag,
             traceId,
@@ -1124,6 +1294,9 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             (item.isSelectableForMealPlanAi ||
                 (item.isUnreviewedWellnessScheduleCandidate &&
                     eligibleCodesByType?[slot.type]?.contains(item.code) ==
+                        true) ||
+                (item.isApprovedCustomScheduleMeal &&
+                    eligibleCodesByType?[slot.type]?.contains(item.code) ==
                         true)) &&
             item.code.trim().isNotEmpty &&
             item.mealName.trim().isNotEmpty &&
@@ -1144,7 +1317,591 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
   }) {
     return meal.isSelectableForMealPlanAi ||
         (meal.isUnreviewedWellnessScheduleCandidate &&
+            eligibleCodesByType?[mealType]?.contains(meal.code) == true) ||
+        (meal.isApprovedCustomScheduleMeal &&
             eligibleCodesByType?[mealType]?.contains(meal.code) == true);
+  }
+
+  int _mealOutputTokenBudget(int days) =>
+      min(384, max(_singleDayMealOutputTokens, days * 128)).toInt();
+
+  int _exerciseOutputTokenBudget(int days) =>
+      min(384, max(_singleDayExerciseOutputTokens, days * 64)).toInt();
+
+  Map<String, dynamic> _codeItemsJsonSchema({
+    required String codeKey,
+    required int startDay,
+    required int days,
+    required int itemsPerDay,
+    Set<String>? allowedCodes,
+    Map<String, Set<String>>? allowedCodesByType,
+    Iterable<String>? mealTypes,
+  }) {
+    final codes =
+        allowedCodes
+            ?.map((code) => code.trim().toLowerCase())
+            .where((code) => code.isNotEmpty)
+            .toSet()
+            .toList()
+          ?..sort();
+    final normalizedMealTypes = mealTypes
+        ?.map((type) => type.trim().toLowerCase())
+        .where((type) => type.isNotEmpty)
+        .toSet()
+        .toList();
+    final normalizedCodesByType = <String, List<String>>{
+      for (final entry
+          in allowedCodesByType?.entries ??
+              const <MapEntry<String, Set<String>>>[])
+        entry.key.trim().toLowerCase():
+            entry.value
+                .map((code) => code.trim().toLowerCase())
+                .where((code) => code.isNotEmpty)
+                .toSet()
+                .toList()
+              ..sort(),
+    };
+    final properties = <String, dynamic>{
+      'day': {
+        'type': 'integer',
+        'enum': [for (var day = startDay; day < startDay + days; day++) day],
+      },
+      if (normalizedMealTypes != null && normalizedMealTypes.isNotEmpty)
+        'meal_type': {'type': 'string', 'enum': normalizedMealTypes},
+      codeKey: {
+        'type': 'string',
+        if (codes != null && codes.isNotEmpty) 'enum': codes,
+      },
+    };
+    final oneMealPerSlotSchemas =
+        normalizedMealTypes != null &&
+            normalizedMealTypes.isNotEmpty &&
+            days == 1 &&
+            itemsPerDay == normalizedMealTypes.length &&
+            normalizedMealTypes.every(
+              (type) => normalizedCodesByType[type]?.isNotEmpty ?? false,
+            )
+        ? [
+            for (final mealType in normalizedMealTypes)
+              {
+                'type': 'object',
+                'properties': {
+                  'day': properties['day'],
+                  'meal_type': {'const': mealType},
+                  codeKey: {
+                    'type': 'string',
+                    'enum': normalizedCodesByType[mealType],
+                  },
+                },
+                'required': ['day', 'meal_type', codeKey],
+                'additionalProperties': false,
+              },
+          ]
+        : null;
+    final itemSchema = normalizedCodesByType.isEmpty
+        ? {
+            'type': 'object',
+            'properties': properties,
+            'required': properties.keys.toList(growable: false),
+            'additionalProperties': false,
+          }
+        : {
+            'oneOf': [
+              for (final entry in normalizedCodesByType.entries)
+                if (entry.value.isNotEmpty)
+                  {
+                    'type': 'object',
+                    'properties': {
+                      'day': properties['day'],
+                      'meal_type': {'const': entry.key},
+                      codeKey: {'type': 'string', 'enum': entry.value},
+                    },
+                    'required': ['day', 'meal_type', codeKey],
+                    'additionalProperties': false,
+                  },
+            ],
+          };
+    return {
+      'type': 'object',
+      'properties': {
+        'items': {
+          'type': 'array',
+          'minItems': days * itemsPerDay,
+          'maxItems': days * itemsPerDay,
+          if (oneMealPerSlotSchemas == null)
+            'items': itemSchema
+          else
+            'prefixItems': oneMealPerSlotSchemas,
+        },
+      },
+      'required': ['items'],
+      'additionalProperties': false,
+    };
+  }
+
+  Map<String, dynamic> _compactMealCodeArrayJsonSchema(
+    Map<String, Set<String>> allowedCodesByType,
+  ) {
+    final prefixItems = [
+      for (final slot in MealPlanAiNormalizer.mealSlots)
+        {
+          'type': 'string',
+          'enum': allowedCodesByType[slot.type]!.toList()..sort(),
+        },
+    ];
+    return {
+      'type': 'object',
+      'properties': {
+        'items': {
+          'type': 'array',
+          'minItems': MealPlanAiNormalizer.mealsPerDay,
+          'maxItems': MealPlanAiNormalizer.mealsPerDay,
+          'prefixItems': prefixItems,
+        },
+      },
+      'required': ['items'],
+      'additionalProperties': false,
+    };
+  }
+
+  ({List<Map<String, dynamic>> items, int positionMatchCount})
+  _expandCompactMealCodes(
+    List<dynamic> response,
+    int day,
+    Map<String, Set<String>> allowedCodesByType,
+  ) {
+    final slots = MealPlanAiNormalizer.mealSlots;
+    if (response.length != slots.length) {
+      throw const FormatException(
+        'Meal AI compact response must contain exactly five codes.',
+      );
+    }
+    final codes = <String>[];
+    for (var index = 0; index < slots.length; index++) {
+      final rawCode = response[index];
+      if (rawCode is! String || rawCode.trim().isEmpty) {
+        throw const FormatException(
+          'Meal AI compact response codes must be non-empty strings.',
+        );
+      }
+      codes.add(rawCode.trim().toLowerCase());
+    }
+    if (codes.toSet().length != codes.length) {
+      throw const FormatException(
+        'Meal AI compact response codes must be unique.',
+      );
+    }
+    final normalizedCodesByType = {
+      for (final entry in allowedCodesByType.entries)
+        entry.key.trim().toLowerCase(): entry.value
+            .map((code) => code.trim().toLowerCase())
+            .where((code) => code.isNotEmpty)
+            .toSet(),
+    };
+    final assignedCodes = List<String?>.filled(slots.length, null);
+    final assignedIndexes = <int>{};
+
+    bool assignSlot(int slotIndex) {
+      if (slotIndex == slots.length) return true;
+      final allowedCodes = normalizedCodesByType[slots[slotIndex].type] ?? {};
+      final eligibleIndexes =
+          [
+            for (var codeIndex = 0; codeIndex < codes.length; codeIndex++)
+              if (!assignedIndexes.contains(codeIndex) &&
+                  allowedCodes.contains(codes[codeIndex]))
+                codeIndex,
+          ]..sort((left, right) {
+            final leftKeepsPosition = left == slotIndex ? 0 : 1;
+            final rightKeepsPosition = right == slotIndex ? 0 : 1;
+            if (leftKeepsPosition != rightKeepsPosition) {
+              return leftKeepsPosition.compareTo(rightKeepsPosition);
+            }
+            return left.compareTo(right);
+          });
+
+      for (final codeIndex in eligibleIndexes) {
+        assignedIndexes.add(codeIndex);
+        assignedCodes[slotIndex] = codes[codeIndex];
+        if (assignSlot(slotIndex + 1)) return true;
+        assignedIndexes.remove(codeIndex);
+        assignedCodes[slotIndex] = null;
+      }
+      return false;
+    }
+
+    if (!assignSlot(0)) {
+      throw const FormatException(
+        'Meal AI compact response cannot fill eligible slots.',
+      );
+    }
+    final items = [
+      for (var index = 0; index < slots.length; index++)
+        {
+          'day': day,
+          'meal_type': slots[index].type,
+          'meal_code': assignedCodes[index]!,
+        },
+    ];
+    final positionMatchCount = [
+      for (var index = 0; index < slots.length; index++)
+        if (assignedCodes[index] == codes[index]) index,
+    ].length;
+    return (items: items, positionMatchCount: positionMatchCount);
+  }
+
+  Map<String, dynamic> _customMealProposalJsonSchema(String mealType) => {
+    'type': 'object',
+    'properties': {
+      'items': {
+        'type': 'array',
+        'minItems': 1,
+        'maxItems': 1,
+        'items': {
+          'type': 'object',
+          'properties': {
+            'meal_type': {'const': mealType},
+            'meal_name': {'type': 'string'},
+            'description': {'type': 'string'},
+            'ingredients': {
+              'type': 'array',
+              'items': {'type': 'string'},
+            },
+            'serving_size': {'type': 'string'},
+            'cooking_steps': {
+              'type': 'array',
+              'items': {'type': 'string'},
+            },
+          },
+          'required': [
+            'meal_type',
+            'meal_name',
+            'description',
+            'ingredients',
+            'serving_size',
+            'cooking_steps',
+          ],
+          'additionalProperties': false,
+        },
+      },
+    },
+    'required': ['items'],
+    'additionalProperties': false,
+  };
+
+  Future<
+    ({
+      String prompt,
+      Set<String>? candidateCodes,
+      Map<String, Set<String>>? candidateCodesByType,
+    })
+  >
+  _prepareMealPrompt({
+    required String traceId,
+    required DateTime startDate,
+    required int startDay,
+    required int days,
+    required List<MealCatalogItemModel> catalog,
+    required Map<String, int> usedMealCodeCounts,
+    Map<String, FoodIngredientEvidence> ingredientEvidenceByName = const {},
+    Map<String, Set<String>>? eligibleCodesByType,
+    Map<String, Object?> personalization = const {},
+  }) async {
+    String buildPrompt(Set<String>? candidateCodes) => MealPlanPrompt.generate(
+      startDate: startDate,
+      startDay: startDay,
+      days: days,
+      catalog: catalog,
+      usedMealCodeCounts: usedMealCodeCounts,
+      ingredientEvidenceByName: ingredientEvidenceByName,
+      eligibleCodesByType: eligibleCodesByType,
+      personalization: personalization,
+      candidateCodes: candidateCodes,
+      compactSelectionContext: true,
+    );
+
+    final contextClient = _aiClient;
+    if (contextClient is! AiContextAwareClient) {
+      return (
+        prompt: buildPrompt(null),
+        candidateCodes: null,
+        candidateCodesByType: null,
+      );
+    }
+    final contextEstimator = contextClient as AiContextAwareClient;
+
+    final contextSize = await contextEstimator.selectedContextSize();
+    final outputReserve = days == 1
+        ? _singleDayCompactMealOutputTokens
+        : min(_mealOutputTokenBudget(days), max(96, contextSize ~/ 4)).toInt();
+    // Schedule generation commits one day at a time. Keep a small choice set
+    // for each slot in this request; later days rebuild the shortlist using
+    // the updated used-code counts, so every day can still get fresh choices
+    // without sending the whole remaining horizon to the model at once.
+    final minimumPerSlot = max(days, 2);
+    var candidateLimit = minimumPerSlot;
+    final targetInputTokens = min(768, max(256, contextSize ~/ 3)).toInt();
+    while (true) {
+      final candidatesByType = _mealCandidateCodesByType(
+        catalog: catalog,
+        usedCodeCounts: usedMealCodeCounts,
+        eligibleCodesByType: eligibleCodesByType,
+        perSlotLimit: candidateLimit,
+        minimumUniqueCount: days * MealPlanAiNormalizer.mealsPerDay,
+      );
+      final candidates = candidatesByType.values
+          .expand((codes) => codes)
+          .toSet();
+      final prompt = buildPrompt(candidates);
+      final wrappedPrompt = AIJsonPromptBuilder.buildArrayPrompt(prompt);
+      final tokenCount = await LocalAiRuntimeDiagnostics.withTraceId(
+        traceId,
+        () => contextEstimator.estimateTokens('user: $wrappedPrompt'),
+      );
+      final availableTokens = contextSize - tokenCount - outputReserve - 32;
+      AITraceLogger.info(
+        _tag,
+        traceId,
+        'generateMealPlan',
+        'MEAL_PROMPT_BUDGET',
+        'Meal prompt budget measured.',
+        data: {
+          'contextSize': contextSize,
+          'inputTokens': tokenCount,
+          'outputReserveTokens': outputReserve,
+          'availableTokens': availableTokens,
+          'candidateCount': candidates.length,
+          'candidateGroups': _mealCandidateGroupCounts(candidatesByType),
+          'hasSystemInstruction': false,
+          'status': availableTokens >= 32 ? 'fits' : 'shrunk',
+        },
+        location: StackTrace.current,
+      );
+      if (availableTokens >= 32 &&
+          (tokenCount <= targetInputTokens ||
+              candidateLimit <= minimumPerSlot)) {
+        return (
+          prompt: prompt,
+          candidateCodes: candidates,
+          candidateCodesByType: candidatesByType,
+        );
+      }
+      if (candidateLimit <= minimumPerSlot && availableTokens < 32) {
+        throw const AIRequestTooLargeException();
+      }
+      candidateLimit = max(minimumPerSlot, candidateLimit - 1);
+    }
+  }
+
+  String _mealCandidateGroupCounts(Map<String, Set<String>> candidatesByType) =>
+      MealPlanAiNormalizer.mealSlots
+          .map(
+            (slot) =>
+                '${slot.type}=${candidatesByType[slot.type]?.length ?? 0}',
+          )
+          .join(',');
+
+  Map<String, Set<String>> _mealCandidateCodesByType({
+    required List<MealCatalogItemModel> catalog,
+    required Map<String, int> usedCodeCounts,
+    required Map<String, Set<String>>? eligibleCodesByType,
+    required int perSlotLimit,
+    required int minimumUniqueCount,
+  }) {
+    final normalizedEligibleCodesByType = {
+      for (final entry
+          in eligibleCodesByType?.entries ??
+              const <MapEntry<String, Set<String>>>[])
+        entry.key.trim().toLowerCase(): entry.value
+            .map((code) => code.trim().toLowerCase())
+            .where((code) => code.isNotEmpty)
+            .toSet(),
+    };
+    final codesByType = <String, Set<String>>{};
+    for (final slot in MealPlanAiNormalizer.mealSlots) {
+      final candidates =
+          catalog
+              .where((meal) {
+                final code = meal.code.trim().toLowerCase();
+                final eligible =
+                    normalizedEligibleCodesByType[slot.type]?.contains(code) ??
+                    false;
+                final allowed =
+                    meal.isSelectableForMealPlanAi ||
+                    (meal.isUnreviewedWellnessScheduleCandidate && eligible) ||
+                    (meal.isApprovedCustomScheduleMeal && eligible);
+                return allowed &&
+                    (eligibleCodesByType == null || eligible) &&
+                    code.isNotEmpty &&
+                    meal.mealName.trim().isNotEmpty &&
+                    (meal.mealType == slot.type ||
+                        meal.mealType == 'unclassified');
+              })
+              .toList(growable: false)
+            ..sort((left, right) {
+              final leftCode = left.code.trim().toLowerCase();
+              final rightCode = right.code.trim().toLowerCase();
+              final count = (usedCodeCounts[leftCode] ?? 0).compareTo(
+                usedCodeCounts[rightCode] ?? 0,
+              );
+              if (count != 0) return count;
+              final name = normalizeFoodEvidenceName(
+                left.mealName,
+              ).compareTo(normalizeFoodEvidenceName(right.mealName));
+              return name != 0 ? name : leftCode.compareTo(rightCode);
+            });
+      final seenNames = <String>{};
+      final selectedCodes = <String>{};
+      for (final meal in candidates) {
+        final code = meal.code.trim().toLowerCase();
+        final name = normalizeFoodEvidenceName(meal.mealName);
+        if (!seenNames.add(name)) continue;
+        selectedCodes.add(code);
+        if (selectedCodes.length >= perSlotLimit) break;
+      }
+      codesByType[slot.type] = selectedCodes;
+    }
+    final codes = codesByType.values.expand((values) => values).toSet();
+    if (codes.length < minimumUniqueCount) {
+      throw StateError('Insufficient unique eligible meal candidates.');
+    }
+    return codesByType;
+  }
+
+  Future<({String prompt, Set<String>? candidateCodes})>
+  _prepareExercisePrompt({
+    required String traceId,
+    required DateTime startDate,
+    required int startDay,
+    required int days,
+    required List<ExerciseCatalogItemModel> catalog,
+    required Map<String, int> usedExerciseCodeCounts,
+    Map<String, Object?> personalization = const {},
+    List<Map<String, String>> availableTimeWindows = const [],
+  }) async {
+    String buildPrompt(Set<String>? candidateCodes) =>
+        ExerciseTasksPrompt.generate(
+          startDate: startDate,
+          startDay: startDay,
+          days: days,
+          catalog: catalog,
+          usedExerciseCodeCounts: usedExerciseCodeCounts,
+          personalization: personalization,
+          availableTimeWindows: availableTimeWindows,
+          candidateCodes: candidateCodes,
+          compactSelectionContext: true,
+        );
+
+    final contextClient = _aiClient;
+    if (contextClient is! AiContextAwareClient) {
+      return (prompt: buildPrompt(null), candidateCodes: null);
+    }
+    final contextEstimator = contextClient as AiContextAwareClient;
+
+    final contextSize = await contextEstimator.selectedContextSize();
+    final outputReserve = min(
+      _exerciseOutputTokenBudget(days),
+      max(96, contextSize ~/ 4),
+    ).toInt();
+    final minimumCount = max(ExerciseTasksAiNormalizer.exercisesPerDay, days);
+    final remainingScheduleDays = max(1, 8 - startDay);
+    var candidateLimit = min(4, max(minimumCount, remainingScheduleDays * 2));
+    while (true) {
+      final candidates = _exerciseCandidateCodes(
+        catalog: catalog,
+        usedCodeCounts: usedExerciseCodeCounts,
+        limit: candidateLimit,
+      );
+      final prompt = buildPrompt(candidates);
+      final wrappedPrompt = AIJsonPromptBuilder.buildArrayPrompt(prompt);
+      final tokenCount = await LocalAiRuntimeDiagnostics.withTraceId(
+        traceId,
+        () => contextEstimator.estimateTokens('user: $wrappedPrompt'),
+      );
+      final availableTokens = contextSize - tokenCount - outputReserve - 32;
+      AITraceLogger.info(
+        _tag,
+        traceId,
+        'generateExerciseTasks',
+        'EXERCISE_PROMPT_BUDGET',
+        'Exercise prompt budget measured.',
+        data: {
+          'contextSize': contextSize,
+          'inputTokens': tokenCount,
+          'outputReserveTokens': outputReserve,
+          'availableTokens': availableTokens,
+          'candidateCount': candidates.length,
+          'candidateGroups': 'selectable=${candidates.length}',
+          'hasSystemInstruction': false,
+          'status': availableTokens >= 32 ? 'fits' : 'shrunk',
+        },
+        location: StackTrace.current,
+      );
+      if (availableTokens >= 32) {
+        return (prompt: prompt, candidateCodes: candidates);
+      }
+      if (candidateLimit <= minimumCount) {
+        throw const AIRequestTooLargeException();
+      }
+      candidateLimit = max(minimumCount, candidateLimit ~/ 2);
+    }
+  }
+
+  Set<String> _exerciseCandidateCodes({
+    required List<ExerciseCatalogItemModel> catalog,
+    required Map<String, int> usedCodeCounts,
+    required int limit,
+  }) {
+    final candidates =
+        catalog
+            .where(
+              (item) =>
+                  item.isActive &&
+                  item.code.trim().isNotEmpty &&
+                  item.title.trim().isNotEmpty,
+            )
+            .toList(growable: false)
+          ..sort((left, right) {
+            final leftCode = left.code.trim().toLowerCase();
+            final rightCode = right.code.trim().toLowerCase();
+            final count = (usedCodeCounts[leftCode] ?? 0).compareTo(
+              usedCodeCounts[rightCode] ?? 0,
+            );
+            return count != 0 ? count : leftCode.compareTo(rightCode);
+          });
+    return candidates
+        .take(limit)
+        .map((item) => item.code.trim().toLowerCase())
+        .toSet();
+  }
+
+  void _ensureMealCodesWithinCandidates(
+    List<dynamic> decoded,
+    Set<String>? candidateCodes,
+  ) {
+    if (candidateCodes == null) return;
+    for (final item in decoded.whereType<Map>()) {
+      final code = item['meal_code']?.toString().trim().toLowerCase();
+      if (code != null && code.isNotEmpty && !candidateCodes.contains(code)) {
+        throw const FormatException(
+          'Model selected a meal outside its prompt shortlist.',
+        );
+      }
+    }
+  }
+
+  void _ensureExerciseCodesWithinCandidates(
+    List<dynamic> decoded,
+    Set<String>? candidateCodes,
+  ) {
+    if (candidateCodes == null) return;
+    for (final item in decoded.whereType<Map>()) {
+      final code = item['exercise_code']?.toString().trim().toLowerCase();
+      if (code != null && code.isNotEmpty && !candidateCodes.contains(code)) {
+        throw const FormatException(
+          'Model selected an exercise outside its prompt shortlist.',
+        );
+      }
+    }
   }
 
   void _ensureExerciseCatalogAvailable(AiCatalogBundle catalog) {
@@ -1166,6 +1923,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required ExerciseTasksAiNormalizer normalizer,
     required AiCatalogBundle catalog,
     required String prompt,
+    Set<String>? candidateCodes,
     required _AIChunk chunk,
     required Map<String, int> usedCodeCounts,
     required String traceId,
@@ -1185,7 +1943,16 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             traceId: traceId,
             method: method,
             step: 'EXERCISE_CHUNK day=${chunk.startDay}',
+            maxOutputTokens: _exerciseOutputTokenBudget(chunk.days),
+            responseJsonSchema: _codeItemsJsonSchema(
+              codeKey: 'exercise_code',
+              startDay: chunk.startDay,
+              days: chunk.days,
+              itemsPerDay: ExerciseTasksAiNormalizer.exercisesPerDay,
+              allowedCodes: candidateCodes,
+            ),
           );
+          _ensureExerciseCodesWithinCandidates(decoded, candidateCodes);
           AITraceLogger.info(
             _tag,
             traceId,
@@ -1348,9 +2115,14 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
             'modelAttempt': totalAttempts,
             'totalAttempt': totalAttempts,
             'transient': transient,
+            'errorCode': _safeErrorCode(error),
           },
           location: StackTrace.current,
         );
+
+        if (error is AiInferenceException && !transient) {
+          break;
+        }
 
         if (transient) {
           _cooldownModel(entry.name);
@@ -1402,11 +2174,11 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       }
       Error.throwWithStackTrace(failure, stackTrace);
     }
-    final providerStatus = failure is GeminiApiException
+    final providerStatus = failure is AiInferenceException
         ? failure.status?.trim()
         : null;
     throw AIOverloadedException(
-      providerStatusCode: failure is GeminiApiException
+      providerStatusCode: failure is AiInferenceException
           ? failure.statusCode
           : null,
       providerStatus:
@@ -1415,7 +2187,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
           ? providerStatus
           : null,
       providerErrorCode:
-          failure is GeminiApiException &&
+          failure is AiInferenceException &&
               failure.backendErrorCode != null &&
               RegExp(
                 r'^[A-Za-z0-9_.-]{1,64}$',
@@ -1435,7 +2207,7 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required bool transient,
   }) {
     if (!kDebugMode) return;
-    final status = error is GeminiApiException ? error.status : null;
+    final status = error is AiInferenceException ? error.status : null;
     final safeStatus =
         status != null && RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(status)
         ? status
@@ -1445,13 +2217,85 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     print(
       '[NABI_AI_SCHEDULE] component=AI_SERVICE traceId=$traceId '
       'method=$method stage=$stage model=$safeModel '
-      'errorType=${error.runtimeType} status=$safeStatus transient=$transient',
+      'errorType=${error.runtimeType} errorCode=${_safeErrorCode(error)} '
+      'status=$safeStatus transient=$transient',
     );
     for (final line in stackTrace.toString().split('\n').take(8)) {
       if (line.trim().isEmpty) continue;
       // ignore: avoid_print
       print('[NABI_AI_SCHEDULE] stack=$line');
     }
+  }
+
+  String _safeErrorCode(Object error) {
+    if (error is AiInferenceException) {
+      final status = error.status?.trim();
+      if (status != null &&
+          RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(status)) {
+        return status;
+      }
+      return 'inference_error';
+    }
+    if (error is TimeoutException) return 'inference_timeout';
+    if (error is AIRequestTooLargeException) return 'request_too_large';
+    if (error is AIResponseInvalidException) return 'invalid_response';
+    if (error is AIJsonParseException) return error.code;
+    if (error is FormatException) return _safeSchemaErrorCode(error);
+    if (error is StateError) return 'runtime_state';
+    return 'generation_error';
+  }
+
+  String _safeSchemaErrorCode(FormatException error) {
+    final message = error.message.toString();
+    if (message == 'Meal AI compact response cannot fill eligible slots.') {
+      return 'meal_slot_assignment_invalid';
+    }
+    if (message == 'Model selected a meal outside its prompt shortlist.') {
+      return 'meal_code_outside_shortlist';
+    }
+    if (message.startsWith('Meal AI response must contain exactly')) {
+      return 'meal_item_count_invalid';
+    }
+    if (message == 'Meal AI item must be an object') {
+      return 'meal_item_shape_invalid';
+    }
+    if (message.startsWith('Meal AI day must')) return 'meal_day_invalid';
+    if (message.startsWith('Unsupported meal_type:')) {
+      return 'meal_type_unsupported';
+    }
+    if (message.startsWith('Unknown meal_code:')) return 'meal_code_unknown';
+    if (message.startsWith('Unapproved or ineligible meal_code:')) {
+      return 'meal_code_unreviewed';
+    }
+    if (message.startsWith('meal_code ')) return 'meal_code_not_eligible';
+    if (message.startsWith('Duplicate meal_type')) {
+      return 'meal_type_duplicate';
+    }
+    if (message.startsWith('Duplicate meal_code')) {
+      return 'meal_code_duplicate';
+    }
+    if (message.startsWith('Duplicate meal_name')) {
+      return 'meal_name_duplicate';
+    }
+    if (message.startsWith('Expected meal_type')) {
+      return 'meal_slot_missing';
+    }
+    if (message.startsWith('Meal AI item must contain only')) {
+      return 'meal_item_fields_invalid';
+    }
+    if (message.startsWith('Exercise AI response must contain exactly')) {
+      return 'exercise_item_count_invalid';
+    }
+    if (message.startsWith('Exercise AI day must')) {
+      return 'exercise_day_invalid';
+    }
+    if (message.startsWith('Unknown exercise_code:')) {
+      return 'exercise_code_unknown';
+    }
+    if (message.startsWith('Duplicate exercise_code')) {
+      return 'exercise_code_duplicate';
+    }
+    return 'schema_validation_failed';
   }
 
   void _cooldownModel(String modelName) {
@@ -1479,6 +2323,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String traceId,
     required String method,
     required String step,
+    int? maxOutputTokens,
+    Map<String, dynamic>? responseJsonSchema,
   }) async {
     final wrappedPrompt = AIJsonPromptBuilder.buildArrayPrompt(prompt);
     final text = await _generateText(
@@ -1487,10 +2333,12 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       traceId: traceId,
       method: method,
       step: '$step.GENERATE_TEXT',
+      maxOutputTokens: maxOutputTokens,
+      responseJsonSchema: responseJsonSchema,
     ).timeout(const Duration(minutes: 10));
 
     if (text.trim().isEmpty) {
-      throw Exception('Gemini trả về nội dung rỗng');
+      throw const AIResponseInvalidException();
     }
 
     final decoded = AIJsonParser.decodeArray(text);
@@ -1512,6 +2360,8 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
     required String traceId,
     required String method,
     required String step,
+    int? maxOutputTokens,
+    Map<String, dynamic>? responseJsonSchema,
   }) async {
     final stopwatch = Stopwatch()..start();
     AITraceLogger.info(
@@ -1549,14 +2399,21 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       throw const AIConfigurationUnavailableException();
     }
 
-    final text = await client.generateText(
-      model: entry.name,
-      contents: [GeminiContent.user(prompt)],
-      generationConfig: const GeminiGenerationConfig(
-        candidateCount: 1,
-        temperature: 0.2,
-        topP: 0.8,
-        responseMimeType: 'application/json',
+    final text = await LocalAiRuntimeDiagnostics.withTraceId(
+      traceId,
+      () => client.generateText(
+        model: entry.name,
+        messages: [AiMessage.user(prompt)],
+        // The local runtime supports constrained JSON objects. The prompt
+        // wraps its internal item array in {"items": [...]} and the strict
+        // parser unwraps it before existing validators run.
+        generationConfig: AiGenerationConfig(
+          maxOutputTokens: maxOutputTokens,
+          temperature: 0.2,
+          topP: 0.8,
+          responseFormat: AiResponseFormat.json,
+          responseJsonSchema: responseJsonSchema,
+        ),
       ),
     );
     stopwatch.stop();
@@ -1643,29 +2500,24 @@ Không thêm chữ giải thích, markdown hoặc dữ liệu khác.
       return AIModelContextLimitException.userMessage;
     }
 
+    if (AIPlatformUnsupportedException.matches(error)) {
+      return AIPlatformUnsupportedException.userMessage;
+    }
+
     if (error is AIConfigurationUnavailableException) {
-      return 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
+      return AIConfigurationUnavailableException.userMessage;
     }
 
-    final text = error.toString();
-    if (text.contains('Missing Gemini REST client')) {
-      return 'Thiếu ${_providerCredentialLabel()} hoặc key đang rỗng.';
+    if (error is AiInferenceException && error.status != null) {
+      return error.message;
     }
-
-    return 'Không thể kết nối AI. Bạn kiểm tra model hoặc mạng rồi thử lại nhé.';
-  }
-
-  static String? _envWithLegacy(String key, String legacyKey) {
-    return AppEnv.maybeStringWithLegacy(key, legacyKey);
+    return 'Nabi chưa thể mở model trên thiết bị. Bạn thử lại sau nhé.';
   }
 }
 
 class AIModelCandidates {
-  // Keep plan generation aligned with the server allowlist. This is the
-  // model verified against the deployed Edge Function with the full plan
-  // output budget.
-  static const defaultPrimaryModel = 'gemini-2.5-flash';
-  static const defaultFallbackModels = <String>['gemini-3.8-flash'];
+  static const defaultPrimaryModel = LocalAiTextClient.modelId;
+  static const defaultFallbackModels = <String>[];
 
   const AIModelCandidates._();
 
@@ -1680,7 +2532,7 @@ class AIModelCandidates {
       _clean(primaryModel) ?? defaultPrimaryModel,
       ...(fallbackModels.isEmpty ? defaultFallbackModels : fallbackModels),
       ...overflowModels,
-      'gemini-3.8-flash',
+      LocalAiTextClient.modelId,
     ];
 
     final models = <String>[];

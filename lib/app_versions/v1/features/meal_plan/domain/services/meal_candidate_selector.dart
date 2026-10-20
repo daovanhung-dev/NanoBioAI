@@ -8,6 +8,10 @@ enum MealCandidateSelectionPolicy {
   /// Build a general wellness schedule when legacy recipes lack health evidence.
   /// Explicit allergies and foods to avoid remain hard eligibility constraints.
   wellnessSchedule,
+
+  /// Keep general wellness rows, but require verified evidence whenever the
+  /// user's active goals or health constraints need it.
+  personalizedWellnessSchedule,
 }
 
 class MealCandidateSelector {
@@ -111,37 +115,89 @@ class MealCandidateSelector {
     final needsVerifiedNutrition = goalTokens.any(
       (goal) => _containsGoal(goal, const {
         'maintain weight',
+        'giu can',
         'lose weight',
+        'giam can',
         'gain weight',
+        'tang can',
         'lose belly fat',
+        'giam mo bung',
         'gain muscle',
+        'tang co',
         'balanced nutrition',
+        'an du chat',
+        'healthy eating',
+        'an lanh manh',
+        'increase energy',
+        'nhieu nang luong',
       }),
     );
     final needsConditionReview = goalTokens.any(
       (goal) => _containsGoal(goal, const {
         'stable blood sugar',
+        'on dinh duong huyet',
         'stable blood pressure',
+        'on dinh huyet ap',
         'heart health',
+        'cham soc tim',
         'joint health',
+        'khoe xuong khop',
         'improve digestion',
+        'de tieu hoa hon',
+        'improve cardio',
+        'tot cho tim mach',
+        'immune boost',
+        'tang de khang',
+        'beautify skin',
+        'da khoe hon',
+        'detox body',
+        'giai doc co the',
       }),
     );
+    final goalConditionTokens = <String>{};
+    for (final goal in goalTokens) {
+      if (_containsGoal(goal, const {'stable blood sugar'})) {
+        goalConditionTokens.addAll(const {'diabetes', 'blood sugar'});
+      }
+      if (_containsGoal(goal, const {'stable blood pressure'})) {
+        goalConditionTokens.addAll(const {
+          'hypertension',
+          'high blood pressure',
+        });
+      }
+      if (_containsGoal(goal, const {'heart health', 'improve cardio'})) {
+        goalConditionTokens.addAll(const {'heart disease', 'cardiovascular'});
+      }
+      if (_containsGoal(goal, const {'joint health'})) {
+        goalConditionTokens.addAll(const {'arthritis', 'joint'});
+      }
+      if (_containsGoal(goal, const {'improve digestion'})) {
+        goalConditionTokens.addAll(const {
+          'digestive',
+          'gastrointestinal',
+          'reflux',
+        });
+      }
+    }
+    final relevantConditionTokens = {
+      ...conditionTokens,
+      ...goalConditionTokens,
+    };
     final enforceReviewedWellnessEvidence =
-        selectionPolicy == MealCandidateSelectionPolicy.strict;
+        selectionPolicy != MealCandidateSelectionPolicy.wellnessSchedule;
     final anyPersonalConstraint =
         allergyRestrictions.isNotEmpty ||
         avoidRestrictions.isNotEmpty ||
         unparsedAllergyDetails ||
         (enforceReviewedWellnessEvidence &&
-            (conditionTokens.isNotEmpty ||
+            (relevantConditionTokens.isNotEmpty ||
                 needsVerifiedNutrition ||
                 needsConditionReview));
 
     final candidates = catalog
         .where((meal) {
           final isSelectable =
-              selectionPolicy == MealCandidateSelectionPolicy.wellnessSchedule
+              selectionPolicy != MealCandidateSelectionPolicy.strict
               ? meal.isSelectableForGeneralWellnessSchedule
               : meal.isSelectableForMealPlanAi;
           if (!isSelectable || meal.code.trim().isEmpty) {
@@ -161,7 +217,7 @@ class MealCandidateSelector {
 
           // Empty/unreviewed tags are unknown. Do not use them to infer safety.
           if (enforceReviewedWellnessEvidence &&
-              (conditionTokens.isNotEmpty || needsConditionReview) &&
+              (relevantConditionTokens.isNotEmpty || needsConditionReview) &&
               meal.constraintMetadataStatus != 'verified') {
             return false;
           }
@@ -194,7 +250,7 @@ class MealCandidateSelector {
           if (_conflictsWithAvoidFoods(meal, avoidRestrictions)) return false;
           if ((enforceReviewedWellnessEvidence ||
                   meal.constraintMetadataStatus == 'verified') &&
-              _conflictsWithConditions(meal, conditionTokens)) {
+              _conflictsWithConditions(meal, relevantConditionTokens)) {
             return false;
           }
           return true;
@@ -203,11 +259,20 @@ class MealCandidateSelector {
 
     final ranked = [...candidates]
       ..sort((left, right) {
-        final score = _rank(
-          right,
-          profile: profile,
-          mealType: normalizedType,
-        ).compareTo(_rank(left, profile: profile, mealType: normalizedType));
+        final score =
+            _rank(
+              right,
+              profile: profile,
+              mealType: normalizedType,
+              selectionPolicy: selectionPolicy,
+            ).compareTo(
+              _rank(
+                left,
+                profile: profile,
+                mealType: normalizedType,
+                selectionPolicy: selectionPolicy,
+              ),
+            );
         if (score != 0) return score;
         return left.code.compareTo(right.code);
       });
@@ -236,6 +301,7 @@ class MealCandidateSelector {
     MealCatalogItemModel meal, {
     required NutritionProfileEntity profile,
     required String mealType,
+    required MealCandidateSelectionPolicy selectionPolicy,
   }) {
     var score = 0;
     if (mealType.isNotEmpty &&
@@ -247,17 +313,21 @@ class MealCandidateSelector {
     if (meal.ingredients.isNotEmpty) score += 3;
     if (meal.metadataStatus == 'source_verified') score += 2;
     final searchable = _searchable(meal);
-    for (final goal in profile.goals.where((item) => item.isActive)) {
-      final normalizedGoal = _normalize('${goal.code} ${goal.name}');
-      if (normalizedGoal.isNotEmpty && searchable.contains(normalizedGoal)) {
-        score += 2;
+    if (selectionPolicy != MealCandidateSelectionPolicy.wellnessSchedule) {
+      for (final goal in profile.goals.where((item) => item.isActive)) {
+        final normalizedGoal = _normalize('${goal.code} ${goal.name}');
+        if (normalizedGoal.isNotEmpty && searchable.contains(normalizedGoal)) {
+          score += 2;
+        }
       }
-    }
-    for (final rule in profile.preferenceRules.where(
-      (item) => item.isActive && item.preferenceLevel == 'preferred',
-    )) {
-      final preference = _normalize(rule.itemName);
-      if (preference.isNotEmpty && searchable.contains(preference)) score += 1;
+      for (final rule in profile.preferenceRules.where(
+        (item) => item.isActive && item.preferenceLevel == 'preferred',
+      )) {
+        final preference = _normalize(rule.itemName);
+        if (preference.isNotEmpty && searchable.contains(preference)) {
+          score += 1;
+        }
+      }
     }
     return score;
   }
@@ -322,8 +392,11 @@ class MealCandidateSelector {
     final nutrition = meal.verifiedNutrients;
     if (nutrition == null) return false;
     final needsProtein = goals.any(
-      (goal) =>
-          _containsGoal(goal, const {'gain muscle', 'balanced nutrition'}),
+      (goal) => _containsGoal(goal, const {
+        'gain muscle',
+        'balanced nutrition',
+        'healthy eating',
+      }),
     );
     final needsEnergy = goals.any(
       (goal) => _containsGoal(goal, const {
@@ -331,6 +404,7 @@ class MealCandidateSelector {
         'lose weight',
         'gain weight',
         'lose belly fat',
+        'increase energy',
       }),
     );
     if (needsEnergy && nutrition['energy_kcal'] == null) return false;
@@ -346,6 +420,8 @@ class MealCandidateSelector {
     'no',
     'no issue',
     'no special issue',
+    'no special health issue',
+    'no special condition',
     'khong',
     'khong co',
     'khong co van de dac biet',

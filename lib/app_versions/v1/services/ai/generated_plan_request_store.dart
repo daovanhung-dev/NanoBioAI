@@ -139,6 +139,14 @@ abstract class PersonalScheduleAiRequestStore {
     PlanGenerationSource source = PlanGenerationSource.ai,
   });
 
+  Future<void> updateStagedChunkItem({
+    required String requestId,
+    required String chunkKey,
+    required int itemIndex,
+    Map<String, Object?> expectedValues = const {},
+    required Map<String, dynamic> updates,
+  });
+
   Future<void> saveGeneratedPlanDay({
     required String requestId,
     required String userId,
@@ -283,8 +291,7 @@ class LocalPersonalScheduleAiRequestStore
       final now = _now().toIso8601String();
       if (metaRows.isEmpty ||
           metaRows.first['input_fingerprint'] != inputFingerprint ||
-          metaRows.first['catalog_fingerprint'] != catalogFingerprint ||
-          metaRows.first['prompt_version'] != promptVersion) {
+          metaRows.first['catalog_fingerprint'] != catalogFingerprint) {
         await txn.delete(
           table,
           where: 'request_id = ?',
@@ -303,10 +310,15 @@ class LocalPersonalScheduleAiRequestStore
         });
       } else {
         // A new explicit continuation gets a fresh bounded call window while
-        // retaining previously validated daily chunks.
+        // retaining validated daily and event chunks. Prompt changes preserve
+        // validated data because persisted chunks use the stable code schema.
         await txn.update(
           table,
-          {'invocation_count': 0, 'updated_at': now},
+          {
+            'invocation_count': 0,
+            'prompt_version': promptVersion,
+            'updated_at': now,
+          },
           where: 'request_id = ? AND chunk_key = ?',
           whereArgs: [requestId, _stagingMetaKey],
         );
@@ -439,6 +451,59 @@ class LocalPersonalScheduleAiRequestStore
         'created_at': now,
         'updated_at': now,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
+    });
+  }
+
+  @override
+  Future<void> updateStagedChunkItem({
+    required String requestId,
+    required String chunkKey,
+    required int itemIndex,
+    Map<String, Object?> expectedValues = const {},
+    required Map<String, dynamic> updates,
+  }) async {
+    final db = await _db();
+    await db.transaction((txn) async {
+      final rows = await txn.query(
+        PersonalScheduleAiStagingTable.tableName,
+        where: 'request_id = ? AND chunk_key = ?',
+        whereArgs: [requestId, chunkKey],
+        limit: 1,
+      );
+      if (rows.isEmpty) {
+        throw StateError('Generated-plan staging item missing.');
+      }
+      final decoded = jsonDecode(
+        rows.single['payload_json']?.toString() ?? '[]',
+      );
+      if (decoded is! Map || decoded['items'] is! List) {
+        throw const FormatException('Invalid generated-plan staging data.');
+      }
+      final items = (decoded['items'] as List)
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+      if (itemIndex < 0 || itemIndex >= items.length) {
+        throw RangeError.index(itemIndex, items, 'itemIndex');
+      }
+      for (final entry in expectedValues.entries) {
+        if (items[itemIndex][entry.key] != entry.value) {
+          throw StateError('Generated-plan staging item changed.');
+        }
+      }
+      items[itemIndex].addAll(updates);
+      final payload = jsonEncode({
+        'source':
+            decoded['source']?.toString() ??
+            PlanGenerationSource.ai.storageValue,
+        'items': items,
+      });
+      await txn.update(
+        PersonalScheduleAiStagingTable.tableName,
+        {'payload_json': payload, 'updated_at': _now().toIso8601String()},
+        where: 'request_id = ? AND chunk_key = ?',
+        whereArgs: [requestId, chunkKey],
+      );
     });
   }
 

@@ -1,12 +1,22 @@
 import 'dart:async';
 
-import 'gemini_rest_client.dart';
+import 'ai_text_client.dart';
 
 class AIConfigurationUnavailableException implements Exception {
   static const userMessage =
-      'Nabi chưa sẵn sàng trò chuyện lúc này. Bạn thử lại sau một chút nhé.';
+      'Bạn cần tải một model trên thiết bị trước khi dùng AI.';
 
   const AIConfigurationUnavailableException();
+
+  @override
+  String toString() => userMessage;
+}
+
+class AILocalInferenceTimeoutException implements Exception {
+  static const userMessage =
+      'Nabi cần thêm thời gian để trả lời. Bạn thử gửi lại nhé.';
+
+  const AILocalInferenceTimeoutException();
 
   @override
   String toString() => userMessage;
@@ -29,7 +39,7 @@ class AIAuthenticationException implements Exception {
   const AIAuthenticationException();
 
   static bool matches(Object error) {
-    return error is GeminiApiException && error.isAuthenticationFailure;
+    return error is AiInferenceException && error.isAuthenticationFailure;
   }
 
   @override
@@ -44,7 +54,7 @@ class AINetworkException implements Exception {
 
   static bool matches(Object error) {
     if (error is TimeoutException) return true;
-    return error is GeminiApiException && error.isNetworkFailure;
+    return error is AiInferenceException && error.isNetworkFailure;
   }
 
   @override
@@ -58,7 +68,7 @@ class AIModelUnavailableException implements Exception {
   const AIModelUnavailableException();
 
   static bool matches(Object error) {
-    return error is GeminiApiException && error.isModelUnavailable;
+    return error is AiInferenceException && error.isModelUnavailable;
   }
 
   @override
@@ -67,12 +77,12 @@ class AIModelUnavailableException implements Exception {
 
 class AIModelContextLimitException implements Exception {
   static const userMessage =
-      'Danh mục vượt quá giới hạn token của model AI đang cấu hình. Cần cập nhật model hoặc dung lượng context trước khi tạo lịch.';
+      'Nội dung vượt quá giới hạn model đã chọn. Hãy rút gọn dữ liệu hoặc chọn model có context lớn hơn.';
 
   const AIModelContextLimitException();
 
   static bool matches(Object error) {
-    return error is GeminiApiException &&
+    return error is AiInferenceException &&
         error.status?.trim().toLowerCase() == 'model_context_limit_exceeded';
   }
 
@@ -82,12 +92,12 @@ class AIModelContextLimitException implements Exception {
 
 class AIRequestTooLargeException implements Exception {
   static const userMessage =
-      'Danh sách gửi đến AI vượt quá giới hạn dung lượng request. Cần điều chỉnh model hoặc cấu hình request trước khi tạo lịch.';
+      'Danh sách dữ liệu vượt quá giới hạn xử lý của model đã chọn.';
 
   const AIRequestTooLargeException();
 
   static bool matches(Object error) {
-    return error is GeminiApiException &&
+    return error is AiInferenceException &&
         error.status?.trim().toLowerCase() == 'request_too_large';
   }
 
@@ -113,7 +123,7 @@ class AIOverloadedException implements Exception {
       return true;
     }
 
-    if (error is GeminiApiException && error.isTransient) {
+    if (error is AiInferenceException && error.isTransient) {
       return true;
     }
 
@@ -141,7 +151,7 @@ class AIRateLimitedException implements Exception {
   const AIRateLimitedException();
 
   static bool matches(Object error) {
-    if (error is GeminiApiException) {
+    if (error is AiInferenceException) {
       final status = error.status?.trim().toLowerCase();
       return error.statusCode == 429 ||
           status == 'resource_exhausted' ||
@@ -152,6 +162,19 @@ class AIRateLimitedException implements Exception {
         text.contains('rate limit') ||
         text.contains('resource_exhausted');
   }
+
+  @override
+  String toString() => userMessage;
+}
+
+class AIPlatformUnsupportedException implements Exception {
+  static const userMessage =
+      'AI trên thiết bị chưa hỗ trợ bản web. Hãy dùng NanoBioAI trên Android, iOS hoặc máy tính để sử dụng tính năng này.';
+
+  const AIPlatformUnsupportedException();
+
+  static bool matches(Object error) =>
+      error is AiInferenceException && error.status == 'unsupported_platform';
 
   @override
   String toString() => userMessage;

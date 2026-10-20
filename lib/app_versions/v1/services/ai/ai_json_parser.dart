@@ -1,5 +1,11 @@
 import 'dart:convert';
 
+class AIJsonParseException extends FormatException {
+  AIJsonParseException(this.code) : super('AI JSON response was rejected.');
+
+  final String code;
+}
+
 class AIJsonParser {
   const AIJsonParser._();
 
@@ -20,10 +26,41 @@ class AIJsonParser {
   }
 
   static List<dynamic> decodeArray(String text) {
-    final decoded = jsonDecode(extractArrayText(text));
-    if (decoded is! List) {
-      throw const FormatException('AI response must be a JSON array');
+    final cleaned = text
+        .replaceAll('```json', '')
+        .replaceAll('```', '')
+        .trim()
+        .replaceAll(RegExp(r',\s*]'), ']')
+        .replaceAll(RegExp(r',\s*}'), '}');
+    if (cleaned.startsWith('{')) {
+      final dynamic root;
+      try {
+        root = jsonDecode(cleaned);
+      } on FormatException {
+        throw AIJsonParseException('invalid_json_syntax');
+      }
+      if (root is Map && root.length == 1 && root['items'] is List) {
+        return List<dynamic>.from(root['items'] as List);
+      }
+      throw AIJsonParseException('invalid_items_envelope');
     }
-    return decoded;
+
+    if (cleaned.startsWith('[')) {
+      final String arrayText;
+      try {
+        arrayText = extractArrayText(cleaned);
+      } on FormatException {
+        throw AIJsonParseException('invalid_json_array');
+      }
+      final dynamic decoded;
+      try {
+        decoded = jsonDecode(arrayText);
+      } on FormatException {
+        throw AIJsonParseException('invalid_json_syntax');
+      }
+      if (decoded is List) return decoded;
+      throw AIJsonParseException('invalid_json_array');
+    }
+    throw AIJsonParseException('invalid_json_root');
   }
 }

@@ -231,6 +231,46 @@ void main() {
     },
   );
 
+  test('filters condition conflicts implied by an active health goal', () {
+    final profile = NutritionProfileEntity.empty('user-1').copyWith(
+      goals: const [
+        NutritionGoalEntity(
+          code: 'stable_blood_sugar',
+          name: 'Ổn định đường huyết',
+          priority: 1,
+        ),
+      ],
+    );
+
+    final candidates = selector.eligibleMeals(
+      catalog: [
+        _meal(
+          code: 'goal-conflict',
+          constraintStatus: 'verified',
+          avoidConditionTags: const ['diabetes'],
+        ),
+        _meal(code: 'goal-neutral', constraintStatus: 'verified'),
+      ],
+      profile: profile,
+      selectionPolicy:
+          MealCandidateSelectionPolicy.personalizedWellnessSchedule,
+    );
+
+    expect(candidates.map((meal) => meal.code), ['goal-neutral']);
+  });
+
+  test('localized nutrition goals also require verified meal evidence', () {
+    final candidates = selector.eligibleMeals(
+      catalog: [_meal(code: 'unreviewed')],
+      profile: NutritionProfileEntity.empty('user-1'),
+      goals: const {'Giảm cân'},
+      selectionPolicy:
+          MealCandidateSelectionPolicy.personalizedWellnessSchedule,
+    );
+
+    expect(candidates, isEmpty);
+  });
+
   test(
     'wellness schedule remains available when legacy nutrition evidence is missing',
     () async {

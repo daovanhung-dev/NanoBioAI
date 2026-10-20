@@ -17,53 +17,47 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_json_parser.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_json_prompt_builder.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_trace_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prompt.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.dart';
+import 'package:nano_app/core/utils/logger/terminal_log_sink.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test(
-    'AI authentication failures are recognized without exposing credentials',
-    () {
-      const error = GeminiApiException(
-        statusCode: 401,
-        status: 'UNAUTHENTICATED',
-        message: 'Request had invalid authentication credentials.',
-      );
+  test('local runtime failures do not require AI authentication', () {
+    const error = AiInferenceException(
+      status: 'local_model_load_failed',
+      message: 'Không mở được model local.',
+    );
 
-      expect(AIAuthenticationException.matches(error), isTrue);
-      expect(AIAuthenticationException.userMessage, isNot(contains('AQ.')));
-      expect(AIAuthenticationException.userMessage, isNot(contains('AIza')));
-    },
-  );
+    expect(AIAuthenticationException.matches(error), isFalse);
+  });
 
   test('model token limit failures map to a clear user-facing error', () {
-    const error = GeminiApiException(
-      statusCode: 413,
+    const error = AiInferenceException(
       status: 'model_context_limit_exceeded',
-      message: 'AI request exceeds the configured model context limit.',
+      message: 'Nội dung vượt quá model local.',
     );
     expect(AIModelContextLimitException.matches(error), isTrue);
     expect(
       AIModelContextLimitException.userMessage,
-      contains('giới hạn token của model'),
+      contains('giới hạn model đã chọn'),
     );
   });
 
   test('request byte limit failures map to a clear user-facing error', () {
-    const error = GeminiApiException(
-      statusCode: 413,
+    const error = AiInferenceException(
       status: 'request_too_large',
-      message: 'Request is above the transport size limit.',
+      message: 'Prompt quá lớn.',
     );
     expect(AIRequestTooLargeException.matches(error), isTrue);
     expect(
       AIRequestTooLargeException.userMessage,
-      contains('giới hạn dung lượng request'),
+      contains('giới hạn xử lý của model'),
     );
   });
 
@@ -74,54 +68,36 @@ void main() {
   );
 
   group('AIOverloadedException', () {
-    test('matches Gemini overload and capacity errors', () {
+    test('matches local runtime capacity errors and timeouts', () {
       expect(
         AIOverloadedException.matches(
-          const GeminiApiException(
-            statusCode: 503,
-            status: 'UNAVAILABLE',
-            message: 'The model is overloaded. Try again later.',
+          const AiInferenceException(
+            status: 'runtime_busy',
+            message: 'Model is busy.',
           ),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          const GeminiApiException(
-            statusCode: 429,
-            status: 'RESOURCE_EXHAUSTED',
-            message: 'Resource has been exhausted, check quota or rate limit.',
+          const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Local runtime is temporarily unavailable.',
           ),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          const GeminiApiException(
-            statusCode: 429,
-            message: 'Too many requests. Please retry later.',
-          ),
+          TimeoutException('Local inference timed out'),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          TimeoutException('Gemini request timed out'),
-        ),
-        isTrue,
-      );
-      expect(
-        AIOverloadedException.matches(
-          const GeminiApiException(statusCode: 500, message: 'Internal error.'),
-        ),
-        isTrue,
-      );
-      expect(
-        AIOverloadedException.matches(
-          const GeminiApiException(
-            statusCode: 504,
-            status: 'DEADLINE_EXCEEDED',
-            message: 'Deadline exceeded.',
+          const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Local backend error.',
           ),
         ),
         isTrue,
@@ -166,9 +142,41 @@ void main() {
       ]);
     });
 
-    test('throws when response does not contain a JSON array', () {
+    test('unwraps the constrained JSON items envelope', () {
+      expect(AIJsonParser.decodeArray('{"items":[{"day":2}]}'), [
+        {'day': 2},
+      ]);
+    });
+
+    test('throws when response does not contain an items array', () {
       expect(
         () => AIJsonParser.decodeArray('{"day": 1}'),
+        throwsA(
+          isA<AIJsonParseException>().having(
+            (error) => error.code,
+            'code',
+            'invalid_items_envelope',
+          ),
+        ),
+      );
+    });
+
+    test('classifies malformed JSON without preserving response text', () {
+      expect(
+        () => AIJsonParser.decodeArray('{"items":[}'),
+        throwsA(
+          isA<AIJsonParseException>().having(
+            (error) => error.code,
+            'code',
+            'invalid_json_syntax',
+          ),
+        ),
+      );
+    });
+
+    test('rejects prose around a JSON array', () {
+      expect(
+        () => AIJsonParser.decodeArray('Here is the result: [{"day":1}]'),
         throwsFormatException,
       );
     });
@@ -193,22 +201,19 @@ void main() {
         prompt,
         contains(
           jsonEncode([
-            {
-              'code': 'meal_prompt_active',
-              'name': 'Yến mạch trứng',
-              'nutrition_summary': 'Bữa ăn thử',
-            },
+            {'code': 'meal_prompt_active', 'name': 'Yến mạch trứng'},
           ]),
         ),
       );
+      expect(prompt, isNot(contains('nutrition_summary')));
       expect(prompt, isNot(contains('Đào Văn Hùng')));
       expect(prompt, isNot(contains('user_id')));
       expect(prompt, isNot(contains('Dị ứng thực phẩm:')));
       expect(prompt, isNot(contains('meal_prompt_inactive')));
       expect(prompt, isNot(contains('"is_plan_eligible":')));
       expect(prompt, isNot(contains('"cooking_instructions":')));
-      expect(prompt, contains('không tự tạo món hoặc mã mới'));
-      expect(prompt, contains('Chỉ trả day, meal_type và meal_code'));
+      expect(prompt, contains('Never invent codes'));
+      expect(prompt, contains('meal_type'));
       expect(prompt, isNot(_containsMojibake));
     });
 
@@ -227,7 +232,7 @@ void main() {
         ],
       );
 
-      expect(prompt, contains('"exercise_code"'));
+      expect(prompt, contains('exercise_code'));
       expect(prompt, contains('ex_prompt_active'));
       expect(prompt, contains('"selectable"'));
       expect(prompt, contains('"context_only"'));
@@ -238,8 +243,7 @@ void main() {
       expect(prompt, isNot(contains('Đau lưng nhẹ')));
       expect(prompt, contains('ex_prompt_inactive'));
       expect(prompt, isNot(contains('"encouragement":')));
-      expect(prompt, contains('Không tạo mã mới;'));
-      expect(prompt, contains('chỉ trả day và exercise_code'));
+      expect(prompt, contains('Do not invent codes'));
       expect(prompt, isNot(_containsMojibake));
     });
 
@@ -262,6 +266,163 @@ void main() {
     });
 
     test(
+      'local meal prompt keeps a small fresh shortlist for each generated day',
+      () async {
+        const marker = 'Candidates (JSON):\n';
+        final candidateCodesByDay = <int, Map<String, List<String>>>{};
+        final client = _CapturingAiTextClient(
+          response: '',
+          responseBuilder: (messages) {
+            final prompt = messages.single.text;
+            final day = int.parse(
+              RegExp(r'Days (\d+)-').firstMatch(prompt)!.group(1)!,
+            );
+            final catalogStart = prompt.lastIndexOf(marker);
+            final rows =
+                jsonDecode(
+                      prompt.substring(catalogStart + marker.length).trim(),
+                    )
+                    as List;
+            final codeByType = <String, String>{};
+            final codesByType = <String, List<String>>{};
+            for (final row in rows.cast<Map<String, dynamic>>()) {
+              final type = row['meal_type']?.toString();
+              final code = row['code']?.toString();
+              if (type != null && code != null) {
+                codeByType.putIfAbsent(type, () => code);
+                codesByType.putIfAbsent(type, () => []).add(code);
+              }
+            }
+            candidateCodesByDay[day] = codesByType;
+            return jsonEncode({
+              'items': [
+                for (final slot in MealPlanAiNormalizer.mealSlots)
+                  codeByType[slot.type],
+              ],
+            });
+          },
+        );
+        final eligibleCodesByType = {
+          for (final slot in MealPlanAiNormalizer.mealSlots)
+            slot.type: catalog.meals
+                .where((meal) => meal.mealType == slot.type)
+                .map((meal) => meal.code)
+                .toSet(),
+        };
+
+        final service = AIService(aiClient: client);
+        final firstDay = await service.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 10, 20),
+          day: 1,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          eligibleFallbackCodesByType: eligibleCodesByType,
+          allowLocalFallback: false,
+          onBackendInvocation: () async {},
+        );
+        final firstDayCodes = firstDay.value
+            .map((item) => item['meal_code']! as String)
+            .toSet();
+        final secondDay = await service.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 10, 20),
+          day: 2,
+          catalog: catalog,
+          usedCodeCounts: {for (final code in firstDayCodes) code: 1},
+          eligibleFallbackCodesByType: eligibleCodesByType,
+          allowLocalFallback: false,
+          onBackendInvocation: () async {},
+        );
+
+        expect(firstDay.source, PlanGenerationSource.ai);
+        expect(firstDay.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        expect(secondDay.source, PlanGenerationSource.ai);
+        expect(secondDay.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
+        expect(
+          secondDay.value
+              .map((item) => item['meal_code']! as String)
+              .toSet()
+              .intersection(firstDayCodes),
+          isEmpty,
+        );
+        expect(
+          client.messages.first.text,
+          isNot(contains('nutrition_summary')),
+        );
+        for (final slot in MealPlanAiNormalizer.mealSlots) {
+          final firstDayCount = candidateCodesByDay[1]![slot.type]!.length;
+          final secondDayCodes = candidateCodesByDay[2]![slot.type]!;
+          expect(firstDayCount, 2, reason: slot.type);
+          expect(secondDayCodes.length, 2, reason: slot.type);
+          expect(
+            secondDayCodes.toSet().intersection(firstDayCodes),
+            isEmpty,
+            reason: '${slot.type} should use newly shortlisted options',
+          );
+        }
+      },
+    );
+
+    test(
+      'local exercise schema constrains codes and exact daily item count',
+      () async {
+        const marker = 'Candidates (JSON):\n';
+        final client = _CapturingAiTextClient(
+          response: '',
+          responseBuilder: (messages) {
+            final prompt = messages.single.text;
+            final start = prompt.lastIndexOf(marker);
+            final root =
+                jsonDecode(prompt.substring(start + marker.length).trim())
+                    as Map<String, dynamic>;
+            final rows = root['selectable'] as List;
+            final codes = rows
+                .cast<Map<String, dynamic>>()
+                .map((row) => row['code']! as String)
+                .toList(growable: false);
+            return jsonEncode({
+              'items': [
+                {'day': 4, 'exercise_code': codes[0]},
+                {'day': 4, 'exercise_code': codes[1]},
+              ],
+            });
+          },
+        );
+        final result = await AIService(aiClient: client)
+            .generateExerciseDayCodeItemsWithSource(
+              startDate: DateTime(2026, 10, 20),
+              day: 4,
+              catalog: catalog,
+              usedCodeCounts: const {},
+              onBackendInvocation: () async {},
+            );
+
+        expect(result.source, PlanGenerationSource.ai);
+        expect(
+          result.value,
+          hasLength(ExerciseTasksAiNormalizer.exercisesPerDay),
+        );
+        final schema = client.configurations.single.responseJsonSchema!;
+        final itemsSchema =
+            (schema['properties'] as Map<String, dynamic>)['items']
+                as Map<String, dynamic>;
+        final itemSchema = itemsSchema['items'] as Map<String, dynamic>;
+        final codeSchema =
+            (itemSchema['properties'] as Map<String, dynamic>)['exercise_code']
+                as Map<String, dynamic>;
+        expect(
+          itemsSchema['minItems'],
+          ExerciseTasksAiNormalizer.exercisesPerDay,
+        );
+        expect(
+          itemsSchema['maxItems'],
+          ExerciseTasksAiNormalizer.exercisesPerDay,
+        );
+        expect((codeSchema['enum'] as List), hasLength(4));
+        expect(client.configurations.single.maxOutputTokens, 128);
+      },
+    );
+
+    test(
       'meal prompt excludes unreviewed candidates without schedule eligibility',
       () {
         final prompt = MealPlanPrompt.generate(
@@ -278,6 +439,57 @@ void main() {
         expect(prompt, contains('eligible-meal'));
         expect(prompt, isNot(contains('nabi_vn_candidate')));
         expect(prompt, isNot(contains('Món chờ rà soát')));
+      },
+    );
+
+    test(
+      'meal shortlist excludes selectable unclassified rows outside slot eligibility',
+      () async {
+        const unclassifiedCode = 'selectable_unclassified_not_eligible';
+        final candidateCatalog = AiCatalogBundle(
+          meals: [
+            ...catalog.meals,
+            _promptMeal(code: unclassifiedCode),
+          ],
+          exercises: catalog.exercises,
+          scheduleTasks: catalog.scheduleTasks,
+        );
+        final eligibleCodesByType = {
+          for (final slot in MealPlanAiNormalizer.mealSlots)
+            slot.type: catalog.meals
+                .where((meal) => meal.mealType == slot.type)
+                .map((meal) => meal.code)
+                .toSet(),
+        };
+        final client = _CapturingAiTextClient(
+          response: '',
+          responseBuilder: (messages) => jsonEncode({
+            'items': _mealItemsFromPrompt(
+              messages.single.text,
+              day: 1,
+            ).map((item) => item['meal_code']).toList(),
+          }),
+        );
+        final service = AIService(aiClient: client);
+
+        final result = await service.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 10, 20),
+          day: 1,
+          catalog: candidateCatalog,
+          usedCodeCounts: const {},
+          eligibleFallbackCodesByType: eligibleCodesByType,
+          allowLocalFallback: false,
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.ai);
+        expect(client.messages.single.text, isNot(contains(unclassifiedCode)));
+        for (final item in result.value) {
+          expect(
+            eligibleCodesByType[item['meal_type']]?.contains(item['meal_code']),
+            isTrue,
+          );
+        }
       },
     );
 
@@ -477,14 +689,16 @@ void main() {
       expect(modelCalls, 1);
     });
 
-    test('JSON wrapper is Vietnamese and forbids display text output', () {
+    test('JSON wrapper is compact and forbids display text output', () {
       final prompt = AIJsonPromptBuilder.buildArrayPrompt(
         'Chọn mã kỹ thuật trong danh sách allowed.',
       );
 
-      expect(prompt, contains('Chỉ trả về một mảng JSON hợp lệ.'));
-      expect(prompt, contains('Không viết giải thích.'));
-      expect(prompt, contains('Không tự tạo mã ngoài danh sách allowed.'));
+      expect(prompt, contains('Return exactly one JSON object'));
+      expect(prompt, contains('"items":[...]'));
+      expect(prompt, contains('No markdown or extra text.'));
+      expect(prompt, contains('Do not invent codes.'));
+      expect(prompt, isNot(contains('"items": {"items":')));
       expect(prompt, isNot(contains('Return ONLY')));
       expect(prompt, isNot(_containsMojibake));
     });
@@ -636,17 +850,22 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, contains('Không thể kết nối AI'));
+      expect(result.message, contains('Nabi chưa thể mở model'));
       expect(result.modelName, 'fake-model');
     });
 
-    test('fails safely when runtime API key is missing', () async {
+    test('fails safely when the local model runtime is unavailable', () async {
       late AIConnectionCheckResult result;
 
       final logs = await _captureDebugPrint(() async {
         final service = AIService(
-          apiKeyOverride: '',
-          modelNames: const ['fake-model'],
+          modelNames: const [LocalAiTextClient.modelId],
+          textGenerator: ({required modelName, required prompt}) async =>
+              throw const AiInferenceException(
+                status: 'local_model_not_ready',
+                message:
+                    'Bạn cần tải một model trên thiết bị trước khi dùng AI.',
+              ),
         );
 
         result = await service.checkConnection(
@@ -655,9 +874,12 @@ void main() {
       });
 
       expect(result.success, isFalse);
-      expect(result.message, 'Thiếu GEMINI_API_KEY hoặc key đang rỗng.');
-      expect(result.modelName, isNull);
-      expect(logs.join('\n'), contains('MISSING_API_KEY'));
+      expect(
+        result.message,
+        'Bạn cần tải một model trên thiết bị trước khi dùng AI.',
+      );
+      expect(result.modelName, LocalAiTextClient.modelId);
+      expect(logs.join('\n'), isNot(contains('API_KEY')));
       expect(logs.join('\n'), isNot(contains('AIza')));
     });
   });
@@ -681,8 +903,8 @@ void main() {
       });
       final joined = logs.join('\n');
 
-      expect(joined, contains('traceId=safe-trace-id'));
-      expect(joined, contains('step=SAFE_STAGE'));
+      expect(joined, contains('corr=safe-trace-id'));
+      expect(joined, contains('safeMethod.SAFE_STAGE'));
       expect(joined, contains('errorType'));
       expect(joined, contains('StateError'));
       expect(joined, contains(AITraceLogger.localGen));
@@ -705,7 +927,10 @@ void main() {
       );
 
       final logs = await _captureDebugPrint(() async {
-        expect(await service.sendMessage(message), response);
+        expect(
+          await service.sendMessage(message),
+          contains('Mình sẽ hỗ trợ bạn'),
+        );
       });
       final joined = logs.join('\n');
 
@@ -729,7 +954,7 @@ void main() {
       final result = await service.sendMessage('Tôi hơi mệt');
 
       expect(result, contains('Mình sẽ giúp'));
-      expect(modelCalls, ['gemini-3.1-flash-lite']);
+      expect(modelCalls, [LocalAiTextClient.modelId]);
     });
 
     test('fails over to the next cheap model after transient errors', () async {
@@ -764,7 +989,10 @@ void main() {
         delay: (_) async {},
         textGenerator: ({required modelName, required message}) async {
           modelCalls.add(modelName);
-          throw TimeoutException('temporary overload');
+          throw const AiInferenceException(
+            status: 'runtime_busy',
+            message: 'Local model is temporarily busy.',
+          );
         },
       );
 
@@ -825,46 +1053,46 @@ void main() {
       },
     );
 
-    test('missing API key throws without retrying models', () async {
-      final logs = await _captureDebugPrint(() async {
+    test('local model failure stops chat without remote retry', () async {
+      var attempts = 0;
+      final service = AIChatService(
+        modelNames: const [LocalAiTextClient.modelId],
+        textGenerator: ({required modelName, required message}) async {
+          attempts++;
+          throw const AiInferenceException(
+            status: 'local_model_not_ready',
+            message: 'Chưa nạp model local.',
+          );
+        },
+      );
+
+      await expectLater(
+        service.sendMessage('Xin chào'),
+        throwsA(isA<AIModelUnavailableException>()),
+      );
+      expect(attempts, 1);
+    });
+
+    test(
+      'local model failure is safe without environment configuration',
+      () async {
+        var attempts = 0;
         final service = AIChatService(
-          apiKeyOverride: '',
-          modelNames: const ['fake-model'],
+          delay: (_) async {},
+          textGenerator: ({required modelName, required message}) async {
+            attempts++;
+            throw const AiInferenceException(
+              status: 'local_model_not_ready',
+              message: 'Chưa nạp model local.',
+            );
+          },
         );
 
         await expectLater(
           service.sendMessage('Xin chào'),
-          throwsA(isA<AIConfigurationUnavailableException>()),
+          throwsA(isA<AIModelUnavailableException>()),
         );
-      });
-      final joined = logs.join('\n');
-
-      expect(joined, contains('MISSING_API_KEY'));
-      expect(joined, contains('missing_api_key'));
-      expect(joined, isNot(contains('RETRY_ATTEMPT_START')));
-      expect(joined, isNot(contains('RETRY_ATTEMPT_FAILED')));
-      expect(joined, isNot(contains('RETRY_EXHAUSTED')));
-      expect(joined, isNot(contains('StateError')));
-      expect(joined, isNot(contains('AIza')));
-    });
-
-    test(
-      'missing API key without dotenv or model override throws safely',
-      () async {
-        final logs = await _captureDebugPrint(() async {
-          final service = AIChatService(
-            apiKeyOverride: '',
-            delay: (_) async {},
-          );
-
-          await expectLater(
-            service.sendMessage('Xin chào'),
-            throwsA(isA<AIConfigurationUnavailableException>()),
-          );
-        });
-
-        expect(logs.join('\n'), contains('MISSING_API_KEY'));
-        expect(logs.join('\n'), isNot(contains('StateError')));
+        expect(attempts, 1);
       },
     );
 
@@ -892,30 +1120,201 @@ void main() {
       },
     );
 
-    test(
-      'sendMessageStream throws without retry when API key is missing',
-      () async {
-        final logs = await _captureDebugPrint(() async {
-          final service = AIChatService(
-            apiKeyOverride: '',
-            modelNames: const ['fake-model'],
+    test('sendMessageStream stops when the local model is not ready', () async {
+      var attempts = 0;
+      final service = AIChatService(
+        modelNames: const [LocalAiTextClient.modelId],
+        textGenerator: ({required modelName, required message}) async {
+          attempts++;
+          throw const AiInferenceException(
+            status: 'local_model_not_ready',
+            message: 'Chưa nạp model local.',
           );
+        },
+      );
 
-          await expectLater(
-            service.sendMessageStream('Xin chào'),
-            throwsA(isA<AIConfigurationUnavailableException>()),
-          );
-        });
-        final joined = logs.join('\n');
-
-        expect(joined, contains('MISSING_API_KEY'));
-        expect(joined, isNot(contains('RETRY_ATTEMPT_START')));
-        expect(joined, isNot(contains('StateError')));
-      },
-    );
+      await expectLater(
+        service.sendMessageStream('Xin chào'),
+        throwsA(isA<AIModelUnavailableException>()),
+      );
+      expect(attempts, 1);
+    });
   });
 
   group('AIService chunked generation', () {
+    test('meal array uses a constrained JSON items envelope', () async {
+      late Map<String, String> expectedCodesByType;
+      final client = _CapturingAiTextClient(
+        response: '',
+        responseBuilder: (messages) {
+          final items = _mealItemsFromPrompt(messages.single.text, day: 1);
+          expectedCodesByType = {
+            for (final item in items)
+              item['meal_type']! as String: item['meal_code']! as String,
+          };
+          final codes = items
+              .map((item) => item['meal_code'])
+              .toList(growable: false);
+          return jsonEncode({
+            // Native local runtimes may not honor prefixItems. Keep the same
+            // five AI choices but return them in a different order so the
+            // slot matcher must map each code back to its eligible type.
+            'items': [...codes.skip(1), codes.first],
+          });
+        },
+      );
+      final eligibleCodesByType = {
+        for (final slot in MealPlanAiNormalizer.mealSlots)
+          slot.type: catalog.meals
+              .where((meal) => meal.mealType == slot.type)
+              .map((meal) => meal.code)
+              .toSet(),
+      };
+      final service = AIService(
+        modelNames: const ['fake-local-model'],
+        aiClient: client,
+      );
+
+      final result = await service.generateMealDayCodeItemsWithSource(
+        startDate: DateTime(2026, 10, 20),
+        day: 1,
+        catalog: catalog,
+        usedCodeCounts: const {},
+        eligibleFallbackCodesByType: eligibleCodesByType,
+        allowLocalFallback: false,
+        onBackendInvocation: () async {},
+      );
+
+      expect(result.source, PlanGenerationSource.ai);
+      expect(result.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
+      for (final item in result.value) {
+        expect(
+          item['meal_code'],
+          expectedCodesByType[item['meal_type']],
+          reason: 'AI choices must be assigned to their eligible slot',
+        );
+      }
+      expect(
+        client.configurations.single.responseFormat,
+        AiResponseFormat.json,
+      );
+      final schema = client.configurations.single.responseJsonSchema!;
+      final itemsSchema =
+          (schema['properties'] as Map<String, dynamic>)['items']
+              as Map<String, dynamic>;
+      final prefixItems = itemsSchema['prefixItems'] as List;
+      expect(itemsSchema['minItems'], MealPlanAiNormalizer.mealsPerDay);
+      expect(itemsSchema['maxItems'], MealPlanAiNormalizer.mealsPerDay);
+      expect(prefixItems, hasLength(MealPlanAiNormalizer.mealsPerDay));
+      expect(itemsSchema.containsKey('items'), isFalse);
+      expect(itemsSchema.containsKey('uniqueItems'), isFalse);
+      for (
+        var index = 0;
+        index < MealPlanAiNormalizer.mealSlots.length;
+        index++
+      ) {
+        final slot = MealPlanAiNormalizer.mealSlots[index];
+        final codeSchema = prefixItems[index] as Map<String, dynamic>;
+        final mealCodes = codeSchema['enum'] as List;
+        expect(codeSchema['type'], 'string');
+        expect(mealCodes, isNotEmpty, reason: slot.type);
+        expect(mealCodes, hasLength(2), reason: slot.type);
+      }
+      expect(
+        client.messages.single.text,
+        startsWith('Return exactly one JSON object'),
+      );
+      expect(
+        client.messages.single.text,
+        contains(
+          'Use each meal slot exactly once and in this order: '
+          'breakfast, morning_snack, lunch, afternoon_snack, dinner.',
+        ),
+      );
+      expect(client.messages.single.text, contains('meal_code strings'));
+      expect(client.configurations.single.maxOutputTokens, 256);
+      expect(
+        client.estimatedTexts.single,
+        startsWith('user: Return exactly one JSON object'),
+      );
+    });
+
+    test(
+      'custom meal proposal has a bounded schema and no catalog payload',
+      () async {
+        final prompts = <String>[];
+        var backendInvocations = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          textGenerator: ({required modelName, required prompt}) async {
+            prompts.add(prompt);
+            return jsonEncode([
+              {
+                'meal_type': 'breakfast',
+                'meal_name': 'Cháo yến mạch',
+                'description': 'Món nóng dễ chuẩn bị.',
+                'ingredients': ['yến mạch', 'nước'],
+                'serving_size': '1 bát',
+                'cooking_steps': ['Nấu chín', 'Dọn ra bát'],
+              },
+            ]);
+          },
+        );
+
+        final result = await service.generateCustomMealProposalWithSource(
+          day: 1,
+          mealType: 'breakfast',
+          personalization: const {
+            'goals': ['balanced_nutrition'],
+          },
+          onBackendInvocation: () async => backendInvocations++,
+        );
+
+        expect(result.source, PlanGenerationSource.ai);
+        expect(result.value.keys.toSet(), {
+          'meal_type',
+          'meal_name',
+          'description',
+          'ingredients',
+          'serving_size',
+          'cooking_steps',
+        });
+        expect(backendInvocations, 1);
+        expect(prompts.single, contains('[]'));
+        expect(prompts.single, contains('balanced_nutrition'));
+        expect(prompts.single, isNot(contains('br_oat_egg')));
+      },
+    );
+
+    test('custom meal proposal rejects incomplete or extra fields', () async {
+      var backendInvocations = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        textGenerator: ({required modelName, required prompt}) async =>
+            jsonEncode([
+              {
+                'meal_type': 'breakfast',
+                'meal_name': 'Cháo yến mạch',
+                'description': 'Món nóng dễ chuẩn bị.',
+                'ingredients': ['yến mạch', 'nước'],
+                'serving_size': '1 bát',
+                'cooking_steps': ['Nấu chín', 'Dọn ra bát'],
+                'calories': 0,
+              },
+            ]),
+      );
+
+      await expectLater(
+        service.generateCustomMealProposalWithSource(
+          day: 1,
+          mealType: 'breakfast',
+          onBackendInvocation: () async => backendInvocations++,
+        ),
+        throwsFormatException,
+      );
+      expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
+    });
+
     test('meal day API requests exactly one five-meal code list', () async {
       final prompts = <String>[];
       var backendInvocations = 0;
@@ -951,7 +1350,7 @@ void main() {
         isTrue,
       );
       expect(backendInvocations, 1);
-      expect(prompts.single, contains('ngày 3 đến ngày 3'));
+      expect(prompts.single, contains('Days 3-3'));
       expect(prompts.single, contains('br_oat_egg'));
     });
 
@@ -986,7 +1385,7 @@ void main() {
         isTrue,
       );
       expect(backendInvocations, 1);
-      expect(prompts.single, contains('ngày 4 đến ngày 4'));
+      expect(prompts.single, contains('Days 4-4'));
     });
 
     test(
@@ -1061,7 +1460,7 @@ void main() {
         modelNames: const ['fake-model'],
         catalogLoader: () async => catalog,
         textGenerator: ({required modelName, required prompt}) async {
-          expect(prompt, contains('Chỉ tạo bữa ${slot.type}'));
+          expect(prompt, contains('Select only ${slot.type}'));
           return jsonEncode([
             {'day': 2, 'meal_type': slot.type, 'meal_code': meal.code},
           ]);
@@ -1224,10 +1623,9 @@ void main() {
           modelNames: const ['fake-model'],
           catalogLoader: () async => catalog,
           textGenerator: ({required modelName, required prompt}) async {
-            throw const GeminiApiException(
-              statusCode: 503,
-              status: 'UNAVAILABLE',
-              message: 'Provider unavailable.',
+            throw const AiInferenceException(
+              status: 'runtime_error',
+              message: 'Local runtime unavailable.',
             );
           },
         );
@@ -1269,10 +1667,9 @@ void main() {
           modelNames: const ['fake-model'],
           catalogLoader: () async => catalog,
           textGenerator: ({required modelName, required prompt}) async {
-            throw const GeminiApiException(
-              statusCode: 503,
-              status: 'UNAVAILABLE',
-              message: 'Provider unavailable.',
+            throw const AiInferenceException(
+              status: 'runtime_error',
+              message: 'Local runtime unavailable.',
             );
           },
         );
@@ -1294,7 +1691,7 @@ void main() {
       },
     );
 
-    test('day API retries HTTP 429 using the higher model', () async {
+    test('local runtime errors retry within the selected model', () async {
       final modelCalls = <String>[];
       var backendInvocations = 0;
       final service = AIService(
@@ -1303,10 +1700,9 @@ void main() {
         delay: (_) async {},
         textGenerator: ({required modelName, required prompt}) async {
           modelCalls.add(modelName);
-          throw const GeminiApiException(
-            statusCode: 429,
-            status: 'RESOURCE_EXHAUSTED',
-            message: 'Rate limit exceeded.',
+          throw const AiInferenceException(
+            status: 'runtime_busy',
+            message: 'Local inference is busy.',
           );
         },
       );
@@ -1374,7 +1770,7 @@ void main() {
 
       expect(meals, hasLength(35));
       expect(prompts, hasLength(1));
-      expect(prompts.single, contains('ngày 1 đến ngày 7'));
+      expect(prompts.single, contains('Days 1-7'));
       expect(prompts.single, contains('br_oat_egg'));
     });
 
@@ -1403,8 +1799,8 @@ void main() {
         });
         final joined = logs.join('\n');
 
-        expect(joined, contains('traceId=meal-plan-'));
-        expect(joined, contains('method=generateMealPlan'));
+        expect(joined, contains('corr=meal-plan-'));
+        expect(joined, contains('[generateMealPlan.START]'));
         expect(joined, contains('REQUEST_SENT'));
         expect(joined, contains('RESPONSE_RECEIVED'));
         expect(joined, contains('promptLength'));
@@ -1421,44 +1817,37 @@ void main() {
       },
     );
 
-    test(
-      'meal generation stops when any chunk has an invalid response',
-      () async {
-        var call = 0;
-        final service = AIService(
-          modelNames: const ['fake-model'],
-          catalogLoader: () async => catalog,
-          textGenerator: ({required modelName, required prompt}) async {
-            call++;
-            if (call == 2) {
-              return jsonEncode([
-                {
-                  'day': 8,
-                  'meal_type': 'breakfast',
-                  'meal_code': 'unknown_meal',
-                },
-              ]);
-            }
-            return jsonEncode(
-              call == 1
-                  ? _mealItemsForRange(startDay: 1, days: 7)
-                  : _mealItemsForRange(startDay: 8, days: 1),
-            );
-          },
-        );
+    test('meal generation stops when a chunk exhausts local retries', () async {
+      var call = 0;
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          call++;
+          if (call >= 2) {
+            return jsonEncode([
+              {'day': 8, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
+            ]);
+          }
+          return jsonEncode(
+            call == 1
+                ? _mealItemsForRange(startDay: 1, days: 7)
+                : _mealItemsForRange(startDay: 8, days: 1),
+          );
+        },
+      );
 
-        await expectLater(
-          service.generateMealPlanWithSource(
-            healthData: const _FakeHealthData(),
-            userId: 'u1',
-            startDate: DateTime(2026, 6, 18),
-            days: 8,
-          ),
-          throwsFormatException,
-        );
-        expect(call, 2);
-      },
-    );
+      await expectLater(
+        service.generateMealPlanWithSource(
+          healthData: const _FakeHealthData(),
+          userId: 'u1',
+          startDate: DateTime(2026, 6, 18),
+          days: 8,
+        ),
+        throwsFormatException,
+      );
+      expect(call, 1 + AIRetryPolicy.maxAttemptsPerRequest);
+    });
 
     test('invalid meal code fails without a local substitute', () async {
       final service = AIService(
@@ -1527,9 +1916,9 @@ void main() {
       expect(modelCalls, ['primary-model', 'fallback-model']);
       expect(delays, hasLength(1));
       expect(joined, contains('RETRY_ATTEMPT_FAILED'));
-      expect(joined, contains('"modelAttempt":1'));
-      expect(joined, contains('"totalAttempt":1'));
-      expect(joined, contains('"transient":true'));
+      expect(joined, contains('modelAttempt=1'));
+      expect(joined, contains('totalAttempt=1'));
+      expect(joined, contains('transient=true'));
       expect(joined, contains('RETRY_DELAY'));
       expect(joined, contains('delayMs'));
     });
@@ -1603,33 +1992,32 @@ void main() {
     });
 
     test(
-      'missing runtime API key fails without a local meal substitute',
+      'local model failure never routes a plan to a remote AI service',
       () async {
-        final logs = await _captureDebugPrint(() async {
-          final service = AIService(
-            apiKeyOverride: '',
-            modelNames: const ['fake-model'],
-            catalogLoader: () async => catalog,
-            delay: (_) async {},
-          );
+        var attempts = 0;
+        final service = AIService(
+          modelNames: const [LocalAiTextClient.modelId],
+          catalogLoader: () async => catalog,
+          delay: (_) async {},
+          textGenerator: ({required modelName, required prompt}) async {
+            attempts++;
+            throw const AiInferenceException(
+              status: 'local_model_not_ready',
+              message: 'Chưa nạp model local.',
+            );
+          },
+        );
 
-          await expectLater(
-            service.generateMealPlan(
-              healthData: const _FakeHealthData(),
-              userId: 'u1',
-              startDate: DateTime(2026, 6, 18),
-              days: 1,
-            ),
-            throwsA(isA<AIConfigurationUnavailableException>()),
-          );
-        });
-        final joined = logs.join('\n');
-
-        expect(joined, contains('MISSING_API_KEY'));
-        expect(joined, isNot(contains('MEAL_CHUNK_LOCAL_FALLBACK')));
-        expect(joined, isNot(contains(AITraceLogger.localGen)));
-        expect(joined, isNot(contains('AIza')));
-        expect(joined, isNot(contains(const _FakeHealthData().fullName)));
+        await expectLater(
+          service.generateMealPlan(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 1,
+          ),
+          throwsA(isA<AiInferenceException>()),
+        );
+        expect(attempts, 1);
       },
     );
 
@@ -1674,7 +2062,7 @@ void main() {
             primaryModel: null,
             fallbackModelsCsv: null,
           ),
-          ['gemini-2.5-flash', 'gemini-3.8-flash'],
+          [LocalAiTextClient.modelId],
         );
       },
     );
@@ -1682,19 +2070,17 @@ void main() {
     test('prioritizes primary, fallback, overflow, and de-duplicates', () {
       expect(
         AIModelCandidates.resolve(
-          primaryModel: ' gemini-custom ',
-          fallbackModelsCsv:
-              'gemini-3.5-flash, gemini-custom, gemini-2.5-flash, ',
-          overflowModelsCsv:
-              'gemini-3-flash-preview, gemini-2.5-flash, gemini-2.5-pro',
+          primaryModel: ' local-custom ',
+          fallbackModelsCsv: 'local-small, local-custom, local-medium, ',
+          overflowModelsCsv: 'local-large, local-medium, local-very-large',
         ),
         [
-          'gemini-custom',
-          'gemini-3.5-flash',
-          'gemini-2.5-flash',
-          'gemini-3-flash-preview',
-          'gemini-2.5-pro',
-          'gemini-3.8-flash',
+          'local-custom',
+          'local-small',
+          'local-medium',
+          'local-large',
+          'local-very-large',
+          LocalAiTextClient.modelId,
         ],
       );
     });
@@ -1702,22 +2088,22 @@ void main() {
     test('uses default fallback when fallback csv is blank', () {
       expect(
         AIModelCandidates.resolve(
-          primaryModel: 'gemini-custom',
+          primaryModel: 'local-custom',
           fallbackModelsCsv: ' , ',
         ),
-        ['gemini-custom', 'gemini-3.8-flash'],
+        ['local-custom', LocalAiTextClient.modelId],
       );
     });
   });
 
   group('AIChatModelCandidates', () {
-    test('includes the verified Flash fallback when chat env is absent', () {
+    test('uses the selected on-device model when chat env is absent', () {
       expect(
         AIChatModelCandidates.resolve(
           primaryModel: null,
           fallbackModelsCsv: null,
         ),
-        ['gemini-3.1-flash-lite', 'gemini-3.5-flash'],
+        [LocalAiTextClient.modelId],
       );
     });
 
@@ -1743,20 +2129,18 @@ void main() {
     test('classifies only transient errors as retryable with backoff', () {
       expect(
         AIRetryPolicy.isTransient(
-          const GeminiApiException(
-            statusCode: 503,
-            status: 'UNAVAILABLE',
-            message: 'This model is currently experiencing high demand.',
+          const AiInferenceException(
+            status: 'runtime_busy',
+            message: 'Selected model is busy.',
           ),
         ),
         isTrue,
       );
       expect(
         AIRetryPolicy.isTransient(
-          const GeminiApiException(
-            statusCode: 429,
-            status: 'RESOURCE_EXHAUSTED',
-            message: 'Resource has been exhausted.',
+          const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Selected model returned a transient error.',
           ),
         ),
         isTrue,
@@ -1807,11 +2191,13 @@ Future<List<String>> _captureDebugPrint(Future<void> Function() body) async {
       logs.add(message);
     }
   };
+  TerminalLogSink.setTestWriter(logs.add);
 
   try {
     await body();
   } finally {
     debugPrint = previousDebugPrint;
+    TerminalLogSink.setTestWriter(null);
   }
 
   return logs;
@@ -1951,6 +2337,26 @@ List<Map<String, Object?>> _mealItemsForRange({
   ];
 }
 
+List<Map<String, Object?>> _mealItemsFromPrompt(
+  String prompt, {
+  required int day,
+}) {
+  const marker = 'Candidates (JSON):\n';
+  final catalogStart = prompt.lastIndexOf(marker);
+  final rows =
+      jsonDecode(prompt.substring(catalogStart + marker.length).trim()) as List;
+  final codeByType = <String, String>{};
+  for (final row in rows.cast<Map<String, dynamic>>()) {
+    final type = row['meal_type']?.toString();
+    final code = row['code']?.toString();
+    if (type != null && code != null) codeByType.putIfAbsent(type, () => code);
+  }
+  return [
+    for (final slot in MealPlanAiNormalizer.mealSlots)
+      {'day': day, 'meal_type': slot.type, 'meal_code': codeByType[slot.type]},
+  ];
+}
+
 List<Map<String, Object?>> _exerciseItemsForRange({
   required int startDay,
   required int days,
@@ -1968,6 +2374,49 @@ List<Map<String, Object?>> _exerciseItemsForRange({
       },
     ],
   ];
+}
+
+class _CapturingAiTextClient implements AiTextClient, AiContextAwareClient {
+  _CapturingAiTextClient({required this.response, this.responseBuilder});
+
+  final String response;
+  final String Function(List<AiMessage> messages)? responseBuilder;
+  final configurations = <AiGenerationConfig>[];
+  final messages = <AiMessage>[];
+  final estimatedTexts = <String>[];
+
+  @override
+  Future<int> selectedContextSize() async => 2048;
+
+  @override
+  Future<int> estimateTokens(String text) async {
+    estimatedTexts.add(text);
+    return 100;
+  }
+
+  @override
+  Future<String> generateText({
+    required String model,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) async {
+    this.messages.addAll(messages);
+    configurations.add(generationConfig);
+    return responseBuilder?.call(messages) ?? response;
+  }
+
+  @override
+  Stream<String> streamText({
+    required String model,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) async* {
+    this.messages.addAll(messages);
+    configurations.add(generationConfig);
+    yield responseBuilder?.call(messages) ?? response;
+  }
 }
 
 class _FakeHealthData implements HealthDataInterface {
