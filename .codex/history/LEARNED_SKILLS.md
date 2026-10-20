@@ -4,12 +4,12 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 86 worklog(s)
-- coding - Coding: 44 worklog(s)
+- docs-context - Context and docs update: 89 worklog(s)
+- coding - Coding: 45 worklog(s)
+- supabase-schema - Supabase schema and RLS: 41 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
-- supabase-schema - Supabase schema and RLS: 38 worklog(s)
-- test - Test and verification: 21 worklog(s)
-- find-issues - Review and find issues: 9 worklog(s)
+- test - Test and verification: 23 worklog(s)
+- find-issues - Review and find issues: 10 worklog(s)
 - docs-dd - Design docs: 6 worklog(s)
 - fix-issues - Fix documented issue: 3 worklog(s)
 - refactor-scaffold - Scaffold refactor: 2 worklog(s)
@@ -34,7 +34,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - Route every task through one workflow in `.codex/workflows/`, one generated task-skill in `.codex/task-skills/`, and one primary domain in `.codex/domains/`.
 - Treat reachable wiring as current behavior: one main, a composed user router, an Admin surface selected by backend access, and Sale/referral as an independent axis.
-- For AI work, use the current Gemini REST/Dio clients, validate/normalize output, avoid real network calls in tests, and keep safe fallback behavior.
+- For AI work, use the provider-neutral local runtime, validate/normalize output, avoid model downloads in tests, and keep prompts/responses out of logs.
 - For dashboard work, read real data through providers/repositories/datasources; do not add production mock data.
 - For DD work, preserve IDs but separate implementation status from runtime/sandbox verification and cite reachable source.
 - For issue/todo work, keep find issue, create issue, create todo, fix issue, and test as separate modes.

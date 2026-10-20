@@ -39,12 +39,16 @@ String _sanitizeAiDevCheckError(Object error) {
       .replaceAll(RegExp(r'AIza[0-9A-Za-z\-_]{20,}'), '***')
       .replaceAll(RegExp(r'sk-[A-Za-z0-9_\-]{20,}'), '***');
 
-  if (text.contains('Missing Gemini') || text.contains('backend')) {
-    return 'Dịch vụ AI chưa sẵn sàng trên máy chủ.';
+  if (text.contains('unsupported_platform')) {
+    return 'AI trên thiết bị chưa hỗ trợ bản web.';
+  }
+
+  if (text.contains('local_model') || text.contains('model')) {
+    return 'Model AI trên thiết bị chưa sẵn sàng. Hãy tải hoặc mở lại model.';
   }
 
   if (text.length > 180) {
-    return 'Không thể kiểm tra kết nối AI. Kiểm tra cấu hình env, model hoặc mạng.';
+    return 'Không thể kiểm tra model AI trên thiết bị lúc này.';
   }
 
   return 'Không thể kiểm tra kết nối AI: $text';

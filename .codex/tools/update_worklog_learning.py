@@ -200,7 +200,7 @@ def render_learned_skills(entries: list[Entry]) -> str:
             "",
             "- Route every task through one workflow in `.codex/workflows/`, one generated task-skill in `.codex/task-skills/`, and one primary domain in `.codex/domains/`.",
             "- Treat reachable wiring as current behavior: one main, a composed user router, an Admin surface selected by backend access, and Sale/referral as an independent axis.",
-            "- For AI work, use the current Gemini REST/Dio clients, validate/normalize output, avoid real network calls in tests, and keep safe fallback behavior.",
+            "- For AI work, use the provider-neutral local runtime, validate/normalize output, avoid model downloads in tests, and keep prompts/responses out of logs.",
             "- For dashboard work, read real data through providers/repositories/datasources; do not add production mock data.",
             "- For DD work, preserve IDs but separate implementation status from runtime/sandbox verification and cite reachable source.",
             "- For issue/todo work, keep find issue, create issue, create todo, fix issue, and test as separate modes.",

@@ -1,10 +1,9 @@
 import 'dart:convert';
 
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 import 'package:nano_app/features/nabi/domain/care/nabi_care_repository.dart';
 
-import 'gemini_rest_client.dart';
-import 'nabi_ai_backend_client.dart';
+import 'ai_text_client.dart';
 
 typedef NabiCareTextGenerator =
     Future<String> Function({
@@ -13,27 +12,15 @@ typedef NabiCareTextGenerator =
       required String systemInstruction,
     });
 
-class GeminiNabiCareAiGateway implements NabiCareAiGateway {
-  static const _defaultModels = <String>[
-    'gemini-3.5-flash',
-    'gemini-2.5-flash-lite',
-  ];
-
-  final AiTextClient? _client;
+class LocalNabiCareAiGateway implements NabiCareAiGateway {
+  final AiTextClient _client;
   final NabiCareTextGenerator? _textGenerator;
-  final List<String> _models;
 
-  GeminiNabiCareAiGateway({
-    GeminiRestClient? client,
-    AiTextClient? aiClient,
+  LocalNabiCareAiGateway({
+    AiTextClient? client,
     NabiCareTextGenerator? textGenerator,
-    String? apiKeyOverride,
-    List<String>? modelNames,
-  }) : _textGenerator = textGenerator,
-       _models = _resolveModels(modelNames),
-       _client = textGenerator != null
-           ? aiClient ?? client
-           : aiClient ?? client ?? _runtimeClient(apiKeyOverride);
+  }) : _client = client ?? const LocalAiTextClient(operation: 'nabi_care'),
+       _textGenerator = textGenerator;
 
   @override
   Future<String> generateAnalysis({
@@ -48,103 +35,44 @@ Phân tích snapshot NaBi Care bên dưới và trả về đúng một JSON obj
 SNAPSHOT:
 ${jsonEncode(payload)}
 ''';
-
-    Object? lastError;
-    for (final model in _models) {
-      try {
-        final textGenerator = _textGenerator;
-        if (textGenerator != null) {
-          return await textGenerator(
-            model: model,
-            prompt: prompt,
-            systemInstruction: systemInstruction,
-          );
-        }
-
-        final client = _client;
-        if (client == null) {
-          throw const NabiCareAiUnavailableException(
-            'AI backend is not configured.',
-          );
-        }
-
-        return await client
-            .generateText(
-              model: model,
-              contents: [GeminiContent.user(prompt)],
-              systemInstruction: systemInstruction,
-              generationConfig: const GeminiGenerationConfig(
-                candidateCount: 1,
-                temperature: 0.15,
-                topP: 0.8,
-                responseMimeType: 'application/json',
-              ),
-            )
-            .timeout(const Duration(seconds: 25));
-      } on GeminiApiException catch (error) {
-        lastError = error;
-        if (!error.isTransient) rethrow;
-      } catch (error) {
-        lastError = error;
-        if (error is NabiCareAiUnavailableException) rethrow;
+    try {
+      final generator = _textGenerator;
+      if (generator != null) {
+        return await generator(
+          model: LocalAiTextClient.modelId,
+          prompt: prompt,
+          systemInstruction: systemInstruction,
+        );
       }
+      return await _client
+          .generateText(
+            model: LocalAiTextClient.modelId,
+            messages: [AiMessage.user(prompt)],
+            systemInstruction: systemInstruction,
+            generationConfig: const AiGenerationConfig(
+              temperature: 0.15,
+              topP: 0.8,
+              responseFormat: AiResponseFormat.json,
+            ),
+          )
+          .timeout(const Duration(seconds: 60));
+    } on AiInferenceException catch (error) {
+      throw NabiCareAiUnavailableException(error.message, status: error.status);
+    } on NabiCareAiUnavailableException {
+      rethrow;
+    } catch (error) {
+      throw NabiCareAiUnavailableException(
+        'Nabi chưa thể phân tích trên thiết bị lúc này (${error.runtimeType}).',
+      );
     }
-
-    throw NabiCareAiUnavailableException(
-      'All configured care models failed: ${lastError.runtimeType}',
-    );
-  }
-
-  static AiTextClient? _runtimeClient(String? apiKeyOverride) {
-    return const NabiAiBackendClient();
-  }
-
-  static List<String> _resolveModels(List<String>? override) {
-    if (override != null && override.isNotEmpty) {
-      return _dedupe(override);
-    }
-
-    final carePrimary = _clean(AppEnv.maybeString('GEMINI_CARE_MODEL'));
-    final legacyPrimary = _clean(AppEnv.maybeString('GEMINI_MODEL'));
-    final fallbackCsv = _clean(
-      AppEnv.maybeString('GEMINI_CARE_FALLBACK_MODELS'),
-    );
-    final fallback = fallbackCsv == null
-        ? const <String>[]
-        : fallbackCsv
-              .split(',')
-              .map((item) => item.trim())
-              .where((item) => item.isNotEmpty)
-              .toList(growable: false);
-
-    return _dedupe([
-      carePrimary ?? legacyPrimary ?? _defaultModels.first,
-      ...fallback,
-      ..._defaultModels,
-    ]);
-  }
-
-  static List<String> _dedupe(Iterable<String> source) {
-    final seen = <String>{};
-    final result = <String>[];
-    for (final raw in source) {
-      final value = raw.trim();
-      if (value.isEmpty || !seen.add(value)) continue;
-      result.add(value);
-    }
-    return result;
-  }
-
-  static String? _clean(String? value) {
-    final cleaned = value?.trim();
-    return cleaned == null || cleaned.isEmpty ? null : cleaned;
   }
 }
 
 class NabiCareAiUnavailableException implements Exception {
   final String message;
+  final String? status;
 
-  const NabiCareAiUnavailableException(this.message);
+  const NabiCareAiUnavailableException(this.message, {this.status});
 
   @override
   String toString() => 'NabiCareAiUnavailableException: $message';

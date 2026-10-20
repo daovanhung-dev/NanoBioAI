@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 
 import 'ai_exceptions.dart';
 import 'ai_text_sanitizer.dart';
 import 'ai_trace_logger.dart';
 import 'ai_vietnamese_text_validator.dart';
-import 'gemini_rest_client.dart';
-import 'nabi_ai_backend_client.dart';
+import 'ai_text_client.dart';
 
 typedef AIChatTextGenerator =
     Future<String> Function({
@@ -65,42 +64,32 @@ class AIChatService {
   late final AiTextClient? _aiClient;
   late final DateTime Function() _now;
   late final Duration _modelCooldown;
+  late final Duration _perAttemptTimeout;
   final Map<String, DateTime> _modelCooldownUntil = {};
 
   AIChatService({
-    String? apiKeyOverride,
     List<String>? modelNames,
     Future<void> Function(Duration)? delay,
     Random? random,
     AIChatTextGenerator? textGenerator,
-    GeminiRestClient? geminiClient,
     AiTextClient? aiClient,
     DateTime Function()? now,
     Duration? modelCooldown,
+    Duration? perAttemptTimeout,
   }) {
     _delay = delay ?? ((duration) => Future<void>.delayed(duration));
     _random = random ?? Random();
     _textGenerator = textGenerator;
     _now = now ?? DateTime.now;
     _modelCooldown = modelCooldown ?? AIChatRetryPolicy.modelCooldown;
+    _perAttemptTimeout =
+        perAttemptTimeout ?? AIChatRetryPolicy.perAttemptTimeout;
 
     _aiClient = _textGenerator == null
-        ? aiClient ??
-              geminiClient ??
-              (apiKeyOverride == null ? const NabiAiBackendClient() : null)
+        ? aiClient ?? const LocalAiTextClient()
         : null;
-    final hasRuntimeClient = _aiClient != null;
 
-    final resolvedModelNames =
-        modelNames ??
-        AIChatModelCandidates.resolve(
-          primaryModel: _textGenerator == null
-              ? _envWithLegacy('GEMINI_CHAT_MODEL', 'GEMINI_MODEL')
-              : null,
-          fallbackModelsCsv: _textGenerator == null
-              ? _env('GEMINI_CHAT_FALLBACK_MODELS')
-              : null,
-        );
+    final resolvedModelNames = modelNames ?? [LocalAiTextClient.modelId];
 
     AITraceLogger.info(
       _tag,
@@ -111,18 +100,6 @@ class AIChatService {
       data: {'models': resolvedModelNames},
       location: StackTrace.current,
     );
-
-    if (!hasRuntimeClient && _textGenerator == null) {
-      AITraceLogger.warning(
-        _tag,
-        AITraceLogger.nextTraceId('ai-chat-init'),
-        'AIChatService.constructor',
-        'MISSING_API_KEY',
-        'Chat AI is unavailable because the provider credential is missing.',
-        data: {'reason': 'missing_api_key'},
-        location: StackTrace.current,
-      );
-    }
 
     _models = [
       for (final modelName in resolvedModelNames)
@@ -184,7 +161,7 @@ class AIChatService {
     }
   }
 
-  /// Prepares a true streaming Gemini turn without adding it to conversation
+  /// Prepares a streaming local model turn without adding it to conversation
   /// history until [AIChatPreparedStream.accept] is called by the repository.
   Future<AIChatPreparedStream> prepareMessageStream(String message) async {
     if (!_hasRuntimeTextSource) {
@@ -194,8 +171,7 @@ class AIChatService {
       );
     }
 
-    // Tests and injected generators keep deterministic legacy behaviour while
-    // production Gemini uses the SSE path below.
+    // Injected generators keep deterministic behavior in focused tests.
     if (_textGenerator != null) {
       final prepared = await prepareMessage(message);
       return AIChatPreparedStream(
@@ -206,7 +182,7 @@ class AIChatService {
 
     final pending = _PendingStreamTurn(userMessage: message);
     return AIChatPreparedStream(
-      stream: _streamGeminiMessage(message, pending),
+      stream: _streamLocalMessage(message, pending),
       onAccepted: pending.accept,
     );
   }
@@ -225,7 +201,7 @@ class AIChatService {
     })();
   }
 
-  Stream<String> _streamGeminiMessage(
+  Stream<String> _streamLocalMessage(
     String message,
     _PendingStreamTurn pending,
   ) async* {
@@ -234,40 +210,62 @@ class AIChatService {
     Object? lastError;
     StackTrace? lastStackTrace;
     var totalAttempts = 0;
+    var hasPublishedText = false;
 
     for (var modelIndex = 0; modelIndex < _models.length; modelIndex++) {
       final entry = _models[modelIndex];
       if (_activeCooldownUntil(entry.name) != null) continue;
       totalAttempts++;
       final buffer = StringBuffer();
+      final attemptStopwatch = Stopwatch()..start();
 
       try {
         final client = _aiClient;
         if (client == null) {
-          throw StateError('Missing Gemini REST client for ${entry.name}');
+          throw const AIConfigurationUnavailableException();
         }
 
         final source = client
             .streamText(
               model: entry.name,
-              contents: entry.contentsWithUserMessage(message),
-              generationConfig: const GeminiGenerationConfig(
-                candidateCount: 1,
+              messages: entry.contentsWithUserMessage(message),
+              generationConfig: const AiGenerationConfig(
                 temperature: 0.4,
                 topP: 0.8,
               ),
               systemInstruction: _systemInstruction,
             )
-            .timeout(AIChatRetryPolicy.perAttemptTimeout);
+            .timeout(_perAttemptTimeout);
 
+        var visibleText = '';
         await for (final delta in source) {
           if (delta.isEmpty) continue;
           buffer.write(delta);
+
+          final sanitizedPrefix = _sanitizedStreamPrefix(buffer.toString());
+          if (!AIVietnameseTextValidator.isValidDisplayText(sanitizedPrefix) ||
+              !sanitizedPrefix.startsWith(visibleText)) {
+            continue;
+          }
+
+          final safeDelta = sanitizedPrefix.substring(visibleText.length);
+          if (safeDelta.isNotEmpty) {
+            visibleText = sanitizedPrefix;
+            hasPublishedText = true;
+            yield safeDelta;
+          }
         }
 
         final validated = _validatedResponse(buffer.toString());
+        if (!validated.startsWith(visibleText)) {
+          throw const AIResponseInvalidException();
+        }
+        final remainingText = validated.substring(visibleText.length);
+        if (remainingText.isNotEmpty) {
+          hasPublishedText = true;
+          yield remainingText;
+        }
         pending.complete(entry: entry, modelMessage: validated);
-        yield validated;
         AITraceLogger.success(
           _tag,
           traceId,
@@ -278,6 +276,7 @@ class AIChatService {
             'model': entry.name,
             'textLength': validated.length,
             'totalAttempt': totalAttempts,
+            'durationMs': attemptStopwatch.elapsedMilliseconds,
           },
           location: StackTrace.current,
         );
@@ -286,7 +285,36 @@ class AIChatService {
         lastError = error;
         lastStackTrace = stackTrace;
 
-        if (error is GeminiApiException && error.isOutputTruncated) {
+        final transient = error is TimeoutException
+            ? false
+            : AIChatRetryPolicy.isTransient(error);
+        AITraceLogger.error(
+          _tag,
+          traceId,
+          method,
+          'STREAM_ATTEMPT_FAILED',
+          'Local AI chat stream failed.',
+          error,
+          stackTrace,
+          data: {
+            'model': entry.name,
+            'status': _diagnosticStatusForFailure(error),
+            'durationMs': attemptStopwatch.elapsedMilliseconds,
+            'transient': transient,
+          },
+          location: StackTrace.current,
+        );
+
+        if (error is TimeoutException) {
+          Error.throwWithStackTrace(
+            const AILocalInferenceTimeoutException(),
+            stackTrace,
+          );
+        }
+
+        if (hasPublishedText) _throwTypedFailure(error, stackTrace);
+
+        if (error is AiInferenceException && error.isOutputTruncated) {
           _throwTypedFailure(error, stackTrace);
         }
 
@@ -297,7 +325,6 @@ class AIChatService {
           );
         }
 
-        final transient = AIChatRetryPolicy.isTransient(error);
         if (transient) {
           _cooldownModel(entry.name);
           if (_hasAvailableModelAfter(modelIndex)) {
@@ -369,6 +396,7 @@ class AIChatService {
         modelAttempt++
       ) {
         totalAttempts++;
+        final attemptStopwatch = Stopwatch()..start();
         try {
           AITraceLogger.info(
             _tag,
@@ -384,9 +412,7 @@ class AIChatService {
             location: StackTrace.current,
           );
 
-          final text = await operation(
-            entry,
-          ).timeout(AIChatRetryPolicy.perAttemptTimeout);
+          final text = await operation(entry);
           final responseText = _validatedResponse(text);
           final validation = _AIChatValidationResult(
             text: responseText,
@@ -412,6 +438,7 @@ class AIChatService {
               'model': entry.name,
               'modelAttempt': modelAttempt,
               'totalAttempt': totalAttempts,
+              'durationMs': attemptStopwatch.elapsedMilliseconds,
             },
             location: StackTrace.current,
           );
@@ -429,6 +456,8 @@ class AIChatService {
               'model': entry.name,
               'modelAttempt': modelAttempt,
               'totalAttempt': totalAttempts,
+              'status': 'invalid_response',
+              'durationMs': attemptStopwatch.elapsedMilliseconds,
             },
             location: StackTrace.current,
           );
@@ -436,7 +465,8 @@ class AIChatService {
         } catch (error, stackTrace) {
           lastError = error;
           lastStackTrace = stackTrace;
-          final transient = AIChatRetryPolicy.isTransient(error);
+          final timedOut = error is TimeoutException;
+          final transient = !timedOut && AIChatRetryPolicy.isTransient(error);
           AITraceLogger.error(
             _tag,
             traceId,
@@ -449,10 +479,19 @@ class AIChatService {
               'model': entry.name,
               'modelAttempt': modelAttempt,
               'totalAttempt': totalAttempts,
+              'status': _diagnosticStatusForFailure(error),
+              'durationMs': attemptStopwatch.elapsedMilliseconds,
               'transient': transient,
             },
             location: StackTrace.current,
           );
+
+          if (timedOut) {
+            Error.throwWithStackTrace(
+              const AILocalInferenceTimeoutException(),
+              stackTrace,
+            );
+          }
 
           if (AIAuthenticationException.matches(error)) {
             Error.throwWithStackTrace(
@@ -514,24 +553,33 @@ class AIChatService {
   Future<String> _sendText(_AIChatModelEntry entry, String message) async {
     final textGenerator = _textGenerator;
     if (textGenerator != null) {
-      return textGenerator(modelName: entry.name, message: message);
+      return textGenerator(
+        modelName: entry.name,
+        message: message,
+      ).timeout(_perAttemptTimeout);
     }
 
     final client = _aiClient;
     if (client == null) {
-      throw StateError('Missing Gemini REST client for ${entry.name}');
+      throw const AIConfigurationUnavailableException();
     }
 
-    return client.generateText(
-      model: entry.name,
-      contents: entry.contentsWithUserMessage(message),
-      generationConfig: const GeminiGenerationConfig(
-        candidateCount: 1,
-        temperature: 0.4,
-        topP: 0.8,
-      ),
-      systemInstruction: _systemInstruction,
-    );
+    final response = StringBuffer();
+    await for (final delta
+        in client
+            .streamText(
+              model: entry.name,
+              messages: entry.contentsWithUserMessage(message),
+              generationConfig: const AiGenerationConfig(
+                temperature: 0.4,
+                topP: 0.8,
+              ),
+              systemInstruction: _systemInstruction,
+            )
+            .timeout(_perAttemptTimeout)) {
+      response.write(delta);
+    }
+    return response.toString();
   }
 
   void _logValidation(
@@ -583,9 +631,9 @@ class AIChatService {
       _tag,
       traceId,
       method,
-      'MISSING_API_KEY',
-      'Chat AI is unavailable because the provider credential is missing.',
-      data: {'reason': 'missing_api_key', 'models': _modelNames()},
+      'NO_LOCAL_MODEL',
+      'Chat AI is unavailable because no local model is selected.',
+      data: {'models': _modelNames()},
       location: StackTrace.current,
     );
     throw const AIConfigurationUnavailableException();
@@ -593,12 +641,20 @@ class AIChatService {
 
   Never _throwTypedFailure(Object error, StackTrace stackTrace) {
     if (error is AIConfigurationUnavailableException ||
+        error is AILocalInferenceTimeoutException ||
+        error is AIPlatformUnsupportedException ||
         error is AIAuthenticationException ||
         error is AINetworkException ||
         error is AIModelUnavailableException ||
         error is AIOverloadedException ||
         error is AIResponseInvalidException) {
       Error.throwWithStackTrace(error, stackTrace);
+    }
+    if (AIPlatformUnsupportedException.matches(error)) {
+      Error.throwWithStackTrace(
+        const AIPlatformUnsupportedException(),
+        stackTrace,
+      );
     }
     if (AIAuthenticationException.matches(error)) {
       Error.throwWithStackTrace(const AIAuthenticationException(), stackTrace);
@@ -617,12 +673,6 @@ class AIChatService {
     }
     Error.throwWithStackTrace(const AIResponseInvalidException(), stackTrace);
   }
-
-  static String? _envWithLegacy(String key, String legacyKey) {
-    return AppEnv.maybeStringWithLegacy(key, legacyKey);
-  }
-
-  static String? _env(String key) => AppEnv.maybeString(key);
 
   static String _validatedResponse(String? rawText) {
     final text = AITextSanitizer.sanitize(rawText ?? '');
@@ -694,11 +744,8 @@ class _PendingStreamTurn {
 }
 
 class AIChatModelCandidates {
-  static const defaultPrimaryModel = 'gemini-3.1-flash-lite';
-  static const defaultFallbackModels = [
-    'gemini-3.5-flash',
-    'gemini-3.1-flash-lite',
-  ];
+  static const defaultPrimaryModel = LocalAiTextClient.modelId;
+  static const defaultFallbackModels = <String>[];
 
   const AIChatModelCandidates._();
 
@@ -739,7 +786,7 @@ class AIChatModelCandidates {
 
 class AIChatRetryPolicy {
   static const maxAttemptsPerModel = 1;
-  static const perAttemptTimeout = Duration(seconds: 20);
+  static const perAttemptTimeout = Duration(seconds: 120);
   static const maxDelay = Duration(milliseconds: 3750);
   static const modelCooldown = Duration(minutes: 3);
 
@@ -761,16 +808,38 @@ class AIChatRetryPolicy {
   }
 }
 
+String _diagnosticStatusForFailure(Object error) {
+  if (error is TimeoutException || error is AILocalInferenceTimeoutException) {
+    return 'local_inference_timeout';
+  }
+  if (error is AiInferenceException) {
+    final status = error.status?.trim().toLowerCase();
+    if (status != null && RegExp(r'^[a-z0-9_]{1,64}$').hasMatch(status)) {
+      return status;
+    }
+  }
+  if (error is StateError) return 'local_runtime_state_error';
+  return 'local_inference_error';
+}
+
+String _sanitizedStreamPrefix(String rawText) {
+  final lastOpeningTag = rawText.lastIndexOf('<');
+  if (lastOpeningTag > rawText.lastIndexOf('>')) {
+    rawText = rawText.substring(0, lastOpeningTag);
+  }
+  return AITextSanitizer.sanitize(rawText);
+}
+
 class _AIChatModelEntry {
   static const _maxHistoryMessages = 16;
 
   final String name;
-  final List<GeminiContent> _history = [];
+  final List<AiMessage> _history = [];
 
   _AIChatModelEntry({required this.name});
 
-  List<GeminiContent> contentsWithUserMessage(String message) {
-    return [..._history, GeminiContent.user(message)];
+  List<AiMessage> contentsWithUserMessage(String message) {
+    return [..._history, AiMessage.user(message)];
   }
 
   void rememberTurn({
@@ -778,8 +847,8 @@ class _AIChatModelEntry {
     required String modelMessage,
   }) {
     _history
-      ..add(GeminiContent.user(userMessage))
-      ..add(GeminiContent.model(modelMessage));
+      ..add(AiMessage.user(userMessage))
+      ..add(AiMessage.assistant(modelMessage));
     final overflow = _history.length - _maxHistoryMessages;
     if (overflow > 0) _history.removeRange(0, overflow);
   }

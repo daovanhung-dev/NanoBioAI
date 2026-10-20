@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/core/health_events/health_domain_event.dart';
@@ -140,6 +141,13 @@ class SleepNightAnalysisController
         loading: false,
         aiConfigured: ref.read(sleepAnalysisAIServiceProvider).isConfigured,
         clearError: true,
+      );
+    } on AiInferenceException catch (error) {
+      state = state.copyWith(
+        generatingAi: false,
+        errorMessage: error.status == 'unsupported_platform'
+            ? error.message
+            : 'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
       );
     } catch (_) {
       state = state.copyWith(

@@ -2,7 +2,7 @@
 
 - Canonical key: supabase-schema
 - Workflow: .codex/workflows/supabase-schema.md
-- Generated from 38 worklog(s).
+- Generated from 41 worklog(s).
 
 ## When To Read
 
@@ -41,6 +41,9 @@
 - Historical task type: Deploy backend (1)
 - Historical task type: Coding, migration source, targeted tests, project docs. (1)
 - Historical task type: coding, Supabase schema, SQLite migration, UI, BD/DD/checklist/context. (1)
+- Historical task type: Hoàn thiện coding theo plan đã được duyệt. (1)
+- Historical task type: bugfix, test và docs (1)
+- Historical task type: Điều tra, fix bug, test và QA trên thiết bị thật theo plan đã duyệt. (1)
 
 ## Common Modules
 

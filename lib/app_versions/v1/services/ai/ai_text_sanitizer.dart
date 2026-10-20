@@ -27,9 +27,15 @@ class AITextSanitizer {
         .split('\n')
         .map(
           (line) => line
-              .replaceAll(RegExp(r' +([.,;:!?])'), r'$1')
+              .replaceAllMapped(
+                RegExp(r' +([.,;:!?])'),
+                (match) => match.group(1) ?? '',
+              )
               .replaceAll(RegExp(r' +\)'), ')')
-              .replaceAll(RegExp(r'([({]) +'), r'$1')
+              .replaceAllMapped(
+                RegExp(r'([({]) +'),
+                (match) => match.group(1) ?? '',
+              )
               .trim(),
         )
         .toList(growable: false);
@@ -37,8 +43,13 @@ class AITextSanitizer {
   }
 
   static bool _isWhitespace(int rune) {
-    return rune == 9 || rune == 11 || rune == 12 || rune == 13 || rune == 32 ||
-        (rune >= 0x2000 && rune <= 0x200A) || rune == 0x00A0;
+    return rune == 9 ||
+        rune == 11 ||
+        rune == 12 ||
+        rune == 13 ||
+        rune == 32 ||
+        (rune >= 0x2000 && rune <= 0x200A) ||
+        rune == 0x00A0;
   }
 
   static bool _isAllowedLetterOrDigit(int rune) {

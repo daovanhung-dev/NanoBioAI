@@ -4,6 +4,9 @@ abstract final class AiVoiceCopy {
   static const unavailable =
       'Nabi chưa thể bật trò chuyện giọng nói lúc này. Bạn hãy thử lại hoặc nhập bằng bàn phím nhé.';
 
+  static const unsupportedPlatform =
+      'Trò chuyện AI chưa hỗ trợ bản web. Hãy dùng NanoBioAI trên Android, iOS hoặc máy tính để tiếp tục.';
+
   static const permissionDenied =
       'Nabi cần quyền micro để lắng nghe. Bạn có thể cấp quyền trong cài đặt thiết bị rồi thử lại.';
 

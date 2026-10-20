@@ -68,7 +68,8 @@ Open only when relevant:
 - `lib/core/storage/localdb/database_version.dart`
 - `lib/app_versions/v1/services/ai/ai_service.dart`
 - `lib/app_versions/v1/services/ai/ai_chat_service.dart`
-- `lib/app_versions/v1/services/ai/gemini_rest_client.dart`
+- `lib/app_versions/v1/services/ai/ai_text_client.dart`
+- `lib/core/ai_local/`
 - `lib/app_versions/v1/services/ai/generated_plan_service.dart`
 - `lib/app_versions/v1/services/notifications/notification_bootstrap.dart`
 - `lib/app_versions/v1/services/notifications/notification_action_handler.dart`

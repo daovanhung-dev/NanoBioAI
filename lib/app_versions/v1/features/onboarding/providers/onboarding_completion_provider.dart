@@ -18,10 +18,16 @@ class OnboardingInitialPlanException implements Exception {
 class OnboardingCompletionResult {
   final bool generatedInitialPlan;
   final PlanGenerationSource generationSource;
+  final bool awaitingMealApproval;
+  final String requestId;
+  final GeneratedCustomMealProposal? pendingMealProposal;
 
   const OnboardingCompletionResult._({
     required this.generatedInitialPlan,
     this.generationSource = PlanGenerationSource.unknown,
+    this.awaitingMealApproval = false,
+    this.requestId = '',
+    this.pendingMealProposal,
   });
 
   const OnboardingCompletionResult.generatedInitialPlan({
@@ -30,6 +36,16 @@ class OnboardingCompletionResult {
 
   const OnboardingCompletionResult.skipped()
     : this._(generatedInitialPlan: false);
+
+  const OnboardingCompletionResult.awaitingCustomMeal({
+    required String requestId,
+    required GeneratedCustomMealProposal proposal,
+  }) : this._(
+         generatedInitialPlan: false,
+         awaitingMealApproval: true,
+         requestId: requestId,
+         pendingMealProposal: proposal,
+       );
 }
 
 typedef OnboardingCompletionCallback =

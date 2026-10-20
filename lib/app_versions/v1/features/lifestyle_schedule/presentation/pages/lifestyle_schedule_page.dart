@@ -14,6 +14,7 @@ import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/design_system.dart';
 import 'package:nano_app/core/theme/medical_ui.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
+import 'package:nano_app/shared/widgets/generated_plan_progress_dialog.dart';
 
 import '../../domain/entities/lifestyle_schedule_item_entity.dart';
 import '../../domain/entities/schedule_horizon.dart';
@@ -84,7 +85,9 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
     unawaited(() async {
       await controller.refresh();
       await controller.reconcilePendingRewards();
-      await ref.read(dailyHealthHubControllerProvider).reconcilePendingRewards();
+      await ref
+          .read(dailyHealthHubControllerProvider)
+          .reconcilePendingRewards();
     }());
   }
 
@@ -160,10 +163,14 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
     if (horizon == null || horizon.remainingDays >= 2) return;
 
     setState(() => _isGeneratingPlan = true);
+    ref.read(additionalPlanProgressProvider.notifier).state =
+        GeneratedPlanProgress(totalDays: 7);
+    final closeProgressDialog = showGeneratedPlanProgressDialog(context);
     try {
       final result = await ref
           .read(dashboardControllerProvider.notifier)
           .generateAdditionalPlan();
+      closeProgressDialog();
       if (!mounted) return;
 
       ref.invalidate(scheduleHorizonProvider);
@@ -178,6 +185,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
+      closeProgressDialog();
       if (!mounted) return;
       if (error is DailyRoutinePreferencesRequiredException) {
         setState(() => _isGeneratingPlan = false);
@@ -233,6 +241,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
           'Lịch trình hiện tại vẫn còn ${error.remainingDays} ngày. Bạn có thể tạo lịch mới khi lịch còn dưới 2 ngày nhé.',
         ScheduleHorizonDataException() =>
           ScheduleHorizonDataException.userMessage,
+        ScheduleCandidatesUnavailableException() => error.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
           'Nabi chưa thể tạo thêm lịch lúc này. Mình thử lại sau một chút nhé.',
@@ -241,6 +250,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(message)));
     } finally {
+      closeProgressDialog();
       if (mounted && _isGeneratingPlan) {
         setState(() => _isGeneratingPlan = false);
       }
@@ -301,10 +311,7 @@ class _LifestyleSchedulePageState extends ConsumerState<LifestyleSchedulePage>
       unawaited(
         Scrollable.ensureVisible(
           targetContext,
-          duration: AppMotionScope.duration(
-            context,
-            AppDuration.emphasized,
-          ),
+          duration: AppMotionScope.duration(context, AppDuration.emphasized),
           curve: AppAnimations.emphasizedCurve,
           alignment: .18,
         ),

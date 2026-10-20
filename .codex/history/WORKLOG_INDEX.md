@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 248
+- Total worklogs: 258
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -256,4 +256,14 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-16 | Tạo lô ảnh, rà soát trực quan, nối asset và kiểm tra hiển thị từ asset bundle. | docs-context | catalog nabi_3000_mon_viet_moi.json và luồng thực đơn. | [Worklog - Tạo ảnh món Việt 0076-0085](../../docs/worklog/2026-10-16/023-worklog-meal-image-generation-0076-0085.md) |
 | 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0086-0095](../../docs/worklog/2026-10-16/024-worklog-meal-image-generation-0086-0095.md) |
 | 2026-10-16 | Tạo ảnh theo lô, rà soát đúng món, nối asset theo mã và kiểm tra hiển thị trong luồng thực đơn. | docs-context | catalog nabi_3000_mon_viet_moi.json và asset thực đơn. | [Worklog - Tạo ảnh món Việt 0096-0105](../../docs/worklog/2026-10-16/025-worklog-meal-image-generation-0096-0105.md) |
+| 2026-10-18 | Hoàn thiện coding theo plan đã được duyệt. | supabase-schema | AI runtime, chat/Nabi Care, lịch ăn/tập, Body Metrics, Nutrition, Sleep, Fitness Training, Voice Chat, Food Scan, native setup và web unsupported state. | [Worklog - Chuyen NanoBioAI sang AI tren thiet bi](../../docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md) |
 | 2026-10-18 | docs-context va nhap snapshot local | docs-context | iot/xiaozhi-esp32/, .codex/ | [Worklog - Nhap XiaoZhi ESP32 va noi context agent](../../docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md) |
+| 2026-10-18 | find-issues / review source hiện tại | find-issues | M02 personal schedule, meal plan và lifestyle schedule | [Worklog - Rà soát luồng tạo lịch trình mới](../../docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md) |
+| 2026-10-18 | coding / test / docs | coding | M02 PERSONAL_SCHEDULE_AI; tiến độ onboarding và tạo thêm lịch | [Worklog - Lọc món cục bộ trước khi tạo lịch](../../docs/worklog/2026-10-18/004-worklog-local-meal-catalog-prefilter.md) |
+| 2026-10-18 | bugfix, test và docs | supabase-schema | M05 AI / AI Chat / local runtime | [Worklog - Fix timeout chat AI local](../../docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md) |
+| 2026-10-18 | cải tiến luồng hiển thị AI Chat | docs-context | M05 AI / AI Chat / local runtime | [Worklog - Hiển thị câu trả lời AI theo luồng](../../docs/worklog/2026-10-18/006-worklog-ai-chat-incremental-streaming.md) |
+| 2026-10-18 | tính năng giao diện và trạng thái AI Chat | docs-context | M05 AI / AI Chat / SharedPreferences | [Worklog - Xoay vòng câu suy nghĩ cho Nabi Chat](../../docs/worklog/2026-10-18/007-worklog-ai-chat-thinking-phrase-rotation.md) |
+| 2026-10-19 | Coding và kiểm chứng theo plan đã duyệt. | test | GeneratedPlanService, staging request, lọc catalog, panel tiến độ onboarding/tạo lịch thêm. | [Worklog - Tạo lịch theo sự kiện và duyệt món riêng](../../docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md) |
+| 2026-10-19 | Triển khai bugfix và kiểm chứng theo plan đã duyệt. | test | GeneratedPlanService, GeneratedPlanProgressPanel, onboarding retry. | [Worklog - Trạng thái và danh sách món sau lọc](../../docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md) |
+| 2026-10-19 | unknown | docs-context | MealCatalogPrefilter, MealCandidateSelector, GeneratedPlanService, panel tiến độ tạo lịch. | [Worklog - Phân loại món tại chỗ và độ phủ danh sách](../../docs/worklog/2026-10-19/003-worklog-local-classification-candidate-coverage.md) |
+| 2026-10-20 | Điều tra, fix bug, test và QA trên thiết bị thật theo plan đã duyệt. | supabase-schema | local AI runtime, AI schedule generation, onboarding guest, event staging và SQLite. | [Worklog - Fix tạo lịch bằng AI local trên Xiaomi](../../docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md) |

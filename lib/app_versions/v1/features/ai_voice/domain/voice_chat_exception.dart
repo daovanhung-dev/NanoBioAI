@@ -3,6 +3,7 @@ enum VoiceChatFailure {
   temporarilyUnavailable,
   invalidResponse,
   unavailable,
+  unsupportedPlatform,
 }
 
 class VoiceChatException implements Exception {

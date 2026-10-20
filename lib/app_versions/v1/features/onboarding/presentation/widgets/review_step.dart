@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/app_versions/v1/router/router.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/shared/widgets/loading_gen_ai.dart';
+import 'package:nano_app/shared/widgets/generated_plan_progress_panel.dart'
+    show showGeneratedCustomMealDecisionDialog;
 
 import '../../providers/onboarding_provider.dart';
 import '../controllers/onboarding_controller.dart';
@@ -20,6 +23,7 @@ import 'onboarding_stitch_components.dart';
 String onboardingSubmissionErrorMessage(Object error) {
   if (error is AIOverloadedException) return AIOverloadedException.userMessage;
   if (error is OnboardingInitialPlanException) return error.message;
+  if (error is ScheduleMealClassificationException) return error.userMessage;
   if (error is StateError) return error.message.toString();
   return 'Mình chưa thể hoàn tất lúc này. Bạn thử lại nhé.';
 }
@@ -293,6 +297,39 @@ class ReviewStep extends ConsumerWidget {
     );
     try {
       await controller.saveOnboarding();
+      var proposal = ref
+          .read(onboardingProvider)
+          .initialPlanProgress
+          .pendingMealProposal;
+      if (proposal != null && context.mounted) Navigator.of(context).pop();
+      while (proposal != null) {
+        if (!context.mounted) return;
+        final decision = await showGeneratedCustomMealDecisionDialog(
+          context,
+          proposal: proposal,
+        );
+        if (decision == null || !context.mounted) return;
+
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const AIGeneratingPage(
+              progressContent: OnboardingScheduleProgressPanel(),
+            ),
+          ),
+        );
+        try {
+          await controller.respondToPendingCustomMeal(
+            proposal: proposal,
+            approve: decision,
+          );
+        } finally {
+          if (context.mounted) Navigator.of(context).pop();
+        }
+        proposal = ref
+            .read(onboardingProvider)
+            .initialPlanProgress
+            .pendingMealProposal;
+      }
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       final generationSource = ref
           .read(onboardingProvider)

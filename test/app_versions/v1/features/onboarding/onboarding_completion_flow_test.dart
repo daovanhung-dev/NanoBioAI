@@ -12,6 +12,7 @@ import 'package:nano_app/app_versions/v1/features/onboarding/presentation/contro
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
+import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_catalog_prefilter.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
@@ -89,7 +90,36 @@ void main() {
             return ({GeneratedPlanProgressCallback? onProgress}) async {
               callbackCalls++;
               onProgress?.call(
-                const GeneratedPlanProgress(totalDays: 2, savedDays: [1, 2]),
+                GeneratedPlanProgress(
+                  totalDays: 2,
+                  savedDays: [1, 2],
+                  totalEvents: 2,
+                  events: const [
+                    GeneratedPlanEventProgress(
+                      eventId: 'onboarding-day-1',
+                      day: 1,
+                      time: '06:00',
+                      title: 'thời gian thức dậy',
+                      status: 'saved',
+                    ),
+                    GeneratedPlanEventProgress(
+                      eventId: 'onboarding-day-2',
+                      day: 2,
+                      time: '06:00',
+                      title: 'thời gian thức dậy',
+                      status: 'saved',
+                    ),
+                  ],
+                  filteredMealCandidates: [
+                    MealCandidateClassification(
+                      code: 'breakfast-1',
+                      name: 'Cháo gà',
+                      mealType: 'breakfast',
+                      period: MealSchedulePeriod.morning,
+                      role: MealScheduleRole.main,
+                    ),
+                  ],
+                ),
               );
               return const OnboardingCompletionResult.generatedInitialPlan();
             };
@@ -111,6 +141,15 @@ void main() {
       expect(
         container.read(onboardingProvider).initialPlanProgress.percentComplete,
         100,
+      );
+      expect(
+        container
+            .read(onboardingProvider)
+            .initialPlanProgress
+            .filteredMealCandidates
+            .single
+            .name,
+        'Cháo gà',
       );
     });
 

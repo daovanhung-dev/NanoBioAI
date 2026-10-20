@@ -72,7 +72,9 @@ abstract final class MealDetailContentFormatter {
     final catalogClaimsReviewed = detail?.isPlanEligible != false;
     final nutritionIsUnreviewed =
         detailStatus == 'estimated_unverified' ||
-        snapshotStatus == 'estimated_unverified';
+        snapshotStatus == 'estimated_unverified' ||
+        detailStatus == 'not_assessed' ||
+        snapshotStatus == 'not_assessed';
     final useCatalogNutrition =
         detail != null &&
         detailStatus != 'missing_source_data' &&
@@ -154,6 +156,7 @@ abstract final class MealDetailContentFormatter {
           : 'Dinh dưỡng • 1 khẩu phần',
       showNutrition:
           !nutritionIsUnreviewed &&
+          effectiveStatus != 'not_assessed' &&
           effectiveStatus != 'missing_source_data' &&
           _hasAnyNutrition(
             calories: calories,

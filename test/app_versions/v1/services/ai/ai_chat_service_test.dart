@@ -1,197 +1,285 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/utils/logger/terminal_log_sink.dart';
 
 void main() {
-  group('AIChatService', () {
-    test('chuyển sang model fallback khi model chính không tồn tại', () async {
-      final attempts = <String>[];
-      final service = AIChatService(
-        modelNames: const ['retired-model', 'gemini-3.5-flash'],
-        delay: (_) async {},
-        modelCooldown: Duration.zero,
-        textGenerator: ({required modelName, required message}) async {
-          attempts.add(modelName);
-          if (modelName == 'retired-model') {
-            throw const GeminiApiException(
-              statusCode: 404,
-              status: 'NOT_FOUND',
-              message: 'Requested model was not found.',
-            );
-          }
-          return 'Mình khuyên bạn giữ giờ ngủ ổn định và hạn chế cà phê tối.';
-        },
-      );
-
-      final response = await service.sendMessage('Làm sao để ngủ sâu hơn?');
-
-      expect(response, contains('giờ ngủ ổn định'));
-      expect(attempts, ['retired-model', 'gemini-3.5-flash']);
-    });
-
+  group('AIChatService local client', () {
     test(
-      'chuyển lỗi xác thực thành typed exception và không thử model khác',
+      'uses the selected local model contract for text generation',
       () async {
-        final attempts = <String>[];
-        final service = AIChatService(
-          modelNames: const ['gemini-3.5-flash', 'gemini-3.1-flash-lite'],
-          delay: (_) async {},
-          textGenerator: ({required modelName, required message}) async {
-            attempts.add(modelName);
-            throw const GeminiApiException(
-              statusCode: 403,
-              status: 'PERMISSION_DENIED',
-              message: 'API key rejected.',
-            );
+        final client = _FakeAiTextClient(
+          generate: (request) async {
+            expect(request.model, LocalAiTextClient.modelId);
+            expect(request.messages.single.text, 'Làm sao để ngủ sâu hơn?');
+            return 'Mình khuyên bạn giữ giờ ngủ ổn định.';
           },
         );
+        final service = AIChatService(aiClient: client);
 
-        await expectLater(
-          service.sendMessage('Xin chào'),
-          throwsA(isA<AIAuthenticationException>()),
-        );
-        expect(attempts, ['gemini-3.5-flash']);
+        final response = await service.sendMessage('Làm sao để ngủ sâu hơn?');
+
+        expect(response, 'Mình khuyên bạn giữ giờ ngủ ổn định.');
+        expect(client.generateCalls, 1);
       },
     );
 
-    test('chuyển lỗi kết nối thành AINetworkException', () async {
-      final service = AIChatService(
-        modelNames: const ['gemini-3.5-flash'],
-        delay: (_) async {},
-        modelCooldown: Duration.zero,
-        textGenerator: ({required modelName, required message}) async {
-          throw const GeminiApiException(
-            status: 'network_error',
-            message: 'Could not connect to Gemini.',
-          );
-        },
+    test(
+      'preserves the local unsupported-platform error without fallback',
+      () async {
+        final client = _FakeAiTextClient(
+          generate: (_) async => throw const AiInferenceException(
+            status: 'unsupported_platform',
+            message: 'AI trên thiết bị chưa hỗ trợ bản web.',
+          ),
+        );
+        final service = AIChatService(aiClient: client);
+
+        await expectLater(
+          service.sendMessage('Xin chào'),
+          throwsA(isA<AIPlatformUnsupportedException>()),
+        );
+        expect(client.generateCalls, 1);
+      },
+    );
+
+    test(
+      'allows local inference to continue while tokens keep arriving',
+      () async {
+        expect(
+          AIChatRetryPolicy.perAttemptTimeout,
+          const Duration(seconds: 120),
+        );
+        final client = _FakeAiTextClient(
+          generate: (_) async => 'Mình đã nhận được câu hỏi của bạn.',
+          stream: (_) async* {
+            await Future<void>.delayed(const Duration(milliseconds: 35));
+            yield 'Mình đã ';
+            await Future<void>.delayed(const Duration(milliseconds: 35));
+            yield 'nhận được câu hỏi ';
+            await Future<void>.delayed(const Duration(milliseconds: 35));
+            yield 'của bạn.';
+          },
+        );
+        final service = AIChatService(
+          aiClient: client,
+          perAttemptTimeout: const Duration(milliseconds: 60),
+        );
+
+        await expectLater(
+          service.sendMessage('Câu hỏi thử nghiệm ngắn'),
+          completion('Mình đã nhận được câu hỏi của bạn.'),
+        );
+      },
+    );
+
+    test('reports local inference timeout with safe diagnostics', () async {
+      final logLines = <String>[];
+      TerminalLogSink.setTestWriter(logLines.add);
+      addTearDown(() => TerminalLogSink.setTestWriter(null));
+
+      final client = _FakeAiTextClient(
+        generate: (_) async => '',
+        stream: (_) => StreamController<String>().stream,
       );
+      final service = AIChatService(
+        aiClient: client,
+        perAttemptTimeout: const Duration(milliseconds: 20),
+      );
+      const testPrompt = 'synthetic private test prompt';
 
       await expectLater(
-        service.sendMessage('Xin chào'),
-        throwsA(isA<AINetworkException>()),
+        service.sendMessage(testPrompt),
+        throwsA(isA<AILocalInferenceTimeoutException>()),
+      );
+
+      final failureLog = logLines
+          .where((line) => line.contains('RETRY_ATTEMPT_FAILED'))
+          .join('\n');
+      expect(failureLog, contains('model=${LocalAiTextClient.modelId}'));
+      expect(failureLog, contains('status=local_inference_timeout'));
+      expect(failureLog, contains('durationMs='));
+      expect(failureLog, contains('errorType=TimeoutException'));
+      expect(failureLog, isNot(contains(testPrompt)));
+      expect(client.streamCalls, 1);
+    });
+
+    test(
+      'allows a delayed first streaming token within the local timeout',
+      () async {
+        final client = _FakeAiTextClient(
+          generate: (_) async => 'Mình đã nhận được câu hỏi của bạn.',
+          stream: (_) async* {
+            await Future<void>.delayed(const Duration(milliseconds: 35));
+            yield 'Mình đã nhận được câu hỏi của bạn.';
+          },
+        );
+        final service = AIChatService(
+          aiClient: client,
+          perAttemptTimeout: const Duration(milliseconds: 100),
+        );
+        final prepared = await service.prepareMessageStream(
+          'Câu hỏi thử nghiệm',
+        );
+
+        await expectLater(
+          prepared.stream,
+          emitsInOrder(['Mình đã nhận được câu hỏi của bạn.', emitsDone]),
+        );
+        prepared.accept();
+      },
+    );
+
+    test('allows the first local token after a 20 second idle gap', () async {
+      final client = _FakeAiTextClient(
+        generate: (_) async => 'Mình đã nhận được câu hỏi của bạn.',
+        stream: (_) async* {
+          await Future<void>.delayed(const Duration(seconds: 20));
+          yield 'Mình đã nhận được câu hỏi của bạn.';
+        },
+      );
+      final service = AIChatService(aiClient: client);
+
+      await expectLater(
+        service.sendMessage('Câu hỏi thử nghiệm ngắn'),
+        completion('Mình đã nhận được câu hỏi của bạn.'),
       );
     });
 
-    test('giới hạn lịch sử chat ở 16 message gần nhất', () async {
-      final contentLengths = <int>[];
-      final client = GeminiRestClient(
-        apiKey: 'test-api-key-with-safe-length',
-        post:
-            ({
-              required String url,
-              required Map<String, String> headers,
-              required Map<String, Object?> body,
-            }) async {
-              final contents = body['contents'] as List<Object?>;
-              contentLengths.add(contents.length);
-              return const GeminiHttpResponse(
-                statusCode: 200,
-                data: {
-                  'candidates': [
-                    {
-                      'content': {
-                        'parts': [
-                          {
-                            'text':
-                                'Mình đã nhận câu hỏi và sẽ trả lời bằng tiếng Việt.',
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              );
-            },
+    test(
+      'separates model load failures from transient runtime errors',
+      () async {
+        final modelClient = _FakeAiTextClient(
+          generate: (_) async => throw const AiInferenceException(
+            status: 'local_model_load_failed',
+            message: 'Synthetic local model load failure.',
+          ),
+        );
+        final runtimeClient = _FakeAiTextClient(
+          generate: (_) async => throw const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Synthetic runtime failure.',
+          ),
+        );
+
+        await expectLater(
+          AIChatService(
+            aiClient: modelClient,
+          ).sendMessage('Câu hỏi thử nghiệm'),
+          throwsA(isA<AIModelUnavailableException>()),
+        );
+        await expectLater(
+          AIChatService(
+            aiClient: runtimeClient,
+          ).sendMessage('Câu hỏi thử nghiệm'),
+          throwsA(isA<AIOverloadedException>()),
+        );
+        expect(modelClient.streamCalls, 1);
+        expect(runtimeClient.streamCalls, 1);
+      },
+    );
+
+    test('limits history to 16 recent messages', () async {
+      final messageCounts = <int>[];
+      final client = _FakeAiTextClient(
+        generate: (request) async {
+          messageCounts.add(request.messages.length);
+          return 'Mình đã nhận câu hỏi và sẽ trả lời bằng tiếng Việt.';
+        },
       );
-      final service = AIChatService(
-        modelNames: const ['gemini-3.5-flash'],
-        geminiClient: client,
-      );
+      final service = AIChatService(aiClient: client);
 
       for (var index = 0; index < 12; index++) {
         await service.sendMessage('Câu hỏi số $index về giấc ngủ');
       }
 
-      expect(contentLengths, hasLength(12));
-      expect(contentLengths.last, 17);
-      expect(contentLengths.every((length) => length <= 17), isTrue);
+      expect(messageCounts, hasLength(12));
+      expect(messageCounts.last, 17);
+      expect(messageCounts.every((length) => length <= 17), isTrue);
     });
 
-    test('sanitizes AI display text without changing the original question', () async {
+    test('does not retain output when local generation is truncated', () async {
+      final client = _FakeAiTextClient(
+        generate: (_) async => throw const AiInferenceException(
+          status: 'output_truncated',
+          message: 'Local model output was truncated.',
+        ),
+      );
+      final service = AIChatService(aiClient: client);
+
+      await expectLater(
+        service.sendMessage('Câu hỏi dài'),
+        throwsA(isA<AIResponseInvalidException>()),
+      );
+      expect(client.generateCalls, 1);
+    });
+
+    test('sanitizes AI text without changing the original question', () async {
       String? receivedMessage;
-      final service = AIChatService(
-        modelNames: const ['gemini-3.5-flash'],
-        textGenerator: ({required modelName, required message}) async {
-          receivedMessage = message;
+      final client = _FakeAiTextClient(
+        generate: (request) async {
+          receivedMessage = request.messages.last.text;
           return 'Xin chào *bạn* & ^ 😊.';
         },
       );
+      final service = AIChatService(aiClient: client);
 
       final response = await service.sendMessage('Giữ nguyên *câu hỏi* & ^');
 
       expect(receivedMessage, 'Giữ nguyên *câu hỏi* & ^');
       expect(response, 'Xin chào bạn.');
     });
-
-    test('does not retain or expose partial MAX_TOKENS output', () async {
-      var requestCount = 0;
-      final requestBodies = <Map<String, Object?>>[];
-      final client = GeminiRestClient(
-        apiKey: 'test-api-key-with-safe-length',
-        post: ({required url, required headers, required body}) async {
-          requestCount++;
-          requestBodies.add(body);
-          if (requestCount == 1) {
-            return const GeminiHttpResponse(
-              statusCode: 200,
-              data: {
-                'candidates': [
-                  {
-                    'content': {
-                      'parts': [
-                        {'text': 'Phần trả lời chưa hoàn tất'},
-                      ],
-                    },
-                    'finishReason': 'MAX_TOKENS',
-                  },
-                ],
-              },
-            );
-          }
-          return const GeminiHttpResponse(
-            statusCode: 200,
-            data: {
-              'candidates': [
-                {
-                  'content': {
-                    'parts': [
-                      {'text': 'Câu trả lời hoàn chỉnh.'},
-                    ],
-                  },
-                },
-              ],
-            },
-          );
-        },
-      );
-      final service = AIChatService(
-        modelNames: const ['gemini-test'],
-        geminiClient: client,
-        delay: (_) async {},
-      );
-
-      await expectLater(
-        service.sendMessage('Câu hỏi đầu tiên'),
-        throwsA(isA<AIResponseInvalidException>()),
-      );
-      final response = await service.sendMessage('Câu hỏi thứ hai');
-
-      expect(response, 'Câu trả lời hoàn chỉnh.');
-      expect(requestCount, 2);
-      expect(requestBodies.first['contents'], hasLength(1));
-      expect(requestBodies.last['contents'], hasLength(1));
-    });
   });
+}
+
+class _FakeAiTextClient implements AiTextClient {
+  _FakeAiTextClient({required this.generate, this.stream});
+
+  final Future<String> Function(_AiRequest request) generate;
+  final Stream<String> Function(_AiRequest request)? stream;
+  int generateCalls = 0;
+  int streamCalls = 0;
+
+  @override
+  Future<String> generateText({
+    required String model,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) {
+    generateCalls++;
+    return generate(_AiRequest(model: model, messages: messages));
+  }
+
+  @override
+  Stream<String> streamText({
+    required String model,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
+    String? systemInstruction,
+  }) async* {
+    streamCalls++;
+    final customStream = stream;
+    if (customStream != null) {
+      yield* customStream(_AiRequest(model: model, messages: messages));
+      return;
+    }
+    yield await generateText(
+      model: model,
+      messages: messages,
+      generationConfig: generationConfig,
+      systemInstruction: systemInstruction,
+    );
+  }
+}
+
+class _AiRequest {
+  const _AiRequest({required this.model, required this.messages});
+
+  final String model;
+  final List<AiMessage> messages;
 }

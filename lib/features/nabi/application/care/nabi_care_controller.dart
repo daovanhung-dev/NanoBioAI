@@ -44,7 +44,7 @@ final nabiCareRepositoryProvider = Provider<NabiCareRepository>(
 );
 
 final nabiCareAiGatewayProvider = Provider<NabiCareAiGateway>(
-  (_) => GeminiNabiCareAiGateway(),
+  (_) => LocalNabiCareAiGateway(),
 );
 
 final nabiCareOrchestratorProvider = Provider<NabiCareOrchestrator>((ref) {
@@ -85,6 +85,14 @@ class NabiCareController extends Notifier<NabiCareState> {
           .evaluate(subjectId: subjectId, trigger: trigger, force: force);
       state = NabiCareState(status: NabiCareLoadStatus.ready, result: result);
       return result;
+    } on NabiCareAiUnavailableException catch (error) {
+      state = state.copyWith(
+        status: NabiCareLoadStatus.error,
+        errorCode: error.status == 'unsupported_platform'
+            ? 'unsupported_platform'
+            : 'care_analysis_failed',
+      );
+      return null;
     } catch (_) {
       state = state.copyWith(
         status: NabiCareLoadStatus.error,

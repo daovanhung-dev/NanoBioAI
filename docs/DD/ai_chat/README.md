@@ -1,5 +1,11 @@
 # DD — AI Chat
 
+> Runtime update 2026-10-18: NanoBioAI now uses the selected on-device model
+> through `LocalAiTextClient` for chat and Voice Chat. The Gemini/API-key and
+> Edge transport described in older DD sections is historical and is not on the
+> app runtime route. Supabase quota/auth behavior remains in place; web AI is
+> unavailable because the local runtime is native-only.
+
 | Attribute | Value |
 |---|---|
 | Module Code | AI_CHAT |
@@ -17,14 +23,13 @@
 
 ## Purpose
 Cho phép Member hỏi đáp AI bằng chữ theo quota và cung cấp hội thoại giọng nói
-tuần tự riêng cho Plus/FamilyPlus. Voice gọi Gemini REST trực tiếp từ Flutter,
+tuần tự riêng cho Plus/FamilyPlus. Voice dùng model AI local trên thiết bị,
 cho phép chọn endpointing 0,2/0,5/1/2 giây sau lời nói; đây không phải
-Gemini response latency. Mỗi lượt đặt hard cap nghe 3 phút nhưng final,
+model response latency. Mỗi lượt đặt hard cap nghe 3 phút nhưng final,
 endpointing hoặc recognizer hệ điều hành có thể dừng sớm hơn. Guest, Free và mọi
 trạng thái quyền không xác định đều bị chặn trước khi khởi tạo micro/controller.
-User/history item Voice tối đa 6.000 ký tự; Gemini response vẫn tối đa 2.000 ký
-tự nhưng NanoBio không đặt app-owned output token cap. Giới hạn nội tại của
-Gemini và safety bound kích thước response vẫn được giữ.
+User/history item Voice tối đa 6.000 ký tự; response tối đa 2.000 ký tự. Local
+model context limits and safety validation remain in force.
 
 ## Documents in This Module
 - [Overall](./Overall.md)
@@ -47,8 +52,7 @@ Gemini và safety bound kích thước response vẫn được giữ.
 - MEMBERSHIP_QUOTA: access/quota.
 - AUTH_PROFILE_SYNC: session.
 - AUDIT_SECURITY: safe logging.
-- Gemini API: Voice gọi trực tiếp qua `GeminiRestClient`; key lấy từ `AppEnv` và
-  có thể bị trích xuất khỏi APK.
+- Local AI runtime: text and voice use the model selected during device setup.
 
 ## Answered Questions
 | ID | Question | Decision | Status |

@@ -1,5 +1,10 @@
 # M31 — SLEEP_SAFETY_MONITORING
 
+> Runtime update 2026-10-18: optional sleep analysis now uses the selected
+> on-device model through `LocalAiTextClient`. Gemini references in older M31
+> design material are historical; app analysis does not send sleep context to
+> an AI service.
+
 > **Source BD:** `docs/BD/sleep_safety/BD_NanoBio_Sleep_Safety_M31_v1.3.md`
 > **BD ID:** `BD-NANOBIO-SLEEP-SAFETY-001`
 > **Current decision:** Explicit help and the 15-second no-response timeout use
@@ -52,7 +57,8 @@ dialer handoff, never a connected call.
 - Edge Functions: `supabase/functions/sleep-safety-*`
 - M09 notification bootstrap is reused only for scheduled arming navigation;
   sleep-safety alert actions do not mutate M09 task state.
-- Gemini calls reuse `lib/app_versions/v1/services/ai/gemini_rest_client.dart`.
+- Sleep analysis uses `lib/app_versions/v1/services/ai/ai_text_client.dart`
+  with the local runtime implementation.
 
 ## Direct help-call behavior
 
@@ -92,8 +98,9 @@ dialer handoff, never a connected call.
 - Seven-night trend uses the user's own local baseline; it is not a clinical
   reference range.
 - Morning check-in values are self-reported and are never inferred from silence.
-- Gemini receives sanitized JSON only. No raw audio, transcript, contact phone,
-  user id, session id, token, or API key is included in the AI payload.
+- The selected on-device model receives sanitized wellness JSON only. No raw
+  audio, transcript, contact phone, user id, session id, token, or API key is
+  sent to an AI service.
 - No raw audio persistence/upload, medical diagnosis, automatic 115 call, local
   paid-access inference, silent schedule-triggered microphone start, or
   fabricated REM/N1/N2/N3/deep-sleep data.

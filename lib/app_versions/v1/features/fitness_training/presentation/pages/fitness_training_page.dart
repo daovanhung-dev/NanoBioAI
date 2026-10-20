@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/body_metrics/domain/entities/basic_health_calculator_models.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -718,7 +720,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Đồng ý tạo gợi ý bằng AI'),
       subtitle: Text(
-        'Gemini nhận mục tiêu, nơi tập, thiết bị, lịch tập và giới hạn vận động đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'}. Không gửi ngày sinh, tên, ghi chú hồ sơ, dị ứng, thực đơn hoặc giờ ngủ.',
+        'Model AI trên thiết bị xử lý mục tiêu, nơi tập, thiết bị, lịch tập và giới hạn vận động đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'}. Không gửi ngày sinh, tên, ghi chú hồ sơ, dị ứng, thực đơn hoặc giờ ngủ tới dịch vụ AI từ xa.',
       ),
     ),
   );
@@ -802,6 +804,12 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
   }
 
   String _friendlyError(Object error) {
+    if (AIPlatformUnsupportedException.matches(error)) {
+      return AIPlatformUnsupportedException.userMessage;
+    }
+    if (error is AiInferenceException && error.isOutputTruncated) {
+      return AIModelContextLimitException.userMessage;
+    }
     if (error is FitnessWorkoutTimeResolutionRequired) {
       return _noAvailableWorkoutTimeMessage(error.resolution);
     }
@@ -827,6 +835,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
           'AI chưa tạo được lịch hợp lệ. Chương trình hiện tại vẫn được giữ nguyên; bạn có thể thử lại.',
       };
     }
+    if (error is AiInferenceException) return error.message;
     return 'Kết nối đang bận hoặc phản hồi chưa phù hợp. Chương trình hiện tại vẫn được giữ nguyên; bạn có thể thử lại.';
   }
 

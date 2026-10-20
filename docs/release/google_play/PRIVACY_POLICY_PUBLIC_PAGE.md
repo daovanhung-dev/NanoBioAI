@@ -30,17 +30,19 @@ We process only the data needed for a feature that you choose to use:
 | --- | --- | --- |
 | Account credentials, profile and onboarding choices | Sign-in, account access, personalization and sync | NanoBio Supabase project |
 | Health/body metrics, meals, exercise, schedules and sleep entries | Personal wellness plans, summaries and reminders | Local app database; Supabase when cloud sync is enabled |
-| AI prompts, replies and bounded plan context | Generate wellness guidance and summaries | NanoBio Edge Function and the configured AI provider |
+| AI prompts, replies and bounded plan context | Generate wellness guidance and summaries | Processed by the selected model on your device; saved feature data may sync to NanoBio Supabase when cloud sync is enabled |
 | AI safety report (reason, bounded message snapshot, optional note) | Moderation, safety review and abuse prevention | NanoBio report endpoint and moderation table |
-| Camera or gallery image selected by you | Food scan or another feature you explicitly submit | The endpoint for that feature; retention must match the feature result shown to you |
+| Camera or gallery image selected by you | Food scan or another feature you explicitly submit | Processed on your device by the local vision model; food scan images remain in app storage on your device |
 | Microphone-derived Sleep Safety signal | User-enabled sleep sound monitoring | Processed by the Android foreground service; raw audio is not intended to be stored or uploaded |
 | Installation/device identifier and diagnostics | Rate limiting, report correlation and reliability | NanoBio backend/observability where configured |
 | Google Play purchase token and subscription state | Verify membership and reconcile purchases | Google Play and NanoBio verification endpoint; the database keeps a token hash rather than the raw token |
 | Family, emergency, referral and Sale data | Features you explicitly use and operational reconciliation | NanoBio Supabase project and authorized staff paths |
 
-The Gemini/API credential used for AI generation is held only as a server-side
-Edge Function secret. It is not placed in the Android app, client logs, or a
-Dart/Gradle runtime channel.
+AI text and image inference runs locally on the supported device. NanoBioAI does
+not send AI prompts, replies, or Food Scan images to a remote AI provider. Model
+files are downloaded from Hugging Face when you select a text model or first
+use Food Scan. Supabase still supports account, sync, data, and existing quota
+features; those services may require a network connection.
 
 ## Sleep Safety and microphone disclosure
 
@@ -54,8 +56,8 @@ denying permission leaves the rest of the app usable.
 ## Sharing and service providers
 
 NanoBio shares data only with the providers needed for the feature you invoke:
-Supabase for authentication/storage/database, the configured AI provider for
-AI generation, Google Play for purchase verification, and infrastructure or
+Supabase for authentication/storage/database and existing quota features,
+Google Play for purchase verification, and infrastructure or
 observability providers approved by the operator. We do not sell personal
 data. The legal owner must insert the actual provider names, data-processing
 terms, and contact details before publication.

@@ -31,8 +31,8 @@ const AIChatFAB(
 Có thể truyền `onPressed` để caller kiểm soát navigation. Motion policy đến từ
 `AppMotionScope`; feedback đến từ `AppFeedbackService`.
 
-Không gọi status dot là bằng chứng live Gemini/network availability: widget
-không đọc AI config hoặc network state.
+Không xem status dot là bằng chứng model local đã được cài hoặc sẵn sàng: widget
+không đọc trạng thái model hoặc runtime.
 
 Verification: static reachability; visual/device behavior `UNVERIFIED` nếu
 không có test/device evidence riêng.

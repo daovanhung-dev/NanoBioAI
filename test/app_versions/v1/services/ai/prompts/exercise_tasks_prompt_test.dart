@@ -18,7 +18,7 @@ void main() {
     expect(prompt, isNot(contains('"day": 1')));
     expect(prompt, contains('ex_walk_relaxed: 2 lần'));
     expect(prompt, contains('ex_mobility_easy: 1 lần'));
-    expect(prompt, contains('hai mã khác nhau'));
-    expect(prompt, contains('không chọn mã đã dùng 2 lần'));
+    expect(prompt, contains('2 different codes'));
+    expect(prompt, contains('Avoid codes used at least twice'));
   });
 }

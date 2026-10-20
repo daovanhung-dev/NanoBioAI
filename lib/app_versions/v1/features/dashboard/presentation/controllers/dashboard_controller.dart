@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:nano_app/app_versions/v1/features/daily_health_tracking/providers/daily_health_tracking_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
@@ -29,6 +30,10 @@ final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
 
 final dashboardControllerProvider =
     AsyncNotifierProvider<DashboardController, void>(DashboardController.new);
+
+final additionalPlanProgressProvider = StateProvider<GeneratedPlanProgress>(
+  (ref) => GeneratedPlanProgress(totalDays: 7),
+);
 
 class DashboardController extends AsyncNotifier<void> {
   static const _tag = 'DASHBOARD_CONTROLLER';
@@ -92,6 +97,8 @@ class DashboardController extends AsyncNotifier<void> {
     requireAuthenticatedGeneratedPlanUser(authUserId);
 
     state = const AsyncLoading<void>();
+    ref.read(additionalPlanProgressProvider.notifier).state =
+        GeneratedPlanProgress(totalDays: 7);
     try {
       final result = await ref
           .read(generatedPlanServiceProvider)
@@ -100,7 +107,16 @@ class DashboardController extends AsyncNotifier<void> {
             days: 7,
             startDate: _today(),
             appendAfterExisting: true,
+            onProgress: (progress) {
+              ref.read(additionalPlanProgressProvider.notifier).state =
+                  progress;
+            },
           );
+
+      if (result.awaitingMealApproval) {
+        state = const AsyncData<void>(null);
+        return result;
+      }
 
       ref.invalidate(dashboardProvider);
       ref.invalidate(dashboardDynamicProvider);
@@ -116,6 +132,48 @@ class DashboardController extends AsyncNotifier<void> {
         changedFields: const {'meal_plan', 'schedule'},
       );
 
+      state = const AsyncData<void>(null);
+      return result;
+    } catch (error, stackTrace) {
+      state = AsyncError<void>(error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<GeneratedPlanResult> respondToAdditionalPlanMeal({
+    required String requestId,
+    required GeneratedCustomMealProposal proposal,
+    required bool approve,
+  }) async {
+    final authUserId = currentSupabaseUserIdOrNull();
+    requireAuthenticatedGeneratedPlanUser(authUserId);
+    state = const AsyncLoading<void>();
+    try {
+      final result = await ref
+          .read(generatedPlanServiceProvider)
+          .respondToCustomMealProposal(
+            requestId: requestId,
+            proposal: proposal,
+            approve: approve,
+            onProgress: (progress) {
+              ref.read(additionalPlanProgressProvider.notifier).state =
+                  progress;
+            },
+          );
+      if (!result.awaitingMealApproval) {
+        ref.invalidate(dashboardProvider);
+        ref.invalidate(dashboardDynamicProvider);
+        ref.invalidate(lifestyleScheduleControllerProvider);
+        ref.invalidate(mealPlanControllerProvider);
+        ref.invalidate(getMealPlanProvider);
+        ref.invalidate(nutritionSummaryProvider);
+        await _publishHealthEvent(
+          type: HealthEventType.mealPlanUpdated,
+          subjectId: authUserId,
+          sourceFeature: 'dashboard.additional_plan',
+          changedFields: const {'meal_plan', 'schedule'},
+        );
+      }
       state = const AsyncData<void>(null);
       return result;
     } catch (error, stackTrace) {

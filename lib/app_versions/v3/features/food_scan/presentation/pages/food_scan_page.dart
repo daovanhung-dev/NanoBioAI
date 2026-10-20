@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/providers/nutrition_provider.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
+import 'package:nano_app/core/ai_local/local_ai_model_catalog.dart';
+import 'package:nano_app/core/ai_local/local_ai_runtime_service.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
@@ -44,7 +46,8 @@ class FoodScanPage extends ConsumerWidget {
         FoodScanAccessStatus.authRequired => _AccessRequired(
           icon: Icons.lock_outline_rounded,
           title: 'Cần đăng nhập',
-          message: 'Quét món ăn cần tài khoản NanoBio để lưu nhật ký dinh dưỡng.',
+          message:
+              'Quét món ăn cần tài khoản NanoBio để lưu nhật ký dinh dưỡng.',
           actionLabel: 'Đăng nhập',
           onAction: () => context.push(V2RoutePaths.login),
         ),
@@ -59,7 +62,9 @@ class FoodScanPage extends ConsumerWidget {
             planCode: MembershipUpgradePlan.plus,
           ),
         ),
-        FoodScanAccessStatus.allowed => _FoodScanWorkbench(userId: value.userId!),
+        FoodScanAccessStatus.allowed => _FoodScanWorkbench(
+          userId: value.userId!,
+        ),
       },
     );
   }
@@ -147,7 +152,8 @@ class _FoodScanWorkbench extends ConsumerWidget {
                   },
                 ),
         ),
-        if (state.imagePath != null) _ImagePreview(userId: userId, state: state),
+        if (state.imagePath != null)
+          _ImagePreview(userId: userId, state: state),
         if (state.busy) _AnalysisProgress(phase: state.phase),
         if (state.errorMessage != null)
           _MessageCard(
@@ -157,10 +163,7 @@ class _FoodScanWorkbench extends ConsumerWidget {
             color: colors.warning,
           ),
         if (state.result != null)
-          _FoodScanResultView(
-            userId: userId,
-            state: state,
-          ),
+          _FoodScanResultView(userId: userId, state: state),
         MedicalSurfaceCard(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +172,7 @@ class _FoodScanWorkbench extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  'Ảnh và lịch sử quét được giữ trên thiết bị. Trước khi gửi ảnh tới AI, Nabi mã hóa lại ảnh JPEG để loại metadata EXIF/GPS. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
+                  'Ảnh và thông tin hồ sơ sức khỏe liên quan được xử lý trên thiết bị, không gửi tới dịch vụ AI. Lần đầu quét, Nabi tải thêm model nhận diện ảnh khoảng 1,58 GB; hãy dùng Wi-Fi và bảo đảm đủ dung lượng. Ảnh JPEG được làm sạch metadata EXIF/GPS. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                     height: 1.5,
@@ -198,7 +201,7 @@ class _ConsentCard extends StatelessWidget {
           Text('Phân tích món ăn bằng AI', style: AppTextStyles.heading4),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nabi sẽ gửi ảnh món ăn bạn chọn tới dịch vụ AI để nhận diện thực phẩm và ước tính dinh dưỡng. Để cá nhân hóa đánh giá, Nabi cũng gửi phần hồ sơ sức khỏe liên quan như bệnh đã khai báo, dị ứng, thuốc/điều trị, chỉ số sức khỏe và mục tiêu dinh dưỡng; không gửi email, số điện thoại, token hay khóa API. Ảnh được loại metadata vị trí trước khi gửi. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
+            'Nabi xử lý ảnh món ăn và phần hồ sơ sức khỏe liên quan ngay trên thiết bị để nhận diện thực phẩm, ước tính dinh dưỡng và cá nhân hóa đánh giá. Không gửi ảnh hoặc hồ sơ này tới dịch vụ AI. Lần đầu quét, ứng dụng tải thêm model nhận diện ảnh khoảng 1,58 GB; bạn nên dùng Wi-Fi và bảo đảm đủ dung lượng. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
             style: AppTextStyles.bodyMedium.copyWith(height: 1.55),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -306,10 +309,19 @@ class _ImagePreview extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           if (state.result == null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Text(
+                'Lần phân tích đầu tiên sẽ tải model ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}. Khuyến nghị thiết bị có ít nhất ${_formatAiBytes(localAiVisionRecommendedRamBytes)} RAM; ảnh được giữ trên thiết bị.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: context.semanticColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+            ),
+          if (state.result == null)
             FilledButton.icon(
-              onPressed: state.busy
-                  ? null
-                  : () => controller.analyze(userId),
+              onPressed: state.busy ? null : () => controller.analyze(userId),
               icon: const Icon(Icons.auto_awesome_rounded),
               label: const Text('Phân tích món ăn'),
             ),
@@ -326,28 +338,67 @@ class _AnalysisProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = switch (phase) {
-      FoodScanPhase.selectingImage => 'Nabi đang chuẩn bị ảnh…',
-      FoodScanPhase.analyzingVision => 'Nabi đang nhận diện món ăn…',
-      FoodScanPhase.resolvingNutrition => 'Nabi đang tính dưỡng chất…',
-      FoodScanPhase.evaluatingHealth => 'Nabi đang đối chiếu hồ sơ sức khỏe…',
-      FoodScanPhase.saving => 'Nabi đang lưu bữa ăn và đồng bộ…',
-      _ => 'Nabi đang xử lý…',
-    };
-    return MedicalSurfaceCard(
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 28,
-            height: 28,
-            child: CircularProgressIndicator(strokeWidth: 3),
+    return ValueListenableBuilder<LocalAiRuntimeProgress?>(
+      valueListenable: LocalAiRuntimeService.instance.progress,
+      builder: (context, progress, _) {
+        final downloadingVision =
+            phase == FoodScanPhase.analyzingVision &&
+            progress?.stage == LocalAiRuntimeStage.downloading &&
+            progress?.modelId == localAiVisionModelId;
+        final openingVision =
+            phase == FoodScanPhase.analyzingVision &&
+            progress?.stage == LocalAiRuntimeStage.loading &&
+            progress?.modelId == localAiVisionModelId;
+        final fraction = progress?.fraction?.clamp(0.0, 1.0);
+        final percent = fraction == null ? null : (fraction * 100).round();
+        final byteProgress = progress == null || progress.totalBytes <= 0
+            ? ''
+            : ' (${_formatAiBytes(progress.receivedBytes)} / ${_formatAiBytes(progress.totalBytes)})';
+        final label = downloadingVision
+            ? 'Đang tải model ảnh lần đầu…${percent == null ? '' : ' $percent%$byteProgress'}'
+            : openingVision
+            ? 'Nabi đang mở model nhận diện ảnh…'
+            : switch (phase) {
+                FoodScanPhase.selectingImage => 'Nabi đang chuẩn bị ảnh…',
+                FoodScanPhase.analyzingVision => 'Nabi đang nhận diện món ăn…',
+                FoodScanPhase.resolvingNutrition =>
+                  'Nabi đang tính dưỡng chất…',
+                FoodScanPhase.evaluatingHealth =>
+                  'Nabi đang đối chiếu hồ sơ sức khỏe…',
+                FoodScanPhase.saving => 'Nabi đang lưu bữa ăn và đồng bộ…',
+                _ => 'Nabi đang xử lý…',
+              };
+        return MedicalSurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(strokeWidth: 3),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(child: Text(label, style: AppTextStyles.bodyMedium)),
+                ],
+              ),
+              if (downloadingVision) ...[
+                const SizedBox(height: AppSpacing.md),
+                LinearProgressIndicator(value: fraction),
+              ],
+            ],
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(label, style: AppTextStyles.bodyMedium)),
-        ],
-      ),
+        );
+      },
     );
   }
+}
+
+String _formatAiBytes(int bytes) {
+  final gibibytes = bytes / (1024 * 1024 * 1024);
+  if (gibibytes >= 1) return '${gibibytes.toStringAsFixed(2)} GB';
+  return '${(bytes / (1024 * 1024)).round()} MB';
 }
 
 class _FoodScanResultView extends ConsumerWidget {
@@ -376,7 +427,10 @@ class _FoodScanResultView extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Ước tính bữa ăn', style: AppTextStyles.heading4),
+                    child: Text(
+                      'Ước tính bữa ăn',
+                      style: AppTextStyles.heading4,
+                    ),
                   ),
                   MedicalStatusPill(
                     label: result.inputType,
@@ -395,13 +449,17 @@ class _FoodScanResultView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Một con số ước tính từ ảnh • ${result.items.length} thành phần được nhận diện',
-                style: AppTextStyles.bodySmall.copyWith(color: colors.textSecondary),
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
               if (result.analysisConfidence < .65) ...[
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   'Nabi chưa chắc chắn về một số thành phần. Bạn nên chỉnh tên món hoặc khối lượng trước khi lưu.',
-                  style: AppTextStyles.bodySmall.copyWith(color: colors.warning),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.warning,
+                  ),
                 ),
               ],
             ],
@@ -471,7 +529,9 @@ class _FoodScanResultView extends ConsumerWidget {
                   onPressed: state.busy
                       ? null
                       : () async {
-                          final saved = await controller.confirmConsumed(userId);
+                          final saved = await controller.confirmConsumed(
+                            userId,
+                          );
                           if (saved == null) return;
                           ref.invalidate(nutritionSummaryProvider);
                           if (!context.mounted) return;
@@ -527,7 +587,9 @@ class _FoodScanResultView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               TextField(
                 controller: grams,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Khối lượng',
                   suffixText: 'g',
@@ -558,11 +620,15 @@ class _FoodScanResultView extends ConsumerWidget {
     if (weight == null || weight <= 0 || weight > 5000) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Khối lượng cần nằm trong khoảng 1–5000 g.')),
+        const SnackBar(
+          content: Text('Khối lượng cần nằm trong khoảng 1–5000 g.'),
+        ),
       );
       return;
     }
-    await ref.read(foodScanControllerProvider.notifier).updateItem(
+    await ref
+        .read(foodScanControllerProvider.notifier)
+        .updateItem(
           userId: userId,
           itemId: item.id,
           name: name.text,
@@ -570,7 +636,9 @@ class _FoodScanResultView extends ConsumerWidget {
           portionDescription: portion.text.trim(),
         );
     if (!context.mounted) return;
-    await ref.read(foodScanControllerProvider.notifier).reevaluateHealth(userId);
+    await ref
+        .read(foodScanControllerProvider.notifier)
+        .reevaluateHealth(userId);
   }
 }
 
@@ -633,7 +701,9 @@ class _FoodItemCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             Text(
               'Nguyên liệu khả kiến: ${item.ingredients.join(', ')}',
-              style: AppTextStyles.bodySmall.copyWith(color: colors.textSecondary),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: colors.textSecondary,
+              ),
             ),
           ],
           const SizedBox(height: AppSpacing.md),
@@ -671,42 +741,81 @@ class _NutritionCard extends StatelessWidget {
       ('Protein', '${nutrition.proteinG.toStringAsFixed(1)} g'),
       ('Carbohydrate', '${nutrition.carbohydratesG.toStringAsFixed(1)} g'),
       ('Chất béo', '${nutrition.fatG.toStringAsFixed(1)} g'),
-      if (nutrition.fiberG != null) ('Chất xơ', '${nutrition.fiberG!.toStringAsFixed(1)} g'),
-      if (nutrition.sugarG != null) ('Đường', '${nutrition.sugarG!.toStringAsFixed(1)} g'),
-      if (nutrition.sodiumMg != null) ('Natri', '${nutrition.sodiumMg!.round()} mg'),
+      if (nutrition.fiberG != null)
+        ('Chất xơ', '${nutrition.fiberG!.toStringAsFixed(1)} g'),
+      if (nutrition.sugarG != null)
+        ('Đường', '${nutrition.sugarG!.toStringAsFixed(1)} g'),
+      if (nutrition.sodiumMg != null)
+        ('Natri', '${nutrition.sodiumMg!.round()} mg'),
       if (nutrition.saturatedFatG != null)
-        ('Chất béo bão hòa', '${nutrition.saturatedFatG!.toStringAsFixed(1)} g'),
+        (
+          'Chất béo bão hòa',
+          '${nutrition.saturatedFatG!.toStringAsFixed(1)} g',
+        ),
       if (nutrition.monounsaturatedFatG != null)
-        ('Chất béo không bão hòa đơn', '${nutrition.monounsaturatedFatG!.toStringAsFixed(1)} g'),
+        (
+          'Chất béo không bão hòa đơn',
+          '${nutrition.monounsaturatedFatG!.toStringAsFixed(1)} g',
+        ),
       if (nutrition.polyunsaturatedFatG != null)
-        ('Chất béo không bão hòa đa', '${nutrition.polyunsaturatedFatG!.toStringAsFixed(1)} g'),
-      if (nutrition.transFatG != null) ('Trans fat', '${nutrition.transFatG!.toStringAsFixed(1)} g'),
-      if (nutrition.cholesterolMg != null) ('Cholesterol', '${nutrition.cholesterolMg!.round()} mg'),
-      if (nutrition.potassiumMg != null) ('Kali', '${nutrition.potassiumMg!.round()} mg'),
-      if (nutrition.calciumMg != null) ('Canxi', '${nutrition.calciumMg!.round()} mg'),
-      if (nutrition.ironMg != null) ('Sắt', '${nutrition.ironMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.magnesiumMg != null) ('Magie', '${nutrition.magnesiumMg!.round()} mg'),
-      if (nutrition.phosphorusMg != null) ('Phốt pho', '${nutrition.phosphorusMg!.round()} mg'),
-      if (nutrition.zincMg != null) ('Kẽm', '${nutrition.zincMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.copperMg != null) ('Đồng', '${nutrition.copperMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.manganeseMg != null) ('Mangan', '${nutrition.manganeseMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.seleniumMcg != null) ('Selen', '${nutrition.seleniumMcg!.toStringAsFixed(1)} µg'),
-      if (nutrition.vitaminAMcgRae != null) ('Vitamin A', '${nutrition.vitaminAMcgRae!.round()} µg RAE'),
-      if (nutrition.vitaminCMg != null) ('Vitamin C', '${nutrition.vitaminCMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.vitaminDMcg != null) ('Vitamin D', '${nutrition.vitaminDMcg!.toStringAsFixed(1)} µg'),
-      if (nutrition.vitaminEMg != null) ('Vitamin E', '${nutrition.vitaminEMg!.toStringAsFixed(1)} mg'),
-      if (nutrition.vitaminKMcg != null) ('Vitamin K', '${nutrition.vitaminKMcg!.toStringAsFixed(1)} µg'),
-      if (nutrition.vitaminB1Mg != null) ('Vitamin B1', '${nutrition.vitaminB1Mg!.toStringAsFixed(2)} mg'),
-      if (nutrition.vitaminB2Mg != null) ('Vitamin B2', '${nutrition.vitaminB2Mg!.toStringAsFixed(2)} mg'),
-      if (nutrition.vitaminB3Mg != null) ('Vitamin B3', '${nutrition.vitaminB3Mg!.toStringAsFixed(1)} mg'),
-      if (nutrition.vitaminB5Mg != null) ('Vitamin B5', '${nutrition.vitaminB5Mg!.toStringAsFixed(1)} mg'),
-      if (nutrition.vitaminB6Mg != null) ('Vitamin B6', '${nutrition.vitaminB6Mg!.toStringAsFixed(2)} mg'),
-      if (nutrition.biotinB7Mcg != null) ('Vitamin B7', '${nutrition.biotinB7Mcg!.toStringAsFixed(1)} µg'),
-      if (nutrition.folateB9Mcg != null) ('Vitamin B9', '${nutrition.folateB9Mcg!.round()} µg'),
-      if (nutrition.vitaminB12Mcg != null) ('Vitamin B12', '${nutrition.vitaminB12Mcg!.toStringAsFixed(1)} µg'),
-      if (nutrition.cholineMg != null) ('Choline', '${nutrition.cholineMg!.round()} mg'),
-      if (nutrition.omega3G != null) ('Omega-3', '${nutrition.omega3G!.toStringAsFixed(2)} g'),
-      if (nutrition.omega6G != null) ('Omega-6', '${nutrition.omega6G!.toStringAsFixed(2)} g'),
+        (
+          'Chất béo không bão hòa đa',
+          '${nutrition.polyunsaturatedFatG!.toStringAsFixed(1)} g',
+        ),
+      if (nutrition.transFatG != null)
+        ('Trans fat', '${nutrition.transFatG!.toStringAsFixed(1)} g'),
+      if (nutrition.cholesterolMg != null)
+        ('Cholesterol', '${nutrition.cholesterolMg!.round()} mg'),
+      if (nutrition.potassiumMg != null)
+        ('Kali', '${nutrition.potassiumMg!.round()} mg'),
+      if (nutrition.calciumMg != null)
+        ('Canxi', '${nutrition.calciumMg!.round()} mg'),
+      if (nutrition.ironMg != null)
+        ('Sắt', '${nutrition.ironMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.magnesiumMg != null)
+        ('Magie', '${nutrition.magnesiumMg!.round()} mg'),
+      if (nutrition.phosphorusMg != null)
+        ('Phốt pho', '${nutrition.phosphorusMg!.round()} mg'),
+      if (nutrition.zincMg != null)
+        ('Kẽm', '${nutrition.zincMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.copperMg != null)
+        ('Đồng', '${nutrition.copperMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.manganeseMg != null)
+        ('Mangan', '${nutrition.manganeseMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.seleniumMcg != null)
+        ('Selen', '${nutrition.seleniumMcg!.toStringAsFixed(1)} µg'),
+      if (nutrition.vitaminAMcgRae != null)
+        ('Vitamin A', '${nutrition.vitaminAMcgRae!.round()} µg RAE'),
+      if (nutrition.vitaminCMg != null)
+        ('Vitamin C', '${nutrition.vitaminCMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.vitaminDMcg != null)
+        ('Vitamin D', '${nutrition.vitaminDMcg!.toStringAsFixed(1)} µg'),
+      if (nutrition.vitaminEMg != null)
+        ('Vitamin E', '${nutrition.vitaminEMg!.toStringAsFixed(1)} mg'),
+      if (nutrition.vitaminKMcg != null)
+        ('Vitamin K', '${nutrition.vitaminKMcg!.toStringAsFixed(1)} µg'),
+      if (nutrition.vitaminB1Mg != null)
+        ('Vitamin B1', '${nutrition.vitaminB1Mg!.toStringAsFixed(2)} mg'),
+      if (nutrition.vitaminB2Mg != null)
+        ('Vitamin B2', '${nutrition.vitaminB2Mg!.toStringAsFixed(2)} mg'),
+      if (nutrition.vitaminB3Mg != null)
+        ('Vitamin B3', '${nutrition.vitaminB3Mg!.toStringAsFixed(1)} mg'),
+      if (nutrition.vitaminB5Mg != null)
+        ('Vitamin B5', '${nutrition.vitaminB5Mg!.toStringAsFixed(1)} mg'),
+      if (nutrition.vitaminB6Mg != null)
+        ('Vitamin B6', '${nutrition.vitaminB6Mg!.toStringAsFixed(2)} mg'),
+      if (nutrition.biotinB7Mcg != null)
+        ('Vitamin B7', '${nutrition.biotinB7Mcg!.toStringAsFixed(1)} µg'),
+      if (nutrition.folateB9Mcg != null)
+        ('Vitamin B9', '${nutrition.folateB9Mcg!.round()} µg'),
+      if (nutrition.vitaminB12Mcg != null)
+        ('Vitamin B12', '${nutrition.vitaminB12Mcg!.toStringAsFixed(1)} µg'),
+      if (nutrition.cholineMg != null)
+        ('Choline', '${nutrition.cholineMg!.round()} mg'),
+      if (nutrition.omega3G != null)
+        ('Omega-3', '${nutrition.omega3G!.toStringAsFixed(2)} g'),
+      if (nutrition.omega6G != null)
+        ('Omega-6', '${nutrition.omega6G!.toStringAsFixed(2)} g'),
       if (nutrition.waterG != null) ('Nước', '${nutrition.waterG!.round()} g'),
     ];
     return MedicalSurfaceCard(
@@ -763,7 +872,12 @@ class _HealthCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text('Phù hợp với sức khỏe của bạn', style: AppTextStyles.heading4)),
+              Expanded(
+                child: Text(
+                  'Phù hợp với sức khỏe của bạn',
+                  style: AppTextStyles.heading4,
+                ),
+              ),
               MedicalStatusPill(
                 label: label,
                 foregroundColor: color,
@@ -779,7 +893,10 @@ class _HealthCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
-          Text(health.summary, style: AppTextStyles.bodyMedium.copyWith(height: 1.5)),
+          Text(
+            health.summary,
+            style: AppTextStyles.bodyMedium.copyWith(height: 1.5),
+          ),
           if (health.conditionReviews.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.md),
             for (final review in health.conditionReviews.take(10)) ...[
@@ -877,7 +994,10 @@ class _WarningList extends StatelessWidget {
           Text(title, style: AppTextStyles.heading4.copyWith(color: color)),
           const SizedBox(height: AppSpacing.sm),
           for (final item in warnings.take(20)) ...[
-            Text('• $item', style: AppTextStyles.bodySmall.copyWith(height: 1.45)),
+            Text(
+              '• $item',
+              style: AppTextStyles.bodySmall.copyWith(height: 1.45),
+            ),
             const SizedBox(height: AppSpacing.xs),
           ],
         ],
@@ -909,6 +1029,7 @@ class _MessageCard extends StatelessWidget {
     );
   }
 }
+
 List<Object?> _reviewReasons(Object? value) {
   return value is List ? List<Object?>.from(value) : const <Object?>[];
 }

@@ -8,6 +8,7 @@ import 'package:nano_app/app_versions/v1/features/nutrition/domain/entities/nutr
 import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prompt.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/meal_plan_prompt.dart';
 import 'package:nano_app/app_versions/v1/services/ai/schedule_ai_personalization_context.dart';
+import 'package:nano_app/core/storage/localdb/seeders/ai_catalog_seed_data.dart';
 
 void main() {
   test('AI prompts receive safe, structured user personalization only', () {
@@ -71,7 +72,7 @@ void main() {
       startDate: DateTime(2026, 10, 13),
       startDay: 1,
       days: 1,
-      catalog: const [],
+      catalog: AiCatalogSeedData.meals,
       usedMealCodeCounts: const {},
       personalization: mealContext,
     );

@@ -22,10 +22,12 @@ class NabiCarePanel extends ConsumerWidget {
     final state = ref.watch(nabiCareControllerProvider);
     final result = state.result;
     if (result == null) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
-        child: Text('NaBi đang chuẩn bị dữ liệu chăm sóc cho bạn.'),
-      );
+      final message = state.errorCode == 'unsupported_platform'
+          ? 'Nabi Care cần model AI trên thiết bị và hiện chưa dùng được trên bản web.'
+          : state.status == NabiCareLoadStatus.error
+          ? 'Nabi Care chưa thể tạo phân tích lúc này. Bạn thử lại sau nhé.'
+          : 'NaBi đang chuẩn bị dữ liệu chăm sóc cho bạn.';
+      return Padding(padding: const EdgeInsets.all(24), child: Text(message));
     }
 
     final analysis = result.analysis;

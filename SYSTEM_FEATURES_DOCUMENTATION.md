@@ -78,25 +78,19 @@ paid phải được đọc từ backend.
 3. native runtime config.
 4. bundled public auth config.
 
-`assets/config/auth.env` chỉ cho các public auth key đã allowlist. Gemini key
-không được đọc từ asset đó.
+`assets/config/auth.env` chỉ cho các public auth key đã allowlist. NanoBioAI
+không đọc Gemini key hoặc cấu hình `GEMINI_*`.
 
-### 3.2 Gemini
+### 3.2 AI trên thiết bị
 
-- Transport: client REST nội bộ
-  `lib/app_versions/v1/services/ai/gemini_rest_client.dart`.
-- Endpoint mặc định: `https://generativelanguage.googleapis.com/v1beta`.
-- Request: `models/{model}:generateContent` hoặc stream endpoint tương ứng.
-- Auth: header `x-goog-api-key`.
-- Dự án không có dependency `google_generative_ai`; mọi mô tả “Gemini SDK
-  0.4.7” là lỗi thời.
-- Plan model mặc định: `gemini-3.1-flash-lite`, có danh sách fallback trong
-  `AIModelCandidates`.
-- Chat model mặc định: `gemini-3.1-flash-lite`, có danh sách fallback riêng
-  trong `AIChatModelCandidates`.
-
-Android có native fallback `BuildConfig.GEMINI_API_KEY`; iOS hiện không có
-native handler tương ứng trong source. Dart define vẫn là nguồn ưu tiên.
+- Runtime native: `LocalAiTextClient` và `llamadart`, dùng model người dùng đã
+  chọn và tải trong app.
+- Chat, lịch, Body Metrics, Nutrition, Sleep, Fitness Training, Voice Chat,
+  Nabi Care và Food Scan không gửi nội dung tới dịch vụ AI từ xa.
+- Food Scan tải model vision/projector riêng ở lần quét đầu.
+- Web giữ các phần không dùng AI và báo không hỗ trợ khi mở tác vụ AI.
+- Supabase vẫn phục vụ đăng nhập, dữ liệu, đồng bộ và quota hiện có.
+- Không còn Gemini REST client hoặc Supabase AI Edge client trong app source.
 
 ### 3.3 Identity hiện tại
 
@@ -180,8 +174,9 @@ personal goals ghi rõ chỉ preview và không persistence.
 
 ### 5.1 Personal plan — `Implemented`
 
-`AIService` dùng Gemini REST khi có client/key. Nếu thiếu key, plan generation
-có local fallback dựa trên catalog. Output AI đi qua parser, validator và
+`AIService` dùng model local do người dùng chọn. Nếu suy luận không thành công,
+plan generation chỉ có thể dùng fallback local đã được kiểm tra từ catalog;
+không gửi yêu cầu tới dịch vụ AI từ xa. Output AI đi qua parser, validator và
 normalizer trước khi ghi meal/schedule data.
 
 `GeneratedPlanService` phân biệt initial guest plan và member regeneration.
@@ -191,14 +186,13 @@ plan không được mô tả như một lần member quota.
 ### 5.2 AI chat — `Partial`
 
 - Route `/ai-chat` cần authenticated user.
-- `AIChatService` dùng Gemini REST và validate Vietnamese display text.
-- Thiếu `GEMINI_API_KEY` làm chat unavailable; chat không dùng local response
-  fallback như plan generation.
+- `AIChatService` dùng model local đã chọn và validate Vietnamese display text.
+- Web báo runtime local chưa được hỗ trợ; lỗi model không chuyển sang AI từ xa.
 - `AIChatRepositoryImpl` dùng `TrustedBackendUsageQuotaGateway` cho quota.
 - History ở từng model session được giới hạn trong source; chỉ turn đã accept
   mới được nhớ.
 
-Static source không chứng minh live Gemini request hoặc quota RPC đã PASS.
+Static source không chứng minh suy luận trên thiết bị hoặc quota RPC đã PASS.
 
 ### 5.3 AI voice — `Partial`
 
@@ -354,7 +348,8 @@ manifest lịch sử không được chuyển thành PASS cho baseline hiện t�
 - V3 routes: `lib/app_versions/v3/router/v3_router.dart`.
 - Admin routes: `lib/app_versions/admin/router/admin_router.dart`.
 - AppEnv: `lib/core/config/app_env.dart`.
-- AI REST: `lib/app_versions/v1/services/ai/gemini_rest_client.dart`.
+- AI runtime: `lib/core/ai_local/`; provider-neutral contract:
+  `lib/app_versions/v1/services/ai/ai_text_client.dart`.
 - Onboarding count: `lib/core/constants/onboarding_constants.dart`.
 - SQLite version: `lib/core/storage/localdb/database_version.dart`.
 - Advanced catalog: `lib/shared/health_features/health_feature_catalog.dart`.

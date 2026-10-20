@@ -102,9 +102,11 @@ void main() {
     });
 
     test(
-      'preserves overload and invalid-response failures without an answer',
+      'preserves timeout, model, runtime, and invalid-response failures without an answer',
       () async {
         for (final failure in <Object>[
+          const AILocalInferenceTimeoutException(),
+          const AIModelUnavailableException(),
           const AIOverloadedException(),
           const AIResponseInvalidException(),
         ]) {

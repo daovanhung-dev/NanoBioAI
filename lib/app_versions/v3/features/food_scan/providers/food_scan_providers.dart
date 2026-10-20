@@ -21,9 +21,8 @@ final foodScanAccessProvider = FutureProvider<FoodScanAccess>((ref) async {
   }
   final access = await ref.watch(effectiveAccessProvider.future);
   // Food Scan is a paid capability for both individual Plus and FamilyPlus.
-  // Keep this aligned with the server-side entitlement check in
-  // `food-scan-analyze`; checking only `isPlus` strands FamilyPlus users on
-  // the upgrade screen before a request can ever reach the Edge Function.
+  // Food Scan remains a paid capability for both individual Plus and
+  // FamilyPlus accounts even though image inference now runs locally.
   if (access == null || !access.hasPaidAccess) {
     return FoodScanAccess(
       userId: userId,
@@ -41,12 +40,17 @@ final foodScanImageServiceProvider = Provider<FoodScanImageService>((ref) {
   return FoodScanImageService();
 });
 
-final foodScanConsentProvider = FutureProvider.family<bool, String>((ref, userId) async {
+final foodScanConsentProvider = FutureProvider.family<bool, String>((
+  ref,
+  userId,
+) async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getBool('food_scan_ai_consent_v1_$userId') ?? false;
 });
 
-final foodScanGrantConsentProvider = Provider<Future<void> Function(String)>((ref) {
+final foodScanGrantConsentProvider = Provider<Future<void> Function(String)>((
+  ref,
+) {
   return (userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('food_scan_ai_consent_v1_$userId', true);
@@ -56,8 +60,8 @@ final foodScanGrantConsentProvider = Provider<Future<void> Function(String)>((re
 
 final foodScanHistoryProvider =
     FutureProvider.family<List<FoodScanResult>, String>((ref, userId) {
-  return ref.watch(foodScanServiceProvider).history(userId);
-});
+      return ref.watch(foodScanServiceProvider).history(userId);
+    });
 
 final foodScanControllerProvider =
     NotifierProvider<FoodScanController, FoodScanState>(FoodScanController.new);
@@ -94,8 +98,12 @@ class FoodScanState {
   }) {
     return FoodScanState(
       phase: phase ?? this.phase,
-      imagePath: identical(imagePath, _unset) ? this.imagePath : imagePath as String?,
-      result: identical(result, _unset) ? this.result : result as FoodScanResult?,
+      imagePath: identical(imagePath, _unset)
+          ? this.imagePath
+          : imagePath as String?,
+      result: identical(result, _unset)
+          ? this.result
+          : result as FoodScanResult?,
       errorMessage: identical(errorMessage, _unset)
           ? this.errorMessage
           : errorMessage as String?,
@@ -157,7 +165,10 @@ class FoodScanController extends Notifier<FoodScanState> {
       result: null,
     );
     try {
-      final result = await _service.analyze(userId: userId, imagePath: imagePath);
+      final result = await _service.analyze(
+        userId: userId,
+        imagePath: imagePath,
+      );
       state = FoodScanState(
         phase: FoodScanPhase.ready,
         imagePath: imagePath,
@@ -275,7 +286,9 @@ class FoodScanController extends Notifier<FoodScanState> {
     required FoodScanResult result,
   }) async {
     try {
-      await ref.read(healthDomainEventSinkProvider).publish(
+      await ref
+          .read(healthDomainEventSinkProvider)
+          .publish(
             HealthDomainEvent.create(
               type: HealthEventType.foodScanConfirmedConsumed,
               subjectId: userId,
@@ -299,9 +312,6 @@ class FoodScanController extends Notifier<FoodScanState> {
   }
 
   void _fail(String message) {
-    state = state.copyWith(
-      phase: FoodScanPhase.error,
-      errorMessage: message,
-    );
+    state = state.copyWith(phase: FoodScanPhase.error, errorMessage: message);
   }
 }

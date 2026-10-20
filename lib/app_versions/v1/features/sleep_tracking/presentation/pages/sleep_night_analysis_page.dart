@@ -121,7 +121,7 @@ class _SleepNightAnalysisPageState
         title: const Text('Phân tích với AI'),
         content: const Text(
           'NanoBio chỉ gửi các chỉ số tổng hợp, phân bố sự kiện và xu hướng. '
-          'Không gửi bản ghi âm, bản chép lời, số điện thoại người thân hoặc API key.',
+          'Bản ghi âm, bản chép lời và số điện thoại người thân được giữ riêng tư; AI xử lý ngay trên thiết bị.',
         ),
         actions: [
           TextButton(

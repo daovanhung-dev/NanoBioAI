@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:nano_app/core/config/app_env.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
-import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 
 import '../../domain/entities/sleep_night_analysis.dart';
 import '../models/sleep_analysis_ai_models.dart';
@@ -15,19 +14,14 @@ typedef SleepAiTextGenerator =
 
 class SleepAnalysisAIService {
   SleepAnalysisAIService({
-    String? apiKeyOverride,
     String? modelOverride,
-    GeminiRestClient? client,
+    AiTextClient? client,
     SleepAiTextGenerator? textGenerator,
-  }) : _model =
-           _clean(modelOverride) ??
-           _clean(AppEnv.maybeString('GEMINI_SLEEP_MODEL')) ??
-           _clean(AppEnv.maybeString('GEMINI_MODEL')) ??
-           'gemini-3.5-flash',
+  }) : _model = _clean(modelOverride) ?? LocalAiTextClient.modelId,
        _textGenerator = textGenerator,
        _client = textGenerator != null
            ? client
-           : client ?? const NabiAiBackendClient();
+           : client ?? const LocalAiTextClient(operation: 'sleep_analysis');
 
   final String _model;
   final AiTextClient? _client;
@@ -38,17 +32,17 @@ class SleepAnalysisAIService {
 
   Future<SleepAiAnalysisResult> generate(SleepNightAnalysis analysis) async {
     if (!isConfigured) {
-      throw StateError('sleep_ai_missing_api_key');
+      throw StateError('sleep_ai_model_unavailable');
     }
     final payload = analysis.toSafeAiPayload();
     final raw = _textGenerator != null
         ? await _textGenerator(model: _model, payload: payload)
         : await _client!.generateText(
             model: _model,
-            contents: [GeminiContent.user(jsonEncode(payload))],
-            generationConfig: const GeminiGenerationConfig(
+            messages: [AiMessage.user(jsonEncode(payload))],
+            generationConfig: const AiGenerationConfig(
               temperature: 0.2,
-              responseMimeType: 'application/json',
+              responseFormat: AiResponseFormat.json,
             ),
             systemInstruction: _systemInstruction,
           );

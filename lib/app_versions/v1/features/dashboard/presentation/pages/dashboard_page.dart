@@ -20,6 +20,9 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/shared/widgets/ai_chat_fab.dart';
+import 'package:nano_app/shared/widgets/generated_plan_progress_dialog.dart';
+import 'package:nano_app/shared/widgets/generated_plan_progress_panel.dart'
+    show showGeneratedCustomMealDecisionDialog;
 import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -123,10 +126,47 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   }
 
   Future<void> _generateAdditionalPlan() async {
+    ref.read(additionalPlanProgressProvider.notifier).state =
+        GeneratedPlanProgress(totalDays: 7);
+    final closeProgressDialog = showGeneratedPlanProgressDialog(context);
     try {
-      final result = await ref
+      var result = await ref
           .read(dashboardControllerProvider.notifier)
           .generateAdditionalPlan();
+      closeProgressDialog();
+      while (result.awaitingMealApproval) {
+        if (!mounted) return;
+        final proposal = result.pendingMealProposal;
+        if (proposal == null) {
+          throw StateError('Món chờ duyệt không có dữ liệu hợp lệ.');
+        }
+        final decision = await showGeneratedCustomMealDecisionDialog(
+          context,
+          proposal: proposal,
+        );
+        if (decision == null || !mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Món đang chờ bạn duyệt. Bạn có thể tiếp tục tạo lịch sau.',
+              ),
+            ),
+          );
+          return;
+        }
+        final closeResumeDialog = showGeneratedPlanProgressDialog(context);
+        try {
+          result = await ref
+              .read(dashboardControllerProvider.notifier)
+              .respondToAdditionalPlanMeal(
+                requestId: result.requestId,
+                proposal: proposal,
+                approve: decision,
+              );
+        } finally {
+          closeResumeDialog();
+        }
+      }
       if (!mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       final message = switch (result.generationSource) {
@@ -139,6 +179,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
     } catch (error) {
+      closeProgressDialog();
       if (!mounted) return;
       if (error is DailyRoutinePreferencesRequiredException) {
         final saved = await context.push<bool>(
@@ -192,6 +233,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
           'Lịch trình hiện tại vẫn còn ${error.remainingDays} ngày. Bạn có thể tạo lịch mới khi còn 1 ngày nhé.',
         ScheduleHorizonDataException() =>
           ScheduleHorizonDataException.userMessage,
+        ScheduleCandidatesUnavailableException() => error.userMessage,
+        ScheduleMealClassificationException() => error.userMessage,
         AIOverloadedException() => AIOverloadedException.userMessage,
         _ =>
           'Nabi chưa thể tạo thêm kế hoạch lúc này. Mình thử lại sau một chút nhé.',

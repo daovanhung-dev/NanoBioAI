@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
-import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 
 import '../domain/entities/basic_health_calculator_models.dart';
 import '../domain/entities/body_metrics_personal_context.dart';
@@ -21,7 +20,7 @@ class BodyMetricsAiService {
     if (textGenerator != null) {
       return textGenerator!(prompt).timeout(const Duration(seconds: 20));
     }
-    return _generateWithGemini(prompt).timeout(const Duration(seconds: 25));
+    return _generateLocally(prompt).timeout(const Duration(seconds: 25));
   }
 
   /// Compatibility path for the legacy M04 page/tests. New code uses the
@@ -61,53 +60,22 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
     }
   }
 
-  Future<String> _generateWithGemini(String prompt) async {
-    final client = const NabiAiBackendClient();
-    Object? lastError;
-    for (final model in _modelCandidates().take(3)) {
-      try {
-        return await client
-            .generateText(
-              model: model,
-              contents: [GeminiContent.user(prompt)],
-              systemInstruction:
-                  'Bạn là Nabi, trợ lý wellness. Chỉ dùng dữ liệu được cung cấp; không chẩn đoán, không kê thuốc, không đổi điều trị, không phát minh số.',
-              generationConfig: const GeminiGenerationConfig(
-                temperature: 0.2,
-                topP: 0.85,
-                responseMimeType: 'application/json',
-              ),
-            )
-            .timeout(const Duration(seconds: 10));
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw StateError('Body metrics AI unavailable: ${lastError.runtimeType}');
+  Future<String> _generateLocally(String prompt) async {
+    const client = LocalAiTextClient(operation: 'body_metrics');
+    return client
+        .generateText(
+          model: LocalAiTextClient.modelId,
+          messages: [AiMessage.user(prompt)],
+          systemInstruction:
+              'Bạn là Nabi, trợ lý wellness. Chỉ dùng dữ liệu được cung cấp; không chẩn đoán, không kê thuốc, không đổi điều trị, không phát minh số.',
+          generationConfig: const AiGenerationConfig(
+            temperature: 0.2,
+            topP: 0.85,
+            responseFormat: AiResponseFormat.json,
+          ),
+        )
+        .timeout(const Duration(seconds: 20));
   }
-
-  List<String> _modelCandidates() {
-    final values = <String?>[
-      AppEnv.maybeString('GEMINI_CHAT_MODEL'),
-      AppEnv.maybeString('GEMINI_PLAN_MODEL'),
-      ..._csv(AppEnv.maybeString('GEMINI_CHAT_FALLBACK_MODELS')),
-      ..._csv(AppEnv.maybeString('GEMINI_PLAN_FALLBACK_MODELS')),
-      'gemini-2.5-flash',
-    ];
-    final result = <String>[];
-    for (final value in values) {
-      final normalized = value?.trim();
-      if (normalized != null &&
-          normalized.isNotEmpty &&
-          !result.contains(normalized)) {
-        result.add(normalized);
-      }
-    }
-    return result;
-  }
-
-  List<String?> _csv(String? value) =>
-      value?.split(',').map((entry) => entry.trim()).toList() ?? const [];
 
   BodyMetricsAiInsight _parseLegacy(String raw) {
     final cleaned = raw

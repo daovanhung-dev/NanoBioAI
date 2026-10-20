@@ -9,6 +9,7 @@ import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 import '../../domain/entities/chat_message_entity.dart';
+import '../ai_chat_thinking_phrases.dart';
 import '../controllers/ai_chat_controller.dart';
 import '../widgets/ai_content_report_sheet.dart';
 
@@ -93,6 +94,12 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(aiChatControllerProvider);
+    final isWaitingForFirstToken =
+        state.isLoading &&
+        (state.messages.isEmpty ||
+            state.messages.last.role == MessageRole.user);
+    final showThinkingIndicator =
+        isWaitingForFirstToken && state.thinkingPhrase != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final overlayStyle =
         (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
@@ -105,11 +112,27 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
             );
 
     ref.listen<AIChatState>(aiChatControllerProvider, (previous, next) {
+      final previousMessages = previous?.messages ?? const [];
+      final nextMessages = next.messages;
+      final previousLastMessage = previousMessages.isEmpty
+          ? null
+          : previousMessages.last;
+      final nextLastMessage = nextMessages.isEmpty ? null : nextMessages.last;
+      final answerIsGrowing =
+          next.isLoading &&
+          previousLastMessage != null &&
+          nextLastMessage != null &&
+          previousLastMessage.id == nextLastMessage.id &&
+          previousLastMessage.content != nextLastMessage.content &&
+          nextLastMessage.role == MessageRole.assistant;
       final responseArrived =
           previous?.isLoading == true &&
           !next.isLoading &&
-          next.messages.length > (previous?.messages.length ?? 0) &&
-          next.messages.last.role == MessageRole.assistant;
+          nextLastMessage != null &&
+          nextLastMessage.role == MessageRole.assistant &&
+          (nextMessages.length > previousMessages.length ||
+              (previousLastMessage != null &&
+                  previousLastMessage.id == nextLastMessage.id));
       if (responseArrived) {
         AppFeedbackService.instance.emit(AppFeedbackType.answerReady);
         if (_forceNextScroll || _nearBottom) {
@@ -119,8 +142,11 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
           setState(() => _hasUnreadAnswer = true);
         }
       }
-      if (next.isLoading && (_forceNextScroll || _nearBottom)) {
+      if (answerIsGrowing && (_forceNextScroll || _nearBottom)) {
+        _scrollToBottom(immediate: true);
+      } else if (next.isLoading && (_forceNextScroll || _nearBottom)) {
         _scrollToBottom();
+        _forceNextScroll = false;
       }
       if (next.error != null && next.error != previous?.error) {
         AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -184,12 +210,18 @@ class _AIChatScreenState extends ConsumerState<AIChatScreen> {
                             AppSpacing.xxl,
                           ),
                           itemCount:
-                              state.messages.length + (state.isLoading ? 1 : 0),
+                              state.messages.length +
+                              (showThinkingIndicator ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == state.messages.length) {
-                              return const _TypingIndicator();
+                              return _TypingIndicator(
+                                text:
+                                    state.thinkingPhrase ??
+                                    AIChatThinkingPhrases.values.first,
+                              );
                             }
                             return _MessageBubble(
+                              key: ValueKey(state.messages[index].id),
                               message: state.messages[index],
                             );
                           },
@@ -331,7 +363,7 @@ class _EmptyChat extends StatelessWidget {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({super.key, required this.message});
   final ChatMessageEntity message;
   @override
   Widget build(BuildContext context) {
@@ -363,7 +395,7 @@ class _MessageBubble extends StatelessWidget {
                 height: 1.45,
               ),
             ),
-            if (!user) ...[
+            if (!user && !message.isLoading) ...[
               const SizedBox(height: AppSpacing.xs),
               Align(
                 alignment: Alignment.centerLeft,
@@ -407,7 +439,10 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _TypingIndicator extends StatelessWidget {
-  const _TypingIndicator();
+  const _TypingIndicator({required this.text});
+
+  final String text;
+
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -418,7 +453,7 @@ class _TypingIndicator extends StatelessWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
         const SizedBox(width: AppSpacing.sm),
-        Text('Nabi đang suy nghĩ...', style: AppTextStyles.bodyMedium),
+        Expanded(child: Text(text, style: AppTextStyles.bodyMedium)),
       ],
     ),
   );

@@ -3,15 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/onboarding_schedule_progress_panel.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/shared/widgets/generated_plan_progress_panel.dart';
+import 'package:nano_app/shared/widgets/loading_gen_ai.dart';
 
 final _retryableInitialPlanProvider = FutureProvider<bool>((ref) async {
   try {
@@ -42,20 +47,87 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
       _retryFailureDetails = null;
     });
 
+    var progressPageOpen = false;
+    void openProgressPage() {
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const AIGeneratingPage(
+            progressContent: OnboardingScheduleProgressPanel(),
+          ),
+        ),
+      );
+      progressPageOpen = true;
+    }
+
+    void closeProgressPage() {
+      if (!progressPageOpen || !mounted) return;
+      Navigator.of(context).pop();
+      progressPageOpen = false;
+    }
+
     try {
-      final result = await ref.read(onboardingCompletionCallbackProvider)();
-      if (!result.generatedInitialPlan) {
+      openProgressPage();
+      final result = await ref.read(onboardingCompletionCallbackProvider)(
+        onProgress: ref
+            .read(onboardingProvider.notifier)
+            .updateInitialPlanProgress,
+      );
+      var proposal = result.pendingMealProposal;
+      if (result.awaitingMealApproval && proposal == null) {
         throw const _SavedPlanRetryException();
       }
-      await ref.read(onboardingRepositoryProvider).markCompleted();
-      await AppPrefs.setOnboardingCompleted(true);
+      if (!result.generatedInitialPlan && !result.awaitingMealApproval) {
+        throw const _SavedPlanRetryException();
+      }
+      closeProgressPage();
+
+      var completionSavedByController = false;
+      while (proposal != null) {
+        if (!mounted) return;
+        final decision = await showGeneratedCustomMealDecisionDialog(
+          context,
+          proposal: proposal,
+        );
+        if (decision == null || !mounted) return;
+
+        openProgressPage();
+        try {
+          final resumed = await ref
+              .read(onboardingProvider.notifier)
+              .respondToPendingCustomMeal(
+                proposal: proposal,
+                approve: decision,
+              );
+          if (resumed.awaitingMealApproval) {
+            proposal = resumed.pendingMealProposal;
+            if (proposal == null) {
+              throw const _SavedPlanRetryException();
+            }
+          } else {
+            proposal = null;
+            completionSavedByController = true;
+          }
+        } finally {
+          closeProgressPage();
+        }
+      }
+
+      if (!result.generatedInitialPlan && !completionSavedByController) {
+        throw const _SavedPlanRetryException();
+      }
+      if (!completionSavedByController) {
+        await ref.read(onboardingRepositoryProvider).markCompleted();
+        await AppPrefs.setOnboardingCompleted(true);
+      }
       if (!mounted) return;
       context.go(V1RoutePaths.dashboard);
     } catch (error, stackTrace) {
+      closeProgressPage();
       if (kDebugMode) {
         final providerStatus = switch (error) {
           AIOverloadedException(:final providerStatus) => providerStatus,
-          GeminiApiException(:final status) => status,
+          AiInferenceException(:final status) => status,
           _ => null,
         };
         final safeProviderStatus =
@@ -66,12 +138,12 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
         final providerStatusCode = switch (error) {
           AIOverloadedException(:final providerStatusCode) =>
             providerStatusCode,
-          GeminiApiException(:final statusCode) => statusCode,
+          AiInferenceException(:final statusCode) => statusCode,
           _ => null,
         };
         final providerErrorCode = switch (error) {
           AIOverloadedException(:final providerErrorCode) => providerErrorCode,
-          GeminiApiException(:final backendErrorCode) => backendErrorCode,
+          AiInferenceException(:final backendErrorCode) => backendErrorCode,
           _ => null,
         };
         final debugDetails =
@@ -97,9 +169,7 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
         ..showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 30),
-            content: Text(
-              'Hồ sơ vẫn được lưu. Chưa tạo được lịch; bạn có thể thử lại sau.',
-            ),
+            content: Text(_retryFailureMessage(error)),
           ),
         );
       ref.invalidate(_retryableInitialPlanProvider);
@@ -107,6 +177,14 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
       if (mounted) setState(() => _retrying = false);
     }
   }
+
+  String _retryFailureMessage(Object error) => switch (error) {
+    ScheduleMealClassificationException(:final userMessage) => userMessage,
+    ScheduleCandidatesUnavailableException(:final userMessage) => userMessage,
+    OnboardingInitialPlanException(:final message) => message,
+    AIOverloadedException() => AIOverloadedException.userMessage,
+    _ => 'Hồ sơ vẫn được lưu. Chưa tạo được lịch; bạn có thể thử lại sau.',
+  };
 
   @override
   Widget build(BuildContext context) {

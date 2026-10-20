@@ -1,3 +1,4 @@
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/services/access/product_access_level.dart';
 import 'package:nano_app/services/access/product_access_reader.dart';
 
@@ -8,7 +9,8 @@ import 'body_metrics_ai_response_validator.dart';
 import 'body_metrics_ai_service.dart';
 import 'body_metrics_prompt_builder.dart';
 
-typedef BodyMetricsAiProgress = void Function(int completed, int total, String stageId);
+typedef BodyMetricsAiProgress =
+    void Function(int completed, int total, String stageId);
 
 class BodyMetricsAnalysisOrchestrator {
   final BodyMetricsAiService aiService;
@@ -29,8 +31,23 @@ class BodyMetricsAnalysisOrchestrator {
     final context = BodyMetricsAiContext.from(snapshot, report);
     final results = <BodyMetricsAiStageResult>[];
     final stageIds = [
-      'P01', 'P02', 'P03', 'P04', 'P05',
-      if (access.isPaid) ...['P06', 'P07', 'P08', 'P09', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15'],
+      'P01',
+      'P02',
+      'P03',
+      'P04',
+      'P05',
+      if (access.isPaid) ...[
+        'P06',
+        'P07',
+        'P08',
+        'P09',
+        'P10',
+        'P11',
+        'P12',
+        'P13',
+        'P14',
+        'P15',
+      ],
     ];
 
     for (final stageId in stageIds) {
@@ -44,6 +61,13 @@ class BodyMetricsAnalysisOrchestrator {
         );
         final raw = await aiService.generateStage(prompt);
         result = BodyMetricsAiResponseValidator.validate(stageId, raw);
+      } on AiInferenceException catch (error) {
+        result = BodyMetricsAiStageResult.failed(
+          stageId,
+          error.status == 'unsupported_platform'
+              ? error.message
+              : 'Stage không đạt kiểm tra an toàn hoặc tạm thời không khả dụng.',
+        );
       } catch (_) {
         result = BodyMetricsAiStageResult.failed(
           stageId,
@@ -56,8 +80,12 @@ class BodyMetricsAnalysisOrchestrator {
 
     BodyMetricsAiSynthesis? synthesis;
     final preferredId = access.isPaid ? 'P15' : 'P05';
-    final preferred = results.where((item) => item.stageId == preferredId && item.success).firstOrNull;
-    final freeFallback = results.where((item) => item.stageId == 'P05' && item.success).firstOrNull;
+    final preferred = results
+        .where((item) => item.stageId == preferredId && item.success)
+        .firstOrNull;
+    final freeFallback = results
+        .where((item) => item.stageId == 'P05' && item.success)
+        .firstOrNull;
     final synthesisStage = preferred ?? freeFallback;
     if (synthesisStage != null) {
       try {
@@ -78,12 +106,28 @@ class BodyMetricsAnalysisOrchestrator {
     List<BodyMetricsAiStageResult> results,
   ) {
     bool include(BodyMetricsAiStageResult item) => switch (stageId) {
-          'P05' => const {'P01', 'P02', 'P03', 'P04'}.contains(item.stageId),
-          'P06' || 'P07' || 'P08' || 'P09' || 'P10' || 'P11' || 'P12' || 'P13' => item.stageId == 'P05',
-          'P14' => const {'P06', 'P07', 'P08', 'P09', 'P10', 'P11', 'P12', 'P13'}.contains(item.stageId),
-          'P15' => item.stageId == 'P05' || item.stageId == 'P14',
-          _ => false,
-        };
+      'P05' => const {'P01', 'P02', 'P03', 'P04'}.contains(item.stageId),
+      'P06' ||
+      'P07' ||
+      'P08' ||
+      'P09' ||
+      'P10' ||
+      'P11' ||
+      'P12' ||
+      'P13' => item.stageId == 'P05',
+      'P14' => const {
+        'P06',
+        'P07',
+        'P08',
+        'P09',
+        'P10',
+        'P11',
+        'P12',
+        'P13',
+      }.contains(item.stageId),
+      'P15' => item.stageId == 'P05' || item.stageId == 'P14',
+      _ => false,
+    };
     return results.where(include).toList(growable: false);
   }
 }

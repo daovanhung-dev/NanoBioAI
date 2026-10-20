@@ -1235,8 +1235,67 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Chưa fix: còn 2.945 món cần ảnh; ảnh được AI tạo theo phong cách photorealistic, không phải ảnh chụp hiện trường hay xác nhận chuyên gia ẩm thực.
 - docs/worklog/2026-10-16/020-worklog-meal-image-generation-0051-0055.md :: - Cần kiểm tra tiếp: 3.000 ảnh PNG ước tính gần 7,87 GB; cần phương án nén/phân phối trước khi bundle toàn catalog; tiếp tục từ `nabi_vn_0056`.
+- docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md :: - `flutter build linux --debug`: BLOCKED - CMake không tìm thấy `clang++`; cấu hình compiler của Linux target không nhận `g++` có sẵn.
+- docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md :: - `pwsh -File .codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và link/path cũ trong hai tài liệu lịch sử `.codex`; không còn path Gemini trong `.codex/README.md` hoặc `.codex/PROJECT_MAP.md`.
+- docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md :: - Chua fix: analyzer/build chưa chạy trên iOS, macOS, Windows; Linux native build bị chặn bởi compiler thiếu; cảnh báo wasm dry-run của plugin web có sẵn.
+- docs/worklog/2026-10-18/001-worklog-on-device-ai-migration.md :: - Can kiem tra tiep: chọn/tải/nạp model và suy luận thật trên Android/iOS; kiểm tra cancel/resume/SHA/dung lượng trên thiết bị; Food Scan với ảnh thật; kiểm tra quota Supabase và lưu lịch end-to-end. Chưa có bằng chứng physical-device inference.
 - docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL - con thieu `docs/audit/source_truth_manifest.json` va stale path trong history/task-skill Nabi ngoai pham vi; sau khi sua, khong con bao path moi cua XiaoZhi.
 - docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Flutter/ESP-IDF build va test: SKIPPED - chi nhap snapshot/context, khong sua runtime code.
 - docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: ## Loi/Rui ro
 - docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Chua fix: validator repository-wide van phat hien source-truth manifest thieu va cac tham chieu stale khong thuoc thay doi nay.
 - docs/worklog/2026-10-18/002-worklog-xiaozhi-esp32-import.md :: - Can kiem tra tiep: chay build firmware va kiem tra tren OSTB 3ST khi co task rieng; task nay khong thuc hien build hay device QA.
+- docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md :: - Tạo `docs/issues/personal-schedule-partial-generation-resume/001-issue-personal-schedule-partial-generation-resume.md`.
+- docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md :: - Test/build/device QA: SKIPPED - yêu cầu là nhận xét luồng; chưa xác minh động.
+- docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md :: - Cần kiểm tra tiếp: thử nghiệm resume sau lỗi giữa chừng và nội dung fallback trên thiết bị Android có model local.
+- docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md :: - Mức độ hoàn thành task: hoàn thành nhận xét source và ghi nhận rủi ro; không sửa runtime theo phạm vi.
+- docs/worklog/2026-10-18/004-worklog-local-meal-catalog-prefilter.md :: - `flutter run -d linux --no-pub`: FAIL vì môi trường thiếu `clang++`; không ảnh hưởng kiểm tra Web.
+- docs/worklog/2026-10-18/004-worklog-local-meal-catalog-prefilter.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-18/004-worklog-local-meal-catalog-prefilter.md :: - Hoàn thành: lọc trước AI, fail-closed khi thiếu evidence/ứng viên, callback progress, UI dùng chung, focused tests và tài liệu.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: Commit de xuat: docs(worklog): ghi nhan fix local ai chat timeout
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: # Worklog - Fix timeout chat AI local
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Yêu cầu gốc: sửa lỗi chat local không trả lời trên Android 11 với Qwen3 1.7B; tăng khoảng chờ token đầu, phân biệt timeout khỏi quá tải, log metadata an toàn, giữ quota và không gọi AI từ xa.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Tăng timeout mặc định của chat local từ 20 lên 120 giây. Với stream, giới hạn là thời gian im lặng giữa các token; token mới sẽ khởi động lại bộ đếm. Generator được inject trong unit test vẫn dùng timeout toàn lần gọi.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Thêm exception và thông báo tiếng Việt riêng cho timeout suy luận local; lỗi timeout có thể thử lại và không bị xếp vào nhóm quá tải/cooldown.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Bổ sung regression tests cho token đầu sau 20 giây, khoảng nghỉ ngắn giữa các token, timeout, lỗi model/runtime, thông báo UI, lịch sử và quota. Bổ sung Android integration smoke với câu hỏi tổng hợp, không gắn quota gateway.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `lib/app_versions/v1/services/ai/ai_chat_service.dart` - tăng idle timeout local lên 120 giây; ánh xạ timeout và log metadata an toàn.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `lib/app_versions/v1/services/ai/ai_exceptions.dart` - thêm kiểu lỗi/copy timeout local.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `lib/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart` - giữ exception timeout có kiểu, không biến thành lỗi chung.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `lib/app_versions/v1/features/ai_chat/presentation/controllers/ai_chat_controller.dart` - hiển thị thông báo timeout riêng và cho phép thử lại.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `test/app_versions/v1/services/ai/ai_chat_service_test.dart`, `test/app_versions/v1/features/ai_chat/ai_chat_quota_test.dart`, `test/app_versions/v1/features/ai_chat/ai_chat_screen_error_test.dart` - regression cho timeout, model/runtime, UI và quota.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `docs/fixbug/local-ai-chat-timeout/001-fixbug-local-ai-chat-timeout.md` - phân tích nguyên nhân, thay đổi và giới hạn kiểm chứng thiết bị.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `docs/fixbug/local-ai-chat-timeout/001-fixbug-local-ai-chat-timeout.md`
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `flutter test integration_test/ai_chat_local_runtime_smoke_test.dart -d 12b304f9`: PARTIAL - lần đầu các assertion nhận câu trả lời local đã qua, nhưng runner đánh dấu test lỗi vì timer `NabiContextNotifier` chạy sau dispose; sau khi sửa cleanup, lần chạy sau không có model được chọn vì runner đã gỡ app sau lần chạy lỗi.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `python3 tools/validate_docs_source_truth.py`: FAIL - thiếu `docs/audit/source_truth_manifest.json` trong worktree; không thuộc phạm vi chat local.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - `flutter run -d 12b304f9 --no-pub`: BLOCKED - Android trả `INSTALL_FAILED_USER_RESTRICTED: Install canceled by user`; không có app debug đang chạy để hot restart sau thay đổi.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Đã fix: timeout suy luận local bị báo như quá tải sau 20 giây; nay chờ tối đa 120 giây không có token và có copy thử lại riêng.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Chưa fix: chưa lặp lại được smoke test Android sau khi runner xóa lựa chọn/model cục bộ; không tải lại model 1.28 GB trong phiên này.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Cần kiểm tra tiếp: cài/mở lại app debug trên Android, chọn model Qwen3 1.7B rồi chạy integration smoke để xác nhận lại câu trả lời và cleanup timer.
+- docs/worklog/2026-10-18/005-worklog-fix-local-ai-chat-timeout.md :: - Chất lượng đầu ra: tốt - timeout tách khỏi overload, không đổi kiến trúc local/quota; regression test bao phủ 20 giây thực và fail path.
+- docs/worklog/2026-10-18/006-worklog-ai-chat-incremental-streaming.md :: - Chặn fallback sang model khác sau khi đã phát một phần nội dung; giữ timeout stream ở thông báo lỗi timeout riêng.
+- docs/worklog/2026-10-18/006-worklog-ai-chat-incremental-streaming.md :: - Test tự động: SKIPPED - không được yêu cầu trong task này.
+- docs/worklog/2026-10-18/006-worklog-ai-chat-incremental-streaming.md :: - Kiểm tra gửi câu hỏi thực tế qua giao diện: SKIPPED - chưa thực hiện smoke chat trên app.
+- docs/worklog/2026-10-18/006-worklog-ai-chat-incremental-streaming.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-18/007-worklog-ai-chat-thinking-phrase-rotation.md :: - Dart MCP hot reload trên `220333QPG`: FAIL - VM trả lỗi reload source sau khi thay đổi static state.
+- docs/worklog/2026-10-18/007-worklog-ai-chat-thinking-phrase-rotation.md :: - Smoke chat thật trên thiết bị: SKIPPED - test không gọi AI thật hoặc dùng quota.
+- docs/worklog/2026-10-18/007-worklog-ai-chat-thinking-phrase-rotation.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md :: - `flutter test test/services/ai/ai_service_test.dart --reporter json`: FAIL - 2 test chat cũ kỳ vọng `TimeoutException` failover; lỗi nằm trong `AIChatService`, không thuộc luồng lịch.
+- docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md :: - DTD `listDtdUris`/`listConnectedApps`/`hot_reload`: SKIPPED - IDE có DTD nhưng không có app Flutter đang kết nối; không thể hot reload hoặc xác minh inference Qwen.
+- docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md :: - Chưa fix: hai test chat timeout/fallback thất bại do thay đổi chat sẵn có; giữ ngoài phạm vi task lịch trình.
+- docs/worklog/2026-10-19/001-worklog-generated-plan-event-staging.md :: - Cần kiểm tra tiếp: inference Qwen trên Android 11 và hot reload thực tế khi có thiết bị/app đang kết nối.
+- docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md :: - Yêu cầu gốc: Hiển thị đúng trạng thái lọc và toàn bộ món còn lại trên panel; không báo rỗng trước khi lọc xong; giữ fail-closed và luồng món riêng chờ duyệt.
+- docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md :: - Chưa sửa theo chủ ý fail-closed: catalog đóng gói có 3.163 lỗi nhãn theo validator; không thể hiển thị kết quả lọc trên điện thoại cho tới khi dữ liệu phân loại được xử lý.
+- docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md :: - Cần kiểm tra tiếp: sau khi nhãn catalog hợp lệ, chạy một request mới theo sự đồng ý của người dùng để xác minh số sau lọc thực tế và tiến độ panel trên Android.
+- docs/worklog/2026-10-19/002-worklog-filtered-meal-progress.md :: - Chat luong dau ra: tot - trạng thái không gây hiểu nhầm; fail-closed giữ nguyên; lỗi phân loại được nhìn thấy.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Tìm ra candidate enum có mã selectable ngoài allowlist của slot. Model trả 5 mã compact, nhưng normalizer dừng fail-closed với `meal_code_not_eligible`.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Release APK build và signature verification PASS. MIUI/System Verifier từ chối cài cả release và debug qua ADB với `INSTALL_FAILED_USER_RESTRICTED`; không thay đổi/bypass cơ chế verifier. Release onboarding QA còn mở.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - `adb install --no-streaming app-release.apk`: FAIL - `INSTALL_FAILED_USER_RESTRICTED`; repeat with debug APK and direct `pm install` also rejected by device.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - `flutter analyze --no-pub`: FAIL - missing dependencies in nested `iot/xiaozhi-esp32/phone_app`, plus one unrelated dashboard info; touched files pass targeted analyze.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Đã giảm rủi ro: native inference tranh CPU với UI trên Xiaomi RAM thấp.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Chưa fix: device verifier/MIUI chặn cài APK unverified qua ADB, nên chưa lặp lại acceptance trên release.
+- docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md :: - Cần kiểm tra tiếp: cài release sau khi có luồng ADB/phân phối được verifier chấp nhận; lặp lại onboarding synthetic và đối chiếu 77 item/source.

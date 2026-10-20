@@ -2,7 +2,12 @@ Commit de xuat: feat(food-scan): them edge function phan tich mon an
 
 # Food Scan Edge Function
 
-## Mục tiêu
+> Runtime update 2026-10-18: this document records the retained server
+> implementation. The NanoBioAI app now runs Food Scan vision and health
+> inference locally and does not invoke `food-scan-analyze`. No Edge Function,
+> secret, or deployment state was changed for the local AI migration.
+
+## Historical product contract
 
 Food Scan sử dụng Edge Function riêng `food-scan-analyze` để chuyển tiếp hai
 operation AI hiện có tới Gemini:
@@ -13,7 +18,7 @@ operation AI hiện có tới Gemini:
 Prompt, parser, nutrition resolver, health rule engine và local persistence vẫn
 thuộc về app Flutter.
 
-## Runtime contract
+## Historical Edge Function contract
 
 Function nhận `POST` với JWT hợp lệ và body gồm `operation`, `model`, `contents`,
 `generation_config` và tùy chọn `system_instruction`. `vision` bắt buộc có đúng
@@ -29,13 +34,13 @@ Gate phía app dùng `hasPaidAccess` để giữ đúng quyền Plus và FamilyP
 đa 900.000 byte trước khi encode base64, chừa ngân sách cho prompt và JSON
 envelope của request.
 
-## Client wiring
+## Historical client wiring
 
 `FoodScanAiDatasource` dùng `NabiAiBackendClient` với function name
 `food-scan-analyze` và gửi `operation=vision` hoặc `operation=health`. Các
 client AI khác tiếp tục dùng `nabi-ai-generate`.
 
-## Triển khai
+## Historical deployment snapshot
 
 Đã deploy vào Supabase project `rnwohifdnylqfofkydfl`. Function yêu cầu các
 secret runtime hiện có: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,

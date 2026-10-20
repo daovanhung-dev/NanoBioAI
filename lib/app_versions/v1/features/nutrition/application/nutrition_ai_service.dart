@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
-import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 
 import '../domain/entities/nutrition_intelligence_entity.dart';
 import 'nutrition_ai_response_validator.dart';
@@ -34,10 +33,15 @@ class NutritionAiService {
     try {
       final raw = textGenerator != null
           ? await textGenerator!(prompt).timeout(const Duration(seconds: 20))
-          : await _generateWithGemini(
-              prompt,
-            ).timeout(const Duration(seconds: 25));
+          : await _generateLocally(prompt).timeout(const Duration(seconds: 25));
       return validator.parse(raw, allowedEvidenceCodes: allowedEvidence);
+    } on AiInferenceException catch (error) {
+      return NutritionAiReport.fallback(
+        summary: error.status == 'unsupported_platform'
+            ? error.message
+            : 'Nabi chưa thể phân tích dinh dưỡng lúc này. Bạn thử lại sau nhé.',
+        missingData: intelligence.dataQuality.missingData,
+      );
     } catch (_) {
       return NutritionAiReport.fallback(
         missingData: intelligence.dataQuality.missingData,
@@ -126,51 +130,20 @@ Trả duy nhất JSON đúng schema:
     };
   }
 
-  Future<String> _generateWithGemini(String prompt) async {
-    final client = const NabiAiBackendClient();
-    Object? lastError;
-    for (final model in _modelCandidates().take(3)) {
-      try {
-        return await client
-            .generateText(
-              model: model,
-              contents: [GeminiContent.user(prompt)],
-              systemInstruction:
-                  'Bạn là Nabi, trợ lý wellness dinh dưỡng. Chỉ dùng dữ liệu app cung cấp; không chẩn đoán, không kê thuốc, không phát minh số.',
-              generationConfig: const GeminiGenerationConfig(
-                temperature: 0.15,
-                topP: 0.85,
-                responseMimeType: 'application/json',
-              ),
-            )
-            .timeout(const Duration(seconds: 12));
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw StateError('Nutrition AI unavailable: ${lastError.runtimeType}');
+  Future<String> _generateLocally(String prompt) async {
+    const client = LocalAiTextClient(operation: 'nutrition');
+    return client
+        .generateText(
+          model: LocalAiTextClient.modelId,
+          messages: [AiMessage.user(prompt)],
+          systemInstruction:
+              'Bạn là Nabi, trợ lý wellness dinh dưỡng. Chỉ dùng dữ liệu app cung cấp; không chẩn đoán, không kê thuốc, không phát minh số.',
+          generationConfig: const AiGenerationConfig(
+            temperature: 0.15,
+            topP: 0.85,
+            responseFormat: AiResponseFormat.json,
+          ),
+        )
+        .timeout(const Duration(seconds: 20));
   }
-
-  List<String> _modelCandidates() {
-    final values = <String?>[
-      AppEnv.maybeString('GEMINI_CHAT_MODEL'),
-      AppEnv.maybeString('GEMINI_PLAN_MODEL'),
-      ..._csv(AppEnv.maybeString('GEMINI_CHAT_FALLBACK_MODELS')),
-      ..._csv(AppEnv.maybeString('GEMINI_PLAN_FALLBACK_MODELS')),
-      'gemini-2.5-flash',
-    ];
-    final result = <String>[];
-    for (final value in values) {
-      final normalized = value?.trim();
-      if (normalized != null &&
-          normalized.isNotEmpty &&
-          !result.contains(normalized)) {
-        result.add(normalized);
-      }
-    }
-    return result;
-  }
-
-  List<String?> _csv(String? value) =>
-      value?.split(',').map((entry) => entry.trim()).toList() ?? const [];
 }

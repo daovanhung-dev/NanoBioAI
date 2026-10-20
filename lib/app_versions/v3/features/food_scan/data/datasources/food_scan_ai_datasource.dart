@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
-import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
-import 'package:nano_app/core/config/app_env.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 
 import '../../application/food_scan_prompts.dart';
 import '../../domain/entities/food_scan_models.dart';
@@ -49,33 +48,33 @@ class FoodScanAiDatasource {
     }
 
     try {
-      final data = base64Encode(await file.readAsBytes());
+      final imageBytes = await file.readAsBytes();
       final text = await client.generateText(
         model: _model(),
-        contents: [
-          GeminiContent.userWithInlineData(
-            text: FoodScanPrompts.vision(),
-            mimeType: 'image/jpeg',
-            base64Data: data,
+        messages: [
+          AiMessage.user(
+            FoodScanPrompts.vision(),
+            images: [
+              AiImageAttachment(bytes: imageBytes, mimeType: 'image/jpeg'),
+            ],
           ),
         ],
-        generationConfig: const GeminiGenerationConfig(
-          candidateCount: 1,
+        generationConfig: const AiGenerationConfig(
           temperature: 0.15,
           topP: 0.8,
-          responseMimeType: 'application/json',
+          responseFormat: AiResponseFormat.json,
         ),
       );
       return _parseVision(text);
     } on FoodScanException {
       rethrow;
-    } on GeminiApiException catch (error) {
-      throw _mapGeminiError(error);
+    } on AiInferenceException catch (error) {
+      throw _mapInferenceError(error);
     } catch (error) {
       throw FoodScanException(
         code: 'AI_VISION_FAILED',
         userMessage:
-            'Nabi chưa thể phân tích ảnh món ăn lúc này. Bạn kiểm tra mạng rồi thử lại nhé.',
+            'Nabi chưa thể phân tích ảnh món ăn lúc này. Bạn thử lại sau khi model đã sẵn sàng nhé.',
         cause: error,
       );
     }
@@ -98,8 +97,8 @@ class FoodScanAiDatasource {
     try {
       final text = await _client(operation: 'health').generateText(
         model: _model(),
-        contents: [
-          GeminiContent.user(
+        messages: [
+          AiMessage.user(
             FoodScanPrompts.health(
               healthContext: healthContext,
               items: items,
@@ -108,11 +107,10 @@ class FoodScanAiDatasource {
             ),
           ),
         ],
-        generationConfig: const GeminiGenerationConfig(
-          candidateCount: 1,
+        generationConfig: const AiGenerationConfig(
           temperature: 0.1,
           topP: 0.75,
-          responseMimeType: 'application/json',
+          responseFormat: AiResponseFormat.json,
         ),
       );
       final decoded = _decodeObject(text);
@@ -134,8 +132,8 @@ class FoodScanAiDatasource {
         missingHealthData: evaluation.missingHealthData,
         confidence: evaluation.confidence,
       );
-    } on GeminiApiException catch (error) {
-      throw _mapGeminiError(error, healthEvaluation: true);
+    } on AiInferenceException catch (error) {
+      throw _mapInferenceError(error, healthEvaluation: true);
     } catch (error) {
       throw FoodScanException(
         code: 'HEALTH_EVALUATION_FAILED',
@@ -149,16 +147,13 @@ class FoodScanAiDatasource {
   AiTextClient _client({required String operation}) {
     final override = clientOverride;
     if (override != null) return override;
-    return NabiAiBackendClient(
-      functionName: 'food-scan-analyze',
-      operation: operation,
-    );
+    return LocalAiTextClient(operation: operation);
   }
 
   String _model() {
     final model = modelOverride?.trim();
     if (model != null && model.isNotEmpty) return model;
-    return AppEnv.maybeString('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+    return LocalAiTextClient.modelId;
   }
 
   FoodVisionAnalysis _parseVision(String source) {
@@ -240,14 +235,47 @@ class FoodScanAiDatasource {
     return decoded.map((key, value) => MapEntry(key.toString(), value));
   }
 
-  FoodScanException _mapGeminiError(
-    GeminiApiException error, {
+  FoodScanException _mapInferenceError(
+    AiInferenceException error, {
     bool healthEvaluation = false,
   }) {
+    if (error.status == 'unsupported_platform') {
+      return FoodScanException(
+        code: 'AI_UNAVAILABLE_ON_PLATFORM',
+        userMessage: error.message,
+        cause: error,
+      );
+    }
+    if (error.status == 'vision_model_unsupported') {
+      return FoodScanException(
+        code: 'VISION_MODEL_UNSUPPORTED',
+        userMessage:
+            'Thiết bị chưa đủ tài nguyên để chạy model ảnh. Ảnh vẫn ở trên thiết bị và không được gửi đi nơi khác.',
+        cause: error,
+      );
+    }
+    if (error.status == 'insufficient_storage') {
+      return FoodScanException(
+        code: 'VISION_MODEL_STORAGE_UNAVAILABLE',
+        userMessage:
+            'Thiết bị không đủ dung lượng để tải model ảnh. Hãy giải phóng bộ nhớ rồi thử lại; ảnh không được gửi đi nơi khác.',
+        cause: error,
+      );
+    }
+    if (error.status == 'model_download_failed' ||
+        error.status == 'model_checksum_failed') {
+      return FoodScanException(
+        code: 'VISION_MODEL_DOWNLOAD_FAILED',
+        userMessage:
+            'Model ảnh chưa tải xong hoặc không khớp checksum. Kiểm tra kết nối rồi thử lại; ảnh vẫn ở trên thiết bị.',
+        cause: error,
+      );
+    }
     if (error.isAuthenticationFailure) {
       return FoodScanException(
         code: 'AI_AUTHENTICATION',
-        userMessage: 'Dịch vụ AI chưa sẵn sàng. Bạn thử lại sau nhé.',
+        userMessage:
+            'Model AI trên thiết bị chưa sẵn sàng. Bạn thử lại sau nhé.',
         cause: error,
       );
     }
@@ -256,7 +284,7 @@ class FoodScanAiDatasource {
         code: 'AI_TEMPORARILY_UNAVAILABLE',
         userMessage: healthEvaluation
             ? 'Nabi chưa đánh giá được sức khỏe lúc này. Phần dinh dưỡng vẫn được giữ để bạn thử lại.'
-            : 'AI đang bận hoặc mạng chưa ổn định. Ảnh vẫn ở trên máy, bạn thử lại nhé.',
+            : 'Model trên thiết bị đang bận. Ảnh vẫn ở trên máy, bạn thử lại nhé.',
         cause: error,
       );
     }

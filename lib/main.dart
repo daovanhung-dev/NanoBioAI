@@ -77,6 +77,13 @@ Future<void> _bootstrapApplication() async {
             final result = await ref
                 .read(generatedPlanServiceProvider)
                 .generateInitialGuestPlan(days: 7, onProgress: onProgress);
+            if (result.awaitingMealApproval &&
+                result.pendingMealProposal != null) {
+              return OnboardingCompletionResult.awaitingCustomMeal(
+                requestId: result.requestId,
+                proposal: result.pendingMealProposal!,
+              );
+            }
             return OnboardingCompletionResult.generatedInitialPlan(
               generationSource: result.generationSource,
             );

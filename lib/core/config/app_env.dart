@@ -166,27 +166,8 @@ class AppEnv {
       'ONBOARDING_AI_DEV_CHECK_ENABLED' => const String.fromEnvironment(
         'ONBOARDING_AI_DEV_CHECK_ENABLED',
       ),
-      'GEMINI_MODEL' => const String.fromEnvironment('GEMINI_MODEL'),
-      'GEMINI_CARE_MODEL' => const String.fromEnvironment('GEMINI_CARE_MODEL'),
-      'GEMINI_CARE_FALLBACK_MODELS' => const String.fromEnvironment(
-        'GEMINI_CARE_FALLBACK_MODELS',
-      ),
       'NABI_AI_CARE_ENABLED' => const String.fromEnvironment(
         'NABI_AI_CARE_ENABLED',
-      ),
-      'GEMINI_PLAN_MODEL' => const String.fromEnvironment('GEMINI_PLAN_MODEL'),
-      'GEMINI_PLAN_FALLBACK_MODELS' => const String.fromEnvironment(
-        'GEMINI_PLAN_FALLBACK_MODELS',
-      ),
-      'GEMINI_FALLBACK_MODELS' => const String.fromEnvironment(
-        'GEMINI_FALLBACK_MODELS',
-      ),
-      'GEMINI_PLAN_OVERFLOW_MODELS' => const String.fromEnvironment(
-        'GEMINI_PLAN_OVERFLOW_MODELS',
-      ),
-      'GEMINI_CHAT_MODEL' => const String.fromEnvironment('GEMINI_CHAT_MODEL'),
-      'GEMINI_CHAT_FALLBACK_MODELS' => const String.fromEnvironment(
-        'GEMINI_CHAT_FALLBACK_MODELS',
       ),
       _ => null,
     };

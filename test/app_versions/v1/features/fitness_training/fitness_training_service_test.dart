@@ -8,7 +8,7 @@ import 'package:nano_app/app_versions/v1/features/fitness_training/domain/entiti
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/entities/fitness_training_program.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/repositories/fitness_training_repository.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/services/fitness_program_validator.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 
 void main() {
@@ -505,24 +505,24 @@ class _FakeAiClient implements AiTextClient {
   _FakeAiClient(this.respond, {this.onRequest});
 
   final String Function() respond;
-  final void Function(List<GeminiContent> contents)? onRequest;
+  final void Function(List<AiMessage> messages)? onRequest;
 
   @override
   Future<String> generateText({
     required String model,
-    required List<GeminiContent> contents,
-    required GeminiGenerationConfig generationConfig,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
     String? systemInstruction,
   }) async {
-    onRequest?.call(contents);
+    onRequest?.call(messages);
     return respond();
   }
 
   @override
   Stream<String> streamText({
     required String model,
-    required List<GeminiContent> contents,
-    required GeminiGenerationConfig generationConfig,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
     String? systemInstruction,
   }) => Stream.value('');
 }

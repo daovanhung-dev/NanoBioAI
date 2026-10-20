@@ -53,8 +53,8 @@ không có cấu hình thì các capability đó không được xem là hoạt 
 | Khu vực | Trạng thái theo source |
 | --- | --- |
 | V1 guest/basic | `Implemented` cho onboarding 9 bước, hồ sơ/local data, dashboard, lịch, meal plan, tracking cơ bản và notification. |
-| V1 AI plan | `Implemented`: gửi yêu cầu giới hạn qua Edge Function `nabi-ai-generate`; có local catalog fallback cho luồng tạo plan khi backend chưa sẵn sàng. |
-| V1 AI chat/voice | `Partial`: route cần đăng nhập; chat/voice cần AI backend và quota backend, voice còn có membership access gate. |
+| V1 AI plan | `Implemented`: tạo gợi ý bằng model trên thiết bị; Supabase tiếp tục xử lý đăng nhập, dữ liệu và quota hiện có. |
+| V1 AI chat/voice | `Partial`: route cần đăng nhập; nội dung AI chạy trên thiết bị, các giới hạn/quyền hiện có vẫn cần Supabase. |
 | V1 planned UI | `Placeholder`: sleep, stress, community; personal goals chỉ là preview không lưu. |
 | V2 authenticated | `Implemented/Partial`: auth, merge/cloud sync, entitlement, quota, health score, payment request và Wellness Rewards có đường runtime; cần backend để kiểm chứng end-to-end. |
 | M20-M29 | `Placeholder`: catalog và access/upgrade/coming-soon UI; chưa có business storage/flow cho từng module. |
@@ -66,22 +66,17 @@ không có cấu hình thì các capability đó không được xem là hoạt 
 
 Chi tiết và evidence path xem `SYSTEM_FEATURES_DOCUMENTATION.md`.
 
-## AI transport và cấu hình
+## AI trên thiết bị và cấu hình
 
-Runtime production gửi yêu cầu AI có giới hạn tới Supabase Edge Function
-`nabi-ai-generate` qua `NabiAiBackendClient`. Edge Function mới gọi Gemini;
-`GeminiRestClient` chỉ còn là seam cho test hoặc tooling được inject rõ ràng.
-Dự án **không khai báo Gemini Dart SDK** (`google_generative_ai`) trong
-`pubspec.yaml`.
+Ứng dụng native yêu cầu chọn và tải một model văn bản trước khi vào phần dành
+cho người dùng. Model chạy bằng `llamadart` trên thiết bị; Food Scan tải riêng
+model nhận ảnh trong lần quét đầu tiên. NanoBioAI không gửi prompt, câu trả lời
+hoặc ảnh tới dịch vụ AI từ xa. Bản web giữ các luồng không dùng AI và thông báo
+khi người dùng mở tính năng cần runtime local.
 
-Ứng dụng chỉ cần cấu hình public Supabase (`SUPABASE_URL` và
-`SUPABASE_ANON_KEY`) từ Dart define, dotenv khả dụng ở môi trường cục bộ, hoặc
-`assets/config/auth.env`. `GEMINI_API_KEY` phải được đặt làm secret của Edge
-Function và không được truyền qua Dart define, Android `BuildConfig`, asset hay
-APK. Sau khi thay đổi backend, deploy `nabi-ai-generate` tới đúng Supabase
-project rồi chạy kiểm tra kết nối trong `tools/test_gemini_connection.ps1`.
-
-Không commit API key, service-role key, session token hoặc `.env` thật.
+Supabase vẫn được cấu hình bằng `SUPABASE_URL` và `SUPABASE_ANON_KEY` để phục vụ
+đăng nhập, dữ liệu, đồng bộ và quota hiện có. Không cần cấu hình API key AI
+trong app. Không commit service-role key, session token hoặc `.env` thật.
 
 ## Stack và identity
 

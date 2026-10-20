@@ -1,6 +1,29 @@
 class LogRedactor {
   const LogRedactor._();
 
+  static const _safeLocalAiTelemetryKeys = <String>{
+    'availableTokens',
+    'candidateCount',
+    'candidateGroups',
+    'contextSize',
+    'durationMs',
+    'errorCode',
+    'errorType',
+    'firstTokenMs',
+    'hasSystemInstruction',
+    'inferenceDurationMs',
+    'inferenceThreads',
+    'inputTokens',
+    'maxOutputTokens',
+    'model',
+    'outputReserveTokens',
+    'outputTokens',
+    'queueWaitMs',
+    'status',
+    'streamBatchTokenThreshold',
+    'tokenizationDurationMs',
+  };
+
   static final RegExp _sensitiveKey = RegExp(
     r'(authorization|bearer|token|access[_-]?token|refresh[_-]?token|jwt|api[_-]?key|apikey|x-goog-api-key|password|passcode|pin|secret|cookie|session|email|phone|address|prompt|payload|response|conversation|health|condition|medication|treatment|allergy|weight|height|bmi|score|image|audio)',
     caseSensitive: false,
@@ -45,6 +68,11 @@ class LogRedactor {
   }
 
   static Object? value(String key, Object? raw, {int depth = 0}) {
+    if (_safeLocalAiTelemetryKeys.contains(key)) {
+      if (raw == null || raw is bool || raw is num) return raw;
+      if (raw is String) return text(raw, maxLength: 120);
+      return '[INVALID_TELEMETRY_VALUE]';
+    }
     if (_sensitiveKey.hasMatch(key)) return '[REDACTED]';
     if (depth > 4) return '[MAX_DEPTH]';
     if (raw == null || raw is bool || raw is num) return raw;
@@ -72,16 +100,14 @@ class LogRedactor {
   }
 
   static Map<String, Object?> metadata(Map<String, Object?> raw) {
-    return raw.map(
-      (key, value_) => MapEntry(key, value(key, value_)),
-    );
+    return raw.map((key, value_) => MapEntry(key, value(key, value_)));
   }
 
   static String sanitizeUri(Uri uri) {
-    final path = text(uri.path, maxLength: 260).replaceAll(
-      RegExp(r'/\d{5,}(?=/|$)'),
-      '/[REDACTED_ID]',
-    );
+    final path = text(
+      uri.path,
+      maxLength: 260,
+    ).replaceAll(RegExp(r'/\d{5,}(?=/|$)'), '/[REDACTED_ID]');
     final queryKeys = uri.queryParametersAll.keys.toList()..sort();
     if (queryKeys.isEmpty) return path.isEmpty ? '/' : path;
     return '${path.isEmpty ? '/' : path}?keys=${queryKeys.join(',')}';

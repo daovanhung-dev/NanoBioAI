@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
-import 'package:nano_app/app_versions/v1/services/ai/nabi_ai_backend_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
+import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
 
@@ -30,7 +31,7 @@ class FitnessTrainingService {
        now = now ?? DateTime.now,
        idGenerator = idGenerator ?? _uuidV4;
 
-  static const model = 'gemini-2.5-flash';
+  static const model = LocalAiTextClient.modelId;
   static const _generateOperation = 'fitness_training_generate';
   static const _replanOperation = 'fitness_training_replan';
   static final Map<String, Future<FitnessTrainingProgram>> _inFlight = {};
@@ -358,26 +359,15 @@ class FitnessTrainingService {
       throw const FitnessProgramValidationException('no_safe_exercises');
     }
 
-    final response = await aiClientFactory(operation).generateText(
+    final client = aiClientFactory(operation);
+    final response = await _generateProgramResponse(
+      client: client,
+      intake: workoutIntake,
+      exercises: exercises,
+      startDate: startDate,
+      firstDayIndex: firstDayIndex,
+      checkIn: checkIn,
       model: model,
-      contents: [
-        GeminiContent.user(
-          _prompt(
-            intake: workoutIntake,
-            exercises: exercises,
-            startDate: startDate,
-            firstDayIndex: firstDayIndex,
-            checkIn: checkIn,
-          ),
-        ),
-      ],
-      generationConfig: const GeminiGenerationConfig(
-        candidateCount: 1,
-        maxOutputTokens: 12288,
-        temperature: 0.2,
-        responseMimeType: 'application/json',
-      ),
-      systemInstruction: _systemInstruction,
     );
 
     final stamp = now().toUtc();
@@ -444,9 +434,10 @@ class FitnessTrainingService {
     required List<FitnessExercise> exercises,
     required DateTime startDate,
     required int firstDayIndex,
+    int lastDayIndex = 27,
     FitnessWeeklyCheckIn? checkIn,
   }) {
-    final endDay = 27;
+    final endDay = lastDayIndex;
     final exerciseRows = exercises
         .map(
           (exercise) => {
@@ -490,6 +481,112 @@ DATA=${jsonEncode(payload)}
         .trim();
   }
 
+  Future<String> _generateProgramResponse({
+    required AiTextClient client,
+    required FitnessTrainingIntake intake,
+    required List<FitnessExercise> exercises,
+    required DateTime startDate,
+    required int firstDayIndex,
+    required String model,
+    FitnessWeeklyCheckIn? checkIn,
+  }) async {
+    if (client is! AiContextAwareClient) {
+      return client.generateText(
+        model: model,
+        messages: [
+          AiMessage.user(
+            _prompt(
+              intake: intake,
+              exercises: exercises,
+              startDate: startDate,
+              firstDayIndex: firstDayIndex,
+              checkIn: checkIn,
+            ),
+          ),
+        ],
+        generationConfig: const AiGenerationConfig(
+          maxOutputTokens: 12288,
+          temperature: 0.2,
+          responseFormat: AiResponseFormat.json,
+        ),
+        systemInstruction: _systemInstruction,
+      );
+    }
+    final contextEstimator = client as AiContextAwareClient;
+
+    final contextSize = await contextEstimator.selectedContextSize();
+    final outputBudget = max(384, contextSize ~/ 2);
+    final generatedDays = <Object?>[];
+    for (var chunkStart = firstDayIndex; chunkStart <= 27; chunkStart += 7) {
+      final chunkEnd = min(27, chunkStart + 6);
+      var candidateCount = min(24, exercises.length);
+      final minimumCandidates = min(4, exercises.length);
+      late String prompt;
+      late List<FitnessExercise> candidates;
+      while (true) {
+        candidates = exercises.take(candidateCount).toList(growable: false);
+        prompt = _prompt(
+          intake: intake,
+          exercises: candidates,
+          startDate: startDate,
+          firstDayIndex: chunkStart,
+          lastDayIndex: chunkEnd,
+          checkIn: checkIn,
+        );
+        final tokenCount = await contextEstimator.estimateTokens(prompt);
+        if (tokenCount + outputBudget + 32 <= contextSize) break;
+        if (candidateCount <= minimumCandidates) {
+          throw const AIRequestTooLargeException();
+        }
+        candidateCount = max(minimumCandidates, candidateCount ~/ 2);
+      }
+
+      final response = await client.generateText(
+        model: model,
+        messages: [AiMessage.user(prompt)],
+        generationConfig: const AiGenerationConfig(
+          maxOutputTokens: 12288,
+          temperature: 0.2,
+          responseFormat: AiResponseFormat.json,
+        ),
+        systemInstruction: _systemInstruction,
+      );
+      final decoded = _decodeProgramChunk(response);
+      final candidateIds = candidates.map((item) => item.id).toSet();
+      for (final day in decoded) {
+        if (day is Map && day['workout'] is Map) {
+          final workout = day['workout'] as Map;
+          final movements = workout['exercises'];
+          if (movements is List) {
+            for (final movement in movements.whereType<Map>()) {
+              final id = movement['exercise_id']?.toString();
+              if (id != null && id.isNotEmpty && !candidateIds.contains(id)) {
+                throw const FormatException(
+                  'Model selected an exercise outside its prompt shortlist.',
+                );
+              }
+            }
+          }
+        }
+      }
+      generatedDays.addAll(decoded);
+    }
+    return jsonEncode({'days': generatedDays});
+  }
+
+  List<Object?> _decodeProgramChunk(String source) {
+    var text = source.trim();
+    if (text.startsWith('```')) {
+      text = text.replaceFirst(RegExp(r'^```(?:json)?\s*'), '');
+      text = text.replaceFirst(RegExp(r'\s*```$'), '');
+    }
+    final decoded = jsonDecode(text);
+    if (decoded is! Map || decoded['days'] is! List) {
+      throw const FormatException('Local model returned invalid workout JSON.');
+    }
+    return (decoded['days'] as List).cast<Object?>();
+  }
+
   Future<FitnessTrainingProgram> _singleFlight(
     String key,
     Future<FitnessTrainingProgram> Function() action,
@@ -514,7 +611,7 @@ DATA=${jsonEncode(payload)}
       '${value.day.toString().padLeft(2, '0')}';
 
   static AiTextClient _defaultClient(String operation) =>
-      NabiAiBackendClient(operation: operation);
+      LocalAiTextClient(operation: operation);
 
   static String _uuidV4() {
     final random = Random.secure();

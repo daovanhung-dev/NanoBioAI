@@ -89,10 +89,11 @@ khi chạy internal-track purchase test. App chỉ gửi giao dịch tới Edge 
 `google_play_purchase_ledger` và cập nhật membership qua RPC bảo mật. Client
 không được tự cấp gói từ trạng thái giao dịch cục bộ.
 
-AI runtime dùng Edge Function `nabi-ai-generate`. Gemini API key chỉ được đặt
-ở secret của Edge Function; Flutter chỉ gửi prompt đã giới hạn kích thước và
-không nhận/ghi credential nhà cung cấp. `report-ai-content` cho phép guest gửi
-phản hồi có giới hạn tốc độ và lưu qua service role.
+Ứng dụng NanoBioAI hiện chạy suy luận nội dung bằng model local và không gọi
+Edge Function `nabi-ai-generate` hoặc `food-scan-analyze`. Các Edge Function,
+secret đã cấu hình và dữ liệu vận hành phía Supabase được giữ nguyên theo phạm
+vi chuyển đổi; app vẫn dùng Supabase cho đăng nhập, đồng bộ, dữ liệu và quota
+hiện có. `report-ai-content` vẫn nhận phản hồi do người dùng chủ động gửi.
 
 Website NanoBio dùng Edge Function `register-early-access` để nhận số điện thoại,
 họ tên, tuổi, giới tính, địa chỉ và consent. Function tự xác thực dữ liệu, ép
@@ -157,12 +158,10 @@ URL của release. Giữ phone-HMAC key ổn định để suppression token ti�
 cấp trùng sau retention; không lưu giá trị secret trong repository. Nếu secret
 hoặc RPC bảo vệ không khả dụng, endpoint từ chối submit.
 
-Food Scan dùng Edge Function riêng `food-scan-analyze` cho hai operation
-`vision` và `health`. Function xác thực JWT, kiểm tra quyền Plus/FamilyPlus
-qua `effective_user_access`, giới hạn request theo user, rồi chuyển tiếp tạm
-thời tới Gemini. Ảnh và kết quả Food Scan không được lưu ở Edge Function; app
-tiếp tục lưu kết quả local và chỉ tạo nutrition log sau khi người dùng xác
-nhận đã ăn.
+Edge Function `food-scan-analyze` và `nabi-ai-generate` vẫn có source và cấu
+hình server cũ để bảo toàn trạng thái Supabase. NanoBioAI app hiện không gọi
+hai function này: Food Scan và các tác vụ AI khác dùng model local. Không chạy
+các lệnh deploy/secret trong phần hướng dẫn cũ để thực hiện chuyển đổi này.
 
 Trước khi deploy `nabi-ai-generate`, export key ở shell an toàn (không commit
 vào repo), rồi đặt secret vào đúng Supabase project:

@@ -7,7 +7,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - App: NanoBio / NamiAI - tro ly suc khoe AI bang Flutter.
 - Persona UI: Nabi- am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo code hien co.
-- Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, Gemini REST client noi bo (khong co Gemini Dart SDK), local notifications `19.5.0`.
+- Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, app-owned `ai_local` + `llamadart` on-device AI runtime, local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 36`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
 - Embedded project: `iot/xiaozhi-esp32/` is an independent XiaoZhi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.

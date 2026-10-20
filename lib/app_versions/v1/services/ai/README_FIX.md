@@ -1,30 +1,40 @@
-# NanoBio AI Chat — release transport
+# NanoBioAI local inference
 
-Lifecycle: `Current source note`. Production Flutter code sends bounded AI
-requests to the `nabi-ai-generate` Supabase Edge Function. The Gemini provider
-credential is an Edge Function secret and is not read from Flutter runtime
-configuration or Android `BuildConfig`.
+## Runtime contract
 
-`GeminiRestClient` remains a transport seam for unit tests and explicitly
-injected local tooling. It is not constructed by the production providers.
-`AIChatService`, NaBi Care, Sleep Analysis and Food Scan use
-`NabiAiBackendClient` unless a test supplies an explicit fake/client.
+Production feature services depend on the provider-neutral `AiTextClient` in
+`ai_text_client.dart`. The production implementation is `LocalAiTextClient`,
+backed by the app-owned runtime in `lib/core/ai_local/`; it does not import or
+depend on the standalone `ai_local` application.
 
-If the backend is unavailable or the function returns an invalid response, the
-app fails closed with user-safe copy or a deterministic local fallback where
-that feature's contract permits it. No client-side Gemini key, provider secret,
-or unrestricted provider endpoint is bundled in the release artifact.
+Native user builds require a selected and installed text model before entering
+the user app. The selection is persisted locally and loaded on the next start.
+Food Scan installs its vision model and projector on first use. Downloaded
+assets are resumed when possible and SHA-256 checked before installation.
+Inference failures stay local and do not fall through to a remote AI service.
 
-## Backend transport contract
+The web implementation reports `unsupported_platform`. Web routes that do not
+need AI remain available. AI features must show this state instead of sending
+requests to an Edge Function.
 
-- Function: `supabase/functions/nabi-ai-generate/index.ts`
-- Authentication: Supabase session JWT, verified in the Edge runtime.
-- Provider authentication: `GEMINI_API_KEY` Edge Function secret only.
-- Request limits: bounded body, content count, prompt length, and response length.
-- Tests: `supabase/functions/nabi-ai-generate/handler_test.ts` plus Flutter fake
-  transport tests; deployed runtime evidence remains a release gate.
+## Supabase boundary
 
-Do not add a `GEMINI_API_KEY` asset, Gradle property, Dart define in a release
-profile, or native `BuildConfig` field. If local development needs a provider
-credential, keep it outside the repository and use only an explicit test or
-backend environment.
+Supabase remains in use for authentication, data, cloud sync, and existing
+quota workflows. The NanoBioAI app no longer invokes the
+`nabi-ai-generate` or `food-scan-analyze` AI functions. Their source, deployed
+secrets, and deployment state are outside this app migration and remain
+untouched.
+
+## Model and prompt limits
+
+Prompt construction uses the selected local model's context size and tokenizer
+when the client exposes context estimation. Chat history is pruned to the
+recent messages that fit. Meal and exercise catalog prompts use eligible code
+shortlists; the existing catalog normalizers remain authoritative and reject
+unknown codes, duplicates, or unsafe structure. A context failure never
+triggers remote inference.
+
+## Configuration
+
+The app uses public Supabase configuration for existing account and data flows.
+No AI API key or `GEMINI_*` setting is required by NanoBioAI.

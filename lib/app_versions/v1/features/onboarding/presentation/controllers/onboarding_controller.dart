@@ -5,6 +5,7 @@ import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/providers/daily_routine_preferences_provider.dart';
@@ -59,7 +60,7 @@ class OnboardingState {
     this.isSaving = false,
     this.savedLog,
     this.initialPlanGenerationSource = PlanGenerationSource.unknown,
-    this.initialPlanProgress = const GeneratedPlanProgress(totalDays: 7),
+    this.initialPlanProgress = const GeneratedPlanProgress.empty(totalDays: 7),
     this.email = '',
     this.phone = '',
     this.fullName = '',
@@ -652,7 +653,7 @@ class OnboardingController extends Notifier<OnboardingState> {
     AppLogger.info(_tag, 'Starting onboarding save process');
     state = state.copyWith(
       isSaving: true,
-      initialPlanProgress: const GeneratedPlanProgress(totalDays: 7),
+      initialPlanProgress: const GeneratedPlanProgress.empty(totalDays: 7),
     );
 
     var profileSaved = false;
@@ -699,6 +700,14 @@ class OnboardingController extends Notifier<OnboardingState> {
         generatedPlan = completionResult.generatedInitialPlan;
         planGenerated = generatedPlan;
         generationSource = completionResult.generationSource;
+        if (completionResult.awaitingMealApproval) {
+          state = state.copyWith(
+            isSaving: false,
+            savedLog:
+                'Nabi đã lưu hồ sơ. Hãy xem món được đề xuất rồi duyệt hoặc yêu cầu món khác để tiếp tục tạo lịch.',
+          );
+          return;
+        }
       } on AIOverloadedException catch (error, stackTrace) {
         AppLogger.error(
           _tag,
@@ -736,6 +745,9 @@ class OnboardingController extends Notifier<OnboardingState> {
           );
         }
         if (error is ScheduleCandidatesUnavailableException) {
+          throw OnboardingInitialPlanException(error.userMessage);
+        }
+        if (error is ScheduleMealClassificationException) {
           throw OnboardingInitialPlanException(error.userMessage);
         }
         AppLogger.error(
@@ -840,6 +852,62 @@ class OnboardingController extends Notifier<OnboardingState> {
       });
       AppLogger.separator(_tag);
 
+      rethrow;
+    }
+  }
+
+  void updateInitialPlanProgress(GeneratedPlanProgress progress) {
+    state = state.copyWith(initialPlanProgress: progress);
+  }
+
+  Future<GeneratedPlanResult> respondToPendingCustomMeal({
+    required GeneratedCustomMealProposal proposal,
+    required bool approve,
+  }) async {
+    final requestId = state.initialPlanProgress.requestId;
+    if (requestId.isEmpty) {
+      throw StateError('Không tìm thấy yêu cầu tạo lịch đang chờ duyệt.');
+    }
+    state = state.copyWith(isSaving: true);
+    try {
+      final result = await ref
+          .read(generatedPlanServiceProvider)
+          .respondToCustomMealProposal(
+            requestId: requestId,
+            proposal: proposal,
+            approve: approve,
+            onProgress: (progress) {
+              state = state.copyWith(initialPlanProgress: progress);
+            },
+          );
+      if (result.awaitingMealApproval) {
+        state = state.copyWith(
+          isSaving: false,
+          savedLog: 'Món mới đang chờ bạn xem và duyệt.',
+        );
+        return result;
+      }
+
+      await _repository.markCompleted();
+      await AppPrefs.setOnboardingCompleted(true);
+      if (state.medicationReminders.isNotEmpty) {
+        try {
+          await NotificationBootstrap.requestMedicationReminderPermissionAndEnable();
+        } catch (error) {
+          AppLogger.warning(
+            _tag,
+            'Medication reminder setup did not finish; errorType=${error.runtimeType}',
+          );
+        }
+      }
+      state = state.copyWith(
+        isSaving: false,
+        savedLog: 'Mình đã lưu hồ sơ sức khỏe và lịch đầu tiên của bạn.',
+        initialPlanGenerationSource: result.generationSource,
+      );
+      return result;
+    } catch (error) {
+      state = state.copyWith(isSaving: false);
       rethrow;
     }
   }

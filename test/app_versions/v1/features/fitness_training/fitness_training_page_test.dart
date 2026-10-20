@@ -13,7 +13,7 @@ import 'package:nano_app/app_versions/v1/features/fitness_training/domain/reposi
 import 'package:nano_app/app_versions/v1/features/fitness_training/domain/services/fitness_program_validator.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/presentation/pages/fitness_training_page.dart';
 import 'package:nano_app/app_versions/v1/features/fitness_training/providers/fitness_training_providers.dart';
-import 'package:nano_app/app_versions/v1/services/ai/gemini_rest_client.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -361,16 +361,16 @@ class _FakeAiClient implements AiTextClient {
   @override
   Future<String> generateText({
     required String model,
-    required List<GeminiContent> contents,
-    required GeminiGenerationConfig generationConfig,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
     String? systemInstruction,
   }) async => respond();
 
   @override
   Stream<String> streamText({
     required String model,
-    required List<GeminiContent> contents,
-    required GeminiGenerationConfig generationConfig,
+    required List<AiMessage> messages,
+    required AiGenerationConfig generationConfig,
     String? systemInstruction,
   }) async* {}
 }

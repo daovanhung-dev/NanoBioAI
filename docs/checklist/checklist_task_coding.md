@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-10-16 |
+| Ngay cap nhat | 2026-10-18 |
 | Lifecycle | Current |
 | Source-truth baseline | `598daf04` + M22 local reminder slice |
 | Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
@@ -21,6 +21,13 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Partial | M04, M10, M17-M19 | Có luồng reachable nhưng chưa bao phủ toàn bộ capability DD/BD; xem gap tại `docs/DD/README.md`. |
 | Placeholder | M20-M21, M23-M29 | Chỉ catalog/access shell; M22 local reminder slice follows its approved DD. |
 | Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
+
+### NanoBioAI On-Device AI Migration — 2026-10-18
+
+- The app-owned `lib/core/ai_local/` runtime uses `ai_local` catalog/runtime patterns with `llamadart`; native Android, iOS, macOS, Linux and Windows builds require explicit text-model selection and download before entering user features. The stored model is loaded on later launches. Web remains available for non-AI features and returns an unsupported-platform message for AI.
+- Chat/Nabi Care, meal and exercise schedule generation, Body Metrics, Nutrition, Sleep, Fitness Training, Voice Chat text and Food Scan use the provider-neutral `AiTextClient`. Food Scan downloads its local vision model and projector on first use. Legacy Gemini REST and Supabase AI Edge clients, their key/header code and Gemini app build defines were removed; retained Supabase auth/sync/data/quota paths and server Edge sources were not changed.
+- Context budget comes from the selected model; chat keeps recent history and schedule prompts shortlist eligible candidates. Existing catalog normalization, unique-code/name checks, wellness safety filters, retry/fallback bounds and quota gateway remain. Remote AI is never a fallback.
+- Verification: focused local AI and feature suite PASS; targeted analysis PASS; Android debug APK build PASS; web release build PASS. Linux debug build remains blocked because CMake cannot find `clang++`. Native inference/setup/download acceptance, iOS/macOS/Windows build execution, Food Scan real-image inference and Supabase quota sandbox remain unverified.
 
 ### M02 Implementation Addendum — 2026-10-13
 
@@ -62,11 +69,27 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 - Physical runtime continuation: attached to the active `flutter run` session on Xiaomi 220333QPG Android 11, synced current files and hot-restarted. On-device SQLite moved from v35 to v36 and now has 3,163 meals (3,000 candidate + 163 legacy) and 40 exercises; existing profile, survey, staging, and other local rows remained. The existing profile is incomplete (`onboarding_status=in_progress`); its prior `initial_guest` request failed with 0 meals and exercises under staging prompt v10. No new Gemini request has been sent.
 - Evidence: `docs/test/real-device-3000-meal-onboarding-2026-10-16/README.md`. End-to-end onboarding and schedule generation still need an Android UI control surface; Gemini/quota result is not verified.
 
+### M02 Local Meal Catalog Prefilter — 2026-10-18
+
+- [x] Run deterministic Dart classification and profile filtering on the complete 3,163-meal catalog before the first AI request; expose the immutable filtered candidates in onboarding and additional-plan progress.
+- [x] With an empty profile, 3,113 items remain: breakfast 639, morning snack 41, lunch 597, afternoon snack 89, dinner 1,747. All five slots have at least seven unique candidates; active constraints can reduce counts and fail closed.
+- [x] Focused selector, service, prompt, progress-panel and full-catalog tests pass; targeted analysis passes. Insufficient-candidate service test confirms no AI call, schedule write or quota commit.
+- [ ] Verify a real on-device plan generation and quota flow; this turn exercised source/tests and a web debug run only.
+- [ ] Complete rights/provenance and professional review before changing any candidate approval or eligibility flags.
+
+### M02 Event-staged plan generation — 2026-10-19
+
+- [x] Validate schedule-eligible meal labels before AI and member quota; pause on invalid classifications.
+- [x] Stage stable events in chronological order, report progress per saved event, and commit only validated days.
+- [x] Pause on custom-meal proposals until approval/replacement; resume the same request without duplicate events.
+- [x] Focused schedule/catalog/onboarding tests (43), custom-meal schema tests (2), targeted Dart analysis, and Android debug APK build pass.
+- [ ] Verify end-to-end generation and quota on Android 11 with local Qwen; no Android device or active Flutter app was connected during this check.
+
 ### Next implementation tasks
 
-- [x] M02: chạy `flutter analyze`, format check và diff check cho các file thay đổi; cập nhật worklog/history.
+- [x] M02: chạy targeted Dart analysis, format check và diff check cho các file thay đổi; cập nhật worklog/history.
 - [x] M02: xác nhận phiên Flutter trên Xiaomi khởi động lại và SQLite v36 seed đủ 3.163 món/40 bài tập, giữ profile local.
-- [ ] M02: hoàn tất onboarding đang `in_progress`, gọi một lịch 7 ngày qua Edge Function -> Gemini và xác minh 35 món/14 hoạt động cùng quota; đang thiếu Android UI control surface trong CUA.
+- [ ] M02: hoàn tất onboarding trên thiết bị có model local, xác minh 35 món/14 hoạt động, quota check/commit và dữ liệu được lưu; chưa có bằng chứng inference trên thiết bị hoặc Supabase sandbox cho lượt hiện tại.
 - [ ] M02: thu thập rights/provenance và review công thức/dinh dưỡng/dị ứng trước khi tuyên bố candidate đã được xác minh hoặc bật cho policy strict.
 - [ ] M30: wire typed business snapshots/time ticks into
   `nabiNotificationControllerProvider`, render the M30 presentation state in the

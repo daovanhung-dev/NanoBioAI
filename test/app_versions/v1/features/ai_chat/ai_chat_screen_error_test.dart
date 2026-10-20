@@ -4,12 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/entities/chat_message_entity.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository.dart';
+import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/controllers/ai_chat_controller.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/providers/ai_chat_providers.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
+import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await AppPrefs.clearAll();
+  });
+
   testWidgets('shows and dismisses AI unavailable error banner', (
     tester,
   ) async {
@@ -30,16 +39,102 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Nabi ơi');
     await tester.pump();
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
-    await tester.pumpAndSettle();
+    await _waitForChatSendToFinish(tester);
+    await tester.pump();
 
     expect(find.text(AIChatUnavailableException.message), findsOneWidget);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
 
     await tester.tap(find.byTooltip('Đóng thông báo'));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(find.text(AIChatUnavailableException.message), findsNothing);
 
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('shows a retryable local inference timeout message', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          aiChatRepositoryProvider.overrideWithValue(
+            const _LocalInferenceTimeoutRepository(),
+          ),
+        ],
+        child: const MaterialApp(home: AIChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), 'Câu hỏi thử nghiệm');
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+    await _waitForChatSendToFinish(tester);
+    await tester.pump();
+
+    expect(
+      find.text(AILocalInferenceTimeoutException.userMessage),
+      findsOneWidget,
+    );
+    expect(find.text('Thử lại'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('keeps local runtime overload separate from inference timeout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          aiChatRepositoryProvider.overrideWithValue(
+            const _TypedFailureAIChatRepository(AIOverloadedException()),
+          ),
+        ],
+        child: const MaterialApp(home: AIChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), 'Câu hỏi thử nghiệm');
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+    await _waitForChatSendToFinish(tester);
+    await tester.pump();
+
+    expect(find.text(AIOverloadedException.userMessage), findsOneWidget);
+    expect(
+      find.text(AILocalInferenceTimeoutException.userMessage),
+      findsNothing,
+    );
+    expect(find.text('Thử lại'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+  });
+
+  testWidgets('shows a retryable local model unavailable message', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          aiChatRepositoryProvider.overrideWithValue(
+            const _TypedFailureAIChatRepository(AIModelUnavailableException()),
+          ),
+        ],
+        child: const MaterialApp(home: AIChatScreen()),
+      ),
+    );
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), 'Câu hỏi thử nghiệm');
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
+    await _waitForChatSendToFinish(tester);
+    await tester.pump();
+
+    expect(find.text(AIModelUnavailableException.userMessage), findsOneWidget);
+    expect(find.text('Thử lại'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
 
@@ -80,7 +175,8 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Nabi ơi');
     await tester.pump();
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
-    await tester.pumpAndSettle();
+    await _waitForChatSendToFinish(tester);
+    await tester.pump();
 
     expect(find.text('Nâng cấp Plus'), findsOneWidget);
     expect(find.text('Thử lại'), findsNothing);
@@ -91,6 +187,23 @@ void main() {
     expect(find.text('PAYMENT_DESTINATION:plus'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
+}
+
+Future<void> _waitForChatSendToFinish(WidgetTester tester) async {
+  final container = ProviderScope.containerOf(
+    tester.element(find.byType(AIChatScreen)),
+  );
+  for (
+    var attempt = 0;
+    attempt < 100 && container.read(aiChatControllerProvider).isLoading;
+    attempt++
+  ) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
+  }
+  expect(container.read(aiChatControllerProvider).isLoading, isFalse);
 }
 
 class _UnavailableAIChatRepository implements AIChatRepository {
@@ -120,5 +233,37 @@ class _QuotaExceededAIChatRepository implements AIChatRepository {
   @override
   Future<ChatMessageEntity> sendMessage(String message) {
     throw const UsageQuotaExceededException(UsageQuotaDecision.denied());
+  }
+}
+
+class _LocalInferenceTimeoutRepository implements AIChatRepository {
+  const _LocalInferenceTimeoutRepository();
+
+  @override
+  Future<void> clearHistory() async {}
+
+  @override
+  Future<List<ChatMessageEntity>> getChatHistory() async => const [];
+
+  @override
+  Future<ChatMessageEntity> sendMessage(String message) {
+    throw const AILocalInferenceTimeoutException();
+  }
+}
+
+class _TypedFailureAIChatRepository implements AIChatRepository {
+  const _TypedFailureAIChatRepository(this.failure);
+
+  final Object failure;
+
+  @override
+  Future<void> clearHistory() async {}
+
+  @override
+  Future<List<ChatMessageEntity>> getChatHistory() async => const [];
+
+  @override
+  Future<ChatMessageEntity> sendMessage(String message) {
+    throw failure;
   }
 }

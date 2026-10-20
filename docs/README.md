@@ -60,7 +60,8 @@ thay vì diễn giải như mô tả hành vi.
   sau khi backend xác nhận quyền; Sale/referral là trục độc lập trong user app.
 - Supabase là tùy chọn cho guest bootstrap; chức năng cloud/auth cần backend
   hợp lệ.
-- AI gọi Gemini REST qua Dio; dự án không khai báo Gemini Dart SDK.
+- AI native dùng `LocalAiTextClient` và `llamadart`; bản web trả trạng thái
+  không hỗ trợ cho tác vụ AI. App không gọi Gemini hoặc AI Edge Function.
 - SQLite hiện ở `DatabaseVersion.currentVersion = 24`.
 - Onboarding runtime có 9 bước.
 

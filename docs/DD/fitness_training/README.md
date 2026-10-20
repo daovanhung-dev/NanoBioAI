@@ -1,5 +1,11 @@
 # DD — Chế độ luyện tập
 
+> Runtime update 2026-10-18: Fitness Training now generates locally through
+> `LocalAiTextClient`, with context-sized weekly batches and eligible exercise
+> shortlists. Supabase quota/auth behavior remains in place. Gemini Edge
+> references below describe the earlier server-backed pilot and are not the
+> current app runtime route.
+
 | Thuộc tính | Giá trị |
 |---|---|
 | Module Code | M32 FITNESS_TRAINING |
@@ -14,7 +20,7 @@
 
 ## Mục đích
 
-Định nghĩa chế độ tập Gym-first cho người trưởng thành, bao gồm catalog nội dung, chương trình 4 tuần, lịch 7 ngày, AI Gemini, quota, an toàn, quyền riêng tư và đồng bộ. PO đã chỉ đạo triển khai pilot ngày 2026-10-05 dù chưa có reviewer sign-off; DD vẫn Draft và chưa được duyệt phát hành.
+Định nghĩa chế độ tập Gym-first cho người trưởng thành, bao gồm catalog nội dung, chương trình 4 tuần, lịch 7 ngày, AI local, quota, an toàn, quyền riêng tư và đồng bộ. PO đã chỉ đạo triển khai pilot ngày 2026-10-05 dù chưa có reviewer sign-off; DD vẫn Draft và chưa được duyệt phát hành.
 
 ## Tài liệu
 
@@ -30,7 +36,7 @@
 
 ## Dependencies
 
-M01 onboarding, M02 personal schedule AI, M03 schedule, M04 body metrics, M05 profile sync, M06 quota/entitlement, M09 notifications, M11 FamilyPlus, M19 audit/privacy, Gemini Edge Function và YouTube IFrame Player API.
+M01 onboarding, M02 personal schedule AI, M03 schedule, M04 body metrics, M05 profile sync, M06 quota/entitlement, M09 notifications, M11 FamilyPlus, M19 audit/privacy, local AI runtime và YouTube IFrame Player API.
 
 ## Approval Status
 

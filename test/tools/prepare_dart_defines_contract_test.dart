@@ -10,6 +10,7 @@ void main() {
       final script = File('tools/prepare_dart_defines.ps1').readAsStringSync();
 
       expect(script, isNot(contains('GEMINI_API_KEY')));
+      expect(script, isNot(contains('GEMINI_')));
       expect(script, contains('ConvertTo-Json'));
       expect(script, contains('nanobio_defines.json'));
       expect(script, contains('giá trị bí mật không được in ra terminal'));

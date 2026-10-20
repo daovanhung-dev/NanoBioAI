@@ -173,6 +173,7 @@ class AIChatRepositoryImpl
 
   Never _throwKnownOrUnavailable(Object error, StackTrace stackTrace) {
     if (error is AIConfigurationUnavailableException ||
+        error is AILocalInferenceTimeoutException ||
         error is AIAuthenticationException ||
         error is AINetworkException ||
         error is AIModelUnavailableException ||

@@ -37,9 +37,9 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 - Dart SDK constraint `^3.9.2`; the Flutter SDK version is not pinned in
   `pubspec.yaml`.
 - Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`.
-- Supabase `2.12.4`; Gemini uses the internal REST client in
-  `lib/app_versions/v1/services/ai/gemini_rest_client.dart` and no Gemini Dart
-  SDK is declared.
+- Supabase `2.12.4`; app AI uses the on-device runtime in `lib/core/ai_local/`
+  with `llamadart`. Supabase AI Edge Functions remain server-side source only;
+  NanoBioAI no longer calls them.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
 - SQLite database version: `DatabaseVersion.currentVersion = 34`.
 - Product access map: `v1` guest/basic, `v2` authenticated capabilities, `v3`

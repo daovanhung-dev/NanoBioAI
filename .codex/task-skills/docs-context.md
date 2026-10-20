@@ -2,11 +2,11 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 86 worklog(s).
+- Generated from 89 worklog(s).
 
 ## When To Read
 
-- Historical task type: unknown (38)
+- Historical task type: unknown (39)
 - Historical task type: docs-context (10)
 - Historical task type: Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. (6)
 - Historical task type: docs (5)
@@ -32,6 +32,8 @@
 - Historical task type: Tạo ảnh theo lô, rà soát theo công thức và xác nhận hiển thị qua asset bundle. (1)
 - Historical task type: Tạo lô ảnh, rà soát trực quan, nối asset và kiểm tra hiển thị từ asset bundle. (1)
 - Historical task type: docs-context va nhap snapshot local (1)
+- Historical task type: cải tiến luồng hiển thị AI Chat (1)
+- Historical task type: tính năng giao diện và trạng thái AI Chat (1)
 
 ## Common Modules
 

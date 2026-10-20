@@ -1,0 +1,29 @@
+{
+  "fixture_id": "local_ai_schedule_synthetic_guest",
+  "scope": "device_only",
+  "purpose": "Manual onboarding acceptance through Xiaomi UI with ADB",
+  "profile": {
+    "full_name": "QA Local Schedule",
+    "gender": "Nam",
+    "birth_year": 2000,
+    "occupation": "Nhân viên văn phòng",
+    "height_cm": 170,
+    "weight_kg": 65,
+    "goals": ["Giữ cân nặng ổn định"],
+    "conditions": [],
+    "allergies": [],
+    "medications": [],
+    "treatment": [],
+    "sleep_quality": "Ngủ khá ổn",
+    "activity_level": "Ít vận động",
+    "water_per_day": "1–1,5 lít/ngày"
+  },
+  "routine": {
+    "weekday_wake_time": "06:30",
+    "weekday_sleep_time": "22:30",
+    "weekend_wake_time": "07:30",
+    "weekend_sleep_time": "23:00"
+  },
+  "consent_to_generate_local_schedule": true,
+  "must_not_upload_to_supabase": true
+}
