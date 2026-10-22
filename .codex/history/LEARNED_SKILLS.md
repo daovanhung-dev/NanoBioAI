@@ -6,7 +6,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 - docs-context - Context and docs update: 90 worklog(s)
 - coding - Coding: 45 worklog(s)
-- supabase-schema - Supabase schema and RLS: 41 worklog(s)
+- supabase-schema - Supabase schema and RLS: 42 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
 - test - Test and verification: 23 worklog(s)
 - find-issues - Review and find issues: 10 worklog(s)

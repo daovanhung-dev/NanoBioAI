@@ -1,0 +1,1 @@
+"""Trusted payment verification."""

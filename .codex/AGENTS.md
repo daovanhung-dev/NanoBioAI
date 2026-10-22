@@ -11,6 +11,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - SQLite version: `DatabaseVersion.currentVersion = 36`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
 - Embedded project: `iot/xiaozhi-esp32/` is an independent XiaoZhi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
+- Self-hosted backend: `backend/` is a FastAPI modular monolith using Ubuntu PostgreSQL; backend rules are in `backend/AGENTS.md` and `backend/.agents/`.
 
 Source-of-truth order for current-state claims: code reachable from
 `lib/main.dart` -> executable SQLite/Supabase source -> package/platform config
@@ -22,6 +23,8 @@ remain evidence for their original snapshot, not current runtime truth.
 | Task | Command | Notes |
 | --- | --- | --- |
 | Install dependencies | `flutter pub get` | May update generated package state; do not run for docs-only work unless needed. |
+| Backend dependencies | `cd backend && uv sync` | Python backend only; does not touch Flutter dependencies. |
+| Backend quality | `cd backend && uv run ruff check . && uv run ruff format --check . && uv run mypy src/nanobio_backend && uv run pytest` | Focused backend checks. |
 | Validate local auth env | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1 -ValidateOnly` | Checks required auth settings without printing values or starting Flutter. |
 | Run unified app | `powershell -ExecutionPolicy Bypass -File tools/run_v2.ps1` | Runs `lib/main.dart`; the authenticated session selects User or Admin automatically. Plain `flutter run` is not recommended for authenticated device testing. |
 | Build debug APK | `flutter build apk --debug` | Used by full check when `-BuildApk` is passed. |
@@ -68,6 +71,10 @@ Use `.codex/workflows/README.md` to choose the primary workflow:
 
 Do not mix modes unless the user explicitly asks for a chain.
 
+For implementation under `backend/`, read `backend/AGENTS.md` and
+`backend/.agents/context-map.md` before touching source. Backend worklogs remain
+in the NanoBio `docs/worklog/` tree.
+
 For work inside `iot/xiaozhi-esp32/`, also read
 `.codex/domains/xiaozhi-esp32.md`, `iot/xiaozhi-esp32/AGENTS.md`, and
 `iot/xiaozhi-esp32/docs/agent-context/README.md` before selecting task-specific
@@ -97,6 +104,7 @@ Use `.codex/domains/README.md` and read one domain file by default:
 - Daily health tracking
 - Lifestyle schedule/timeline
 - XiaoZhi ESP32 firmware and phone-local AI
+- Self-hosted FastAPI/PostgreSQL backend
 
 Add a second domain only after `rg` proves cross-domain impact.
 

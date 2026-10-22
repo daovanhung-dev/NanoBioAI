@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 259
+- Total worklogs: 260
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -268,3 +268,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-19 | unknown | docs-context | MealCatalogPrefilter, MealCandidateSelector, GeneratedPlanService, panel tiến độ tạo lịch. | [Worklog - Phân loại món tại chỗ và độ phủ danh sách](../../docs/worklog/2026-10-19/003-worklog-local-classification-candidate-coverage.md) |
 | 2026-10-20 | Điều tra, fix bug, test và QA trên thiết bị thật theo plan đã duyệt. | supabase-schema | local AI runtime, AI schedule generation, onboarding guest, event staging và SQLite. | [Worklog - Fix tạo lịch bằng AI local trên Xiaomi](../../docs/worklog/2026-10-20/001-worklog-fix-local-ai-schedule-generation.md) |
 | 2026-10-20 | Nap context, dieu tra bug, fix va QA tren Android that. | docs-context | Food Scan picker, local vision/nutrition fallback, local AI startup gate. | [Worklog - Fix Food Scan picker va local vision tren Xiaomi](../../docs/worklog/2026-10-20/002-worklog-food-scan-picker-process-death.md) |
+| 2026-10-22 | Xay backend va agent context cho BE. | supabase-schema | backend/, .codex/, tai lieu backend va worklog NanoBio. | [Worklog - NanoBioAI self-hosted backend](../../docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md) |

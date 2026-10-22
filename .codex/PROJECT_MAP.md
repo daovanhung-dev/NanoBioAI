@@ -10,6 +10,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - v3 Plus/FamilyPlus partial runtime + planned markers: `lib/app_versions/v3/`
 - Admin app surface: `lib/app_versions/admin/`
 - Sale/referral independent axis: `lib/sale_referral/`
+- Self-hosted backend: `backend/src/nanobio_backend/` (FastAPI modular monolith, local Ubuntu PostgreSQL)
 - Core constants/theme/storage/network/utils: `lib/core/`
 - Canonical UI/motion design: `.codex/design/`
 - Shared services: `lib/services/`
@@ -39,6 +40,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | XiaoZhi ESP32 firmware or phone app    | matching project workflow + subproject `AGENTS.md` | `.codex/domains/xiaozhi-esp32.md` |
 | Refactor scaffold/version boundaries | `.codex/workflows/refactor-scaffold.md` | access/membership        |
 | Supabase schema/RLS/quota/sale       | `.codex/workflows/supabase-schema.md`   | access/membership        |
+| Self-hosted backend implementation   | `backend/AGENTS.md` + `backend/.agents/context-map.md` | backend domain |
 
 ## Domain Routing
 
@@ -54,6 +56,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | Daily Health Tracking                 | `.codex/domains/health-tracking.md`            | `lib/app_versions/v1/features/daily_health_tracking/`, `test/features/daily_health_tracking/`  |
 | Lifestyle Schedule                    | `.codex/domains/lifestyle-schedule.md`         | `lib/app_versions/v1/features/lifestyle_schedule/`, `test/features/lifestyle_schedule/`        |
 | XiaoZhi ESP32 / phone-local AI         | `.codex/domains/xiaozhi-esp32.md`              | `iot/xiaozhi-esp32/`                                                                            |
+| Self-hosted backend                     | `backend/.agents/AGENTS.md`               | `backend/src/nanobio_backend/`, `backend/alembic/`, `backend/tests/`                             |
 
 ## Critical Files
 
