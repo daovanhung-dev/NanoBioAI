@@ -1314,3 +1314,5 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md :: ## Loi/Rui ro
 - docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md :: - Chua fix: nhieu RPC app/Admin Web van `PARTIAL` hoac `NOT_YET_PORTED`; xem `backend/contracts/supabase-rpc-mapping.md`. Cloud snapshot chua thay the relational side effects, subject/reward logic.
 - docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md :: - Can kiem tra tiep: port cac contract Sale, wellness/reward va cac RPC Admin con lai; cap nhat app/Admin Web/website o phase rieng; danh gia security va deployment tai Ubuntu environment thuc.
+- docs/worklog/2026-10-22/002-worklog-flutter-install-and-aab.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-22/002-worklog-flutter-install-and-aab.md :: - Cần kiểm tra tiếp: xác nhận version code `7` chưa được dùng trên Play Console trước khi tải lên.

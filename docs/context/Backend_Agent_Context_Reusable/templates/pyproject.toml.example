@@ -1,0 +1,37 @@
+# EXAMPLE ONLY: convert to pyproject.toml and resolve dependency versions
+# with uv for the actual target runtime; generate + commit uv.lock.
+[project]
+name = "new-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic[email]",
+  "pydantic-settings",
+  "sqlalchemy",
+  "psycopg[binary]",
+  "alembic",
+  "argon2-cffi",
+  "PyJWT[crypto]",
+  "httpx",
+]
+
+[dependency-groups]
+dev = ["pytest", "pytest-asyncio", "ruff", "mypy", "httpx"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
