@@ -1316,3 +1316,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md :: - Can kiem tra tiep: port cac contract Sale, wellness/reward va cac RPC Admin con lai; cap nhat app/Admin Web/website o phase rieng; danh gia security va deployment tai Ubuntu environment thuc.
 - docs/worklog/2026-10-22/002-worklog-flutter-install-and-aab.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-22/002-worklog-flutter-install-and-aab.md :: - Cần kiểm tra tiếp: xác nhận version code `7` chưa được dùng trên Play Console trước khi tải lên.
+- docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL - báo thiếu `docs/audit/source_truth_manifest.json` được tham chiếu từ file audit chưa track có sẵn lúc bắt đầu; đồng thời báo stale paths trong `.codex/history/WORKLOG_2026-08-16_meal_nutrition_estimation.md` và `.codex/task-skills/nabi-character/SKILL.md`. Các file/lỗi này nằm ngoài phạm vi task.
+- docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - Flutter/ESP-IDF tests và build: SKIPPED - chỉ thay đổi tài liệu.
+- docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - Chưa fix: không có thay đổi runtime trong phạm vi này.
+- docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - Cần kiểm tra tiếp: kết nối mạng, audio mic/loa, trạng thái nền Android và inference thực tế cần nghiệm thu trên điện thoại/ESP32; tài liệu không thay thế bằng chứng thiết bị.

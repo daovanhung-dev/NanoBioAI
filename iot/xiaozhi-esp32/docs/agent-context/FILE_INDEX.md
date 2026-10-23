@@ -1,8 +1,8 @@
 # Danh mục file dự án
 
-> Snapshot tạo ngày 2026-10-17. Danh mục gồm mọi đường dẫn Git-tracked, các file first-party untracked đang có trong worktree và chính tài liệu context này.
+> Snapshot tạo ngày 2026-10-23. Danh mục gồm mọi đường dẫn Git-tracked, các file first-party untracked đang có trong worktree và chính tài liệu context này.
 
-- Đường dẫn được liệt kê: **1770** (1739 tracked, 31 first-party untracked; có 0 tracked path hiện không tồn tại trong worktree).
+- Đường dẫn được liệt kê: **1772** (1771 tracked, 1 first-party untracked; có 0 tracked path hiện không tồn tại trong worktree).
 - Mỗi dòng mô tả vai trò của file theo nội dung hoặc cách project tham chiếu; asset nhị phân được liệt kê riêng theo định dạng và kích thước byte, với vai trò dựa trên tên, locale hoặc source sử dụng.
 - Không liệt kê từng file trong .git/, build/, managed_components/ và ignored local sdkconfig*; đây là Git metadata, output build, dependency đã resolve hoặc config sinh tại máy.
 - Với path tracked đang thiếu, kích thước lấy từ Git blob ở HEAD; không khôi phục file đang thiếu.
@@ -18,7 +18,7 @@
 | `AGENTS.md` | 1 |
 | `CMakeLists.txt` | 1 |
 | `docker/` | 5 |
-| `docs/` | 37 |
+| `docs/` | 38 |
 | `LICENSE` | 1 |
 | `main/` | 1618 |
 | `partitions/` | 14 |
@@ -92,6 +92,7 @@
 | `docs/mqtt-udp_zh.md` | `md` | 9306 | tracked | Documentation: MQTT + UDP 混合通信协议文档; see this file for its authoritative topic and details. Main section: 1. 协议概览. |
 | `docs/notify.md` | `md` | 5155 | tracked | Documentation: Asynchronous Voice Notifications; see this file for its authoritative topic and details. Main section: Message format. |
 | `docs/notify_vi.md` | `md` | 6374 | tracked | Documentation: Thông báo giọng nói không đồng bộ; see this file for its authoritative topic and details. Main section: Định dạng thông điệp. |
+| `docs/phone-local-ai-flow_vi.md` | `md` | 13425 | first-party untracked | Mô tả luồng OTA, WebSocket, audio, STT, LLM và TTS local giữa điện thoại với ESP32. Main section: Luồng AI local giữa XiaoZhi ESP32 và điện thoại Android. |
 | `docs/releasing.md` | `md` | 2770 | tracked | Documentation: Publishing firmware releases; see this file for its authoritative topic and details. Main section: Running the workflow. |
 | `docs/releasing_vi.md` | `md` | 3479 | tracked | Documentation: Phát hành firmware; see this file for its authoritative topic and details. Main section: Chạy workflow. |
 | `docs/websocket.md` | `md` | 18247 | tracked | Documentation: WebSocket Communication Protocol; see this file for its authoritative topic and details. Main section: 1. Overall Flow. |
@@ -1312,7 +1313,7 @@
 | `main/boards/nulllab-ai-vox-v3/README.md` | `md` | 2582 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nulllab-ai-vox-v3`. Main section: NULLLAB-AI-VOX3. |
 | `main/boards/ostb/ostb-xiaozhi-3st/config.h` | `h` | 1804 | tracked | Pin map và compile-time hardware options cho board `main/boards/ostb/ostb-xiaozhi-3st`. |
 | `main/boards/ostb/ostb-xiaozhi-3st/config.json` | `json` | 473 | tracked | Board/release config: target `esp32s3`, type `ostb-xiaozhi-3st`, variants: ostb-xiaozhi-3st. |
-| `main/boards/ostb/ostb-xiaozhi-3st/config.local-ai.json` | `json` | 598 | first-party untracked | Cấu hình build cùng board identity với OTA URL trỏ tới server AI local trên điện thoại; giữ NVS đã lưu. |
+| `main/boards/ostb/ostb-xiaozhi-3st/config.local-ai.json` | `json` | 598 | tracked | Cấu hình build cùng board identity với OTA URL trỏ tới server AI local trên điện thoại; giữ NVS đã lưu. |
 | `main/boards/ostb/ostb-xiaozhi-3st/ostb_xiaozhi_3st.cc` | `cc` | 11398 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `ostb_xiaozhi_3st.cc` trong `main/boards/ostb/ostb-xiaozhi-3st`. Key types/methods: `OstbXiaozhi3stBoard`. |
 | `main/boards/ostb/ostb-xiaozhi-3st/README.md` | `md` | 1752 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/ostb/ostb-xiaozhi-3st`, gồm profile phone-local AI. Main section: OSTB XiaoZhi 3ST. |
 | `main/boards/otto-robot/config.h` | `h` | 4956 | tracked | Pin map và compile-time hardware options cho board `main/boards/otto-robot`. Key types/methods: `OttoCameraType`, `HardwareConfig`. |
@@ -1731,37 +1732,37 @@
 | `partitions/v2/4m.csv` | `csv` | 295 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
 | `partitions/v2/8m.csv` | `csv` | 335 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
 | `partitions/v2/README.md` | `md` | 4193 | tracked | Design rationale and migration guidance for partition-table generation. Main section: Version 2 Partition Table. |
-| `phone_app/.gitignore` | `no extension` | 746 | first-party untracked | Bỏ qua output build, cache, IDE và file riêng tư của ứng dụng Flutter. |
-| `phone_app/.metadata` | `no extension` | 968 | first-party untracked | Metadata Flutter dùng để nhận diện loại dự án và phiên bản công cụ. |
-| `phone_app/analysis_options.yaml` | `yaml` | 1547 | first-party untracked | Quy tắc lint và phân tích tĩnh cho Dart. |
-| `phone_app/android/.gitignore` | `no extension` | 263 | first-party untracked | Bỏ qua cache/build Android, Gradle wrapper cục bộ và signing keys. |
-| `phone_app/android/app/build.gradle.kts` | `kts` | 1793 | first-party untracked | Cấu hình Android application, SDK và build APK cho app Flutter. |
-| `phone_app/android/app/src/debug/AndroidManifest.xml` | `xml` | 378 | first-party untracked | Manifest bổ sung dành riêng cho debug build. |
-| `phone_app/android/app/src/main/AndroidManifest.xml` | `xml` | 2383 | first-party untracked | Khai báo app Android, quyền mạng/giữ máy thức và cấu hình cleartext LAN. |
-| `phone_app/android/app/src/main/kotlin/com/xiaozhi/xiaozhi_local_ai/MainActivity.kt` | `kt` | 130 | first-party untracked | Activity Android khởi chạy Flutter app. |
-| `phone_app/android/app/src/main/res/drawable-v21/launch_background.xml` | `xml` | 438 | first-party untracked | Nền màn hình khởi chạy cho Android API 21 trở lên. |
-| `phone_app/android/app/src/main/res/drawable/launch_background.xml` | `xml` | 434 | first-party untracked | Nền màn hình khởi chạy Android mặc định. |
-| `phone_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png` | `png` | 544 | first-party untracked | Launcher icon PNG cho density hdpi của Android. |
-| `phone_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png` | `png` | 442 | first-party untracked | Launcher icon PNG cho density mdpi của Android. |
-| `phone_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png` | `png` | 721 | first-party untracked | Launcher icon PNG cho density xhdpi của Android. |
-| `phone_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png` | `png` | 1031 | first-party untracked | Launcher icon PNG cho density xxhdpi của Android. |
-| `phone_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` | `png` | 1443 | first-party untracked | Launcher icon PNG cho density xxxhdpi của Android. |
-| `phone_app/android/app/src/main/res/values-night/styles.xml` | `xml` | 995 | first-party untracked | Theme/style Android dùng khi hệ thống ở chế độ tối. |
-| `phone_app/android/app/src/main/res/values/styles.xml` | `xml` | 996 | first-party untracked | Theme/style Android mặc định và splash screen. |
-| `phone_app/android/app/src/profile/AndroidManifest.xml` | `xml` | 378 | first-party untracked | Manifest bổ sung dành cho profile build. |
-| `phone_app/android/build.gradle.kts` | `kts` | 537 | first-party untracked | Cấu hình Gradle cấp dự án Android. |
-| `phone_app/android/gradle.properties` | `properties` | 300 | first-party untracked | Tuỳ chọn runtime và bộ nhớ cho Gradle/Android build. |
-| `phone_app/android/gradle/wrapper/gradle-wrapper.properties` | `properties` | 202 | first-party untracked | Phiên bản Gradle distribution được Flutter Android build dùng. |
-| `phone_app/android/settings.gradle.kts` | `kts` | 770 | first-party untracked | Khai báo plugin loader và module Android của app Flutter. |
-| `phone_app/lib/main.dart` | `dart` | 37280 | first-party untracked | Giao diện Flutter cho chat local, model, server ESP và tuỳ chọn hội thoại/giọng nói. |
-| `phone_app/lib/models/local_model.dart` | `dart` | 1940 | first-party untracked | Thông tin catalog model local, nguồn tải và checksum. |
-| `phone_app/lib/services/local_ai_service.dart` | `dart` | 4218 | first-party untracked | Nạp model GGUF, chạy suy luận local và nhận dạng giọng nói Whisper. |
-| `phone_app/lib/services/model_service.dart` | `dart` | 7877 | first-party untracked | Tải, xác thực, nhập và lưu model trong vùng dữ liệu riêng của app. |
-| `phone_app/lib/services/voice_service.dart` | `dart` | 6515 | first-party untracked | TTS Android, chuyển audio thành PCM và đóng gói Opus cho ESP. |
-| `phone_app/lib/services/xiaozhi_server.dart` | `dart` | 9949 | first-party untracked | HTTP OTA config và WebSocket server tương thích XiaoZhi; định tuyến STT/LLM/TTS local. |
-| `phone_app/pubspec.lock` | `lock` | 22796 | first-party untracked | Khoá phiên bản dependency Dart/Flutter đã phân giải. |
-| `phone_app/pubspec.yaml` | `yaml` | 4183 | first-party untracked | Metadata package và dependency của ứng dụng Flutter. |
-| `phone_app/README.md` | `md` | 3247 | first-party untracked | Hướng dẫn cài model local, cấu hình app và kết nối ESP qua mạng nội bộ. |
+| `phone_app/.gitignore` | `no extension` | 746 | tracked | Bỏ qua output build, cache, IDE và file riêng tư của ứng dụng Flutter. |
+| `phone_app/.metadata` | `no extension` | 968 | tracked | Metadata Flutter dùng để nhận diện loại dự án và phiên bản công cụ. |
+| `phone_app/analysis_options.yaml` | `yaml` | 1547 | tracked | Quy tắc lint và phân tích tĩnh cho Dart. |
+| `phone_app/android/.gitignore` | `no extension` | 263 | tracked | Bỏ qua cache/build Android, Gradle wrapper cục bộ và signing keys. |
+| `phone_app/android/app/build.gradle.kts` | `kts` | 1793 | tracked | Cấu hình Android application, SDK và build APK cho app Flutter. |
+| `phone_app/android/app/src/debug/AndroidManifest.xml` | `xml` | 378 | tracked | Manifest bổ sung dành riêng cho debug build. |
+| `phone_app/android/app/src/main/AndroidManifest.xml` | `xml` | 2383 | tracked | Khai báo app Android, quyền mạng/giữ máy thức và cấu hình cleartext LAN. |
+| `phone_app/android/app/src/main/kotlin/com/xiaozhi/xiaozhi_local_ai/MainActivity.kt` | `kt` | 130 | tracked | Activity Android khởi chạy Flutter app. |
+| `phone_app/android/app/src/main/res/drawable-v21/launch_background.xml` | `xml` | 438 | tracked | Nền màn hình khởi chạy cho Android API 21 trở lên. |
+| `phone_app/android/app/src/main/res/drawable/launch_background.xml` | `xml` | 434 | tracked | Nền màn hình khởi chạy Android mặc định. |
+| `phone_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png` | `png` | 544 | tracked | Launcher icon PNG cho density hdpi của Android. |
+| `phone_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.png` | `png` | 442 | tracked | Launcher icon PNG cho density mdpi của Android. |
+| `phone_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png` | `png` | 721 | tracked | Launcher icon PNG cho density xhdpi của Android. |
+| `phone_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png` | `png` | 1031 | tracked | Launcher icon PNG cho density xxhdpi của Android. |
+| `phone_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` | `png` | 1443 | tracked | Launcher icon PNG cho density xxxhdpi của Android. |
+| `phone_app/android/app/src/main/res/values-night/styles.xml` | `xml` | 995 | tracked | Theme/style Android dùng khi hệ thống ở chế độ tối. |
+| `phone_app/android/app/src/main/res/values/styles.xml` | `xml` | 996 | tracked | Theme/style Android mặc định và splash screen. |
+| `phone_app/android/app/src/profile/AndroidManifest.xml` | `xml` | 378 | tracked | Manifest bổ sung dành cho profile build. |
+| `phone_app/android/build.gradle.kts` | `kts` | 537 | tracked | Cấu hình Gradle cấp dự án Android. |
+| `phone_app/android/gradle.properties` | `properties` | 300 | tracked | Tuỳ chọn runtime và bộ nhớ cho Gradle/Android build. |
+| `phone_app/android/gradle/wrapper/gradle-wrapper.properties` | `properties` | 202 | tracked | Phiên bản Gradle distribution được Flutter Android build dùng. |
+| `phone_app/android/settings.gradle.kts` | `kts` | 770 | tracked | Khai báo plugin loader và module Android của app Flutter. |
+| `phone_app/lib/main.dart` | `dart` | 37280 | tracked | Giao diện Flutter cho chat local, model, server ESP và tuỳ chọn hội thoại/giọng nói. |
+| `phone_app/lib/models/local_model.dart` | `dart` | 1940 | tracked | Thông tin catalog model local, nguồn tải và checksum. |
+| `phone_app/lib/services/local_ai_service.dart` | `dart` | 4218 | tracked | Nạp model GGUF, chạy suy luận local và nhận dạng giọng nói Whisper. |
+| `phone_app/lib/services/model_service.dart` | `dart` | 7877 | tracked | Tải, xác thực, nhập và lưu model trong vùng dữ liệu riêng của app. |
+| `phone_app/lib/services/voice_service.dart` | `dart` | 6515 | tracked | TTS Android, chuyển audio thành PCM và đóng gói Opus cho ESP. |
+| `phone_app/lib/services/xiaozhi_server.dart` | `dart` | 9949 | tracked | HTTP OTA config và WebSocket server tương thích XiaoZhi; định tuyến STT/LLM/TTS local. |
+| `phone_app/pubspec.lock` | `lock` | 22796 | tracked | Khoá phiên bản dependency Dart/Flutter đã phân giải. |
+| `phone_app/pubspec.yaml` | `yaml` | 4183 | tracked | Metadata package và dependency của ứng dụng Flutter. |
+| `phone_app/README.md` | `md` | 3447 | tracked | Hướng dẫn cài model local, cấu hình app và kết nối ESP qua mạng nội bộ. |
 | `README.md` | `md` | 10335 | tracked | Tổng quan sản phẩm, SDK được hỗ trợ, tính năng, board, cách phát triển và tài liệu. Main section: An MCP-based Chatbot. |
 | `README_ja.md` | `md` | 11885 | tracked | Bản tiếng Nhật của tổng quan dự án. Main section: MCP ベースのチャットボット. |
 | `README_zh.md` | `md` | 9939 | tracked | Bản tiếng Trung của tổng quan dự án. Main section: An MCP-based Chatbot. |

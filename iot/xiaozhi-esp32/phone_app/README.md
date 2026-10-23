@@ -25,6 +25,8 @@ Android cô lập vùng dữ liệu riêng của mỗi ứng dụng. App này kh
 
 OTA endpoint chỉ cấp cấu hình WebSocket; nhận dạng tiếng nói Whisper và suy luận LLM diễn ra trên điện thoại. Giọng đọc dùng Android TTS; để không phụ thuộc dịch vụ mạng, hãy cài/chọn voice ngoại tuyến trong Android. Model được tải xuống cần Internet lần đầu, sau đó inference có thể chạy offline; kết nối Wi-Fi LAN giữa điện thoại và ESP vẫn cần hoạt động.
 
+Xem [mô tả chi tiết luồng AI local giữa điện thoại và ESP32](../docs/phone-local-ai-flow_vi.md) để biết trình tự OTA, WebSocket, audio, STT, LLM, TTS và cách kiểm tra MVP.
+
 ## Chạy từ source
 
 ```sh
