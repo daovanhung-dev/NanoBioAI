@@ -94,6 +94,15 @@ Keep detailed or fast-changing information in those files, not here. Add a neste
 
 ## Agent Context Router
 
-Before a task, read [`docs/agent-context/README.md`](docs/agent-context/README.md), check `git status`, then follow its task map to load only the relevant context. Use [`docs/agent-context/ARCHITECTURE.md`](docs/agent-context/ARCHITECTURE.md) for ownership and runtime flows, [`docs/agent-context/BOARDS_AND_BUILD.md`](docs/agent-context/BOARDS_AND_BUILD.md) for board/configuration work, [`docs/agent-context/TASK_ROUTING.md`](docs/agent-context/TASK_ROUTING.md) to select task-specific sources and validation, and [`docs/agent-context/FILE_INDEX.md`](docs/agent-context/FILE_INDEX.md) to locate any repository file.
+For every task in this IoT project, first read
+[`docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`](docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md),
+then check `git status` and read [`docs/agent-context/README.md`](docs/agent-context/README.md)
+before selecting task-specific sources. Keep live-device readings separate from
+source profiles; this snapshot applies only when the task targets the OSTB 3ST.
+Use [`docs/agent-context/ARCHITECTURE.md`](docs/agent-context/ARCHITECTURE.md)
+for ownership and runtime flows, [`docs/agent-context/BOARDS_AND_BUILD.md`](docs/agent-context/BOARDS_AND_BUILD.md)
+for board/configuration work, [`docs/agent-context/TASK_ROUTING.md`](docs/agent-context/TASK_ROUTING.md)
+to select task-specific sources and validation, and [`docs/agent-context/FILE_INDEX.md`](docs/agent-context/FILE_INDEX.md)
+to locate any repository file.
 
 The context documents are navigation and explanation, not a replacement for current source, configuration, or protocol documents. Re-check the referenced files and current worktree before making changes. Keep the file index synchronized when project paths are added, removed, or renamed.

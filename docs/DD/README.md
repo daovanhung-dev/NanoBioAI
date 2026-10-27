@@ -10,9 +10,9 @@
 | Nabi Companion Notification BD | docs/BD/notification_Nabi/BD_thong_bao_nut_noi_Nabi.md (`BD-NABI-NOTIFICATION-001`) |
 | DD Baseline Date | 2026-06-28 |
 | Source-truth Baseline | `598daf04` |
-| Last Updated | 2026-10-15 |
+| Last Updated | 2026-10-23 |
 | Lifecycle | Current |
-| DD decision | M01-M19/M30-M31 Approved; M22 approved for local reminders only; M32 Draft; remaining M20-M29 scope Draft |
+| DD decision | M01-M19/M30-M31 Approved; M22 approved for local reminders only; M32 and NABI_ESP_ASSISTANT Draft; remaining M20-M29 scope Draft |
 | Implementation | Partial aggregate; see module matrix |
 | Verification | Static-verified; Runtime-unverified; Sandbox-unverified |
 
@@ -74,6 +74,15 @@ The [Wave 0 DD readiness and evidence pack](../refactor/stitch_nanobio_design_sy
 | M32 | [Fitness training](./fitness_training/README.md) | Draft | In Progress | Targeted Flutter/Edge tests and Android debug build passed; device/Sandbox unverified | PO-directed pilot code is reachable; FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved |
 
 M32 implementation is proceeding under an explicit PO direction; do not mark it Approved or release-ready until its listed reviewer gates close.
+
+## Draft IoT Feature Addendum — 2026-10-23
+
+| DD | Module | DD decision | Implementation | Verification | Output path | Current boundary |
+|---|---|---|---|---|---|---|
+| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft; PO intent recorded, Tech/QA/Privacy pending | Placeholder | Static source; Android/device-unverified | `docs/DD/nabi_esp_assistant/` | Android-only preview route/tile; no hotspot, BLE, audio, or server behavior. |
+
+This feature is outside M01-M32 numbering and does not change those module
+progress totals. The runtime remains closed until review and device acceptance.
 
 ## Approved Cross-Module Delta - 2026-07-13
 

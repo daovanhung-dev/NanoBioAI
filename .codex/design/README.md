@@ -36,8 +36,8 @@ This directory is the canonical UI/UX source for NanoBio Blue Wellness. Historic
 ## Coverage snapshot
 
 - Stitch reference pairs: **76**. This is an input inventory, not a 76/76 acceptance claim.
-- Repository screen/surface specs: **94**, including all current V1/V2/V3/Admin routes plus embedded, M31 safety and onboarding surfaces.
-- Current direct route contracts: V1 **32**, V2 **13**, V3 **5**, Admin **12**.
+- Repository screen/surface specs: **95**, including all current V1/V2/V3/Admin routes plus embedded, M31 safety and onboarding surfaces.
+- Current direct route contracts: V1 **33**, V2 **13**, V3 **5**, Admin **12**.
 - Additional coverage includes onboarding internals, source-only/embedded pages, M31 safety pages, Sale internals and Admin shell/gate/dialogs.
 - Refresh the source inventory with `python3 tools/refresh_ui_design_inventory.py`.
 - Full route rendering, dark, accessibility and adaptive QA remain open until evidence is recorded per surface.

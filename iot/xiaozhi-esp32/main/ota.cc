@@ -2,6 +2,8 @@
 #include "system_info.h"
 #include "settings.h"
 #include "assets/lang_config.h"
+#include "nabi_esp_contract.h"
+#include "nabi_esp_provisioning.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -54,6 +56,13 @@ Ota::~Ota() {
 }
 
 std::string Ota::GetCheckVersionUrl() {
+#ifdef CONFIG_NABI_ESP_ASSISTANT
+    const auto local_url = NabiEspProvisioning::GetInstance().GetLocalOtaUrl();
+    if (!local_url.empty()) {
+        return local_url;
+    }
+    return CONFIG_OTA_URL;
+#else
 #if defined(CONFIG_OTA_URL_IGNORE_NVS) && CONFIG_OTA_URL_IGNORE_NVS
     return CONFIG_OTA_URL;
 #else
@@ -63,6 +72,7 @@ std::string Ota::GetCheckVersionUrl() {
         url = CONFIG_OTA_URL;
     }
     return url;
+#endif
 #endif
 }
 
@@ -81,6 +91,12 @@ std::unique_ptr<Http> Ota::SetupHttp() {
     http->SetHeader("User-Agent", user_agent);
     http->SetHeader("Accept-Language", Lang::CODE);
     http->SetHeader("Content-Type", "application/json");
+#ifdef CONFIG_NABI_ESP_ASSISTANT
+    const auto device_key = NabiEspProvisioning::GetInstance().GetDeviceKey();
+    if (device_key.size() == 64) {
+        http->SetHeader(NABI_DEVICE_KEY_HEADER, device_key);
+    }
+#endif
 
     return http;
 }

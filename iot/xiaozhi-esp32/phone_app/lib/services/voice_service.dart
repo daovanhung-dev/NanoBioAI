@@ -15,6 +15,15 @@ class VoiceService {
   double speechRate = 0.48;
   double pitch = 1.0;
 
+  bool get isReady =>
+      selectedVoiceName != null &&
+      voices.any((voice) => voice['name'] == selectedVoiceName);
+
+  bool get selectedVoiceIsOffline => voices.any(
+    (voice) =>
+        voice['name'] == selectedVoiceName && voice['network_required'] == '0',
+  );
+
   Future<void> initialize() async {
     await _tts.awaitSynthCompletion(true);
     final prefs = await SharedPreferences.getInstance();
@@ -29,14 +38,19 @@ class VoiceService {
           .map((voice) => voice.map((key, value) => MapEntry('$key', '$value')))
           .toList();
     }
-    if (selectedVoiceName == null && voices.isNotEmpty) {
-      final vietnamese = voices
+    if (!isReady && voices.isNotEmpty) {
+      final offlineVoices = voices
+          .where((voice) => voice['network_required'] == '0')
+          .toList();
+      final candidates = offlineVoices.isNotEmpty ? offlineVoices : voices;
+      final vietnamese = candidates
           .where(
             (voice) => (voice['locale'] ?? '').toLowerCase().startsWith('vi'),
           )
           .firstOrNull;
-      selectedVoiceName = vietnamese?['name'] ?? voices.first['name'];
-      selectedVoiceLocale = vietnamese?['locale'] ?? voices.first['locale'];
+      final selected = vietnamese ?? candidates.first;
+      selectedVoiceName = selected['name'];
+      selectedVoiceLocale = selected['locale'];
     }
   }
 

@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:llama_flutter_android/llama_flutter_android.dart'
     show ChatMessage;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'models/local_model.dart';
 import 'services/local_ai_service.dart';
 import 'services/model_service.dart';
+import 'services/phone_server_lifecycle.dart';
 import 'services/voice_service.dart';
 import 'services/xiaozhi_server.dart';
 
@@ -58,8 +58,9 @@ class _HomeShellState extends State<HomeShell> {
     _ai = LocalAiService(_models);
     _voice = VoiceService();
     _server = XiaozhiServer(ai: _ai, voice: _voice);
+    PhoneServerLifecycle.initialize(onStopRequested: _server.stop);
+    unawaited(_server.refreshAddresses());
     unawaited(_initialize());
-    _server.addListener(_keepScreenAwake);
   }
 
   Future<void> _initialize() async {
@@ -73,13 +74,8 @@ class _HomeShellState extends State<HomeShell> {
     if (mounted) setState(() => _ready = true);
   }
 
-  Future<void> _keepScreenAwake() async {
-    await WakelockPlus.toggle(enable: _server.isRunning);
-  }
-
   @override
   void dispose() {
-    _server.removeListener(_keepScreenAwake);
     unawaited(_server.stop());
     _server.dispose();
     _ai.dispose();
@@ -95,7 +91,7 @@ class _HomeShellState extends State<HomeShell> {
     final pages = [
       _ChatPage(ai: _ai, models: _models),
       _ModelsPage(models: _models, ai: _ai, server: _server),
-      _ConnectionPage(server: _server, ai: _ai),
+      _ConnectionPage(server: _server, ai: _ai, voice: _voice),
       _SettingsPage(voice: _voice),
     ];
     return Scaffold(
@@ -633,9 +629,14 @@ Future<void> _activateModel({
 }
 
 class _ConnectionPage extends StatelessWidget {
-  const _ConnectionPage({required this.server, required this.ai});
+  const _ConnectionPage({
+    required this.server,
+    required this.ai,
+    required this.voice,
+  });
   final XiaozhiServer server;
   final LocalAiService ai;
+  final VoiceService voice;
 
   @override
   Widget build(BuildContext context) {
@@ -679,6 +680,11 @@ class _ConnectionPage extends StatelessWidget {
                   label: 'Nhận dạng giọng nói',
                   ready: ai.whisperReady,
                 ),
+                _ReadinessRow(label: 'Android TTS', ready: voice.isReady),
+                _ReadinessRow(
+                  label: 'Voice chạy offline',
+                  ready: voice.selectedVoiceIsOffline,
+                ),
                 if (server.hostAddress != null) ...[
                   const Divider(height: 24),
                   Text('Địa chỉ nội bộ: ${server.hostAddress}:8765'),
@@ -711,6 +717,46 @@ class _ConnectionPage extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (!server.isRunning) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          server.availableAddresses.isEmpty
+                              ? 'Chưa thấy địa chỉ IPv4 hotspot'
+                              : 'Chọn địa chỉ hotspot của điện thoại',
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Quét lại địa chỉ mạng',
+                        onPressed: server.refreshAddresses,
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ],
+                  ),
+                  if (server.availableAddresses.isNotEmpty)
+                    DropdownButtonFormField<String>(
+                      initialValue: server.selectedAddress,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'IPv4 và interface',
+                      ),
+                      hint: const Text('Chọn interface hotspot'),
+                      items: server.availableAddresses
+                          .map(
+                            (candidate) => DropdownMenuItem(
+                              value: candidate.address,
+                              child: Text(candidate.toString()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (address) {
+                        if (address != null) server.selectAddress(address);
+                      },
+                    ),
+                ],
                 if (server.error != null)
                   Text(
                     server.error!,
@@ -724,7 +770,7 @@ class _ConnectionPage extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: server.isRunning
                         ? server.stop
-                        : ai.llmReady && ai.whisperReady
+                        : ai.llmReady && ai.whisperReady && voice.isReady
                         ? server.start
                         : null,
                     icon: Icon(
@@ -733,9 +779,9 @@ class _ConnectionPage extends StatelessWidget {
                     label: Text(
                       server.isRunning
                           ? 'Dừng server'
-                          : ai.llmReady && ai.whisperReady
+                          : ai.llmReady && ai.whisperReady && voice.isReady
                           ? 'Khởi chạy server AI local'
-                          : 'Nạp model và Whisper trước',
+                          : 'Nạp model, Whisper và chọn voice trước',
                     ),
                   ),
                 ),
@@ -760,11 +806,15 @@ class _ConnectionPage extends StatelessWidget {
                 '2. Mở trang cấu hình Wi-Fi của ESP và nhập OTA URL phía trên vào ô Custom OTA URL.',
               ),
               Text(
-                '3. Lưu cấu hình, khởi động lại ESP. Khi cùng mạng LAN, firmware lấy cấu hình WebSocket từ app.',
+                '3. Lưu cấu hình, khởi động lại ESP. Firmware lấy OTA URL đã lưu trong NVS khi khởi động.',
               ),
               SizedBox(height: 8),
               Text(
-                'Giữ app ở phía trước khi dùng. Android có thể dừng socket local nếu đóng app hoặc đưa app xuống nền lâu.',
+                'Server chạy trong notification khi bạn chuyển app xuống nền hoặc tắt màn hình. Giữ điện thoại cắm sạc trong phiên; một số máy vẫn có thể hoãn mạng nội bộ khi vào Doze.',
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Nếu địa chỉ hotspot đổi, chọn URL mới, cập nhật Custom OTA URL trên ESP rồi khởi động lại ESP. Chỉ kết nối ESP vào hotspot riêng; luồng hiện tại không mã hóa HTTP/WebSocket.',
               ),
             ],
           ),
@@ -831,7 +881,7 @@ class _SettingsPageState extends State<_SettingsPage> {
         const _InfoCard(
           icon: Icons.tune,
           title: 'Ngữ cảnh và giọng nói',
-          subtitle: 'Ngôn ngữ/ngữ cảnh áp dụng cho model local. Giọng đọc dùng Android TTS; cài voice ngoại tuyến nếu muốn tránh dịch vụ mạng.',
+          subtitle: 'Ngôn ngữ/ngữ cảnh áp dụng cho model local. Chọn voice Android TTS có nhãn offline để giọng đọc không cần Internet.',
         ),
         const SizedBox(height: 12),
         _Card(
@@ -918,7 +968,7 @@ class _SettingsPageState extends State<_SettingsPage> {
                         (voice) => DropdownMenuItem(
                           value: voice['name'],
                           child: Text(
-                            '${voice['name']} (${voice['locale']})',
+                            '${voice['name']} (${voice['locale']}) · ${voice['network_required'] == '0' ? 'offline' : 'cần mạng'}',
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

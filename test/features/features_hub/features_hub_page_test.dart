@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart';
+import 'package:nano_app/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart';
 import 'package:nano_app/core/constants/routes/wellness_rewards_route_paths.dart';
 import 'package:nano_app/shared/health_features/health_feature_catalog.dart';
 
@@ -326,4 +327,61 @@ void main() {
     expect(aiVoice, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Nabi ESP debug connection is available on Android', (
+    tester,
+  ) async {
+    final router = GoRouter(
+      initialLocation: '/features',
+      routes: [
+        GoRoute(
+          path: '/features',
+          builder: (context, state) => const FeaturesHubPage(),
+        ),
+        GoRoute(
+          path: '/nabi-esp-assistant',
+          builder: (context, state) => const NabiEspAssistantPage(),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+
+    final plannedToggle = find.byKey(const Key('planned-features-toggle'));
+    await tester.scrollUntilVisible(
+      plannedToggle,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(plannedToggle);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Nabi - Siêu trợ lý AI'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('AI hội thoại chạy trên Nabi'), findsOneWidget);
+    final connectButton = find.byKey(const Key('nabi-esp-connect-button'));
+    await tester.scrollUntilVisible(
+      connectButton,
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(connectButton, findsOneWidget);
+    expect(tester.widget<FilledButton>(connectButton).onPressed, isNotNull);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+  testWidgets('Nabi ESP preview tile is hidden on iOS', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: FeaturesHubPage()));
+
+    final plannedToggle = find.byKey(const Key('planned-features-toggle'));
+    await tester.scrollUntilVisible(
+      plannedToggle,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(plannedToggle);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nabi - Siêu trợ lý AI'), findsNothing);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 }

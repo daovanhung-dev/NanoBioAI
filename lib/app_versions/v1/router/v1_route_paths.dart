@@ -32,6 +32,7 @@ abstract class V1RoutePaths {
 
   static const aiChat = '/ai-chat';
   static const aiVoice = '/ai-voice';
+  static const nabiEspAssistant = '/nabi-esp-assistant';
 
   static const profile = '/profile';
   static const notificationSettings = '/notification-settings';

@@ -26,6 +26,7 @@ import 'package:nano_app/app_versions/v1/features/settings/presentation/pages/no
 import 'package:nano_app/app_versions/v1/features/splash/splash.dart';
 import 'package:nano_app/app_versions/v1/features/ai_chat/presentation/pages/ai_chat_screen.dart';
 import 'package:nano_app/app_versions/v1/features/community/presentation/pages/community_page.dart';
+import 'package:nano_app/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_access_gate.dart';
 import 'package:nano_app/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_tracking_page.dart';
 import 'package:nano_app/app_versions/v1/features/stress_tracking/presentation/pages/stress_tracking_page.dart';
@@ -177,6 +178,11 @@ final v1Routes = <RouteBase>[
     name: V1RoutePaths.aiVoice,
     redirect: V1RouteGuards.authGuard,
     builder: (context, state) => const AiVoiceAccessGate(child: AiVoicePage()),
+  ),
+  GoRoute(
+    path: V1RoutePaths.nabiEspAssistant,
+    name: V1RoutePaths.nabiEspAssistant,
+    builder: (context, state) => const NabiEspAssistantPage(),
   ),
   GoRoute(
     path: V1RoutePaths.nutrition,

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
@@ -269,6 +270,15 @@ class _FeaturesHubPageState extends State<FeaturesHubPage> {
       AppColors.pastelRose,
       () => context.push(V1RoutePaths.community),
     ),
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+      _FeatureAction(
+        'nabi-esp-assistant',
+        'Nabi - Siêu trợ lý AI',
+        Icons.memory_rounded,
+        AppColors.primary,
+        AppColors.pastelBlue,
+        () => context.push(V1RoutePaths.nabiEspAssistant),
+      ),
   ];
 }
 

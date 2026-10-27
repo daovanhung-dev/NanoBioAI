@@ -12,6 +12,7 @@ Tập hợp các chức năng chăm sóc theo nhóm để người dùng mở nh
 - Evidence baseline: commit `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 - This spec preserves runtime/business boundaries; it is a UI/UX implementation contract, not new product logic.
 - Active shortcut destinations must already exist in the current route registry; this surface does not create placeholder routes to make the grid look complete.
+- Android’s planned group may contain the release-gated Nabi ESP preview; it is not counted as an active runtime-backed shortcut. iOS does not show that entry.
 
 ## 03. Route / entry
 `MainNavigationPage tab: Tiện ích`
@@ -84,6 +85,7 @@ Ready content should be glanceable in the first viewport. The active section con
 
 ## 24. Disabled / locked / coming-soon
 - `Giấc ngủ`, `Cảm xúc & stress`, and `Cộng đồng chăm sóc` remain explicitly coming-soon/preview surfaces and live under a collapsed **Sắp ra mắt** group.
+- Android also shows `Nabi - Siêu trợ lý AI` under this collapsed group as a release-gated placeholder; its route has no active network, BLE or audio behavior.
 - M20–M29 remain development/advanced catalog items and live under a collapsed **Theo dõi chuyên sâu** group.
 - Expanding a group does not upgrade its implementation status.
 
@@ -129,7 +131,8 @@ Presentation uses only existing route constants and catalog data. No DAO/API cal
 - [ ] Compact width renders the first three active shortcuts on the same row and the fourth on the next row.
 - [ ] Hero and active section header are materially more compact than the legacy layout.
 - [ ] Active compact cards do not show the legacy standalone 48×48 arrow button.
-- [ ] `Sắp ra mắt` is collapsed by default and expands to the three preview destinations on demand.
+- [ ] `Sắp ra mắt` is collapsed by default and expands to the existing preview destinations; Android also includes the release-gated Nabi ESP preview.
+- [ ] On Android, expanding `Sắp ra mắt` also shows the Nabi ESP preview; its screen clearly states that connection behavior is not active. The tile is hidden on iOS.
 - [ ] `Theo dõi chuyên sâu` is collapsed by default and expands to M20–M29 on demand.
 - [ ] Existing Free/Plus and `Đang phát triển` badges remain present after advanced expansion.
 - [ ] Existing GoRouter/auth/access behavior is unchanged.

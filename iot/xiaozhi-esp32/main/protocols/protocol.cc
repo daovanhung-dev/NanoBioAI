@@ -105,6 +105,25 @@ void Protocol::SendMcpMessage(const std::string& payload) {
     SendText(message);
 }
 
+void Protocol::SendNabiControlAck(const std::string& request_id, bool ok,
+                                  const std::string& state) {
+    cJSON* root = cJSON_CreateObject();
+    if (root == nullptr) {
+        return;
+    }
+    cJSON_AddStringToObject(root, "type", "nabi.control_ack");
+    cJSON_AddStringToObject(root, "request_id", request_id.c_str());
+    cJSON_AddBoolToObject(root, "ok", ok);
+    cJSON_AddStringToObject(root, "state", state.c_str());
+    char* encoded = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+    if (encoded == nullptr) {
+        return;
+    }
+    SendText(encoded);
+    cJSON_free(encoded);
+}
+
 bool Protocol::IsTimeout() const {
     const int kTimeoutSeconds = 120;
     auto now = std::chrono::steady_clock::now();

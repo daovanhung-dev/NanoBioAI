@@ -317,3 +317,16 @@ kiểm chứng RLS/role behavior hay giao dịch người dùng trên production
 - Canonical theme chuyển sang NaBi Blue Wellness bằng semantic token; xanh lá tiếp tục chỉ biểu đạt success. Dashboard không thêm raw color, raw numeric radius, DAO/datasource import hoặc production mock data.
 - Evidence tĩnh: `python3 tools/validate_nabi_green_wellness.py` PASS với 740 Dart files và 0 blocking findings; 57 missing-asset warnings thuộc snapshot đầu vào không có thư mục assets.
 - Targeted Flutter format/analyze/test/build chưa chạy vì môi trường bàn giao không có Flutter/Dart executable; cần chạy các lệnh trong feature doc trên máy phát triển trước khi merge/release.
+
+## Non-numbered IoT Feature Addendum — 2026-10-23
+
+`NABI_ESP_ASSISTANT` has a Draft DD at `docs/DD/nabi_esp_assistant/`.
+The main app now has a debug-only Android prototype for LocalOnlyHotspot,
+connected-device foreground service, XiaoZhi HTTP/WebSocket v3, Whisper, the
+existing local LLM datasource, offline TTS→Opus, and listen-control messages.
+Source analyzer, focused tests and Android debug build pass; the APK is
+installed. The app remains on its account-resolution loading screen on device,
+so the Feature Hub runtime, hotspot, models, network and ESP audio have not been
+exercised. BLE pairing, device-key OTA authentication, firmware control/ack,
+Tech/QA/Privacy reviews and physical conversation acceptance remain pending.
+This addendum is outside M01-M32 progress totals.

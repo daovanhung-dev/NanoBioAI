@@ -1321,3 +1321,17 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - Chưa fix: không có thay đổi runtime trong phạm vi này.
 - docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md :: - Cần kiểm tra tiếp: kết nối mạng, audio mic/loa, trạng thái nền Android và inference thực tế cần nghiệm thu trên điện thoại/ESP32; tài liệu không thay thế bằng chứng thiết bị.
+- docs/worklog/2026-10-23/002-worklog-connected-esp32-profile.md :: - `pwsh -NoLogo -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL - validator báo thiếu `docs/audit/source_truth_manifest.json` và stale path trong history/task-skill cũ. Các lỗi này không thuộc thay đổi IoT hiện tại.
+- docs/worklog/2026-10-23/002-worklog-connected-esp32-profile.md :: - Build/test Flutter hoặc ESP-IDF: SKIPPED - chỉ cập nhật tài liệu/context.
+- docs/worklog/2026-10-23/002-worklog-connected-esp32-profile.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-10-23/002-worklog-connected-esp32-profile.md :: - Cần kiểm tra tiếp: xác nhận vật lý board/pin nếu cần vượt mức bằng chứng metadata và source; trước khi ghi flash phải chốt image/partition tương thích.
+- docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md :: - Thêm Android foreground service `connectedDevice`, notification có nút dừng, Flutter engine được cache qua lúc Activity detach và partial CPU wake lock trong phiên.
+- docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu file docs/audit/source_truth_manifest.json và các path stale trong worklog/task-skill NanoBio lịch sử; không chỉ ra lỗi từ file IoT mới trong phiên này.
+- docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md :: - Chua fix: ESP gắn USB hiện vẫn chạy demo LCD ESP-IDF 5.4, partition `factory` 1 MB; chưa có firmware XiaoZhi chạy trên thiết bị.
+- docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md :: - Can kiem tra tiep: cài app trên đúng điện thoại; kiểm tra model/Whisper/TTS, `/health`, notification, nền/tắt màn hình khi sạc, WebSocket v3, hội thoại tiếng Việt, token sai, offline và đổi địa chỉ hotspot.
+- docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thiếu `docs/audit/source_truth_manifest.json` và path stale trong `.codex/history/WORKLOG_2026-08-16_meal_nutrition_estimation.md` cùng `.codex/task-skills/nabi-character/SKILL.md`; không báo path mới từ DD/feature vừa tạo.
+- docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: - Chua fix: Tech/QA/Privacy review chưa được ghi nhận, nên theo release gate luồng kết nối vẫn là preview.
+- docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: - Can kiem tra tiep: sau các review, triển khai và nghiệm thu Android hotspot/foreground service, BLE provisioning, auth/token, Whisper/Opus/TTS, điều khiển listening và firmware trên OSTB thực.
+- docs/worklog/2026-10-23/005-worklog-xiaozhi-ostb3st-flash-boot.md :: ## Rủi ro và giới hạn

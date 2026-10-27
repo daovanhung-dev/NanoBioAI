@@ -11,18 +11,23 @@ Before changing or making claims about the subproject:
 
 1. Read `iot/xiaozhi-esp32/AGENTS.md` and inspect `git status --short` from the
    NanoBioAI repository. Preserve all existing changes.
-2. Read `iot/xiaozhi-esp32/docs/agent-context/README.md`, then follow its
+2. Read `iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`.
+   Do this for every IoT/ESP32 task, including tasks outside this subproject.
+   Separate live-device readings from source configuration; apply board-specific
+   values only when the task targets this OSTB 3ST.
+3. Read `iot/xiaozhi-esp32/docs/agent-context/README.md`, then follow its
    architecture, task-routing, and file-index links for the specific task.
-3. For board, target, Kconfig, CMake, partition, or release work, also read
+4. For board, target, Kconfig, CMake, partition, or release work, also read
    `iot/xiaozhi-esp32/docs/agent-context/BOARDS_AND_BUILD.md` and the owning board README/config.
-4. For phone app work, read `iot/xiaozhi-esp32/phone_app/README.md`, `iot/xiaozhi-esp32/phone_app/pubspec.yaml`,
+5. For phone app work, read `iot/xiaozhi-esp32/phone_app/README.md`, `iot/xiaozhi-esp32/phone_app/pubspec.yaml`,
    and the owning Dart/Android source before editing.
 
-The imported snapshot includes current worktree edits and first-party
-untracked files. Keep the source XiaoZhi project and this NanoBioAI copy
-independent; do not add runtime imports, routes, services, or API coupling to
-the main NanoBioAI app unless a separate request explicitly defines that
-integration.
+The imported XiaoZhi snapshot includes current worktree edits and first-party
+untracked files. The approved Nabi ESP integration is intentionally owned by
+the main NanoBioAI app under `lib/app_versions/v1/features/nabi_esp_assistant/`
+and this firmware tree. Keep `iot/xiaozhi-esp32/phone_app/` independent and
+outside this integration; do not import its runtime or edit it for Nabi unless
+a separate request explicitly asks for that app.
 
 ## Project Boundaries
 
@@ -35,17 +40,15 @@ integration.
   generated `sdkconfig` or `build/` state as portable defaults.
 - ESP-IDF 6.0.1 is the documented minimum; 6.1 is recommended. Do not assume
   ESP-IDF 5.x compatibility.
-- `iot/xiaozhi-esp32/phone_app/` is a separate Android Flutter app. It manages/imports GGUF
-  models, runs local LLM and Whisper inference, uses Android TTS/Opus, and
-  offers an HTTP OTA-config endpoint plus a XiaoZhi WebSocket server.
-- The phone-local flow is: the ESP requests OTA configuration over HTTP; that
-  endpoint returns the phone's LAN WebSocket URL and a bearer token; firmware
-  sends framed Opus/audio and XiaoZhi JSON messages over WebSocket; the phone
-  performs speech recognition, LLM inference, and TTS locally. The OTA endpoint
-  supplies connection configuration and does not itself provide AI inference.
-  The current Android app keeps the screen awake while serving but has no
-  foreground service, so it must remain open during use; model downloads need
-  Internet initially, while device communication uses the same working LAN.
+- `iot/xiaozhi-esp32/phone_app/` remains a separate Android Flutter application
+  and is not part of the Nabi integration.
+- Nabi's ESP flow uses the main Flutter app's
+  `nabi_esp_assistant` feature and the shared source contract
+  `iot/nabi_esp_contract.json`. Android LocalOnlyHotspot supplies current Wi-Fi
+  credentials; the app provisions OSTB 3ST over BLE Security 2. Firmware calls
+  the DHCP gateway at port `8386`, `/nabi/ota/`, then opens the authenticated
+  protocol-v3 WebSocket at `/nabi/v1/`. Whisper, local LLM, and TTS remain on the
+  phone. Read the feature DD and firmware integration flow before edits.
 - `main/boards/ostb/ostb-xiaozhi-3st/` is the OSTB XiaoZhi 3ST ESP32-S3 board.
   Its local-AI build profile is `config.local-ai.json`, alongside the normal
   `config.json`; keep that machine/LAN profile unchanged unless specifically
@@ -73,6 +76,8 @@ integration.
 
 - Subproject rules: `iot/xiaozhi-esp32/AGENTS.md`
 - Context router: `iot/xiaozhi-esp32/docs/agent-context/README.md`
+- Connected device snapshot (mandatory for every IoT/ESP32 task):
+  `iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`
 - Runtime ownership: `iot/xiaozhi-esp32/docs/agent-context/ARCHITECTURE.md`
 - Board/build constraints: `iot/xiaozhi-esp32/docs/agent-context/BOARDS_AND_BUILD.md`
 - Task routing: `iot/xiaozhi-esp32/docs/agent-context/TASK_ROUTING.md`

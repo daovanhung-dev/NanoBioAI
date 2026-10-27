@@ -5,6 +5,7 @@
 #include "system_info.h"
 #include "settings.h"
 #include "assets/lang_config.h"
+#include "nabi_esp_provisioning.h"
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -68,6 +69,9 @@ void WifiBoard::StartNetwork() {
         config.station_hostname = hostname;
     }
     wifi_manager.Initialize(config);
+#ifdef CONFIG_NABI_ESP_ASSISTANT
+    NabiEspProvisioning::GetInstance().Start();
+#endif
 
     // Set unified event callback - forward to NetworkEvent with SSID data
     wifi_manager.SetEventCallback([this](WifiEvent event, const std::string& data) {

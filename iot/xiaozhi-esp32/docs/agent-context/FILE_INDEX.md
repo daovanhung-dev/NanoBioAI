@@ -2,12 +2,30 @@
 
 > Snapshot tạo ngày 2026-10-23. Danh mục gồm mọi đường dẫn Git-tracked, các file first-party untracked đang có trong worktree và chính tài liệu context này.
 
-- Đường dẫn được liệt kê: **1772** (1771 tracked, 1 first-party untracked; có 0 tracked path hiện không tồn tại trong worktree).
+- Đường dẫn được liệt kê: **1779** (1772 tracked, 7 first-party untracked; có 0 tracked path hiện không tồn tại trong worktree).
 - Mỗi dòng mô tả vai trò của file theo nội dung hoặc cách project tham chiếu; asset nhị phân được liệt kê riêng theo định dạng và kích thước byte, với vai trò dựa trên tên, locale hoặc source sử dụng.
 - Không liệt kê từng file trong .git/, build/, managed_components/ và ignored local sdkconfig*; đây là Git metadata, output build, dependency đã resolve hoặc config sinh tại máy.
 - Với path tracked đang thiếu, kích thước lấy từ Git blob ở HEAD; không khôi phục file đang thiếu.
 
 ## Tổng quan theo vùng
+
+### Nabi / ESP phone-local AI entry points
+
+Read the mandatory [connected-device snapshot](CONNECTED_DEVICE_OSTB_3ST.md), then use these implementation owners:
+
+| Path | Owner |
+| --- | --- |
+| `docs/features/phone-local-ai/001-feature-phone-hotspot-server.md` | Current phone-to-OSTB integration flow and acceptance boundary |
+| `../../nabi_esp_contract.json` | Canonical protocol/port/path/BLE contract source |
+| `../../tools/generate_nabi_esp_contract.py` | Generates Dart, Kotlin, and ESP constants; supports `--check` |
+| `main/nabi_esp_contract.h` | Generated ESP constants |
+| `main/nabi_esp_provisioning.h` / `main/nabi_esp_provisioning.cc` | OSTB BLE Security 2, one-time code, pairing key, Wi-Fi configuration, DHCP gateway lookup |
+| `main/ota.cc` | Dynamic OTA URL and paired-device HTTP header |
+| `main/protocols/protocol.h` / `.cc`, `main/application.cc` | Nabi listen command acknowledgement and event-loop dispatch |
+| `lib/app_versions/v1/features/nabi_esp_assistant/` | Main Nabi app UI, runtime, local server and voice pipeline (repo root) |
+| `android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/` | Main Nabi app Android hotspot, BLE and foreground service (repo root) |
+
+`iot/xiaozhi-esp32/phone_app/` is a separate app. It is outside this Nabi integration and must not be treated as its app-side implementation.
 
 | Vùng | File |
 | --- | ---: |
@@ -17,15 +35,15 @@
 | `.gitignore` | 1 |
 | `AGENTS.md` | 1 |
 | `CMakeLists.txt` | 1 |
-| `docker/` | 5 |
-| `docs/` | 38 |
 | `LICENSE` | 1 |
-| `main/` | 1618 |
-| `partitions/` | 14 |
-| `phone_app/` | 31 |
 | `README.md` | 1 |
 | `README_ja.md` | 1 |
 | `README_zh.md` | 1 |
+| `docker/` | 5 |
+| `docs/` | 40 |
+| `main/` | 1619 |
+| `partitions/` | 14 |
+| `phone_app/` | 33 |
 | `scripts/` | 38 |
 | `sdkconfig.defaults` | 1 |
 | `sdkconfig.defaults.esp32` | 1 |
@@ -53,17 +71,21 @@
 | `.github/workflows/release.yml` | `yml` | 4215 | tracked | Workflow build và publish firmware release matrix. |
 | `.github/workflows/test-mcp.yml` | `yml` | 890 | tracked | Workflow kiểm tra MCP liên quan. |
 | `.gitignore` | `no extension` | 239 | tracked | Các file/đường dẫn Git bỏ qua. |
-| `AGENTS.md` | `md` | 5778 | tracked | Quy tắc agent: phạm vi, kiến trúc, an toàn thay đổi, build và xác minh. Main section: AGENTS.md. |
+| `AGENTS.md` | `md` | 6019 | tracked | Quy tắc agent: phạm vi, kiến trúc, an toàn thay đổi, build và xác minh. Main section: AGENTS.md. |
 | `CMakeLists.txt` | `txt` | 494 | tracked | Khởi tạo project ESP-IDF và phiên bản firmware. |
+| `LICENSE` | `no extension` | 1140 | tracked | Điều khoản cấp phép MIT. |
+| `README.md` | `md` | 10335 | tracked | Tổng quan sản phẩm, SDK được hỗ trợ, tính năng, board, cách phát triển và tài liệu. Main section: An MCP-based Chatbot. |
+| `README_ja.md` | `md` | 11885 | tracked | Bản tiếng Nhật của tổng quan dự án. Main section: MCP ベースのチャットボット. |
+| `README_zh.md` | `md` | 9939 | tracked | Bản tiếng Trung của tổng quan dự án. Main section: An MCP-based Chatbot. |
 | `docker/firmware-builder/Dockerfile` | `no extension` | 1187 | tracked | Container image environment for reproducible firmware builds. |
+| `docker/firmware-builder/README.md` | `md` | 3304 | tracked | Instructions for the Docker firmware builder. Main section: Firmware builder container. |
 | `docker/firmware-builder/entrypoint.sh` | `sh` | 350 | tracked | Container startup wrapper for firmware builder. |
 | `docker/firmware-builder/firmware_builder.py` | `py` | 15839 | tracked | Docker build orchestration implementation. Entry points/types: `utc_now`, `env`, `upload_config`, `parser`, `validate`, `run_and_log`, `command_output`, `project_version`. |
-| `docker/firmware-builder/README.md` | `md` | 3304 | tracked | Instructions for the Docker firmware builder. Main section: Firmware builder container. |
 | `docker/firmware-builder/test_firmware_builder.py` | `py` | 13685 | tracked | Tests for Docker firmware-builder orchestration. Entry points/types: `FirmwareBuilderTest`. |
 | `docs/agent-context/ARCHITECTURE.md` | `md` | 6402 | tracked | Sơ đồ ownership và luồng khởi động/runtime của firmware. Main section: Kiến trúc và luồng runtime. |
 | `docs/agent-context/BOARDS_AND_BUILD.md` | `md` | 3993 | tracked | Chuỗi chọn board/variant, partition, assets và build. Main section: Board, variant và build. |
-| `docs/agent-context/FILE_INDEX.md` | `md` | self (inventory) | tracked | Danh mục toàn bộ đường dẫn first-party cùng vai trò và metadata. Main section: Danh mục file dự án. |
-| `docs/agent-context/README.md` | `md` | 4694 | tracked | Điểm vào bộ context, quy trình nạp context và thứ tự nguồn sự thật. Main section: XiaoZhi ESP32 Agent Context. |
+| `docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md` | `md` | 8690 | first-party untracked | Snapshot ESP sau khi build/nạp OTA0, xác minh BLE/Wi-Fi/OTA config/WebSocket và tách bằng chứng thiết bị khỏi source/build. Main section: Hồ sơ ESP đang kết nối: OSTB 3ST. |
+| `docs/agent-context/README.md` | `md` | 4969 | tracked | Điểm vào bộ context, quy trình nạp context và thứ tự nguồn sự thật. Main section: XiaoZhi ESP32 Agent Context. |
 | `docs/agent-context/TASK_ROUTING.md` | `md` | 4113 | tracked | Bản đồ task tới owner, tài liệu, ranh giới và kiểm chứng. Main section: Định tuyến task. |
 | `docs/audio-codec-input-audit.md` | `md` | 23313 | tracked | Documentation: AudioCodec 输入通道审计; see this file for its authoritative topic and details. Main section: 本轮调整. |
 | `docs/audio-codec-input-audit_vi.md` | `md` | 26673 | tracked | Documentation: Kiểm toán kênh đầu vào AudioCodec; see this file for its authoritative topic and details. Main section: Điều chỉnh trong đợt này. |
@@ -76,6 +98,7 @@
 | `docs/custom-board.md` | `md` | 19384 | tracked | Documentation: Custom Board Guide; see this file for its authoritative topic and details. Main section: Important. |
 | `docs/custom-board_vi.md` | `md` | 21663 | tracked | Documentation: Hướng dẫn tạo bo mạch tùy chỉnh; see this file for its authoritative topic and details. Main section: Quan trọng. |
 | `docs/custom-board_zh.md` | `md` | 16331 | tracked | Documentation: 自定义开发板指南; see this file for its authoritative topic and details. Main section: 重要提示. |
+| `docs/features/phone-local-ai/001-feature-phone-hotspot-server.md` | `md` | 5188 | first-party untracked | Thiết kế Nabi Android LocalOnlyHotspot, BLE Security 2, cổng 8386, dynamic gateway OTA/WebSocket v3 và review gate. |
 | `docs/glyph-push.md` | `md` | 7452 | tracked | Documentation: Dynamic Text Glyph Push Extension; see this file for its authoritative topic and details. Main section: 1. Capability advertisement. |
 | `docs/glyph-push_vi.md` | `md` | 9568 | tracked | Documentation: Phần mở rộng đẩy glyph văn bản động; see this file for its authoritative topic and details. Main section: 1. Quảng bá khả năng. |
 | `docs/glyph-push_zh.md` | `md` | 6657 | tracked | Documentation: 动态文字 Glyph Push 扩展; see this file for its authoritative topic and details. Main section: 1. 能力声明. |
@@ -92,13 +115,14 @@
 | `docs/mqtt-udp_zh.md` | `md` | 9306 | tracked | Documentation: MQTT + UDP 混合通信协议文档; see this file for its authoritative topic and details. Main section: 1. 协议概览. |
 | `docs/notify.md` | `md` | 5155 | tracked | Documentation: Asynchronous Voice Notifications; see this file for its authoritative topic and details. Main section: Message format. |
 | `docs/notify_vi.md` | `md` | 6374 | tracked | Documentation: Thông báo giọng nói không đồng bộ; see this file for its authoritative topic and details. Main section: Định dạng thông điệp. |
-| `docs/phone-local-ai-flow_vi.md` | `md` | 13425 | first-party untracked | Mô tả luồng OTA, WebSocket, audio, STT, LLM và TTS local giữa điện thoại với ESP32. Main section: Luồng AI local giữa XiaoZhi ESP32 và điện thoại Android. |
+| `docs/phone-local-ai-flow_vi.md` | `md` | 10177 | tracked | Luồng OTA/WebSocket/audio/STT/LLM/TTS, BLE Security 2 và server Nabi qua LocalOnlyHotspot. |
 | `docs/releasing.md` | `md` | 2770 | tracked | Documentation: Publishing firmware releases; see this file for its authoritative topic and details. Main section: Running the workflow. |
 | `docs/releasing_vi.md` | `md` | 3479 | tracked | Documentation: Phát hành firmware; see this file for its authoritative topic and details. Main section: Chạy workflow. |
 | `docs/websocket.md` | `md` | 18247 | tracked | Documentation: WebSocket Communication Protocol; see this file for its authoritative topic and details. Main section: 1. Overall Flow. |
 | `docs/websocket_vi.md` | `md` | 20751 | tracked | Documentation: Giao thức truyền thông WebSocket; see this file for its authoritative topic and details. Main section: 1. Luồng tổng quát. |
 | `docs/websocket_zh.md` | `md` | 18021 | tracked | Documentation: 1. 总体流程概览; see this file for its authoritative topic and details. Main section: 2. 通用请求头. |
-| `LICENSE` | `no extension` | 1140 | tracked | Điều khoản cấp phép MIT. |
+| `main/CMakeLists.txt` | `txt` | 68825 | tracked | Main ESP-IDF component composition: common/selected-board sources, fonts, emojis, locale and asset generation. |
+| `main/Kconfig.projbuild` | `projbuild` | 45624 | tracked | Project Kconfig: target-gated board choice, languages, audio/AEC, display/assets and feature options. |
 | `main/application.cc` | `cc` | 55598 | tracked | Điều phối lifecycle, event loop, state, protocol, audio, assets, MCP, OTA và notify. Key types/methods: `digit_sound`, `Application::SetDeviceState`, `Application::Initialize`, `Application::Run`, `Application::HandleNetworkConnectedEvent`, `Application::HandleNetworkDisconnectedEvent`, `Application::HandleActivationDoneEvent`, `Application::ActivationTask`. |
 | `main/application.h` | `h` | 6876 | tracked | API và state nội bộ của Application; events và scheduling. Key types/methods: `AecMode`, `Application`, `TaskPriorityReset`. |
 | `main/assets.cc` | `cc` | 26067 | tracked | Load/checksum/mmap assets, models, themes và font capability. Key types/methods: `mmap_assets_table`, `Assets::FindPartition`, `Assets::Apply`, `Assets::InitializePartition`, `Assets::UnApplyPartition`, `Assets::UseBuiltInTextFontCapability`, `Assets::DisableTextFontGlyphPush`, `Assets::GetAssetData`. |
@@ -772,6 +796,7 @@
 | `main/assets/locales/zh-TW/upgrade.ogg` | `ogg` | 2847 | tracked | Audio prompt `upgrade` cho locale `zh-TW`; build chọn locale hiện hành và fallback về en-US khi thiếu. |
 | `main/assets/locales/zh-TW/welcome.ogg` | `ogg` | 3493 | tracked | Audio prompt `welcome` cho locale `zh-TW`; build chọn locale hiện hành và fallback về en-US khi thiếu. |
 | `main/assets/locales/zh-TW/wificonfig.ogg` | `ogg` | 3155 | tracked | Audio prompt `wificonfig` cho locale `zh-TW`; build chọn locale hiện hành và fallback về en-US khi thiếu. |
+| `main/audio/README.md` | `md` | 5426 | tracked | Thiết kế pipeline audio và các ràng buộc audio subsystem. Main section: Audio Service Architecture. |
 | `main/audio/audio_codec.cc` | `cc` | 1638 | tracked | Hành vi I2S/audio codec dùng chung. Key types/methods: `AudioCodec::OutputData`, `AudioCodec::InputData`, `AudioCodec::Start`, `AudioCodec::SetOutputVolume`, `AudioCodec::SetInputGain`, `AudioCodec::EnableInput`, `AudioCodec::EnableOutput`. |
 | `main/audio/audio_codec.h` | `h` | 2340 | tracked | Interface AudioCodec cho thu/phát âm thanh. Key types/methods: `AudioCodec`. |
 | `main/audio/audio_debugger.cc` | `cc` | 2656 | tracked | Công cụ debug/ghi nhận thống kê audio. Key types/methods: `AudioDebugger::Feed`. |
@@ -800,7 +825,6 @@
 | `main/audio/engines/lite_audio_engine.cc` | `cc` | 5842 | tracked | Triển khai AudioEngine cho pipeline, xử lý giọng nói, VAD/wake/AEC. Key types/methods: `LiteAudioEngine::Initialize`, `LiteAudioEngine::Feed`, `LiteAudioEngine::EnableWakeWordDetection`, `LiteAudioEngine::EnableVoiceProcessing`, `LiteAudioEngine::EnableDeviceAec`, `LiteAudioEngine::HasWakeWord`, `LiteAudioEngine::GetWakeWords`, `LiteAudioEngine::IsWakeWordDetectionEnabled`. |
 | `main/audio/engines/lite_audio_engine.h` | `h` | 2356 | tracked | Triển khai AudioEngine cho pipeline, xử lý giọng nói, VAD/wake/AEC. Key types/methods: `EspWakeWord`, `LiteAudioEngine`. |
 | `main/audio/fixed_queue.h` | `h` | 1764 | tracked | Queue dung lượng cố định dùng trong đường audio. Key types/methods: `FixedQueue`. |
-| `main/audio/README.md` | `md` | 5426 | tracked | Thiết kế pipeline audio và các ràng buộc audio subsystem. Main section: Audio Service Architecture. |
 | `main/audio/wake_word.h` | `h` | 806 | tracked | Interface wake-word detector. Key types/methods: `WakeWord`. |
 | `main/audio/wake_words/custom_wake_word.cc` | `cc` | 12505 | tracked | Wake-word model/detection hoặc cache audio đầu vào cho wake flow. Key types/methods: `CustomWakeWord::ParseWakenetModelConfig`, `CustomWakeWord::Initialize`, `CustomWakeWord::OnWakeWordDetected`, `CustomWakeWord::GetWakeWords`, `CustomWakeWord::Start`, `CustomWakeWord::Stop`, `CustomWakeWord::Feed`, `CustomWakeWord::FeedMono`. |
 | `main/audio/wake_words/custom_wake_word.h` | `h` | 2312 | tracked | Wake-word model/detection hoặc cache audio đầu vào cho wake flow. Key types/methods: `CustomWakeWord`, `Command`. |
@@ -839,10 +863,10 @@
 | `main/boards/bread-compact-esp32-lcd/config.h` | `h` | 7965 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-esp32-lcd`. |
 | `main/boards/bread-compact-esp32-lcd/config.json` | `json` | 254 | tracked | Board/release config: target `esp32`, type `bread-compact-esp32-lcd`, variants: bread-compact-esp32-lcd. |
 | `main/boards/bread-compact-esp32-lcd/esp32_bread_board_lcd.cc` | `cc` | 7197 | tracked | Driver hoặc UI/display resource riêng của board `esp32_bread_board_lcd.cc` trong `main/boards/bread-compact-esp32-lcd`. Key types/methods: `CompactWifiBoardLCD`. |
+| `main/boards/bread-compact-esp32/README.md` | `md` | 279 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/bread-compact-esp32`. Main section: 编译配置命令. |
 | `main/boards/bread-compact-esp32/config.h` | `h` | 1434 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-esp32`. |
 | `main/boards/bread-compact-esp32/config.json` | `json` | 407 | tracked | Board/release config: target `esp32`, type `bread-compact-esp32`, variants: bread-compact-esp32, bread-compact-esp32-128x32. |
 | `main/boards/bread-compact-esp32/esp32_bread_board.cc` | `cc` | 5401 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_bread_board.cc` trong `main/boards/bread-compact-esp32`. Key types/methods: `CompactWifiBoard`. |
-| `main/boards/bread-compact-esp32/README.md` | `md` | 279 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/bread-compact-esp32`. Main section: 编译配置命令. |
 | `main/boards/bread-compact-ml307/compact_ml307_board.cc` | `cc` | 6519 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `compact_ml307_board.cc` trong `main/boards/bread-compact-ml307`. Key types/methods: `CompactMl307Board`. |
 | `main/boards/bread-compact-ml307/config.h` | `h` | 1426 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-ml307`. |
 | `main/boards/bread-compact-ml307/config.json` | `json` | 409 | tracked | Board/release config: target `esp32s3`, type `bread-compact-ml307`, variants: bread-compact-ml307, bread-compact-ml307-128x64. |
@@ -852,22 +876,22 @@
 | `main/boards/bread-compact-wifi-lcd/compact_wifi_board_lcd.cc` | `cc` | 6373 | tracked | Driver hoặc UI/display resource riêng của board `compact_wifi_board_lcd.cc` trong `main/boards/bread-compact-wifi-lcd`. Key types/methods: `CompactWifiBoardLCD`. |
 | `main/boards/bread-compact-wifi-lcd/config.h` | `h` | 8290 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-wifi-lcd`. |
 | `main/boards/bread-compact-wifi-lcd/config.json` | `json` | 249 | tracked | Board/release config: target `esp32s3`, type `bread-compact-wifi-lcd`, variants: bread-compact-wifi-lcd. |
+| `main/boards/bread-compact-wifi-s3cam/README.md` | `md` | 572 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/bread-compact-wifi-s3cam`. Main section: 编译配置命令. |
 | `main/boards/bread-compact-wifi-s3cam/compact_wifi_board_s3cam.cc` | `cc` | 7488 | tracked | Tích hợp mạng riêng của board `compact_wifi_board_s3cam.cc` trong `main/boards/bread-compact-wifi-s3cam`. Key types/methods: `CompactWifiBoardS3Cam`. |
 | `main/boards/bread-compact-wifi-s3cam/config.h` | `h` | 8895 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-wifi-s3cam`. |
 | `main/boards/bread-compact-wifi-s3cam/config.json` | `json` | 378 | tracked | Board/release config: target `esp32s3`, type `bread-compact-wifi-s3cam`, variants: bread-compact-wifi-s3cam. |
-| `main/boards/bread-compact-wifi-s3cam/README.md` | `md` | 572 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/bread-compact-wifi-s3cam`. Main section: 编译配置命令. |
 | `main/boards/bread-compact-wifi/compact_wifi_board.cc` | `cc` | 6175 | tracked | Tích hợp mạng riêng của board `compact_wifi_board.cc` trong `main/boards/bread-compact-wifi`. Key types/methods: `CompactWifiBoard`. |
 | `main/boards/bread-compact-wifi/config.h` | `h` | 1433 | tracked | Pin map và compile-time hardware options cho board `main/boards/bread-compact-wifi`. |
 | `main/boards/bread-compact-wifi/config.json` | `json` | 406 | tracked | Board/release config: target `esp32s3`, type `bread-compact-wifi`, variants: bread-compact-wifi, bread-compact-wifi-128x64. |
+| `main/boards/chd/chd-esp32s3-box/README.md` | `md` | 2358 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/chd/chd-esp32s3-box`. Main section: 简介. |
 | `main/boards/chd/chd-esp32s3-box/chd_esp32s3_box_board.cc` | `cc` | 35840 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `chd_esp32s3_box_board.cc` trong `main/boards/chd/chd-esp32s3-box`. Key types/methods: `CustomLcdDisplay`, `ChdEsp32s3BoxBoard`. |
 | `main/boards/chd/chd-esp32s3-box/config.h` | `h` | 5284 | tracked | Pin map và compile-time hardware options cho board `main/boards/chd/chd-esp32s3-box`. |
 | `main/boards/chd/chd-esp32s3-box/config.json` | `json` | 464 | tracked | Board/release config: target `esp32s3`, type `chd-esp32s3-box`, variants: chd-esp32s3-box, chd-esp32s3-box-lcd35. |
 | `main/boards/chd/chd-esp32s3-box/power_manager.h` | `h` | 6186 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/chd/chd-esp32s3-box`. Key types/methods: `PowerManager`. |
-| `main/boards/chd/chd-esp32s3-box/README.md` | `md` | 2358 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/chd/chd-esp32s3-box`. Main section: 简介. |
+| `main/boards/chd/chd-esp32s3-eye/README.md` | `md` | 916 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/chd/chd-esp32s3-eye`. Main section: 简介. |
 | `main/boards/chd/chd-esp32s3-eye/chd_esp32s3_eye_board.cc` | `cc` | 9680 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `chd_esp32s3_eye_board.cc` trong `main/boards/chd/chd-esp32s3-eye`. Key types/methods: `ChdEsp32s3EyeBoard`. |
 | `main/boards/chd/chd-esp32s3-eye/config.h` | `h` | 2573 | tracked | Pin map và compile-time hardware options cho board `main/boards/chd/chd-esp32s3-eye`. |
 | `main/boards/chd/chd-esp32s3-eye/config.json` | `json` | 215 | tracked | Board/release config: target `esp32s3`, type `chd-esp32s3-eye`, variants: chd-esp32s3-eye. |
-| `main/boards/chd/chd-esp32s3-eye/README.md` | `md` | 916 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/chd/chd-esp32s3-eye`. Main section: 简介. |
 | `main/boards/common/adc_battery_monitor.cc` | `cc` | 3816 | tracked | Đọc và tính mức pin qua ADC. Key types/methods: `AdcBatteryMonitor::IsCharging`, `AdcBatteryMonitor::IsDischarging`, `AdcBatteryMonitor::GetBatteryLevel`, `AdcBatteryMonitor::OnChargingStatusChanged`, `AdcBatteryMonitor::CheckBatteryStatus`. |
 | `main/boards/common/adc_battery_monitor.h` | `h` | 858 | tracked | Interface giám sát pin qua ADC. Key types/methods: `AdcBatteryMonitor`. |
 | `main/boards/common/axp2101.cc` | `cc` | 815 | tracked | Driver PMIC AXP2101. (helper dùng chung; xem caller/board sử dụng). Key types/methods: `Axp2101::GetBatteryCurrentDirection`, `Axp2101::IsCharging`, `Axp2101::IsDischarging`, `Axp2101::IsChargingDone`, `Axp2101::GetBatteryLevel`, `Axp2101::GetTemperature`, `Axp2101::PowerOff`. |
@@ -913,6 +937,7 @@
 | `main/boards/common/wifi_board.cc` | `cc` | 11611 | tracked | Kết nối, provisioning và trạng thái network Wi-Fi dùng chung. Key types/methods: `WifiBoard::GetBoardType`, `WifiBoard::StartNetwork`, `WifiBoard::TryWifiConnect`, `WifiBoard::OnNetworkEvent`, `WifiBoard::SetNetworkEventCallback`, `WifiBoard::OnWifiConnectTimeout`, `WifiBoard::StartWifiConfigMode`, `WifiBoard::EnterWifiConfigMode`. |
 | `main/boards/common/wifi_board.h` | `h` | 1925 | tracked | Interface board dùng Wi-Fi và network callbacks. Key types/methods: `WifiBoard`. |
 | `main/boards/common/xpower.h` | `h` | 3500 | tracked | Interface power management. (helper dùng chung; xem caller/board sử dụng). Key types/methods: `Xpowers`. |
+| `main/boards/dfrobot/df-k10/README.md` | `md` | 1238 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/dfrobot/df-k10`. Main section: DFRobot 行空板 K10. |
 | `main/boards/dfrobot/df-k10/config.h` | `h` | 2278 | tracked | Pin map và compile-time hardware options cho board `main/boards/dfrobot/df-k10`. |
 | `main/boards/dfrobot/df-k10/config.json` | `json` | 494 | tracked | Board/release config: target `esp32s3`, type `df-k10`, variants: df-k10. |
 | `main/boards/dfrobot/df-k10/df_k10_board.cc` | `cc` | 11082 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `df_k10_board.cc` trong `main/boards/dfrobot/df-k10`. Key types/methods: `Df_K10Board`. |
@@ -920,19 +945,19 @@
 | `main/boards/dfrobot/df-k10/k10_audio_codec.h` | `h` | 1365 | tracked | Cấu hình hoặc driver audio codec của board `k10_audio_codec.h` trong `main/boards/dfrobot/df-k10`. Key types/methods: `K10AudioCodec`. |
 | `main/boards/dfrobot/df-k10/led_control.cc` | `cc` | 5408 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `led_control.cc` trong `main/boards/dfrobot/df-k10`. Key types/methods: `LedStripControl::LevelToBrightness`, `LedStripControl::RGBToColor`. |
 | `main/boards/dfrobot/df-k10/led_control.h` | `h` | 432 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `led_control.h` trong `main/boards/dfrobot/df-k10`. Key types/methods: `LedStripControl`. |
-| `main/boards/dfrobot/df-k10/README.md` | `md` | 1238 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/dfrobot/df-k10`. Main section: DFRobot 行空板 K10. |
+| `main/boards/dfrobot/df-s3-ai-cam/README.md` | `md` | 2044 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/dfrobot/df-s3-ai-cam`. Main section: DFRobot ESP32-S3 AI智能摄像头模块. |
 | `main/boards/dfrobot/df-s3-ai-cam/config.h` | `h` | 2128 | tracked | Pin map và compile-time hardware options cho board `main/boards/dfrobot/df-s3-ai-cam`. |
 | `main/boards/dfrobot/df-s3-ai-cam/config.json` | `json` | 729 | tracked | Board/release config: target `esp32s3`, type `df-s3-ai-cam`, variants: df-s3-ai-cam. |
 | `main/boards/dfrobot/df-s3-ai-cam/df_s3_ai_cam.cc` | `cc` | 3081 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `df_s3_ai_cam.cc` trong `main/boards/dfrobot/df-s3-ai-cam`. Key types/methods: `DfrobotEsp32S3AiCam`. |
-| `main/boards/dfrobot/df-s3-ai-cam/README.md` | `md` | 2044 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/dfrobot/df-s3-ai-cam`. Main section: DFRobot ESP32-S3 AI智能摄像头模块. |
+| `main/boards/doit-s3-aibox/README.md` | `md` | 625 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/doit-s3-aibox`. Main section: 四博智联AI陪伴盒子. |
 | `main/boards/doit-s3-aibox/config.h` | `h` | 821 | tracked | Pin map và compile-time hardware options cho board `main/boards/doit-s3-aibox`. |
 | `main/boards/doit-s3-aibox/config.json` | `json` | 184 | tracked | Board/release config: target `esp32s3`, type `doit-s3-aibox`, variants: doit-s3-aibox. |
 | `main/boards/doit-s3-aibox/doit_s3_aibox.cc` | `cc` | 4083 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `doit_s3_aibox.cc` trong `main/boards/doit-s3-aibox`. Key types/methods: `DoitS3AiBox`. |
-| `main/boards/doit-s3-aibox/README.md` | `md` | 625 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/doit-s3-aibox`. Main section: 四博智联AI陪伴盒子. |
 | `main/boards/du-chatx/config.h` | `h` | 1190 | tracked | Pin map và compile-time hardware options cho board `main/boards/du-chatx`. |
 | `main/boards/du-chatx/config.json` | `json` | 161 | tracked | Board/release config: target `esp32s3`, type `du-chatx`, variants: du-chatx. |
 | `main/boards/du-chatx/du-chatx-wifi.cc` | `cc` | 5988 | tracked | Tích hợp mạng riêng của board `du-chatx-wifi.cc` trong `main/boards/du-chatx`. Key types/methods: `DuChatX`. |
 | `main/boards/du-chatx/power_manager.h` | `h` | 6007 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/du-chatx`. Key types/methods: `PowerManager`. |
+| `main/boards/electron-bot/README.md` | `md` | 7100 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/electron-bot`. Main section: 简介. |
 | `main/boards/electron-bot/config.h` | `h` | 1426 | tracked | Pin map và compile-time hardware options cho board `main/boards/electron-bot`. |
 | `main/boards/electron-bot/config.json` | `json` | 227 | tracked | Board/release config: target `esp32s3`, type `electron-bot`, variants: electron-bot. |
 | `main/boards/electron-bot/electron_bot.cc` | `cc` | 5365 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `electron_bot.cc` trong `main/boards/electron-bot`. Key types/methods: `ElectronBot`. |
@@ -945,9 +970,9 @@
 | `main/boards/electron-bot/oscillator.h` | `h` | 2568 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.h` trong `main/boards/electron-bot`. Key types/methods: `Oscillator`. |
 | `main/boards/electron-bot/otto_icon_font.c` | `c` | 4320 | tracked | Driver hoặc UI/display resource riêng của board `otto_icon_font.c` trong `main/boards/electron-bot`. |
 | `main/boards/electron-bot/power_manager.h` | `h` | 4195 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/electron-bot`. Key types/methods: `PowerManager`. |
-| `main/boards/electron-bot/README.md` | `md` | 7100 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/electron-bot`. Main section: 简介. |
 | `main/boards/electron-bot/websocket_control_server.cc` | `cc` | 6982 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `websocket_control_server.cc` trong `main/boards/electron-bot`. Key types/methods: `WsBroadcastJob`, `WebSocketControlServer::WsHandler`, `WebSocketControlServer::Start`, `WebSocketControlServer::Stop`, `WebSocketControlServer::HandleMessage`, `WebSocketControlServer::AddClient`, `WebSocketControlServer::RemoveClient`, `WebSocketControlServer::GetClientCount`. |
 | `main/boards/electron-bot/websocket_control_server.h` | `h` | 756 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `websocket_control_server.h` trong `main/boards/electron-bot`. Key types/methods: `WebSocketControlServer`. |
+| `main/boards/espressif/esp-hi/README.md` | `md` | 2116 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-hi`. Main section: ESP-Hi. |
 | `main/boards/espressif/esp-hi/adc_pdm_audio_codec.cc` | `cc` | 9358 | tracked | Cấu hình hoặc driver audio codec của board `adc_pdm_audio_codec.cc` trong `main/boards/espressif/esp-hi`. Key types/methods: `AdcPdmAudioCodec::SetOutputVolume`, `AdcPdmAudioCodec::EnableInput`, `AdcPdmAudioCodec::EnableOutput`, `AdcPdmAudioCodec::Read`, `AdcPdmAudioCodec::Write`, `AdcPdmAudioCodec::Start`, `AdcPdmAudioCodec::OutputTimerCallback`. |
 | `main/boards/espressif/esp-hi/adc_pdm_audio_codec.h` | `h` | 1153 | tracked | Cấu hình hoặc driver audio codec của board `adc_pdm_audio_codec.h` trong `main/boards/espressif/esp-hi`. Key types/methods: `AdcPdmAudioCodec`. |
 | `main/boards/espressif/esp-hi/config.h` | `h` | 1574 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-hi`. |
@@ -955,41 +980,40 @@
 | `main/boards/espressif/esp-hi/emoji_display.cc` | `cc` | 5780 | tracked | Driver hoặc UI/display resource riêng của board `emoji_display.cc` trong `main/boards/espressif/esp-hi`. Key types/methods: `EmojiPlayer::OnFlushIoReady`, `EmojiPlayer::OnFlush`, `EmojiPlayer::StartPlayer`, `EmojiPlayer::StopPlayer`, `EmojiWidget::SetEmotion`, `EmojiWidget::SetStatus`, `EmojiWidget::InitializePlayer`, `EmojiWidget::Lock`. |
 | `main/boards/espressif/esp-hi/emoji_display.h` | `h` | 1679 | tracked | Driver hoặc UI/display resource riêng của board `emoji_display.h` trong `main/boards/espressif/esp-hi`. Key types/methods: `EmojiPlayer`, `EmojiWidget`. |
 | `main/boards/espressif/esp-hi/esp_hi.cc` | `cc` | 17004 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_hi.cc` trong `main/boards/espressif/esp-hi`. Key types/methods: `EspHi`. |
-| `main/boards/espressif/esp-hi/README.md` | `md` | 2116 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-hi`. Main section: ESP-Hi. |
+| `main/boards/espressif/esp-mosaico/README.md` | `md` | 1359 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-mosaico`. Main section: ESP-Mosaico. |
+| `main/boards/espressif/esp-mosaico/README_CN.md` | `md` | 1267 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-mosaico`. Main section: ESP-Mosaico. |
 | `main/boards/espressif/esp-mosaico/config.h` | `h` | 3506 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-mosaico`. |
 | `main/boards/espressif/esp-mosaico/config.json` | `json` | 1157 | tracked | Board/release config: target `esp32s31`, type `esp-mosaico`, variants: esp-mosaico. |
 | `main/boards/espressif/esp-mosaico/esp_mosaico.cc` | `cc` | 20537 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_mosaico.cc` trong `main/boards/espressif/esp-mosaico`. Key types/methods: `BoardVariant`, `MosaicoBacklight`, `MosaicoDisplay`, `EspMosaicoBoard`, `std::memcmp`, `std::unexpected`, `Board::GetLed`. |
-| `main/boards/espressif/esp-mosaico/README.md` | `md` | 1359 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-mosaico`. Main section: ESP-Mosaico. |
-| `main/boards/espressif/esp-mosaico/README_CN.md` | `md` | 1267 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-mosaico`. Main section: ESP-Mosaico. |
+| `main/boards/espressif/esp-sensairshuttle/README.md` | `md` | 1111 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-sensairshuttle`. Main section: ESP-SensairShuttle. |
 | `main/boards/espressif/esp-sensairshuttle/adc_pdm_audio_codec.cc` | `cc` | 9346 | tracked | Cấu hình hoặc driver audio codec của board `adc_pdm_audio_codec.cc` trong `main/boards/espressif/esp-sensairshuttle`. Key types/methods: `AdcPdmAudioCodec::SetOutputVolume`, `AdcPdmAudioCodec::EnableInput`, `AdcPdmAudioCodec::EnableOutput`, `AdcPdmAudioCodec::Read`, `AdcPdmAudioCodec::Write`, `AdcPdmAudioCodec::Start`, `AdcPdmAudioCodec::OutputTimerCallback`. |
 | `main/boards/espressif/esp-sensairshuttle/adc_pdm_audio_codec.h` | `h` | 1153 | tracked | Cấu hình hoặc driver audio codec của board `adc_pdm_audio_codec.h` trong `main/boards/espressif/esp-sensairshuttle`. Key types/methods: `AdcPdmAudioCodec`. |
 | `main/boards/espressif/esp-sensairshuttle/config.h` | `h` | 1212 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-sensairshuttle`. |
 | `main/boards/espressif/esp-sensairshuttle/config.json` | `json` | 1262 | tracked | Board/release config: target `esp32c5`, type `esp-sensairshuttle`, variants: esp-sensairshuttle. |
 | `main/boards/espressif/esp-sensairshuttle/esp-sensairshuttle.cc` | `cc` | 10238 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp-sensairshuttle.cc` trong `main/boards/espressif/esp-sensairshuttle`. Key types/methods: `Cst816d`, `TouchPoint_t`, `TouchEvent`, `EspSensairShuttle`. |
-| `main/boards/espressif/esp-sensairshuttle/README.md` | `md` | 1111 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-sensairshuttle`. Main section: ESP-SensairShuttle. |
 | `main/boards/espressif/esp-sparkbot/config.h` | `h` | 3044 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-sparkbot`. |
 | `main/boards/espressif/esp-sparkbot/config.json` | `json` | 399 | tracked | Board/release config: target `esp32s3`, type `esp-sparkbot`, variants: esp-sparkbot. |
 | `main/boards/espressif/esp-sparkbot/esp_sparkbot_board.cc` | `cc` | 12332 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_sparkbot_board.cc` trong `main/boards/espressif/esp-sparkbot`. Key types/methods: `SparkBotEs8311AudioCodec`, `EspSparkBot`, `std::unexpected`. |
+| `main/boards/espressif/esp-spot/README.md` | `md` | 1637 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-spot`. Main section: ESP-Spot. |
 | `main/boards/espressif/esp-spot/config.h` | `h` | 2423 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-spot`. |
 | `main/boards/espressif/esp-spot/config.json` | `json` | 480 | tracked | Board/release config: target `esp32c5`, type `esp-spot`, variants: esp-spot-c5. |
 | `main/boards/espressif/esp-spot/esp_spot_board.cc` | `cc` | 15251 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_spot_board.cc` trong `main/boards/espressif/esp-spot`. Key types/methods: `bmi2_sens_config`, `bmi2_int_pin_config`, `bmi2_sens_int_config`, `EspSpot`. |
-| `main/boards/espressif/esp-spot/README.md` | `md` | 1637 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-spot`. Main section: ESP-Spot. |
+| `main/boards/espressif/esp-vocat/README.md` | `md` | 4009 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-vocat`. Main section: ESP-VoCat 喵伴. |
 | `main/boards/espressif/esp-vocat/assets/360_360/emote.json` | `json` | 1680 | tracked | Tài nguyên hoặc ghi chú riêng của board `emote.json` trong `main/boards/espressif/esp-vocat`. |
 | `main/boards/espressif/esp-vocat/config.h` | `h` | 3140 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp-vocat`. |
 | `main/boards/espressif/esp-vocat/config.json` | `json` | 369 | tracked | Board/release config: target `esp32s3`, type `esp-vocat`, variants: esp-vocat. |
 | `main/boards/espressif/esp-vocat/emoji/battery_connected.eaf` | `eaf` | 98955 | tracked | Quản lý nguồn/pin/charger của board `battery_connected.eaf` trong `main/boards/espressif/esp-vocat`. |
 | `main/boards/espressif/esp-vocat/emoji/low_battery.eaf` | `eaf` | 129314 | tracked | Quản lý nguồn/pin/charger của board `low_battery.eaf` trong `main/boards/espressif/esp-vocat`. |
 | `main/boards/espressif/esp-vocat/esp_vocat.cc` | `cc` | 45064 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_vocat.cc` trong `main/boards/espressif/esp-vocat`. Key types/methods: `EspVocat`, `Charge`, `Cst816s`, `TouchPoint_t`, `TouchEvent`, `bmi2_sens_data`. |
-| `main/boards/espressif/esp-vocat/README.md` | `md` | 4009 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp-vocat`. Main section: ESP-VoCat 喵伴. |
 | `main/boards/espressif/esp-vocat/touch.h` | `h` | 1197 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `touch.h` trong `main/boards/espressif/esp-vocat`. |
+| `main/boards/espressif/esp32-p4-function-ev-board/README.md` | `md` | 2169 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-p4-function-ev-board`. Main section: ESP32-P4-Function-EV-Board / ESP32-P4X-Function-EV-Board. |
 | `main/boards/espressif/esp32-p4-function-ev-board/config.h` | `h` | 1238 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-p4-function-ev-board`. |
 | `main/boards/espressif/esp32-p4-function-ev-board/config.json` | `json` | 1032 | tracked | Board/release config: target `esp32p4`, type `esp32-p4-function-ev-board`, variants: esp32-p4-function-ev-board, esp32-p4x-function-ev-board. |
 | `main/boards/espressif/esp32-p4-function-ev-board/esp32-p4-function-ev-board.cc` | `cc` | 10579 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-p4-function-ev-board.cc` trong `main/boards/espressif/esp32-p4-function-ev-board`. Key types/methods: `ESP32P4FunctionEvBoard`. |
-| `main/boards/espressif/esp32-p4-function-ev-board/README.md` | `md` | 2169 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-p4-function-ev-board`. Main section: ESP32-P4-Function-EV-Board / ESP32-P4X-Function-EV-Board. |
+| `main/boards/espressif/esp32-s3-box-3/README.md` | `md` | 4262 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-box-3`. Main section: ESP32-S3-BOX-3. |
 | `main/boards/espressif/esp32-s3-box-3/config.h` | `h` | 1143 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s3-box-3`. |
 | `main/boards/espressif/esp32-s3-box-3/config.json` | `json` | 252 | tracked | Board/release config: target `esp32s3`, type `esp-box-3`, variants: esp-box-3. |
 | `main/boards/espressif/esp32-s3-box-3/esp_box3_board.cc` | `cc` | 6078 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp_box3_board.cc` trong `main/boards/espressif/esp32-s3-box-3`. Key types/methods: `EspBox3Board`. |
-| `main/boards/espressif/esp32-s3-box-3/README.md` | `md` | 4262 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-box-3`. Main section: ESP32-S3-BOX-3. |
 | `main/boards/espressif/esp32-s3-box-lite/box_audio_codec_lite.cc` | `cc` | 10249 | tracked | Cấu hình hoặc driver audio codec của board `box_audio_codec_lite.cc` trong `main/boards/espressif/esp32-s3-box-lite`. Key types/methods: `BoxAudioCodecLite::CreateDuplexChannels`, `BoxAudioCodecLite::SetOutputVolume`, `BoxAudioCodecLite::EnableInput`, `BoxAudioCodecLite::EnableOutput`, `BoxAudioCodecLite::Read`, `BoxAudioCodecLite::Write`. |
 | `main/boards/espressif/esp32-s3-box-lite/box_audio_codec_lite.h` | `h` | 1694 | tracked | Cấu hình hoặc driver audio codec của board `box_audio_codec_lite.h` trong `main/boards/espressif/esp32-s3-box-lite`. Key types/methods: `BoxAudioCodecLite`. |
 | `main/boards/espressif/esp32-s3-box-lite/config.h` | `h` | 1044 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s3-box-lite`. |
@@ -1006,13 +1030,14 @@
 | `main/boards/espressif/esp32-s3-korvo-2-v3.0/config.json` | `json` | 350 | tracked | Board/release config: target `esp32s3`, type `esp32s3-korvo2-v3`, variants: esp32s3-korvo2-v3. |
 | `main/boards/espressif/esp32-s3-korvo-2-v3.0/esp32s3_korvo2_v3_board.cc` | `cc` | 16799 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32s3_korvo2_v3_board.cc` trong `main/boards/espressif/esp32-s3-korvo-2-v3.0`. Key types/methods: `Esp32S3Korvo2V3Board`. |
 | `main/boards/espressif/esp32-s3-korvo-2-v3.0/power_manager.h` | `h` | 9116 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/espressif/esp32-s3-korvo-2-v3.0`. Key types/methods: `PowerManager`. |
+| `main/boards/espressif/esp32-s3-lcd-ev-board-2/README.md` | `md` | 481 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-lcd-ev-board-2`. Main section: ESP32-S3-LCD-EV-Board-2. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/config.h` | `h` | 1078 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s3-lcd-ev-board-2`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/config.json` | `json` | 221 | tracked | Board/release config: target `esp32s3`, type `esp-s3-lcd-ev-board-2`, variants: esp-s3-lcd-ev-board-2. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/esp32-s3-lcd-ev-board-2.cc` | `cc` | 9576 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-lcd-ev-board-2.cc` trong `main/boards/espressif/esp32-s3-lcd-ev-board-2`. Key types/methods: `ESP_S3_LCD_EV_Board_2`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/esp_lcd_gc9503.c` | `c` | 23253 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9503.c` trong `main/boards/espressif/esp32-s3-lcd-ev-board-2`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/esp_lcd_gc9503.h` | `h` | 6917 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9503.h` trong `main/boards/espressif/esp32-s3-lcd-ev-board-2`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board-2/pin_config.h` | `h` | 2004 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/espressif/esp32-s3-lcd-ev-board-2`. |
-| `main/boards/espressif/esp32-s3-lcd-ev-board-2/README.md` | `md` | 481 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-lcd-ev-board-2`. Main section: ESP32-S3-LCD-EV-Board-2. |
+| `main/boards/espressif/esp32-s3-lcd-ev-board/README.md` | `md` | 480 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-lcd-ev-board`. Main section: ESP32-S3-LCD-EV-Board. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board/config.h` | `h` | 1335 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s3-lcd-ev-board`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board/config.json` | `json` | 565 | tracked | Board/release config: target `esp32s3`, type `esp-s3-lcd-ev-board`, variants: esp-s3-lcd-ev-board-1p4, esp-s3-lcd-ev-board-1p5. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board/esp32-s3-lcd-ev-board.cc` | `cc` | 8273 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-lcd-ev-board.cc` trong `main/boards/espressif/esp32-s3-lcd-ev-board`. Key types/methods: `ESP_S3_LCD_EV_Board`. |
@@ -1021,41 +1046,41 @@
 | `main/boards/espressif/esp32-s3-lcd-ev-board/esp_lcd_gc9503.c` | `c` | 23253 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9503.c` trong `main/boards/espressif/esp32-s3-lcd-ev-board`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board/esp_lcd_gc9503.h` | `h` | 7897 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9503.h` trong `main/boards/espressif/esp32-s3-lcd-ev-board`. |
 | `main/boards/espressif/esp32-s3-lcd-ev-board/pin_config.h` | `h` | 2267 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/espressif/esp32-s3-lcd-ev-board`. |
-| `main/boards/espressif/esp32-s3-lcd-ev-board/README.md` | `md` | 480 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s3-lcd-ev-board`. Main section: ESP32-S3-LCD-EV-Board. |
+| `main/boards/espressif/esp32-s31-function-coreboard-1/README.md` | `md` | 2342 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s31-function-coreboard-1`. Main section: ESP32-S31-Function-CoreBoard-1. |
 | `main/boards/espressif/esp32-s31-function-coreboard-1/config.h` | `h` | 729 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s31-function-coreboard-1`. |
 | `main/boards/espressif/esp32-s31-function-coreboard-1/config.json` | `json` | 261 | tracked | Board/release config: target `esp32s31`, type `esp32-s31-function-coreboard-1`, variants: esp32-s31-function-coreboard-1. |
 | `main/boards/espressif/esp32-s31-function-coreboard-1/esp32_s31_function_coreboard_1.cc` | `cc` | 1902 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_s31_function_coreboard_1.cc` trong `main/boards/espressif/esp32-s31-function-coreboard-1`. Key types/methods: `Esp32S31FunctionCoreBoard1`. |
-| `main/boards/espressif/esp32-s31-function-coreboard-1/README.md` | `md` | 2342 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s31-function-coreboard-1`. Main section: ESP32-S31-Function-CoreBoard-1. |
+| `main/boards/espressif/esp32-s31-korvo-1/README.md` | `md` | 3121 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s31-korvo-1`. Main section: ESP32-S31-Korvo-1. |
 | `main/boards/espressif/esp32-s31-korvo-1/bsp_adc_calibration.h` | `h` | 659 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `bsp_adc_calibration.h` trong `main/boards/espressif/esp32-s31-korvo-1`. |
 | `main/boards/espressif/esp32-s31-korvo-1/config.h` | `h` | 3499 | tracked | Pin map và compile-time hardware options cho board `main/boards/espressif/esp32-s31-korvo-1`. |
 | `main/boards/espressif/esp32-s31-korvo-1/config.json` | `json` | 448 | tracked | Board/release config: target `esp32s31`, type `esp32-s31-korvo-1`, variants: esp32-s31-korvo-1. |
 | `main/boards/espressif/esp32-s31-korvo-1/esp32_s31_adc_calibration.c` | `c` | 8840 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_s31_adc_calibration.c` trong `main/boards/espressif/esp32-s31-korvo-1`. |
 | `main/boards/espressif/esp32-s31-korvo-1/esp32_s31_korvo_1.cc` | `cc` | 13105 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_s31_korvo_1.cc` trong `main/boards/espressif/esp32-s31-korvo-1`. Key types/methods: `Esp32S31Korvo1`. |
-| `main/boards/espressif/esp32-s31-korvo-1/README.md` | `md` | 3121 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/espressif/esp32-s31-korvo-1`. Main section: ESP32-S31-Korvo-1. |
+| `main/boards/folotoy/ai-passport/README.md` | `md` | 15491 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/folotoy/ai-passport`. Main section: FoloToy AI Passport (ai-passport). |
 | `main/boards/folotoy/ai-passport/ai_passport_board.cc` | `cc` | 46761 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `ai_passport_board.cc` trong `main/boards/folotoy/ai-passport`. Key types/methods: `Es8311RegValue`, `AiPassportAudioCodec`, `PassportAdcButton`, `AiPassportBoard`. |
 | `main/boards/folotoy/ai-passport/config.h` | `h` | 3074 | tracked | Pin map và compile-time hardware options cho board `main/boards/folotoy/ai-passport`. |
 | `main/boards/folotoy/ai-passport/config.json` | `json` | 542 | tracked | Board/release config: target `esp32c3`, type `ai-passport`, variants: ai-passport. |
 | `main/boards/folotoy/ai-passport/cw2017_battery_monitor.cc` | `cc` | 5551 | tracked | Quản lý nguồn/pin/charger của board `cw2017_battery_monitor.cc` trong `main/boards/folotoy/ai-passport`. Key types/methods: `Cw2017BatteryMonitor::ReadReg`, `Cw2017BatteryMonitor::WriteReg`, `Cw2017BatteryMonitor::ReadReg16`, `Cw2017BatteryMonitor::Initialize`, `Cw2017BatteryMonitor::EnterSleep`, `Cw2017BatteryMonitor::GetBatteryLevel`, `Cw2017BatteryMonitor::GetBatteryVoltageMv`. |
 | `main/boards/folotoy/ai-passport/cw2017_battery_monitor.h` | `h` | 1614 | tracked | Quản lý nguồn/pin/charger của board `cw2017_battery_monitor.h` trong `main/boards/folotoy/ai-passport`. Key types/methods: `Cw2017BatteryMonitor`. |
-| `main/boards/folotoy/ai-passport/README.md` | `md` | 15491 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/folotoy/ai-passport`. Main section: FoloToy AI Passport (ai-passport). |
+| `main/boards/freenove-esp32s3-display-2.8-lcd/ReadMe.md` | `md` | 372 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/freenove-esp32s3-display-2.8-lcd`. Main section: Freenove ESP32-S3 ESP32 S3 Capacitive Touch Display CYD WiFi BT, 2.8 Inch 240x320 IPS Screen. |
 | `main/boards/freenove-esp32s3-display-2.8-lcd/config.h` | `h` | 1656 | tracked | Pin map và compile-time hardware options cho board `main/boards/freenove-esp32s3-display-2.8-lcd`. |
 | `main/boards/freenove-esp32s3-display-2.8-lcd/config.json` | `json` | 174 | tracked | Board/release config: target `esp32s3`, type `freenove-esp32s3-display-2.8-lcd`, variants: freenove-esp32s3-display-2.8-lcd. |
 | `main/boards/freenove-esp32s3-display-2.8-lcd/freenove-esp32s3-display-2.8-lcd.cc` | `cc` | 7699 | tracked | Driver hoặc UI/display resource riêng của board `freenove-esp32s3-display-2.8-lcd.cc` trong `main/boards/freenove-esp32s3-display-2.8-lcd`. Key types/methods: `TouchDriver`, `FreenoveESP32S3Display`. |
-| `main/boards/freenove-esp32s3-display-2.8-lcd/ReadMe.md` | `md` | 372 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/freenove-esp32s3-display-2.8-lcd`. Main section: Freenove ESP32-S3 ESP32 S3 Capacitive Touch Display CYD WiFi BT, 2.8 Inch 240x320 IPS Screen. |
 | `main/boards/genjutech-s3-1.54tft/config.h` | `h` | 1222 | tracked | Pin map và compile-time hardware options cho board `main/boards/genjutech-s3-1.54tft`. |
 | `main/boards/genjutech-s3-1.54tft/config.json` | `json` | 185 | tracked | Board/release config: target `esp32s3`, type `genjutech-s3-1.54tft`, variants: genjutech-s3-1.54tft. |
 | `main/boards/genjutech-s3-1.54tft/genjutech-s3-1.54tft.cc` | `cc` | 9518 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `genjutech-s3-1.54tft.cc` trong `main/boards/genjutech-s3-1.54tft`. Key types/methods: `SparkBotEs8311AudioCodec`, `GenJuTech_s3_1_54TFT`. |
 | `main/boards/genjutech-s3-1.54tft/power_manager.h` | `h` | 6007 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/genjutech-s3-1.54tft`. Key types/methods: `PowerManager`. |
+| `main/boards/guition/jc4827w543/README.md` | `md` | 6188 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/guition/jc4827w543`. Main section: Guition JC4827W543. |
 | `main/boards/guition/jc4827w543/config.h` | `h` | 3917 | tracked | Pin map và compile-time hardware options cho board `main/boards/guition/jc4827w543`. |
 | `main/boards/guition/jc4827w543/config.json` | `json` | 871 | tracked | Board/release config: target `esp32s3`, type `guition-jc4827w543`, variants: guition-jc4827w543, guition-jc4827w543-ext-amp. |
 | `main/boards/guition/jc4827w543/esp_lcd_nv3041a.c` | `c` | 10640 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_nv3041a.c` trong `main/boards/guition/jc4827w543`. |
 | `main/boards/guition/jc4827w543/esp_lcd_nv3041a.h` | `h` | 1481 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_nv3041a.h` trong `main/boards/guition/jc4827w543`. |
 | `main/boards/guition/jc4827w543/jc4827w543_board.cc` | `cc` | 11794 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `jc4827w543_board.cc` trong `main/boards/guition/jc4827w543`. Key types/methods: `JC4827W543Display`, `JC4827W543Board`. |
-| `main/boards/guition/jc4827w543/README.md` | `md` | 6188 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/guition/jc4827w543`. Main section: Guition JC4827W543. |
+| `main/boards/hu-087/README.md` | `md` | 420 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/hu-087`. Main section: Programming ##. |
 | `main/boards/hu-087/config.h` | `h` | 724 | tracked | Pin map và compile-time hardware options cho board `main/boards/hu-087`. |
 | `main/boards/hu-087/config.json` | `json` | 158 | tracked | Board/release config: target `esp32s3`, type `hu-087`, variants: hu-087. |
 | `main/boards/hu-087/hu_087_board.cc` | `cc` | 5186 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `hu_087_board.cc` trong `main/boards/hu-087`. Key types/methods: `Hu087Board`. |
-| `main/boards/hu-087/README.md` | `md` | 420 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/hu-087`. Main section: Programming ##. |
+| `main/boards/jiuchuan-s3/README.md` | `md` | 1416 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/jiuchuan-s3`. Main section: jiuchuan-xiaozhi-sound. |
 | `main/boards/jiuchuan-s3/config.h` | `h` | 1432 | tracked | Pin map và compile-time hardware options cho board `main/boards/jiuchuan-s3`. |
 | `main/boards/jiuchuan-s3/config.json` | `json` | 167 | tracked | Board/release config: target `esp32s3`, type `jiuchuan-s3`, variants: jiuchuan-s3. |
 | `main/boards/jiuchuan-s3/esp_lcd_panel_gc9301.c` | `c` | 17229 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_panel_gc9301.c` trong `main/boards/jiuchuan-s3`. |
@@ -1064,7 +1089,6 @@
 | `main/boards/jiuchuan-s3/jiuchuan_dev_board.cc` | `cc` | 15104 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `jiuchuan_dev_board.cc` trong `main/boards/jiuchuan-s3`. Key types/methods: `CustomLcdDisplay`, `JiuchuanDevBoard`. |
 | `main/boards/jiuchuan-s3/power_controller.h` | `h` | 1477 | tracked | Quản lý nguồn/pin/charger của board `power_controller.h` trong `main/boards/jiuchuan-s3`. Key types/methods: `PowerState`, `PowerController`. |
 | `main/boards/jiuchuan-s3/power_manager.h` | `h` | 6840 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/jiuchuan-s3`. Key types/methods: `PowerManager`. |
-| `main/boards/jiuchuan-s3/README.md` | `md` | 1416 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/jiuchuan-s3`. Main section: jiuchuan-xiaozhi-sound. |
 | `main/boards/kevin/box-2/config.h` | `h` | 1132 | tracked | Pin map và compile-time hardware options cho board `main/boards/kevin/box-2`. |
 | `main/boards/kevin/box-2/config.json` | `json` | 238 | tracked | Board/release config: target `esp32s3`, type `kevin-box-2`, variants: kevin-box-2. |
 | `main/boards/kevin/box-2/kevin_box_board.cc` | `cc` | 9645 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `kevin_box_board.cc` trong `main/boards/kevin/box-2`. Key types/methods: `Pmic`, `KevinBoxBoard`. |
@@ -1084,23 +1108,24 @@
 | `main/boards/kevin/yuying-313lcd/esp_lcd_gc9503.h` | `h` | 6975 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9503.h` trong `main/boards/kevin/yuying-313lcd`. |
 | `main/boards/kevin/yuying-313lcd/kevin_yuying_313lcd.cc` | `cc` | 5900 | tracked | Driver hoặc UI/display resource riêng của board `kevin_yuying_313lcd.cc` trong `main/boards/kevin/yuying-313lcd`. Key types/methods: `Yuying_313lcd`. |
 | `main/boards/kevin/yuying-313lcd/pin_config.h` | `h` | 1781 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/kevin/yuying-313lcd`. |
+| `main/boards/labplus/ledong-v2/README.md` | `md` | 1321 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/labplus/ledong-v2`. Main section: labplus 乐动掌控V2. |
 | `main/boards/labplus/ledong-v2/config.h` | `h` | 1070 | tracked | Pin map và compile-time hardware options cho board `main/boards/labplus/ledong-v2`. |
 | `main/boards/labplus/ledong-v2/config.json` | `json` | 211 | tracked | Board/release config: target `esp32s3`, type `labplus-ledong-v2`, variants: labplus-ledong-v2. |
 | `main/boards/labplus/ledong-v2/labplus_ledong_v2.cc` | `cc` | 5446 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `labplus_ledong_v2.cc` trong `main/boards/labplus/ledong-v2`. Key types/methods: `labplus_ledong_v2`. |
-| `main/boards/labplus/ledong-v2/README.md` | `md` | 1321 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/labplus/ledong-v2`. Main section: labplus 乐动掌控V2. |
+| `main/boards/labplus/mpython-v3/README.md` | `md` | 1290 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/labplus/mpython-v3`. Main section: labplus 掌控板V3. |
 | `main/boards/labplus/mpython-v3/config.h` | `h` | 1069 | tracked | Pin map và compile-time hardware options cho board `main/boards/labplus/mpython-v3`. |
 | `main/boards/labplus/mpython-v3/config.json` | `json` | 213 | tracked | Board/release config: target `esp32s3`, type `labplus-mpython-v3`, variants: labplus-mpython-v3. |
 | `main/boards/labplus/mpython-v3/mpython_pro.cc` | `cc` | 4824 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `mpython_pro.cc` trong `main/boards/labplus/mpython-v3`. Key types/methods: `mpython_v3`. |
-| `main/boards/labplus/mpython-v3/README.md` | `md` | 1290 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/labplus/mpython-v3`. Main section: labplus 掌控板V3. |
+| `main/boards/lc-s3-wifi-1.54tft/README.md` | `md` | 518 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lc-s3-wifi-1.54tft`. Main section: LC-S3-WIFI-1.54TFT. |
 | `main/boards/lc-s3-wifi-1.54tft/config.h` | `h` | 1384 | tracked | Pin map và compile-time hardware options cho board `main/boards/lc-s3-wifi-1.54tft`. |
 | `main/boards/lc-s3-wifi-1.54tft/config.json` | `json` | 181 | tracked | Board/release config: target `esp32s3`, type `lc-s3-wifi-1.54tft`, variants: lc-s3-wifi-1.54tft. |
 | `main/boards/lc-s3-wifi-1.54tft/lc-s3-wifi-1.54tft.cc` | `cc` | 8259 | tracked | Tích hợp mạng riêng của board `lc-s3-wifi-1.54tft.cc` trong `main/boards/lc-s3-wifi-1.54tft`. Key types/methods: `lc_s3_wifi_1_54tft`. |
 | `main/boards/lc-s3-wifi-1.54tft/power_manager.h` | `h` | 5998 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/lc-s3-wifi-1.54tft`. Key types/methods: `PowerManager`. |
-| `main/boards/lc-s3-wifi-1.54tft/README.md` | `md` | 518 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lc-s3-wifi-1.54tft`. Main section: LC-S3-WIFI-1.54TFT. |
+| `main/boards/lcdwiki-es3c35p/README.md` | `md` | 4731 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lcdwiki-es3c35p`. Main section: LCD Wiki ES3C35P. |
 | `main/boards/lcdwiki-es3c35p/config.h` | `h` | 1684 | tracked | Pin map và compile-time hardware options cho board `main/boards/lcdwiki-es3c35p`. |
 | `main/boards/lcdwiki-es3c35p/config.json` | `json` | 140 | tracked | Board/release config: target `esp32s3`, type `lcdwiki-es3c35p`, variants: lcdwiki-es3c35p. |
 | `main/boards/lcdwiki-es3c35p/lcdwiki-es3c35p.cc` | `cc` | 15129 | tracked | Driver hoặc UI/display resource riêng của board `lcdwiki-es3c35p.cc` trong `main/boards/lcdwiki-es3c35p`. Key types/methods: `ST77922_Display`, `LCDWikiES3C35P_Board`. |
-| `main/boards/lcdwiki-es3c35p/README.md` | `md` | 4731 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lcdwiki-es3c35p`. Main section: LCD Wiki ES3C35P. |
+| `main/boards/lceda-course-examples/eda-robot-pro/README.md` | `md` | 404 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-robot-pro`. Main section: EDA-Robot-Pro 机器狗. |
 | `main/boards/lceda-course-examples/eda-robot-pro/config.h` | `h` | 1172 | tracked | Pin map và compile-time hardware options cho board `main/boards/lceda-course-examples/eda-robot-pro`. |
 | `main/boards/lceda-course-examples/eda-robot-pro/config.json` | `json` | 360 | tracked | Board/release config: target `esp32s3`, type `eda-robot-pro`, variants: eda-robot-pro. |
 | `main/boards/lceda-course-examples/eda-robot-pro/eda_dog_controller.cc` | `cc` | 15822 | tracked | Điều khiển chức năng robot/peripheral riêng của board `eda_dog_controller.cc` trong `main/boards/lceda-course-examples/eda-robot-pro`. Key types/methods: `EDARobotDogController`, `DogActionParams`, `ActionType`. |
@@ -1109,7 +1134,7 @@
 | `main/boards/lceda-course-examples/eda-robot-pro/eda_robot_pro.cc` | `cc` | 4153 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `eda_robot_pro.cc` trong `main/boards/lceda-course-examples/eda-robot-pro`. Key types/methods: `EDARobotPro`. |
 | `main/boards/lceda-course-examples/eda-robot-pro/oscillator.cc` | `cc` | 4334 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.cc` trong `main/boards/lceda-course-examples/eda-robot-pro`. Key types/methods: `Oscillator::AngleToCompare`, `Oscillator::NextSample`, `Oscillator::Attach`, `Oscillator::Detach`, `Oscillator::SetT`, `Oscillator::SetPosition`, `Oscillator::Refresh`, `Oscillator::Write`. |
 | `main/boards/lceda-course-examples/eda-robot-pro/oscillator.h` | `h` | 2827 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.h` trong `main/boards/lceda-course-examples/eda-robot-pro`. Key types/methods: `Oscillator`. |
-| `main/boards/lceda-course-examples/eda-robot-pro/README.md` | `md` | 404 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-robot-pro`. Main section: EDA-Robot-Pro 机器狗. |
+| `main/boards/lceda-course-examples/eda-super-bear/README.md` | `md` | 414 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-super-bear`. Main section: EDA-Super-Bear 机器熊. |
 | `main/boards/lceda-course-examples/eda-super-bear/config.h` | `h` | 809 | tracked | Pin map và compile-time hardware options cho board `main/boards/lceda-course-examples/eda-super-bear`. |
 | `main/boards/lceda-course-examples/eda-super-bear/config.json` | `json` | 314 | tracked | Board/release config: target `esp32s3`, type `eda-super-bear`, variants: eda-super-bear. |
 | `main/boards/lceda-course-examples/eda-super-bear/eda_super_bear.cc` | `cc` | 1721 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `eda_super_bear.cc` trong `main/boards/lceda-course-examples/eda-super-bear`. Key types/methods: `EdaSuperBear`. |
@@ -1118,107 +1143,107 @@
 | `main/boards/lceda-course-examples/eda-super-bear/eda_super_bear_movements.h` | `h` | 3511 | tracked | Điều khiển chức năng robot/peripheral riêng của board `eda_super_bear_movements.h` trong `main/boards/lceda-course-examples/eda-super-bear`. Key types/methods: `EdaRobot`. |
 | `main/boards/lceda-course-examples/eda-super-bear/oscillator.cc` | `cc` | 4335 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.cc` trong `main/boards/lceda-course-examples/eda-super-bear`. Key types/methods: `Oscillator::AngleToCompare`, `Oscillator::NextSample`, `Oscillator::Attach`, `Oscillator::Detach`, `Oscillator::SetT`, `Oscillator::SetPosition`, `Oscillator::Refresh`, `Oscillator::Write`. |
 | `main/boards/lceda-course-examples/eda-super-bear/oscillator.h` | `h` | 2935 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.h` trong `main/boards/lceda-course-examples/eda-super-bear`. Key types/methods: `Oscillator`. |
-| `main/boards/lceda-course-examples/eda-super-bear/README.md` | `md` | 414 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-super-bear`. Main section: EDA-Super-Bear 机器熊. |
+| `main/boards/lceda-course-examples/eda-tv-pro/README.md` | `md` | 383 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-tv-pro`. Main section: EDA-TV-Pro 小电视. |
 | `main/boards/lceda-course-examples/eda-tv-pro/config.h` | `h` | 1296 | tracked | Pin map và compile-time hardware options cho board `main/boards/lceda-course-examples/eda-tv-pro`. |
 | `main/boards/lceda-course-examples/eda-tv-pro/config.json` | `json` | 275 | tracked | Board/release config: target `esp32s3`, type `eda-tv-pro`, variants: eda-tv-pro. |
 | `main/boards/lceda-course-examples/eda-tv-pro/eda-tv-pro.cc` | `cc` | 4183 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `eda-tv-pro.cc` trong `main/boards/lceda-course-examples/eda-tv-pro`. Key types/methods: `eda_tv_pro`. |
-| `main/boards/lceda-course-examples/eda-tv-pro/README.md` | `md` | 383 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lceda-course-examples/eda-tv-pro`. Main section: EDA-TV-Pro 小电视. |
+| `main/boards/lckfb/szpi-esp32c3/README.md` | `md` | 323 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lckfb/szpi-esp32c3`. Main section: 立创·实战派ESP32-C3开发板. |
 | `main/boards/lckfb/szpi-esp32c3/config.h` | `h` | 1286 | tracked | Pin map và compile-time hardware options cho board `main/boards/lckfb/szpi-esp32c3`. |
 | `main/boards/lckfb/szpi-esp32c3/config.json` | `json` | 408 | tracked | Board/release config: target `esp32c3`, type `lichuang-c3-dev`, variants: lichuang-c3-dev. |
 | `main/boards/lckfb/szpi-esp32c3/lichuang_c3_dev_board.cc` | `cc` | 4399 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `lichuang_c3_dev_board.cc` trong `main/boards/lckfb/szpi-esp32c3`. Key types/methods: `LichuangC3DevBoard`. |
-| `main/boards/lckfb/szpi-esp32c3/README.md` | `md` | 323 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lckfb/szpi-esp32c3`. Main section: 立创·实战派ESP32-C3开发板. |
 | `main/boards/lckfb/szpi-esp32s3/config.h` | `h` | 1712 | tracked | Pin map và compile-time hardware options cho board `main/boards/lckfb/szpi-esp32s3`. |
 | `main/boards/lckfb/szpi-esp32s3/config.json` | `json` | 254 | tracked | Board/release config: target `esp32s3`, type `lichuang-dev`, variants: lichuang-dev. |
 | `main/boards/lckfb/szpi-esp32s3/lichuang_dev_board.cc` | `cc` | 10896 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `lichuang_dev_board.cc` trong `main/boards/lckfb/szpi-esp32s3`. Key types/methods: `Pca9557`, `CustomAudioCodec`, `LichuangDevBoard`. |
+| `main/boards/lilygo/t-cameraplus-s3/README.md` | `md` | 1383 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-cameraplus-s3`. Main section: LILYGO T-CameraPlus-S3. |
 | `main/boards/lilygo/t-cameraplus-s3/config.h` | `h` | 1693 | tracked | Pin map và compile-time hardware options cho board `main/boards/lilygo/t-cameraplus-s3`. |
 | `main/boards/lilygo/t-cameraplus-s3/config.json` | `json` | 1116 | tracked | Board/release config: target `esp32s3`, type `lilygo-t-cameraplus-s3`, variants: lilygo-t-cameraplus-s3, lilygo-t-cameraplus-s3-v1.2. |
 | `main/boards/lilygo/t-cameraplus-s3/ir_filter_controller.h` | `h` | 1551 | tracked | Điều khiển chức năng robot/peripheral riêng của board `ir_filter_controller.h` trong `main/boards/lilygo/t-cameraplus-s3`. Key types/methods: `IrFilterController`. |
 | `main/boards/lilygo/t-cameraplus-s3/lilygo-t-cameraplus-s3.cc` | `cc` | 11175 | tracked | Camera/video integration riêng của board `lilygo-t-cameraplus-s3.cc` trong `main/boards/lilygo/t-cameraplus-s3`. Key types/methods: `Cst816x`, `TouchPoint_t`, `Pmic`, `LilygoTCameraPlusS3Board`. |
 | `main/boards/lilygo/t-cameraplus-s3/pin_config.h` | `h` | 3133 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/lilygo/t-cameraplus-s3`. |
-| `main/boards/lilygo/t-cameraplus-s3/README.md` | `md` | 1383 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-cameraplus-s3`. Main section: LILYGO T-CameraPlus-S3. |
 | `main/boards/lilygo/t-cameraplus-s3/tcamerapluss3_audio_codec.cc` | `cc` | 6258 | tracked | Cấu hình hoặc driver audio codec của board `tcamerapluss3_audio_codec.cc` trong `main/boards/lilygo/t-cameraplus-s3`. Key types/methods: `Tcamerapluss3AudioCodec::CreateVoiceHardware`, `Tcamerapluss3AudioCodec::SetOutputVolume`, `Tcamerapluss3AudioCodec::EnableInput`, `Tcamerapluss3AudioCodec::EnableOutput`, `Tcamerapluss3AudioCodec::Read`, `Tcamerapluss3AudioCodec::Write`. |
 | `main/boards/lilygo/t-cameraplus-s3/tcamerapluss3_audio_codec.h` | `h` | 1347 | tracked | Cấu hình hoặc driver audio codec của board `tcamerapluss3_audio_codec.h` trong `main/boards/lilygo/t-cameraplus-s3`. Key types/methods: `Tcamerapluss3AudioCodec`. |
+| `main/boards/lilygo/t-circle-s3-v11/README.md` | `md` | 2254 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-circle-s3-v11`. Main section: LILYGO T-Circle-S3 V1.1. |
 | `main/boards/lilygo/t-circle-s3-v11/config.h` | `h` | 1974 | tracked | Pin map và compile-time hardware options cho board `main/boards/lilygo/t-circle-s3-v11`. |
 | `main/boards/lilygo/t-circle-s3-v11/config.json` | `json` | 220 | tracked | Board/release config: target `esp32s3`, type `lilygo-t-circle-s3-v11`, variants: lilygo-t-circle-s3-v11. |
 | `main/boards/lilygo/t-circle-s3-v11/esp_lcd_gc9d01n.c` | `c` | 14869 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9d01n.c` trong `main/boards/lilygo/t-circle-s3-v11`. |
 | `main/boards/lilygo/t-circle-s3-v11/esp_lcd_gc9d01n.h` | `h` | 4238 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9d01n.h` trong `main/boards/lilygo/t-circle-s3-v11`. |
 | `main/boards/lilygo/t-circle-s3-v11/lilygo-t-circle-s3-v11.cc` | `cc` | 8846 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `lilygo-t-circle-s3-v11.cc` trong `main/boards/lilygo/t-circle-s3-v11`. Key types/methods: `TCircleS3V11AudioCodec`, `Cst816x`, `TouchPoint_t`, `LilygoTCircleS3V11Board`. |
 | `main/boards/lilygo/t-circle-s3-v11/pin_config.h` | `h` | 1004 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/lilygo/t-circle-s3-v11`. |
-| `main/boards/lilygo/t-circle-s3-v11/README.md` | `md` | 2254 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-circle-s3-v11`. Main section: LILYGO T-Circle-S3 V1.1. |
+| `main/boards/lilygo/t-circle-s3/README.md` | `md` | 430 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-circle-s3`. Main section: 编译配置命令. |
 | `main/boards/lilygo/t-circle-s3/config.h` | `h` | 1506 | tracked | Pin map và compile-time hardware options cho board `main/boards/lilygo/t-circle-s3`. |
 | `main/boards/lilygo/t-circle-s3/config.json` | `json` | 211 | tracked | Board/release config: target `esp32s3`, type `lilygo-t-circle-s3`, variants: lilygo-t-circle-s3. |
 | `main/boards/lilygo/t-circle-s3/esp_lcd_gc9d01n.c` | `c` | 14869 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9d01n.c` trong `main/boards/lilygo/t-circle-s3`. |
 | `main/boards/lilygo/t-circle-s3/esp_lcd_gc9d01n.h` | `h` | 4238 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_gc9d01n.h` trong `main/boards/lilygo/t-circle-s3`. |
 | `main/boards/lilygo/t-circle-s3/lilygo-t-circle-s3.cc` | `cc` | 8216 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `lilygo-t-circle-s3.cc` trong `main/boards/lilygo/t-circle-s3`. Key types/methods: `Cst816x`, `TouchPoint_t`, `LilygoTCircleS3Board`. |
 | `main/boards/lilygo/t-circle-s3/pin_config.h` | `h` | 773 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/lilygo/t-circle-s3`. |
-| `main/boards/lilygo/t-circle-s3/README.md` | `md` | 430 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-circle-s3`. Main section: 编译配置命令. |
 | `main/boards/lilygo/t-circle-s3/tcircles3_audio_codec.cc` | `cc` | 5196 | tracked | Cấu hình hoặc driver audio codec của board `tcircles3_audio_codec.cc` trong `main/boards/lilygo/t-circle-s3`. Key types/methods: `Tcircles3AudioCodec::CreateVoiceHardware`, `Tcircles3AudioCodec::SetOutputVolume`, `Tcircles3AudioCodec::EnableInput`, `Tcircles3AudioCodec::EnableOutput`, `Tcircles3AudioCodec::Read`, `Tcircles3AudioCodec::Write`. |
 | `main/boards/lilygo/t-circle-s3/tcircles3_audio_codec.h` | `h` | 1335 | tracked | Cấu hình hoặc driver audio codec của board `tcircles3_audio_codec.h` trong `main/boards/lilygo/t-circle-s3`. Key types/methods: `Tcircles3AudioCodec`. |
+| `main/boards/lilygo/t-display-p4/README.md` | `md` | 1826 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-display-p4`. Main section: LILYGO T-Display-P4. |
 | `main/boards/lilygo/t-display-p4/config.h` | `h` | 2917 | tracked | Pin map và compile-time hardware options cho board `main/boards/lilygo/t-display-p4`. |
 | `main/boards/lilygo/t-display-p4/hi8561_driver.cc` | `cc` | 17071 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `hi8561_driver.cc` trong `main/boards/lilygo/t-display-p4`. |
 | `main/boards/lilygo/t-display-p4/hi8561_driver.h` | `h` | 2443 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `hi8561_driver.h` trong `main/boards/lilygo/t-display-p4`. |
 | `main/boards/lilygo/t-display-p4/lilygo-t-display-p4.cc` | `cc` | 15419 | tracked | Driver hoặc UI/display resource riêng của board `lilygo-t-display-p4.cc` trong `main/boards/lilygo/t-display-p4`. Key types/methods: `CustomBacklight`, `LilygoTDisplayP4Board`. |
-| `main/boards/lilygo/t-display-p4/README.md` | `md` | 1826 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-display-p4`. Main section: LILYGO T-Display-P4. |
 | `main/boards/lilygo/t-display-p4/rm69a10_driver.cc` | `cc` | 13125 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `rm69a10_driver.cc` trong `main/boards/lilygo/t-display-p4`. |
 | `main/boards/lilygo/t-display-p4/rm69a10_driver.h` | `h` | 2533 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `rm69a10_driver.h` trong `main/boards/lilygo/t-display-p4`. |
 | `main/boards/lilygo/t-display-p4/t_display_p4_config.h` | `h` | 6222 | tracked | Driver hoặc UI/display resource riêng của board `t_display_p4_config.h` trong `main/boards/lilygo/t-display-p4`. |
+| `main/boards/lilygo/t-display-s3-pro-mvsrlora/README.md` | `md` | 685 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-display-s3-pro-mvsrlora`. Main section: 编译配置命令. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/config.h` | `h` | 1564 | tracked | Pin map và compile-time hardware options cho board `main/boards/lilygo/t-display-s3-pro-mvsrlora`. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/config.json` | `json` | 239 | tracked | Board/release config: target `esp32s3`, type `lilygo-t-display-s3-pro-mvsrlora`, variants: lilygo-t-display-s3-pro-mvsrlora. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/lilygo-t-display-s3-pro-mvsrlora.cc` | `cc` | 9422 | tracked | Driver hoặc UI/display resource riêng của board `lilygo-t-display-s3-pro-mvsrlora.cc` trong `main/boards/lilygo/t-display-s3-pro-mvsrlora`. Key types/methods: `Cst2xxse`, `TouchPoint_t`, `Sy6970`, `LilygoTDisplays3ProMVSRLoraBoard`. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/pin_config.h` | `h` | 1374 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `pin_config.h` trong `main/boards/lilygo/t-display-s3-pro-mvsrlora`. |
-| `main/boards/lilygo/t-display-s3-pro-mvsrlora/README.md` | `md` | 685 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/lilygo/t-display-s3-pro-mvsrlora`. Main section: 编译配置命令. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/tdisplays3promvsrlora_audio_codec.cc` | `cc` | 5698 | tracked | Cấu hình hoặc driver audio codec của board `tdisplays3promvsrlora_audio_codec.cc` trong `main/boards/lilygo/t-display-s3-pro-mvsrlora`. Key types/methods: `Tdisplays3promvsrloraAudioCodec::CreateVoiceHardware`, `Tdisplays3promvsrloraAudioCodec::SetOutputVolume`, `Tdisplays3promvsrloraAudioCodec::EnableInput`, `Tdisplays3promvsrloraAudioCodec::EnableOutput`, `Tdisplays3promvsrloraAudioCodec::Read`, `Tdisplays3promvsrloraAudioCodec::Write`. |
 | `main/boards/lilygo/t-display-s3-pro-mvsrlora/tdisplays3promvsrlora_audio_codec.h` | `h` | 1391 | tracked | Cấu hình hoặc driver audio codec của board `tdisplays3promvsrlora_audio_codec.h` trong `main/boards/lilygo/t-display-s3-pro-mvsrlora`. Key types/methods: `Tdisplays3promvsrloraAudioCodec`. |
+| `main/boards/m5stack/atom-echos3r/README.md` | `md` | 1211 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atom-echos3r`. Main section: AtomEchoS3R. |
 | `main/boards/m5stack/atom-echos3r/atom_echos3r.cc` | `cc` | 2683 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atom_echos3r.cc` trong `main/boards/m5stack/atom-echos3r`. Key types/methods: `AtomEchoS3rBaseBoard`. |
 | `main/boards/m5stack/atom-echos3r/config.h` | `h` | 828 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atom-echos3r`. |
 | `main/boards/m5stack/atom-echos3r/config.json` | `json` | 348 | tracked | Board/release config: target `esp32s3`, type `atom-echos3r`, variants: atom-echos3r. |
-| `main/boards/m5stack/atom-echos3r/README.md` | `md` | 1211 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atom-echos3r`. Main section: AtomEchoS3R. |
+| `main/boards/m5stack/atommatrix-echo-base/README.md` | `md` | 279 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atommatrix-echo-base`. Main section: 编译配置命令. |
 | `main/boards/m5stack/atommatrix-echo-base/atommatrix_echo_base.cc` | `cc` | 3807 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atommatrix_echo_base.cc` trong `main/boards/m5stack/atommatrix-echo-base`. Key types/methods: `Pi4ioe`, `AtomMatrixEchoBaseBoard`. |
 | `main/boards/m5stack/atommatrix-echo-base/config.h` | `h` | 795 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atommatrix-echo-base`. |
 | `main/boards/m5stack/atommatrix-echo-base/config.json` | `json` | 227 | tracked | Board/release config: target `esp32`, type `atommatrix-echo-base`, variants: atommatrix-echo-base. |
-| `main/boards/m5stack/atommatrix-echo-base/README.md` | `md` | 279 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atommatrix-echo-base`. Main section: 编译配置命令. |
+| `main/boards/m5stack/atoms3-echo-base/README.md` | `md` | 2065 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3-echo-base`. Main section: M5Stack AtomS3 + Echo Base. |
 | `main/boards/m5stack/atoms3-echo-base/atoms3_echo_base.cc` | `cc` | 12698 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atoms3_echo_base.cc` trong `main/boards/m5stack/atoms3-echo-base`. Key types/methods: `AtomS3EchoBaseBoard`, `LcdPanelType`, `LcdPanelConfig`. |
 | `main/boards/m5stack/atoms3-echo-base/config.h` | `h` | 1371 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atoms3-echo-base`. |
 | `main/boards/m5stack/atoms3-echo-base/config.json` | `json` | 390 | tracked | Board/release config: target `esp32s3`, type `atoms3-echo-base`, variants: atoms3-echo-base. |
-| `main/boards/m5stack/atoms3-echo-base/README.md` | `md` | 2065 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3-echo-base`. Main section: M5Stack AtomS3 + Echo Base. |
+| `main/boards/m5stack/atoms3r-cam-m12-echo-base/README.md` | `md` | 1680 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-cam-m12-echo-base`. Main section: AtomS3R CAM/M12 + Echo Base. |
 | `main/boards/m5stack/atoms3r-cam-m12-echo-base/atoms3r_cam_m12_echo_base.cc` | `cc` | 6466 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atoms3r_cam_m12_echo_base.cc` trong `main/boards/m5stack/atoms3r-cam-m12-echo-base`. Key types/methods: `Pi4ioe`, `AtomS3rCamM12EchoBaseBoard`. |
 | `main/boards/m5stack/atoms3r-cam-m12-echo-base/config.h` | `h` | 1535 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atoms3r-cam-m12-echo-base`. |
 | `main/boards/m5stack/atoms3r-cam-m12-echo-base/config.json` | `json` | 373 | tracked | Board/release config: target `esp32s3`, type `atoms3r-cam-m12-echo-base`, variants: atoms3r-cam-m12-echo-base. |
-| `main/boards/m5stack/atoms3r-cam-m12-echo-base/README.md` | `md` | 1680 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-cam-m12-echo-base`. Main section: AtomS3R CAM/M12 + Echo Base. |
+| `main/boards/m5stack/atoms3r-echo-base/README.md` | `md` | 1536 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-echo-base`. Main section: M5Stack AtomS3R + Echo Base. |
 | `main/boards/m5stack/atoms3r-echo-base/atoms3r_echo_base.cc` | `cc` | 15128 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atoms3r_echo_base.cc` trong `main/boards/m5stack/atoms3r-echo-base`. Key types/methods: `Pi4ioe`, `Lp5562`, `CustomBacklight`, `AtomS3rEchoBaseBoard`, `LcdPanelType`, `LcdPanelConfig`. |
 | `main/boards/m5stack/atoms3r-echo-base/config.h` | `h` | 1372 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atoms3r-echo-base`. |
 | `main/boards/m5stack/atoms3r-echo-base/config.json` | `json` | 357 | tracked | Board/release config: target `esp32s3`, type `atoms3r-echo-base`, variants: atoms3r-echo-base. |
-| `main/boards/m5stack/atoms3r-echo-base/README.md` | `md` | 1536 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-echo-base`. Main section: M5Stack AtomS3R + Echo Base. |
+| `main/boards/m5stack/atoms3r-echo-pyramid/README.md` | `md` | 1623 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-echo-pyramid`. Main section: M5Stack AtomS3R + Echo Pyramid. |
 | `main/boards/m5stack/atoms3r-echo-pyramid/atoms3r_echo_pyramid.cc` | `cc` | 31181 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `atoms3r_echo_pyramid.cc` trong `main/boards/m5stack/atoms3r-echo-pyramid`. Key types/methods: `Si5351`, `Aw87559`, `Stm32PyramidCtrl`, `PyramidStatusLed`, `Lp5562`, `CustomBacklight`, `PyramidAudioCodec`, `AtomS3rEchoPyramidBoard`. |
 | `main/boards/m5stack/atoms3r-echo-pyramid/config.h` | `h` | 1485 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/atoms3r-echo-pyramid`. |
 | `main/boards/m5stack/atoms3r-echo-pyramid/config.json` | `json` | 433 | tracked | Board/release config: target `esp32s3`, type `atoms3r-echo-pyramid`, variants: atoms3r-echo-pyramid. |
-| `main/boards/m5stack/atoms3r-echo-pyramid/README.md` | `md` | 1623 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/atoms3r-echo-pyramid`. Main section: M5Stack AtomS3R + Echo Pyramid. |
+| `main/boards/m5stack/cardputer-adv/README.md` | `md` | 1968 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/cardputer-adv`. Main section: M5Stack Cardputer Adv. |
 | `main/boards/m5stack/cardputer-adv/config.h` | `h` | 2220 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/cardputer-adv`. |
 | `main/boards/m5stack/cardputer-adv/config.json` | `json` | 401 | tracked | Board/release config: target `esp32s3`, type `m5stack-cardputer-adv`, variants: m5stack-cardputer-adv. |
 | `main/boards/m5stack/cardputer-adv/m5stack_cardputer_adv.cc` | `cc` | 14675 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_cardputer_adv.cc` trong `main/boards/m5stack/cardputer-adv`. Key types/methods: `M5StackCardputerAdvBoard`. |
-| `main/boards/m5stack/cardputer-adv/README.md` | `md` | 1968 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/cardputer-adv`. Main section: M5Stack Cardputer Adv. |
 | `main/boards/m5stack/cardputer-adv/tca8418_keyboard.cc` | `cc` | 14284 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `tca8418_keyboard.cc` trong `main/boards/m5stack/cardputer-adv`. Key types/methods: `KeyValue`, `Tca8418Keyboard::Initialize`, `Tca8418Keyboard::ConfigureMatrix`, `Tca8418Keyboard::EnableInterrupts`, `Tca8418Keyboard::FlushEvents`, `Tca8418Keyboard::GetEvent`, `Tca8418Keyboard::UpdateModifierState`, `Tca8418Keyboard::MapLegacyKeyCode`. |
 | `main/boards/m5stack/cardputer-adv/tca8418_keyboard.h` | `h` | 3998 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `tca8418_keyboard.h` trong `main/boards/m5stack/cardputer-adv`. Key types/methods: `KeyModifier`, `KeyCode`, `KeyEvent`, `LegacyKeyCode`, `Tca8418Keyboard`. |
 | `main/boards/m5stack/cardputer-adv/wifi_config_ui.cc` | `cc` | 22360 | tracked | Tích hợp mạng riêng của board `wifi_config_ui.cc` trong `main/boards/m5stack/cardputer-adv`. Key types/methods: `WifiConfigUI::Start`, `WifiConfigUI::StartWithSavedList`, `WifiConfigUI::StartScanning`, `WifiConfigUI::DoWifiScan`, `WifiConfigUI::ShowScanResults`, `WifiConfigUI::ShowPasswordInput`, `WifiConfigUI::RedrawPasswordInput`, `WifiConfigUI::ShowManualInput`. |
 | `main/boards/m5stack/cardputer-adv/wifi_config_ui.h` | `h` | 4044 | tracked | Tích hợp mạng riêng của board `wifi_config_ui.h` trong `main/boards/m5stack/cardputer-adv`. Key types/methods: `WifiScanResult`, `WifiConfigState`, `WifiConfigResult`, `WifiConfigUI`. |
+| `main/boards/m5stack/core-s3/README.md` | `md` | 356 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/core-s3`. Main section: 使用说明. |
 | `main/boards/m5stack/core-s3/config.h` | `h` | 1965 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/core-s3`. |
 | `main/boards/m5stack/core-s3/config.json` | `json` | 573 | tracked | Board/release config: target `esp32s3`, type `m5stack-core-s3`, variants: m5stack-core-s3. |
 | `main/boards/m5stack/core-s3/cores3_audio_codec.cc` | `cc` | 8384 | tracked | Cấu hình hoặc driver audio codec của board `cores3_audio_codec.cc` trong `main/boards/m5stack/core-s3`. Key types/methods: `CoreS3AudioCodec::CreateDuplexChannels`, `CoreS3AudioCodec::SetOutputVolume`, `CoreS3AudioCodec::EnableInput`, `CoreS3AudioCodec::EnableOutput`, `CoreS3AudioCodec::Read`, `CoreS3AudioCodec::Write`. |
 | `main/boards/m5stack/core-s3/cores3_audio_codec.h` | `h` | 1356 | tracked | Cấu hình hoặc driver audio codec của board `cores3_audio_codec.h` trong `main/boards/m5stack/core-s3`. Key types/methods: `CoreS3AudioCodec`. |
 | `main/boards/m5stack/core-s3/m5stack_core_s3.cc` | `cc` | 12394 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_core_s3.cc` trong `main/boards/m5stack/core-s3`. Key types/methods: `Pmic`, `CustomBacklight`, `Aw9523`, `Ft6336`, `TouchPoint_t`, `M5StackCoreS3Board`. |
-| `main/boards/m5stack/core-s3/README.md` | `md` | 356 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/core-s3`. Main section: 使用说明. |
+| `main/boards/m5stack/corep4/README.md` | `md` | 1876 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/corep4`. Main section: M5Stack CoreP4. |
 | `main/boards/m5stack/corep4/config.h` | `h` | 2318 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/corep4`. |
 | `main/boards/m5stack/corep4/config.json` | `json` | 2117 | tracked | Board/release config: target `esp32p4`, type `m5stack-corep4`, variants: m5stack-corep4, m5stack-corep4x. |
 | `main/boards/m5stack/corep4/m5stack_corep4.cc` | `cc` | 15035 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_corep4.cc` trong `main/boards/m5stack/corep4`. Key types/methods: `M5IoE1Backlight`, `M5StackCoreP4Board`. |
-| `main/boards/m5stack/corep4/README.md` | `md` | 1876 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/corep4`. Main section: M5Stack CoreP4. |
+| `main/boards/m5stack/stick-s3/README.md` | `md` | 2361 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/stick-s3`. Main section: M5Stack Sticks3. |
 | `main/boards/m5stack/stick-s3/config.h` | `h` | 1581 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/stick-s3`. |
 | `main/boards/m5stack/stick-s3/config.json` | `json` | 391 | tracked | Board/release config: target `esp32s3`, type `m5stack-stick-s3`, variants: m5stack-stick-s3. |
 | `main/boards/m5stack/stick-s3/m5stack_stick_s3.cc` | `cc` | 9341 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_stick_s3.cc` trong `main/boards/m5stack/stick-s3`. Key types/methods: `Sticks3AudioCodec`, `M5StackStickS3Board`. |
-| `main/boards/m5stack/stick-s3/README.md` | `md` | 2361 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/stick-s3`. Main section: M5Stack Sticks3. |
+| `main/boards/m5stack/stopwatch/README.md` | `md` | 3063 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/stopwatch`. Main section: StopWatch. |
 | `main/boards/m5stack/stopwatch/config.h` | `h` | 2329 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/stopwatch`. |
 | `main/boards/m5stack/stopwatch/config.json` | `json` | 347 | tracked | Board/release config: target `esp32s3`, type `m5stack-stopwatch`, variants: m5stack-stopwatch. |
 | `main/boards/m5stack/stopwatch/m5stack_stopwatch.cc` | `cc` | 12030 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_stopwatch.cc` trong `main/boards/m5stack/stopwatch`. Key types/methods: `RoundLcdDisplay`, `StopwatchBacklight`, `M5StackStopwatchBoard`. |
-| `main/boards/m5stack/stopwatch/README.md` | `md` | 3063 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/stopwatch`. Main section: StopWatch. |
+| `main/boards/m5stack/tab5/README.md` | `md` | 2088 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/tab5`. Main section: 使用说明. |
 | `main/boards/m5stack/tab5/config.h` | `h` | 13325 | tracked | Pin map và compile-time hardware options cho board `main/boards/m5stack/tab5`. |
 | `main/boards/m5stack/tab5/config.json` | `json` | 1695 | tracked | Board/release config: target `esp32p4`, type `m5stack-tab5`, variants: m5stack-tab5, m5stack-tab5-p4x. |
 | `main/boards/m5stack/tab5/esp_lcd_st7121.c` | `c` | 14672 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_st7121.c` trong `main/boards/m5stack/tab5`. |
@@ -1226,7 +1251,6 @@
 | `main/boards/m5stack/tab5/esp_lcd_st7123.c` | `c` | 15878 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_st7123.c` trong `main/boards/m5stack/tab5`. |
 | `main/boards/m5stack/tab5/esp_lcd_st7123.h` | `h` | 4746 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_st7123.h` trong `main/boards/m5stack/tab5`. |
 | `main/boards/m5stack/tab5/m5stack_tab5.cc` | `cc` | 24701 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `m5stack_tab5.cc` trong `main/boards/m5stack/tab5`. Key types/methods: `St712xPanel`, `Pi4ioe1`, `Pi4ioe2`, `M5StackTab5Board`. |
-| `main/boards/m5stack/tab5/README.md` | `md` | 2088 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/m5stack/tab5`. Main section: 使用说明. |
 | `main/boards/m5stack/tab5/sdkconfig.tab5` | `tab5` | 615 | tracked | Tài nguyên hoặc ghi chú riêng của board `sdkconfig.tab5` trong `main/boards/m5stack/tab5`. |
 | `main/boards/m5stack/tab5/tab5_audio_codec.cc` | `cc` | 8294 | tracked | Cấu hình hoặc driver audio codec của board `tab5_audio_codec.cc` trong `main/boards/m5stack/tab5`. Key types/methods: `Tab5AudioCodec::CreateDuplexChannels`, `Tab5AudioCodec::SetOutputVolume`, `Tab5AudioCodec::EnableInput`, `Tab5AudioCodec::EnableOutput`, `Tab5AudioCodec::Read`, `Tab5AudioCodec::Write`. |
 | `main/boards/m5stack/tab5/tab5_audio_codec.h` | `h` | 1371 | tracked | Cấu hình hoặc driver audio codec của board `tab5_audio_codec.h` trong `main/boards/m5stack/tab5`. Key types/methods: `Tab5AudioCodec`. |
@@ -1243,41 +1267,41 @@
 | `main/boards/magiclick/c3/config.h` | `h` | 1191 | tracked | Pin map và compile-time hardware options cho board `main/boards/magiclick/c3`. |
 | `main/boards/magiclick/c3/config.json` | `json` | 355 | tracked | Board/release config: target `esp32c3`, type `magiclick-c3`, variants: magiclick-c3. |
 | `main/boards/magiclick/c3/magiclick_c3_board.cc` | `cc` | 7206 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `magiclick_c3_board.cc` trong `main/boards/magiclick/c3`. Key types/methods: `NV3023Display`, `magiclick_c3`. |
+| `main/boards/maza-ai/esp32-s3/README.md` | `md` | 1740 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/maza-ai/esp32-s3`. Main section: Maza AI ESP32-S3. |
 | `main/boards/maza-ai/esp32-s3/config.h` | `h` | 1161 | tracked | Pin map và compile-time hardware options cho board `main/boards/maza-ai/esp32-s3`. |
 | `main/boards/maza-ai/esp32-s3/config.json` | `json` | 208 | tracked | Board/release config: target `esp32s3`, type `maza-ai-esp32-s3`, variants: maza-ai-esp32-s3. |
 | `main/boards/maza-ai/esp32-s3/maza_ai_esp32_s3.cc` | `cc` | 4907 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `maza_ai_esp32_s3.cc` trong `main/boards/maza-ai/esp32-s3`. Key types/methods: `MazaAiEsp32S3`. |
-| `main/boards/maza-ai/esp32-s3/README.md` | `md` | 1740 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/maza-ai/esp32-s3`. Main section: Maza AI ESP32-S3. |
+| `main/boards/maza-ai/esp32-s31/README.md` | `md` | 1963 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/maza-ai/esp32-s31`. Main section: Maza AI ESP32-S31. |
 | `main/boards/maza-ai/esp32-s31/config.h` | `h` | 1213 | tracked | Pin map và compile-time hardware options cho board `main/boards/maza-ai/esp32-s31`. |
 | `main/boards/maza-ai/esp32-s31/config.json` | `json` | 268 | tracked | Board/release config: target `esp32s31`, type `maza-ai-esp32-s31`, variants: maza-ai-esp32-s31. |
 | `main/boards/maza-ai/esp32-s31/maza_ai_esp32_s31.cc` | `cc` | 4911 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `maza_ai_esp32_s31.cc` trong `main/boards/maza-ai/esp32-s31`. Key types/methods: `MazaAiEsp32S31`. |
-| `main/boards/maza-ai/esp32-s31/README.md` | `md` | 1963 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/maza-ai/esp32-s31`. Main section: Maza AI ESP32-S31. |
+| `main/boards/minsi-k08-dual/README.md` | `md` | 794 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/minsi-k08-dual`. Main section: 编译配置命令. |
 | `main/boards/minsi-k08-dual/config.h` | `h` | 1432 | tracked | Pin map và compile-time hardware options cho board `main/boards/minsi-k08-dual`. |
 | `main/boards/minsi-k08-dual/config.json` | `json` | 173 | tracked | Board/release config: target `esp32s3`, type `minsi-k08-dual`, variants: minsi-k08-dual. |
 | `main/boards/minsi-k08-dual/minsi_k08_dual.cc` | `cc` | 8847 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `minsi_k08_dual.cc` trong `main/boards/minsi-k08-dual`. Key types/methods: `MINSI_K08_DUAL`. |
 | `main/boards/minsi-k08-dual/power_manager.h` | `h` | 6232 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/minsi-k08-dual`. Key types/methods: `PowerManager`. |
-| `main/boards/minsi-k08-dual/README.md` | `md` | 794 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/minsi-k08-dual`. Main section: 编译配置命令. |
+| `main/boards/mixgo-nova/README.md` | `md` | 1625 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/mixgo-nova`. Main section: Mixgo_Nova(元控·青春) 开发板. |
 | `main/boards/mixgo-nova/config.h` | `h` | 1430 | tracked | Pin map và compile-time hardware options cho board `main/boards/mixgo-nova`. |
 | `main/boards/mixgo-nova/config.json` | `json` | 404 | tracked | Board/release config: target `esp32s3`, type `mixgo-nova`, variants: mixgo-nova. |
 | `main/boards/mixgo-nova/mixgo-nova.cc` | `cc` | 5865 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `mixgo-nova.cc` trong `main/boards/mixgo-nova`. Key types/methods: `MIXGO_NOVA`. |
-| `main/boards/mixgo-nova/README.md` | `md` | 1625 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/mixgo-nova`. Main section: Mixgo_Nova(元控·青春) 开发板. |
+| `main/boards/movecall/cuican-esp32s3/README.md` | `md` | 650 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/cuican-esp32s3`. Main section: ESP32-S3 编译配置指南. |
 | `main/boards/movecall/cuican-esp32s3/config.h` | `h` | 1264 | tracked | Pin map và compile-time hardware options cho board `main/boards/movecall/cuican-esp32s3`. |
 | `main/boards/movecall/cuican-esp32s3/config.json` | `json` | 427 | tracked | Board/release config: target `esp32s3`, type `movecall-cuican-esp32s3`, variants: movecall-cuican-esp32s3. |
 | `main/boards/movecall/cuican-esp32s3/movecall_cuican_esp32s3.cc` | `cc` | 4484 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `movecall_cuican_esp32s3.cc` trong `main/boards/movecall/cuican-esp32s3`. Key types/methods: `MovecallCuicanESP32S3`. |
-| `main/boards/movecall/cuican-esp32s3/README.md` | `md` | 650 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/cuican-esp32s3`. Main section: ESP32-S3 编译配置指南. |
+| `main/boards/movecall/moji-esp32s3/README.md` | `md` | 318 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji-esp32s3`. Main section: 编译配置命令. |
 | `main/boards/movecall/moji-esp32s3/config.h` | `h` | 1258 | tracked | Pin map và compile-time hardware options cho board `main/boards/movecall/moji-esp32s3`. |
 | `main/boards/movecall/moji-esp32s3/config.json` | `json` | 219 | tracked | Board/release config: target `esp32s3`, type `movecall-moji-esp32s3`, variants: movecall-moji-esp32s3. |
 | `main/boards/movecall/moji-esp32s3/movecall_moji_esp32s3.cc` | `cc` | 5561 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `movecall_moji_esp32s3.cc` trong `main/boards/movecall/moji-esp32s3`. Key types/methods: `CustomLcdDisplay`, `MovecallMojiESP32S3`. |
-| `main/boards/movecall/moji-esp32s3/README.md` | `md` | 318 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji-esp32s3`. Main section: 编译配置命令. |
+| `main/boards/movecall/moji2-esp32c5/README.md` | `md` | 1302 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji2-esp32c5`. Main section: Build and Configuration Guide. |
+| `main/boards/movecall/moji2-esp32c5/README_zh.md` | `md` | 1226 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji2-esp32c5`. Main section: 编译配置指南. |
 | `main/boards/movecall/moji2-esp32c5/config.h` | `h` | 2451 | tracked | Pin map và compile-time hardware options cho board `main/boards/movecall/moji2-esp32c5`. Key types/methods: `PowerSupply`. |
 | `main/boards/movecall/moji2-esp32c5/config.json` | `json` | 473 | tracked | Board/release config: target `esp32c5`, type `movecall-moji2-esp32c5`, variants: movecall-moji2-esp32c5. |
 | `main/boards/movecall/moji2-esp32c5/movecall_moji2_esp32s3.cc` | `cc` | 15030 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `movecall_moji2_esp32s3.cc` trong `main/boards/movecall/moji2-esp32c5`. Key types/methods: `MovecallMoji2ESP32C5`. |
-| `main/boards/movecall/moji2-esp32c5/README.md` | `md` | 1302 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji2-esp32c5`. Main section: Build and Configuration Guide. |
-| `main/boards/movecall/moji2-esp32c5/README_zh.md` | `md` | 1226 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/movecall/moji2-esp32c5`. Main section: 编译配置指南. |
+| `main/boards/nologo/xingzhi-abs-2.0/README.md` | `md` | 3057 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nologo/xingzhi-abs-2.0`. Main section: 无名科技星智 ABS 2.0. |
 | `main/boards/nologo/xingzhi-abs-2.0/config.h` | `h` | 2076 | tracked | Pin map và compile-time hardware options cho board `main/boards/nologo/xingzhi-abs-2.0`. |
 | `main/boards/nologo/xingzhi-abs-2.0/config.json` | `json` | 218 | tracked | Board/release config: target `esp32s3`, type `xingzhi-abs-2.0`, variants: xingzhi-abs-2.0. |
 | `main/boards/nologo/xingzhi-abs-2.0/customlcddisplay.h` | `h` | 3209 | tracked | Driver hoặc UI/display resource riêng của board `customlcddisplay.h` trong `main/boards/nologo/xingzhi-abs-2.0`. Key types/methods: `CustomLcdDisplay`. |
 | `main/boards/nologo/xingzhi-abs-2.0/power_manager.h` | `h` | 11056 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/nologo/xingzhi-abs-2.0`. Key types/methods: `PowerManager`. |
-| `main/boards/nologo/xingzhi-abs-2.0/README.md` | `md` | 3057 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nologo/xingzhi-abs-2.0`. Main section: 无名科技星智 ABS 2.0. |
 | `main/boards/nologo/xingzhi-abs-2.0/xingzhi-abs-2.0.cc` | `cc` | 13793 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `xingzhi-abs-2.0.cc` trong `main/boards/nologo/xingzhi-abs-2.0`. Key types/methods: `XINGZHI_ABS_2_0`. |
 | `main/boards/nologo/xingzhi-cube-0.85tft-ml307/config.h` | `h` | 1124 | tracked | Pin map và compile-time hardware options cho board `main/boards/nologo/xingzhi-cube-0.85tft-ml307`. |
 | `main/boards/nologo/xingzhi-cube-0.85tft-ml307/config.json` | `json` | 227 | tracked | Board/release config: target `esp32s3`, type `xingzhi-cube-0.85tft-ml307`, variants: xingzhi-cube-0.85tft-ml307. |
@@ -1298,24 +1322,25 @@
 | `main/boards/nologo/xingzhi-cube-1.54tft-wifi/config.json` | `json` | 225 | tracked | Board/release config: target `esp32s3`, type `xingzhi-cube-1.54tft-wifi`, variants: xingzhi-cube-1.54tft-wifi. |
 | `main/boards/nologo/xingzhi-cube-1.54tft-wifi/power_manager.h` | `h` | 6007 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/nologo/xingzhi-cube-1.54tft-wifi`. Key types/methods: `PowerManager`. |
 | `main/boards/nologo/xingzhi-cube-1.54tft-wifi/xingzhi-cube-1.54tft-wifi.cc` | `cc` | 7359 | tracked | Tích hợp mạng riêng của board `xingzhi-cube-1.54tft-wifi.cc` trong `main/boards/nologo/xingzhi-cube-1.54tft-wifi`. Key types/methods: `XINGZHI_CUBE_1_54TFT_WIFI`. |
+| `main/boards/nologo/xingzhi-metal-1.54-wifi/README.md` | `md` | 1809 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nologo/xingzhi-metal-1.54-wifi`. Main section: 无名科技星智 1.54 METAL (wifi). |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/config.h` | `h` | 1657 | tracked | Pin map và compile-time hardware options cho board `main/boards/nologo/xingzhi-metal-1.54-wifi`. |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/config.json` | `json` | 234 | tracked | Board/release config: target `esp32s3`, type `xingzhi-metal-1.54-wifi`, variants: xingzhi-metal-1.54-wifi. |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/cst816x.cc` | `cc` | 9265 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `cst816x.cc` trong `main/boards/nologo/xingzhi-metal-1.54-wifi`. Key types/methods: `timeval`, `Cst816x::getThresholdConfig`, `Cst816x::getCurrentTimeUs`, `Cst816x::UpdateTouchPoint`, `Cst816x::resetTouchCounters`, `Cst816x::touchpad_daemon`, `Cst816x::InitCst816d`. |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/cst816x.h` | `h` | 2803 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `cst816x.h` trong `main/boards/nologo/xingzhi-metal-1.54-wifi`. Key types/methods: `TouchEventType`, `TouchEvent`, `Cst816x`, `TouchPoint_t`, `TouchThresholdConfig`. |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/power_manager.h` | `h` | 11594 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/nologo/xingzhi-metal-1.54-wifi`. Key types/methods: `PowerManager`. |
-| `main/boards/nologo/xingzhi-metal-1.54-wifi/README.md` | `md` | 1809 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nologo/xingzhi-metal-1.54-wifi`. Main section: 无名科技星智 1.54 METAL (wifi). |
 | `main/boards/nologo/xingzhi-metal-1.54-wifi/xingzhi-metal-1.54-wifi.cc` | `cc` | 6937 | tracked | Tích hợp mạng riêng của board `xingzhi-metal-1.54-wifi.cc` trong `main/boards/nologo/xingzhi-metal-1.54-wifi`. Key types/methods: `XINGZHI_METAL_1_54_WIFI`. |
+| `main/boards/nulllab-ai-vox-v3/README.md` | `md` | 2582 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nulllab-ai-vox-v3`. Main section: NULLLAB-AI-VOX3. |
 | `main/boards/nulllab-ai-vox-v3/ai_vox3_audio_codec.h` | `h` | 9305 | tracked | Cấu hình hoặc driver audio codec của board `ai_vox3_audio_codec.h` trong `main/boards/nulllab-ai-vox-v3`. Key types/methods: `AIVOX3AudioCodec`. |
 | `main/boards/nulllab-ai-vox-v3/ai_vox3_board.cc` | `cc` | 7272 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `ai_vox3_board.cc` trong `main/boards/nulllab-ai-vox-v3`. Key types/methods: `AIVOX3`. |
 | `main/boards/nulllab-ai-vox-v3/config.h` | `h` | 1526 | tracked | Pin map và compile-time hardware options cho board `main/boards/nulllab-ai-vox-v3`. |
 | `main/boards/nulllab-ai-vox-v3/config.json` | `json` | 181 | tracked | Board/release config: target `esp32s3`, type `nulllab-ai-vox-v3`, variants: nulllab-ai-vox-v3. |
 | `main/boards/nulllab-ai-vox-v3/power_manager.h` | `h` | 4867 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/nulllab-ai-vox-v3`. Key types/methods: `PowerManager`. |
-| `main/boards/nulllab-ai-vox-v3/README.md` | `md` | 2582 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/nulllab-ai-vox-v3`. Main section: NULLLAB-AI-VOX3. |
+| `main/boards/ostb/ostb-xiaozhi-3st/README.md` | `md` | 2561 | tracked | Cấu hình source OSTB 3ST, phân biệt partition live/source và hướng dẫn profile phone-local AI. |
 | `main/boards/ostb/ostb-xiaozhi-3st/config.h` | `h` | 1804 | tracked | Pin map và compile-time hardware options cho board `main/boards/ostb/ostb-xiaozhi-3st`. |
 | `main/boards/ostb/ostb-xiaozhi-3st/config.json` | `json` | 473 | tracked | Board/release config: target `esp32s3`, type `ostb-xiaozhi-3st`, variants: ostb-xiaozhi-3st. |
-| `main/boards/ostb/ostb-xiaozhi-3st/config.local-ai.json` | `json` | 598 | tracked | Cấu hình build cùng board identity với OTA URL trỏ tới server AI local trên điện thoại; giữ NVS đã lưu. |
+| `main/boards/ostb/ostb-xiaozhi-3st/config.local-ai.json` | `json` | 749 | tracked | Build profile Nabi local AI, 16 MB OTA partition table, BLE 4.2 provisioning và DHCP gateway OTA fallback. |
 | `main/boards/ostb/ostb-xiaozhi-3st/ostb_xiaozhi_3st.cc` | `cc` | 11398 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `ostb_xiaozhi_3st.cc` trong `main/boards/ostb/ostb-xiaozhi-3st`. Key types/methods: `OstbXiaozhi3stBoard`. |
-| `main/boards/ostb/ostb-xiaozhi-3st/README.md` | `md` | 1752 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/ostb/ostb-xiaozhi-3st`, gồm profile phone-local AI. Main section: OSTB XiaoZhi 3ST. |
+| `main/boards/otto-robot/README.md` | `md` | 15976 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/otto-robot`. Main section: 简介. |
 | `main/boards/otto-robot/config.h` | `h` | 4956 | tracked | Pin map và compile-time hardware options cho board `main/boards/otto-robot`. Key types/methods: `OttoCameraType`, `HardwareConfig`. |
 | `main/boards/otto-robot/config.json` | `json` | 430 | tracked | Board/release config: target `esp32s3`, type `otto-robot`, variants: otto-robot. |
 | `main/boards/otto-robot/oscillator.cc` | `cc` | 4335 | tracked | Điều khiển chức năng robot/peripheral riêng của board `oscillator.cc` trong `main/boards/otto-robot`. Key types/methods: `Oscillator::AngleToCompare`, `Oscillator::NextSample`, `Oscillator::Attach`, `Oscillator::Detach`, `Oscillator::SetT`, `Oscillator::SetPosition`, `Oscillator::Refresh`, `Oscillator::Write`. |
@@ -1328,285 +1353,284 @@
 | `main/boards/otto-robot/otto_movements.h` | `h` | 4165 | tracked | Điều khiển chức năng robot/peripheral riêng của board `otto_movements.h` trong `main/boards/otto-robot`. Key types/methods: `Otto`. |
 | `main/boards/otto-robot/otto_robot.cc` | `cc` | 15556 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `otto_robot.cc` trong `main/boards/otto-robot`. Key types/methods: `OttoRobot`. |
 | `main/boards/otto-robot/power_manager.h` | `h` | 5039 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/otto-robot`. Key types/methods: `PowerManager`. |
-| `main/boards/otto-robot/README.md` | `md` | 15976 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/otto-robot`. Main section: 简介. |
 | `main/boards/otto-robot/websocket_control_server.cc` | `cc` | 8621 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `websocket_control_server.cc` trong `main/boards/otto-robot`. Key types/methods: `WsBroadcastJob`, `WebSocketControlServer::ws_handler`, `WebSocketControlServer::Start`, `WebSocketControlServer::Stop`, `WebSocketControlServer::HandleMessage`, `WebSocketControlServer::AddClient`, `WebSocketControlServer::RemoveClient`, `WebSocketControlServer::GetClientCount`. |
 | `main/boards/otto-robot/websocket_control_server.h` | `h` | 1027 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `websocket_control_server.h` trong `main/boards/otto-robot`. Key types/methods: `WebSocketControlServer`, `ClientInfo`. |
+| `main/boards/quandong-s3-dev/HARDWARE_DIFF.md` | `md` | 6817 | tracked | Tài nguyên hoặc ghi chú riêng của board `HARDWARE_DIFF.md` trong `main/boards/quandong-s3-dev`. Main section: quandong-s3-dev vs bread-compact-wifi 硬件差异. |
 | `main/boards/quandong-s3-dev/config.h` | `h` | 1611 | tracked | Pin map và compile-time hardware options cho board `main/boards/quandong-s3-dev`. |
 | `main/boards/quandong-s3-dev/config.json` | `json` | 176 | tracked | Board/release config: target `esp32s3`, type `quandong-s3-dev`, variants: quandong-s3-dev. |
-| `main/boards/quandong-s3-dev/HARDWARE_DIFF.md` | `md` | 6817 | tracked | Tài nguyên hoặc ghi chú riêng của board `HARDWARE_DIFF.md` trong `main/boards/quandong-s3-dev`. Main section: quandong-s3-dev vs bread-compact-wifi 硬件差异. |
 | `main/boards/quandong-s3-dev/quandong_s3_dev_board.cc` | `cc` | 6512 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `quandong_s3_dev_board.cc` trong `main/boards/quandong-s3-dev`. Key types/methods: `QuandongS3DevBoard`. |
+| `main/boards/rymcu/bigsmart/README.md` | `md` | 614 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/rymcu/bigsmart`. Main section: RYMCU BigSmart. |
 | `main/boards/rymcu/bigsmart/config.h` | `h` | 1902 | tracked | Pin map và compile-time hardware options cho board `main/boards/rymcu/bigsmart`. |
 | `main/boards/rymcu/bigsmart/config.json` | `json` | 252 | tracked | Board/release config: target `esp32s3`, type `bigsmart`, variants: rymcu-bigsmart. |
-| `main/boards/rymcu/bigsmart/README.md` | `md` | 614 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/rymcu/bigsmart`. Main section: RYMCU BigSmart. |
 | `main/boards/rymcu/bigsmart/rymcu_bigsmart_board.cc` | `cc` | 9272 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `rymcu_bigsmart_board.cc` trong `main/boards/rymcu/bigsmart`. Key types/methods: `Pca9557`, `CustomAudioCodec`, `RymcuBigsmartBoard`. |
-| `main/boards/sensecap-watcher/config.h` | `h` | 5054 | tracked | Pin map và compile-time hardware options cho board `main/boards/sensecap-watcher`. |
-| `main/boards/sensecap-watcher/config.json` | `json` | 551 | tracked | Board/release config: target `esp32s3`, type `sensecap-watcher`, variants: sensecap-watcher. |
 | `main/boards/sensecap-watcher/README.md` | `md` | 1408 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/sensecap-watcher`. Main section: 编译命令. |
 | `main/boards/sensecap-watcher/README_en.md` | `md` | 1713 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/sensecap-watcher`. Main section: Build Instructions. |
+| `main/boards/sensecap-watcher/config.h` | `h` | 5054 | tracked | Pin map và compile-time hardware options cho board `main/boards/sensecap-watcher`. |
+| `main/boards/sensecap-watcher/config.json` | `json` | 551 | tracked | Board/release config: target `esp32s3`, type `sensecap-watcher`, variants: sensecap-watcher. |
 | `main/boards/sensecap-watcher/sensecap_audio_codec.cc` | `cc` | 7231 | tracked | Cấu hình hoặc driver audio codec của board `sensecap_audio_codec.cc` trong `main/boards/sensecap-watcher`. Key types/methods: `SensecapAudioCodec::CreateDuplexChannels`, `SensecapAudioCodec::SetOutputVolume`, `SensecapAudioCodec::EnableInput`, `SensecapAudioCodec::EnableOutput`, `SensecapAudioCodec::Read`, `SensecapAudioCodec::Write`. |
 | `main/boards/sensecap-watcher/sensecap_audio_codec.h` | `h` | 1437 | tracked | Cấu hình hoặc driver audio codec của board `sensecap_audio_codec.h` trong `main/boards/sensecap-watcher`. Key types/methods: `SensecapAudioCodec`. |
 | `main/boards/sensecap-watcher/sensecap_watcher.cc` | `cc` | 26493 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `sensecap_watcher.cc` trong `main/boards/sensecap-watcher`. Key types/methods: `CustomLcdDisplay`, `SensecapWatcher`. |
 | `main/boards/sensecap-watcher/sscma_camera.cc` | `cc` | 33790 | tracked | Camera/video integration riêng của board `sscma_camera.cc` trong `main/boards/sensecap-watcher`. Key types/methods: `SscmaCamera::InitializeMcpTools`, `std::string`, `SscmaCamera::SetExplainUrl`, `SscmaCamera::Capture`, `SscmaCamera::SetHMirror`, `SscmaCamera::SetVFlip`, `SscmaCamera::Explain`, `std::unexpected`. |
 | `main/boards/sensecap-watcher/sscma_camera.h` | `h` | 2296 | tracked | Camera/video integration riêng của board `sscma_camera.h` trong `main/boards/sensecap-watcher`. Key types/methods: `SscmaData`, `JpegData`, `SscmaCamera`, `DetectionState`. |
+| `main/boards/spotpear/sp-esp32-s3-1.28-box/README.md` | `md` | 609 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/spotpear/sp-esp32-s3-1.28-box`. Main section: 编译配置命令. |
 | `main/boards/spotpear/sp-esp32-s3-1.28-box/config.h` | `h` | 1645 | tracked | Pin map và compile-time hardware options cho board `main/boards/spotpear/sp-esp32-s3-1.28-box`. |
 | `main/boards/spotpear/sp-esp32-s3-1.28-box/config.json` | `json` | 218 | tracked | Board/release config: target `esp32s3`, type `sp-esp32-s3-1.28-box`, variants: sp-esp32-s3-1.28-box. |
 | `main/boards/spotpear/sp-esp32-s3-1.28-box/power_manager.h` | `h` | 6136 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/spotpear/sp-esp32-s3-1.28-box`. Key types/methods: `PowerManager`. |
-| `main/boards/spotpear/sp-esp32-s3-1.28-box/README.md` | `md` | 609 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/spotpear/sp-esp32-s3-1.28-box`. Main section: 编译配置命令. |
 | `main/boards/spotpear/sp-esp32-s3-1.28-box/sp-esp32-s3-1.28-box.cc` | `cc` | 17194 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `sp-esp32-s3-1.28-box.cc` trong `main/boards/spotpear/sp-esp32-s3-1.28-box`. Key types/methods: `Cst816d`, `TouchPoint_t`, `CustomLcdDisplay`, `Spotpear_ESP32_S3_1_28_BOX`. |
+| `main/boards/spotpear/sp-esp32-s3-1.54-muma/README.md` | `md` | 843 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/spotpear/sp-esp32-s3-1.54-muma`. Main section: 编译配置命令. |
 | `main/boards/spotpear/sp-esp32-s3-1.54-muma/config.h` | `h` | 1624 | tracked | Pin map và compile-time hardware options cho board `main/boards/spotpear/sp-esp32-s3-1.54-muma`. |
 | `main/boards/spotpear/sp-esp32-s3-1.54-muma/config.json` | `json` | 220 | tracked | Board/release config: target `esp32s3`, type `sp-esp32-s3-1.54-muma`, variants: sp-esp32-s3-1.54-muma. |
 | `main/boards/spotpear/sp-esp32-s3-1.54-muma/power_manager.h` | `h` | 5983 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/spotpear/sp-esp32-s3-1.54-muma`. Key types/methods: `PowerManager`. |
-| `main/boards/spotpear/sp-esp32-s3-1.54-muma/README.md` | `md` | 843 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/spotpear/sp-esp32-s3-1.54-muma`. Main section: 编译配置命令. |
 | `main/boards/spotpear/sp-esp32-s3-1.54-muma/sp-esp32-s3-1.54-muma.cc` | `cc` | 11275 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `sp-esp32-s3-1.54-muma.cc` trong `main/boards/spotpear/sp-esp32-s3-1.54-muma`. Key types/methods: `Cst816d`, `TouchPoint_t`, `Spotpear_esp32_s3_lcd_1_54`. |
+| `main/boards/surfer-c3-1.14tft/README.md` | `md` | 231 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/surfer-c3-1.14tft`. Main section: Surfer-ESP32-C3 开发板. |
 | `main/boards/surfer-c3-1.14tft/config.h` | `h` | 1296 | tracked | Pin map và compile-time hardware options cho board `main/boards/surfer-c3-1.14tft`. |
 | `main/boards/surfer-c3-1.14tft/config.json` | `json` | 341 | tracked | Board/release config: target `esp32c3`, type `surfer-c3-1.14tft`, variants: surfer-c3-1.14tft. |
 | `main/boards/surfer-c3-1.14tft/power_manager.h` | `h` | 6494 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/surfer-c3-1.14tft`. Key types/methods: `PowerManager`. |
-| `main/boards/surfer-c3-1.14tft/README.md` | `md` | 231 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/surfer-c3-1.14tft`. Main section: Surfer-ESP32-C3 开发板. |
 | `main/boards/surfer-c3-1.14tft/surfer-c3-1.14tft.cc` | `cc` | 7390 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `surfer-c3-1.14tft.cc` trong `main/boards/surfer-c3-1.14tft`. Key types/methods: `SurferC3114TFT`. |
+| `main/boards/taiji-pi-s3/README.md` | `md` | 891 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/taiji-pi-s3`. Main section: 由于原来的麦克风型号停产，2025年7月之后的太极派（JC3636W518）更换了麦克风，并且更换了屏幕玻璃，所以在产品标签上批次号大于2528的用户请选择I2S Type PDM,. |
 | `main/boards/taiji-pi-s3/config.h` | `h` | 2563 | tracked | Pin map và compile-time hardware options cho board `main/boards/taiji-pi-s3`. |
 | `main/boards/taiji-pi-s3/config.json` | `json` | 502 | tracked | Board/release config: target `esp32s3`, type `taiji-pi-s3`, variants: taiji-pi-s3, taiji-pi-s3-pdm. |
-| `main/boards/taiji-pi-s3/README.md` | `md` | 891 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/taiji-pi-s3`. Main section: 由于原来的麦克风型号停产，2025年7月之后的太极派（JC3636W518）更换了麦克风，并且更换了屏幕玻璃，所以在产品标签上批次号大于2528的用户请选择I2S Type PDM,. |
 | `main/boards/taiji-pi-s3/taiji_pi_s3.cc` | `cc` | 25297 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `taiji_pi_s3.cc` trong `main/boards/taiji-pi-s3`. Key types/methods: `TaijiPiS3Display`, `Cst816s`, `TouchPoint_t`, `TaijiPiS3Board`. |
+| `main/boards/waveshare/esp32-c5-touch-lcd-1.69/README.md` | `md` | 604 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c5-touch-lcd-1.69`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c5-touch-lcd-1.69/config.h` | `h` | 1419 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c5-touch-lcd-1.69`. |
 | `main/boards/waveshare/esp32-c5-touch-lcd-1.69/config.json` | `json` | 476 | tracked | Board/release config: target `esp32c5`, type `esp32-c5-touch-lcd-1.69`, variants: esp32-c5-touch-lcd-1.69. |
 | `main/boards/waveshare/esp32-c5-touch-lcd-1.69/esp32-c5-touch-lcd-1.69.cc` | `cc` | 10026 | tracked | Driver hoặc UI/display resource riêng của board `esp32-c5-touch-lcd-1.69.cc` trong `main/boards/waveshare/esp32-c5-touch-lcd-1.69`. Key types/methods: `WaveshareEsp32c5TouchLCD1inch69`. |
-| `main/boards/waveshare/esp32-c5-touch-lcd-1.69/README.md` | `md` | 604 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c5-touch-lcd-1.69`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-epaper-1.54/README.md` | `md` | 797 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-epaper-1.54`. Main section: Waveshare ESP32-C6-ePaper-1.54. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/board_power_bsp.cc` | `cc` | 2204 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.cc` trong `main/boards/waveshare/esp32-c6-epaper-1.54`. Key types/methods: `BoardPowerBsp::PowerLedTask`, `BoardPowerBsp::PowerEpdOn`, `BoardPowerBsp::PowerEpdOff`, `BoardPowerBsp::PowerAudioOn`, `BoardPowerBsp::PowerAudioOff`, `BoardPowerBsp::VbatPowerOn`, `BoardPowerBsp::VbatPowerOff`. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/board_power_bsp.h` | `h` | 776 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.h` trong `main/boards/waveshare/esp32-c6-epaper-1.54`. Key types/methods: `BoardPowerBsp`. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/config.h` | `h` | 1707 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-epaper-1.54`. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/config.json` | `json` | 232 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-epaper-1.54`, variants: esp32-c6-epaper-1.54. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/custom_lcd_display.cc` | `cc` | 11859 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-c6-epaper-1.54`. Key types/methods: `CustomLcdDisplay::lvgl_flush_cb`, `CustomLcdDisplay::spi_gpio_init`, `CustomLcdDisplay::spi_port_init`, `CustomLcdDisplay::read_busy`, `CustomLcdDisplay::SPI_SendByte`, `CustomLcdDisplay::EPD_SendData`, `CustomLcdDisplay::EPD_SendCommand`, `CustomLcdDisplay::writeBytes`. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/custom_lcd_display.h` | `h` | 2406 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-c6-epaper-1.54`. Key types/methods: `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-c6-epaper-1.54/README.md` | `md` | 797 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-epaper-1.54`. Main section: Waveshare ESP32-C6-ePaper-1.54. |
 | `main/boards/waveshare/esp32-c6-epaper-1.54/waveshare-c6-epaper-1.54.cc` | `cc` | 6598 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `waveshare-c6-epaper-1.54.cc` trong `main/boards/waveshare/esp32-c6-epaper-1.54`. Key types/methods: `CustomBoard`. |
+| `main/boards/waveshare/esp32-c6-lcd-0.85/README.md` | `md` | 769 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-lcd-0.85`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/config.h` | `h` | 1492 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-lcd-0.85`. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/config.json` | `json` | 413 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-lcd-0.85`, variants: esp32-c6-lcd-0.85. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/esp32-c6-lcd-0.85.cc` | `cc` | 9171 | tracked | Driver hoặc UI/display resource riêng của board `esp32-c6-lcd-0.85.cc` trong `main/boards/waveshare/esp32-c6-lcd-0.85`. Key types/methods: `CustomButton`, `CustomBoard`. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/led_strip_control.cc` | `cc` | 5730 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `led_strip_control.cc` trong `main/boards/waveshare/esp32-c6-lcd-0.85`. Key types/methods: `LedStripControl::LevelToBrightness`, `LedStripControl::RGBToColor`. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/led_strip_control.h` | `h` | 444 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `led_strip_control.h` trong `main/boards/waveshare/esp32-c6-lcd-0.85`. Key types/methods: `LedStripControl`. |
 | `main/boards/waveshare/esp32-c6-lcd-0.85/power_manager.h` | `h` | 6005 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/waveshare/esp32-c6-lcd-0.85`. Key types/methods: `PowerManager`. |
-| `main/boards/waveshare/esp32-c6-lcd-0.85/README.md` | `md` | 769 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-lcd-0.85`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-lcd-1.69/README.md` | `md` | 878 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-lcd-1.69`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-lcd-1.69/config.h` | `h` | 1689 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-lcd-1.69`. |
 | `main/boards/waveshare/esp32-c6-lcd-1.69/config.json` | `json` | 226 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-lcd-1.69`, variants: esp32-c6-lcd-1.69. |
 | `main/boards/waveshare/esp32-c6-lcd-1.69/esp32-c6-lcd-1.69.cc` | `cc` | 8810 | tracked | Driver hoặc UI/display resource riêng của board `esp32-c6-lcd-1.69.cc` trong `main/boards/waveshare/esp32-c6-lcd-1.69`. Key types/methods: `CustomLcdDisplay`, `CustomButton`, `CustomBoard`. |
 | `main/boards/waveshare/esp32-c6-lcd-1.69/power_manager.h` | `h` | 6005 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/waveshare/esp32-c6-lcd-1.69`. Key types/methods: `PowerManager`. |
-| `main/boards/waveshare/esp32-c6-lcd-1.69/README.md` | `md` | 878 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-lcd-1.69`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-touch-amoled-1.32/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.32`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.32/config.h` | `h` | 1141 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.32`. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.32/config.json` | `json` | 244 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-amoled-1.32`, variants: esp32-c6-touch-amoled-1.32. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.32/esp32-c6-touch-amoled-1.32.cc` | `cc` | 8918 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-c6-touch-amoled-1.32.cc` trong `main/boards/waveshare/esp32-c6-touch-amoled-1.32`. Key types/methods: `CustomLcdDisplay`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-c6-touch-amoled-1.32/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.32`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-touch-amoled-1.43/README.md` | `md` | 722 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.43`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.43/config.h` | `h` | 1337 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.43`. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.43/config.json` | `json` | 244 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-amoled-1.43`, variants: esp32-c6-touch-amoled-1.43. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.43/esp32-c6-touch-amoled-1.43.cc` | `cc` | 10429 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-c6-touch-amoled-1.43.cc` trong `main/boards/waveshare/esp32-c6-touch-amoled-1.43`. Key types/methods: `CustomLcdDisplay`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-c6-touch-amoled-1.43/README.md` | `md` | 722 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.43`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-touch-amoled-1.8/README.md` | `md` | 526 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.8`. Main section: Waveshare ESP32-C6-Touch-AMOLED-1.8. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.8/config.h` | `h` | 1270 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.8`. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.8/config.json` | `json` | 242 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-amoled-1.8`, variants: esp32-c6-touch-amoled-1.8. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-1.8/esp32-c6-touch-amoled-1.8.cc` | `cc` | 12943 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-c6-touch-amoled-1.8.cc` trong `main/boards/waveshare/esp32-c6-touch-amoled-1.8`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32c6TouchAMOLED1inch8`. |
-| `main/boards/waveshare/esp32-c6-touch-amoled-1.8/README.md` | `md` | 526 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-1.8`. Main section: Waveshare ESP32-C6-Touch-AMOLED-1.8. |
+| `main/boards/waveshare/esp32-c6-touch-amoled-2.06/README.md` | `md` | 626 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.06`. Main section: Waveshare ESP32-C6-Touch-AMOLED-2.06. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.06/config.h` | `h` | 1328 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.06`. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.06/config.json` | `json` | 244 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-amoled-2.06`, variants: esp32-c6-touch-amoled-2.06. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.06/esp32-c6-touch-amoled-2.06.cc` | `cc` | 11563 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-c6-touch-amoled-2.06.cc` trong `main/boards/waveshare/esp32-c6-touch-amoled-2.06`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32c6TouchAMOLED2inch06`. |
-| `main/boards/waveshare/esp32-c6-touch-amoled-2.06/README.md` | `md` | 626 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.06`. Main section: Waveshare ESP32-C6-Touch-AMOLED-2.06. |
+| `main/boards/waveshare/esp32-c6-touch-amoled-2.16/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.16`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.16/config.h` | `h` | 1213 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.16`. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.16/config.json` | `json` | 352 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-amoled-2.16`, variants: esp32-c6-touch-amoled-2.16. |
 | `main/boards/waveshare/esp32-c6-touch-amoled-2.16/esp32-c6-touch-amoled-2.16.cc` | `cc` | 12516 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-c6-touch-amoled-2.16.cc` trong `main/boards/waveshare/esp32-c6-touch-amoled-2.16`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32c6TouchAMOLED2inch16`. |
-| `main/boards/waveshare/esp32-c6-touch-amoled-2.16/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-amoled-2.16`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-touch-lcd-1.54/README.md` | `md` | 691 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.54`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.54/config.h` | `h` | 1565 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.54`. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.54/config.json` | `json` | 290 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-lcd-1.54`, variants: esp32-c6-touch-lcd-1.54. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.54/esp32-c6-touch-lcd-1.54.cc` | `cc` | 10589 | tracked | Driver hoặc UI/display resource riêng của board `esp32-c6-touch-lcd-1.54.cc` trong `main/boards/waveshare/esp32-c6-touch-lcd-1.54`. Key types/methods: `CustomButton`, `CustomBoard`. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.54/power_manager.h` | `h` | 6815 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/waveshare/esp32-c6-touch-lcd-1.54`. Key types/methods: `PowerManager`. |
-| `main/boards/waveshare/esp32-c6-touch-lcd-1.54/README.md` | `md` | 691 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.54`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-c6-touch-lcd-1.83/README.md` | `md` | 603 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.83`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.83/config.h` | `h` | 1522 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.83`. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.83/config.json` | `json` | 332 | tracked | Board/release config: target `esp32c6`, type `esp32-c6-touch-lcd-1.83`, variants: esp32-c6-touch-lcd-1.83. |
 | `main/boards/waveshare/esp32-c6-touch-lcd-1.83/esp32-c6-touch-lcd-1.83.cc` | `cc` | 9296 | tracked | Driver hoặc UI/display resource riêng của board `esp32-c6-touch-lcd-1.83.cc` trong `main/boards/waveshare/esp32-c6-touch-lcd-1.83`. Key types/methods: `Pmic`, `WaveshareEsp32c6TouchLCD1inch83`. |
-| `main/boards/waveshare/esp32-c6-touch-lcd-1.83/README.md` | `md` | 603 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-c6-touch-lcd-1.83`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-p4-nano/README.md` | `md` | 9679 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-nano`. Main section: Waveshare ESP32-P4-NANO. |
 | `main/boards/waveshare/esp32-p4-nano/config.h` | `h` | 1212 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-p4-nano`. |
 | `main/boards/waveshare/esp32-p4-nano/config.json` | `json` | 1105 | tracked | Board/release config: target `esp32p4`, type `esp32-p4-nano`, variants: esp32-p4-nano-10.1-a, esp32-p4x-nano-10.1-a. |
 | `main/boards/waveshare/esp32-p4-nano/esp32-p4-nano.cc` | `cc` | 10004 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-p4-nano.cc` trong `main/boards/waveshare/esp32-p4-nano`. Key types/methods: `CustomBacklight`, `WaveshareEsp32p4nano`. |
 | `main/boards/waveshare/esp32-p4-nano/lcd_init_cmds.h` | `h` | 7769 | tracked | Driver hoặc UI/display resource riêng của board `lcd_init_cmds.h` trong `main/boards/waveshare/esp32-p4-nano`. |
-| `main/boards/waveshare/esp32-p4-nano/README.md` | `md` | 9679 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-nano`. Main section: Waveshare ESP32-P4-NANO. |
+| `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5/README.md` | `md` | 298 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5`. Main section: Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5/config.h` | `h` | 1625 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5`. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5/config.json` | `json` | 1310 | tracked | Board/release config: target `esp32p4`, type `esp32-p4-wifi6-touch-lcd-3.5`, variants: esp32-p4-wifi6-touch-lcd-3.5, esp32-p4x-wifi6-touch-lcd-3.5. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5/esp32-p4-wifi6-touch-lcd-3.5.cc` | `cc` | 6652 | tracked | Driver hoặc UI/display resource riêng của board `esp32-p4-wifi6-touch-lcd-3.5.cc` trong `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5`. Key types/methods: `WaveshareEsp32p4`. |
-| `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5/README.md` | `md` | 298 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd-3.5`. Main section: Waveshare ESP32-P4-WIFI6-Touch-LCD-3.5. |
+| `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/README.md` | `md` | 617 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd`. Main section: Waveshare ESP32-P4-WIFI6-Touch-LCD. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/config.h` | `h` | 3877 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd`. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/config.json` | `json` | 14047 | tracked | Board/release config: target `esp32p4`, type `esp32-p4-wifi6-touch-lcd`, variants: esp32-p4-wifi6-touch-lcd-4b, esp32-p4x-wifi6-touch-lcd-4b, esp32-p4-wifi6-touch-lcd-4.3, esp32-p4x-wifi6-touch-lcd-4.3, esp32-p4-wifi6-touch-lcd-5, esp32-p4x-wifi6-touch-lcd-5, esp32-p4-wifi6-touch-lcd-7b, esp32-p4x-wifi6-touch-lcd-7b, esp32-p4-wifi6-touch-lcd-3.4c, esp32-p4x-wifi6-touch-lcd-3.4c, esp32-p4-wifi6-touch-lcd-4c, esp32-p4x-wifi6-touch-lcd-4c, esp32-p4-wifi6-touch-lcd-7, esp32-p4x-wifi6-touch-lcd-7, esp32-p4-wifi6-touch-lcd-8, esp32-p4x-wifi6-touch-lcd-8, esp32-p4-wifi6-touch-lcd-10.1, esp32-p4x-wifi6-touch-lcd-10.1. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/esp32-p4-wifi6-touch-lcd.cc` | `cc` | 17888 | tracked | Driver hoặc UI/display resource riêng của board `esp32-p4-wifi6-touch-lcd.cc` trong `main/boards/waveshare/esp32-p4-wifi6-touch-lcd`. Key types/methods: `WaveshareEsp32p4`. |
 | `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/lcd_init_cmds.h` | `h` | 40496 | tracked | Driver hoặc UI/display resource riêng của board `lcd_init_cmds.h` trong `main/boards/waveshare/esp32-p4-wifi6-touch-lcd`. |
-| `main/boards/waveshare/esp32-p4-wifi6-touch-lcd/README.md` | `md` | 617 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-p4-wifi6-touch-lcd`. Main section: Waveshare ESP32-P4-WIFI6-Touch-LCD. |
+| `main/boards/waveshare/esp32-s3-audio-board/README.md` | `md` | 117 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-audio-board`. |
 | `main/boards/waveshare/esp32-s3-audio-board/config.h` | `h` | 2830 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-audio-board`. |
 | `main/boards/waveshare/esp32-s3-audio-board/config.json` | `json` | 790 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-audio-board`, variants: esp32-s3-audio-board. |
 | `main/boards/waveshare/esp32-s3-audio-board/esp32-s3-audio_board.cc` | `cc` | 9744 | tracked | Cấu hình hoặc driver audio codec của board `esp32-s3-audio_board.cc` trong `main/boards/waveshare/esp32-s3-audio-board`. Key types/methods: `CustomBoard`. |
 | `main/boards/waveshare/esp32-s3-audio-board/esp_lcd_jd9853.c` | `c` | 18213 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_jd9853.c` trong `main/boards/waveshare/esp32-s3-audio-board`. |
 | `main/boards/waveshare/esp32-s3-audio-board/esp_lcd_jd9853.h` | `h` | 3887 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_jd9853.h` trong `main/boards/waveshare/esp32-s3-audio-board`. |
-| `main/boards/waveshare/esp32-s3-audio-board/README.md` | `md` | 117 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-audio-board`. |
+| `main/boards/waveshare/esp32-s3-cam/README.md` | `md` | 278 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-cam`. |
 | `main/boards/waveshare/esp32-s3-cam/config.h` | `h` | 3343 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-cam`. |
 | `main/boards/waveshare/esp32-s3-cam/config.json` | `json` | 1465 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-cam`, variants: esp32-s3-cam-2, esp32-s3-cam-2.8, esp32-s3-cam-3.5, esp32-s3-cam-1.83. |
 | `main/boards/waveshare/esp32-s3-cam/esp32-s3-cam-xxxx.cc` | `cc` | 10448 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-cam-xxxx.cc` trong `main/boards/waveshare/esp32-s3-cam`. Key types/methods: `CustomBacklight`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-cam/README.md` | `md` | 278 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-cam`. |
+| `main/boards/waveshare/esp32-s3-epaper-1.54/README.md` | `md` | 840 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-epaper-1.54`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/board_power_bsp.cc` | `cc` | 1990 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.cc` trong `main/boards/waveshare/esp32-s3-epaper-1.54`. Key types/methods: `BoardPowerBsp::PowerLedTask`, `BoardPowerBsp::PowerEpdOn`, `BoardPowerBsp::PowerEpdOff`, `BoardPowerBsp::PowerAudioOn`, `BoardPowerBsp::PowerAudioOff`, `BoardPowerBsp::VbatPowerOn`, `BoardPowerBsp::VbatPowerOff`. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/board_power_bsp.h` | `h` | 482 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.h` trong `main/boards/waveshare/esp32-s3-epaper-1.54`. Key types/methods: `BoardPowerBsp`. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/config.h` | `h` | 1277 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-epaper-1.54`. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/config.json` | `json` | 919 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-epaper-1.54`, variants: esp32-s3-epaper-1.54-v2, esp32-s3-epaper-1.54-v1. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/custom_lcd_display.cc` | `cc` | 11901 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-epaper-1.54`. Key types/methods: `CustomLcdDisplay::lvgl_flush_cb`, `CustomLcdDisplay::spi_gpio_init`, `CustomLcdDisplay::spi_port_init`, `CustomLcdDisplay::read_busy`, `CustomLcdDisplay::SPI_SendByte`, `CustomLcdDisplay::EPD_SendData`, `CustomLcdDisplay::EPD_SendCommand`, `CustomLcdDisplay::writeBytes`. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/custom_lcd_display.h` | `h` | 2366 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-epaper-1.54`. Key types/methods: `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-s3-epaper-1.54/README.md` | `md` | 840 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-epaper-1.54`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-epaper-1.54/waveshare-s3-epaper-1.54.cc` | `cc` | 6128 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `waveshare-s3-epaper-1.54.cc` trong `main/boards/waveshare/esp32-s3-epaper-1.54`. Key types/methods: `CustomBoard`. |
+| `main/boards/waveshare/esp32-s3-epaper-3.97/README.md` | `md` | 595 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-epaper-3.97`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-epaper-3.97/config.h` | `h` | 1131 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-epaper-3.97`. |
 | `main/boards/waveshare/esp32-s3-epaper-3.97/config.json` | `json` | 283 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-epaper-3.97`, variants: esp32-s3-epaper-3.97. |
 | `main/boards/waveshare/esp32-s3-epaper-3.97/custom_lcd_display.cc` | `cc` | 11049 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-epaper-3.97`. Key types/methods: `CustomEpdDisplay::lvgl_flush_cb`, `CustomEpdDisplay::spi_gpio_init`, `CustomEpdDisplay::spi_port_init`, `CustomEpdDisplay::read_busy`, `CustomEpdDisplay::SPI_SendByte`, `CustomEpdDisplay::EPD_SendData`, `CustomEpdDisplay::EPD_SendCommand`, `CustomEpdDisplay::writeBytes`. |
 | `main/boards/waveshare/esp32-s3-epaper-3.97/custom_lcd_display.h` | `h` | 2361 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-epaper-3.97`. Key types/methods: `CustomEpdDisplay`. |
-| `main/boards/waveshare/esp32-s3-epaper-3.97/README.md` | `md` | 595 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-epaper-3.97`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-epaper-3.97/waveshare-s3-epaper-3.97.cc` | `cc` | 6085 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `waveshare-s3-epaper-3.97.cc` trong `main/boards/waveshare/esp32-s3-epaper-3.97`. Key types/methods: `Pmic`, `WaveshareEsp32s3ePaper3inch97`. |
+| `main/boards/waveshare/esp32-s3-lcd-0.85/README.md` | `md` | 769 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-lcd-0.85`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/config.h` | `h` | 1608 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-lcd-0.85`. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/config.json` | `json` | 455 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-lcd-0.85`, variants: esp32-s3-lcd-0.85. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/esp32-s3-lcd-0.85.cc` | `cc` | 10597 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-lcd-0.85.cc` trong `main/boards/waveshare/esp32-s3-lcd-0.85`. Key types/methods: `CustomButton`, `CustomBoard`. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/led_strip_control.cc` | `cc` | 5594 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `led_strip_control.cc` trong `main/boards/waveshare/esp32-s3-lcd-0.85`. Key types/methods: `LedStripControl::LevelToBrightness`, `LedStripControl::RGBToColor`. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/led_strip_control.h` | `h` | 444 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `led_strip_control.h` trong `main/boards/waveshare/esp32-s3-lcd-0.85`. Key types/methods: `LedStripControl`. |
 | `main/boards/waveshare/esp32-s3-lcd-0.85/power_manager.h` | `h` | 6815 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/waveshare/esp32-s3-lcd-0.85`. Key types/methods: `PowerManager`. |
-| `main/boards/waveshare/esp32-s3-lcd-0.85/README.md` | `md` | 769 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-lcd-0.85`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-s3-rgb-matrix/README.md` | `md` | 116 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-rgb-matrix`. |
 | `main/boards/waveshare/esp32-s3-rgb-matrix/config.h` | `h` | 1686 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-rgb-matrix`. |
 | `main/boards/waveshare/esp32-s3-rgb-matrix/config.json` | `json` | 325 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-rgb-matrix`, variants: esp32-s3-rgb-matrix. |
-| `main/boards/waveshare/esp32-s3-rgb-matrix/README.md` | `md` | 116 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-rgb-matrix`. |
 | `main/boards/waveshare/esp32-s3-rgb-matrix/rgb_matrix_board.cc` | `cc` | 2987 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `rgb_matrix_board.cc` trong `main/boards/waveshare/esp32-s3-rgb-matrix`. Key types/methods: `CustomBoard`, `MatrixBacklight`. |
 | `main/boards/waveshare/esp32-s3-rgb-matrix/rgb_matrix_display.cc` | `cc` | 15234 | tracked | Driver hoặc UI/display resource riêng của board `rgb_matrix_display.cc` trong `main/boards/waveshare/esp32-s3-rgb-matrix`. Key types/methods: `Hub75Context`, `MapItem`, `CustomMatrixDisplay::Lock`, `CustomMatrixDisplay::Unlock`, `CustomMatrixDisplay::SetupUI`, `CustomMatrixDisplay::SetEmojiCollection`, `CustomMatrixDisplay::SetEmotion`, `CustomMatrixDisplay::SetChatMessage`. |
 | `main/boards/waveshare/esp32-s3-rgb-matrix/rgb_matrix_display.h` | `h` | 1476 | tracked | Driver hoặc UI/display resource riêng của board `rgb_matrix_display.h` trong `main/boards/waveshare/esp32-s3-rgb-matrix`. Key types/methods: `Hub75Context`, `EmojiCollection`, `CustomMatrixDisplay`. |
+| `main/boards/waveshare/esp32-s3-rlcd-4.2/README.md` | `md` | 586 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-rlcd-4.2`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-rlcd-4.2/config.h` | `h` | 1196 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-rlcd-4.2`. |
 | `main/boards/waveshare/esp32-s3-rlcd-4.2/config.json` | `json` | 320 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-rlcd-4.2`, variants: esp32-s3-rlcd-4.2. |
 | `main/boards/waveshare/esp32-s3-rlcd-4.2/custom_lcd_display.cc` | `cc` | 9174 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-rlcd-4.2`. Key types/methods: `CustomLcdDisplay::Lvgl_flush_cb`, `CustomLcdDisplay::InitPortraitLUT`, `CustomLcdDisplay::InitLandscapeLUT`, `CustomLcdDisplay::Set_ResetIOLevel`, `CustomLcdDisplay::RLCD_SendCommand`, `CustomLcdDisplay::RLCD_SendData`, `CustomLcdDisplay::RLCD_Sendbuffera`, `CustomLcdDisplay::RLCD_Reset`. |
 | `main/boards/waveshare/esp32-s3-rlcd-4.2/custom_lcd_display.h` | `h` | 1763 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-rlcd-4.2`. Key types/methods: `ColorSelection`, `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-s3-rlcd-4.2/README.md` | `md` | 586 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-rlcd-4.2`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-rlcd-4.2/waveshare-s3-rlcd-4.2.cc` | `cc` | 5513 | tracked | Driver hoặc UI/display resource riêng của board `waveshare-s3-rlcd-4.2.cc` trong `main/boards/waveshare/esp32-s3-rlcd-4.2`. Key types/methods: `CustomBoard`. |
+| `main/boards/waveshare/esp32-s3-touch-amoled-1.32/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.32`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.32/config.h` | `h` | 1206 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.32`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.32/config.json` | `json` | 377 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-1.32`, variants: esp32-s3-touch-amoled-1.32. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.32/esp32-s3-touch-amoled-1.32.cc` | `cc` | 8896 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-1.32.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-1.32`. Key types/methods: `CustomLcdDisplay`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-amoled-1.32/README.md` | `md` | 613 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.32`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-s3-touch-amoled-1.43c/README.md` | `md` | 615 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.43c`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.43c/config.h` | `h` | 1387 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.43c`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.43c/config.json` | `json` | 379 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-1.43c`, variants: esp32-s3-touch-amoled-1.43c. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.43c/esp32-s3-touch-amoled-1.43c.cc` | `cc` | 7942 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-1.43c.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-1.43c`. Key types/methods: `CustomLcdDisplay`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-amoled-1.43c/README.md` | `md` | 615 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.43c`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-s3-touch-amoled-1.75/README.md` | `md` | 1778 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.75`. Main section: Waveshare ESP32-S3-Touch-AMOLED-1.75. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.75/config.h` | `h` | 1887 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.75`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.75/config.json` | `json` | 706 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-1.75`, variants: esp32-s3-touch-amoled-1.75, esp32-s3-touch-amoled-1.75c. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.75/esp32-s3-touch-amoled-1.75.cc` | `cc` | 13248 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-1.75.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-1.75`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32s3TouchAMOLED1inch75`. |
-| `main/boards/waveshare/esp32-s3-touch-amoled-1.75/README.md` | `md` | 1778 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.75`. Main section: Waveshare ESP32-S3-Touch-AMOLED-1.75. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8-v2/config.h` | `h` | 1273 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.8-v2`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8-v2/config.json` | `json` | 299 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-1.8-v2`, variants: esp32-s3-touch-amoled-1.8-v2. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8-v2/esp32-s3-touch-amoled-1.8-v2.cc` | `cc` | 15250 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-1.8-v2.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-1.8-v2`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32s3TouchAMOLED1inch8`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8/config.h` | `h` | 1272 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-1.8`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8/config.json` | `json` | 293 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-1.8`, variants: esp32-s3-touch-amoled-1.8. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-1.8/esp32-s3-touch-amoled-1.8.cc` | `cc` | 15897 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-1.8.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-1.8`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32s3TouchAMOLED1inch8`. |
+| `main/boards/waveshare/esp32-s3-touch-amoled-2.06/README.md` | `md` | 1227 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.06`. Main section: Waveshare ESP32-S3-Touch-AMOLED-2.06. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.06/config.h` | `h` | 1303 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.06`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.06/config.json` | `json` | 338 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-2.06`, variants: esp32-s3-touch-amoled-2.06. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.06/esp32-s3-touch-amoled-2.06.cc` | `cc` | 12917 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-2.06.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-2.06`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32s3TouchAMOLED2inch06`. |
-| `main/boards/waveshare/esp32-s3-touch-amoled-2.06/README.md` | `md` | 1227 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.06`. Main section: Waveshare ESP32-S3-Touch-AMOLED-2.06. |
+| `main/boards/waveshare/esp32-s3-touch-amoled-2.16/README.md` | `md` | 1774 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.16`. Main section: Waveshare ESP32-S3-Touch-AMOLED-2.16. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.16/config.h` | `h` | 1447 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.16`. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.16/config.json` | `json` | 414 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-amoled-2.16`, variants: esp32-s3-touch-amoled-2.16. |
 | `main/boards/waveshare/esp32-s3-touch-amoled-2.16/esp32-s3-touch-amoled-2.16.cc` | `cc` | 13246 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32-s3-touch-amoled-2.16.cc` trong `main/boards/waveshare/esp32-s3-touch-amoled-2.16`. Key types/methods: `Pmic`, `CustomLcdDisplay`, `CustomBacklight`, `WaveshareEsp32s3TouchAMOLED2inch16`. |
-| `main/boards/waveshare/esp32-s3-touch-amoled-2.16/README.md` | `md` | 1774 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-amoled-2.16`. Main section: Waveshare ESP32-S3-Touch-AMOLED-2.16. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.46/README.md` | `md` | 210 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.46`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.46/config.h` | `h` | 2487 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.46`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.46/config.json` | `json` | 224 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.46`, variants: esp32-s3-touch-lcd-1.46. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.46/esp32-s3-touch-lcd-1.46.cc` | `cc` | 11235 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.46.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.46`. Key types/methods: `CustomLcdDisplay`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.46/README.md` | `md` | 210 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.46`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.54/README.md` | `md` | 691 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.54`. Main section: 产品链接. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.54/config.h` | `h` | 1610 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.54`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.54/config.json` | `json` | 333 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.54`, variants: esp32-s3-touch-lcd-1.54. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.54/esp32-s3-touch-lcd-1.54.cc` | `cc` | 11860 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.54.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.54`. Key types/methods: `CustomButton`, `CustomBoard`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.54/power_manager.h` | `h` | 6815 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.54`. Key types/methods: `PowerManager`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.54/README.md` | `md` | 691 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.54`. Main section: 产品链接. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.83/README.md` | `md` | 554 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.83`. Main section: Waveshare ESP32-S3-Touch-LCD-1.83. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.83/config.h` | `h` | 1428 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.83`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.83/config.json` | `json` | 332 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.83`, variants: esp32-s3-touch-lcd-1.83. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.83/esp32-s3-touch-lcd-1.83.cc` | `cc` | 9256 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.83.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.83`. Key types/methods: `Pmic`, `WaveshareEsp32s3TouchLCD1inch83`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.83/README.md` | `md` | 554 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.83`. Main section: Waveshare ESP32-S3-Touch-LCD-1.83. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.85/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85/config.h` | `h` | 2486 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85/config.json` | `json` | 224 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.85`, variants: esp32-s3-touch-lcd-1.85. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85/esp32-s3-touch-lcd-1.85.cc` | `cc` | 19404 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.85.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.85`. Key types/methods: `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.85/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.85b/README.md` | `md` | 125 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85b/config.h` | `h` | 2467 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85b/config.json` | `json` | 335 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.85b`, variants: esp32-s3-touch-lcd-1.85b. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85b/esp32-s3-touch-lcd-1.85b.cc` | `cc` | 25054 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.85b.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.85b`. Key types/methods: `WaveshareEsp32s3TouchLcd1_85B`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.85b/README.md` | `md` | 125 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85b`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-1.85c/README.md` | `md` | 125 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85c`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85c/config.h` | `h` | 3005 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85c`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85c/config.json` | `json` | 226 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-1.85c`, variants: esp32-s3-touch-lcd-1.85c. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-1.85c/esp32-s3-touch-lcd-1.85c.cc` | `cc` | 17404 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-1.85c.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-1.85c`. Key types/methods: `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-1.85c/README.md` | `md` | 125 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-1.85c`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/README.md` | `md` | 356 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. Main section: Waveshare ESP32-S3-Touch-LCD-3.49 V2. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/config.h` | `h` | 1739 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/config.json` | `json` | 339 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-3.49-v2`, variants: esp32-s3-touch-lcd-3.49-v2. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/custom_lcd_display.cc` | `cc` | 5335 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. Key types/methods: `CustomLcdDisplay::lvgl_port_flush_io_ready_callback`, `CustomLcdDisplay::lvgl_port_flush_callback`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/custom_lcd_display.h` | `h` | 681 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. Key types/methods: `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/README.md` | `md` | 356 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. Main section: Waveshare ESP32-S3-Touch-LCD-3.49 V2. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2/waveshare-s3-touch-lcd-3.49-v2.cc` | `cc` | 9490 | tracked | Driver hoặc UI/display resource riêng của board `waveshare-s3-touch-lcd-3.49-v2.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49-v2`. Key types/methods: `CustomBoard`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-3.49/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49/config.h` | `h` | 1738 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49/config.json` | `json` | 332 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-3.49`, variants: esp32-s3-touch-lcd-3.49. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49/custom_lcd_display.cc` | `cc` | 5338 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. Key types/methods: `CustomLcdDisplay::lvgl_port_flush_io_ready_callback`, `CustomLcdDisplay::lvgl_port_flush_callback`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49/custom_lcd_display.h` | `h` | 680 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. Key types/methods: `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-3.49/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.49/waveshare-s3-touch-lcd-3.49.cc` | `cc` | 9286 | tracked | Driver hoặc UI/display resource riêng của board `waveshare-s3-touch-lcd-3.49.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.49`. Key types/methods: `CustomBoard`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-3.5/README.md` | `md` | 121 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5/config.h` | `h` | 2092 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5/config.json` | `json` | 794 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-3.5`, variants: esp32-s3-touch-lcd-3.5. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5/esp32-s3-touch-lcd-3.5.cc` | `cc` | 13792 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-3.5.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.5`. Key types/methods: `Pmic`, `CustomBoard`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-3.5/README.md` | `md` | 121 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/config.h` | `h` | 2307 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/config.json` | `json` | 796 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-3.5b`, variants: esp32-s3-touch-lcd-3.5b. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/custom_lcd_display.cc` | `cc` | 11004 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. Key types/methods: `CustomLcdDisplay::lvgl_port_flush_io_ready_callback`, `CustomLcdDisplay::lvgl_port_flush_callback`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/custom_lcd_display.h` | `h` | 682 | tracked | Driver hoặc UI/display resource riêng của board `custom_lcd_display.h` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. Key types/methods: `CustomLcdDisplay`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/README.md` | `md` | 123 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-3.5b/waveshare-s3-touch-lcd-3.5b.cc` | `cc` | 15737 | tracked | Driver hoặc UI/display resource riêng của board `waveshare-s3-touch-lcd-3.5b.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-3.5b`. Key types/methods: `Pmic`, `CustomBoard`. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-4.3c/README.md` | `md` | 757 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-4.3c`. Main section: 使用说明. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4.3c/config.h` | `h` | 2947 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-4.3c`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4.3c/config.json` | `json` | 449 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-4.3c`, variants: esp32-s3-touch-lcd-4.3c. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4.3c/esp32_s3_touch_lcd_4.3c.cc` | `cc` | 8679 | tracked | Driver hoặc UI/display resource riêng của board `esp32_s3_touch_lcd_4.3c.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-4.3c`. Key types/methods: `CustomBacklight`, `WaveshareEsp32s3TouchLCD43c`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-4.3c/README.md` | `md` | 757 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-4.3c`. Main section: 使用说明. |
+| `main/boards/waveshare/esp32-s3-touch-lcd-4b/README.md` | `md` | 387 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-4b`. Main section: Waveshare ESP32-S3-Touch-LCD-4B. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4b/config.h` | `h` | 2067 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-4b`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4b/config.json` | `json` | 328 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-4b`, variants: esp32-s3-touch-lcd-4b. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-4b/esp32-s3-touch-lcd-4b.cc` | `cc` | 16428 | tracked | Driver hoặc UI/display resource riêng của board `esp32-s3-touch-lcd-4b.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-4b`. Key types/methods: `Pmic`, `WaveshareEsp32s3TouchLCD4b`. |
-| `main/boards/waveshare/esp32-s3-touch-lcd-4b/README.md` | `md` | 387 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-s3-touch-lcd-4b`. Main section: Waveshare ESP32-S3-Touch-LCD-4B. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-7c/config.h` | `h` | 2978 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-s3-touch-lcd-7c`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-7c/config.json` | `json` | 580 | tracked | Board/release config: target `esp32s3`, type `esp32-s3-touch-lcd-7c`, variants: esp32-s3-touch-lcd-7c. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-7c/esp32_s3_touch_lcd_7c.cc` | `cc` | 10664 | tracked | Driver hoặc UI/display resource riêng của board `esp32_s3_touch_lcd_7c.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-7c`. Key types/methods: `CustomBacklight`, `WaveshareEsp32s3TouchLCD7c`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-7c/waveshare_audio_codec.cc` | `cc` | 9803 | tracked | Cấu hình hoặc driver audio codec của board `waveshare_audio_codec.cc` trong `main/boards/waveshare/esp32-s3-touch-lcd-7c`. Key types/methods: `WaveshareAudioCodec::CreateDuplexChannels`, `WaveshareAudioCodec::SetOutputVolume`, `WaveshareAudioCodec::EnableInput`, `WaveshareAudioCodec::EnableOutput`, `WaveshareAudioCodec::Read`, `WaveshareAudioCodec::Write`. |
 | `main/boards/waveshare/esp32-s3-touch-lcd-7c/waveshare_audio_codec.h` | `h` | 1526 | tracked | Cấu hình hoặc driver audio codec của board `waveshare_audio_codec.h` trong `main/boards/waveshare/esp32-s3-touch-lcd-7c`. Key types/methods: `WaveshareAudioCodec`. |
+| `main/boards/waveshare/esp32-touch-lcd-3.5/README.md` | `md` | 115 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-touch-lcd-3.5`. |
 | `main/boards/waveshare/esp32-touch-lcd-3.5/config.h` | `h` | 1564 | tracked | Pin map và compile-time hardware options cho board `main/boards/waveshare/esp32-touch-lcd-3.5`. |
 | `main/boards/waveshare/esp32-touch-lcd-3.5/config.json` | `json` | 178 | tracked | Board/release config: target `esp32`, type `esp32-touch-lcd-3.5`, variants: esp32-touch-lcd-3.5. |
 | `main/boards/waveshare/esp32-touch-lcd-3.5/esp32-touch-lcd-3.5.cc` | `cc` | 12757 | tracked | Driver hoặc UI/display resource riêng của board `esp32-touch-lcd-3.5.cc` trong `main/boards/waveshare/esp32-touch-lcd-3.5`. Key types/methods: `Pmic`, `WaveshareEsp32TouchLCD3inch5`. |
-| `main/boards/waveshare/esp32-touch-lcd-3.5/README.md` | `md` | 115 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/waveshare/esp32-touch-lcd-3.5`. |
+| `main/boards/wdmomo/esp32-cgc-144/README.md` | `md` | 686 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wdmomo/esp32-cgc-144`. Main section: 相关资料：. |
 | `main/boards/wdmomo/esp32-cgc-144/config.h` | `h` | 1984 | tracked | Pin map và compile-time hardware options cho board `main/boards/wdmomo/esp32-cgc-144`. |
 | `main/boards/wdmomo/esp32-cgc-144/config.json` | `json` | 213 | tracked | Board/release config: target `esp32`, type `esp32-cgc-144`, variants: esp32-cgc-144. |
 | `main/boards/wdmomo/esp32-cgc-144/esp32_cgc_144_board.cc` | `cc` | 6464 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_cgc_144_board.cc` trong `main/boards/wdmomo/esp32-cgc-144`. Key types/methods: `ESP32_CGC_144`. |
 | `main/boards/wdmomo/esp32-cgc-144/power_manager.h` | `h` | 6007 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/wdmomo/esp32-cgc-144`. Key types/methods: `PowerManager`. |
 | `main/boards/wdmomo/esp32-cgc-144/power_manager_lite.h` | `h` | 6018 | tracked | Quản lý nguồn/pin/charger của board `power_manager_lite.h` trong `main/boards/wdmomo/esp32-cgc-144`. Key types/methods: `PowerManager`. |
-| `main/boards/wdmomo/esp32-cgc-144/README.md` | `md` | 686 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wdmomo/esp32-cgc-144`. Main section: 相关资料：. |
+| `main/boards/wdmomo/esp32-cgc/README.md` | `md` | 820 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wdmomo/esp32-cgc`. Main section: 主板开源地址：. |
 | `main/boards/wdmomo/esp32-cgc/config.h` | `h` | 7793 | tracked | Pin map và compile-time hardware options cho board `main/boards/wdmomo/esp32-cgc`. |
 | `main/boards/wdmomo/esp32-cgc/config.json` | `json` | 251 | tracked | Board/release config: target `esp32`, type `esp32-cgc`, variants: esp32-cgc. |
 | `main/boards/wdmomo/esp32-cgc/esp32_cgc_board.cc` | `cc` | 6285 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `esp32_cgc_board.cc` trong `main/boards/wdmomo/esp32-cgc`. Key types/methods: `ESP32_CGC`. |
-| `main/boards/wdmomo/esp32-cgc/README.md` | `md` | 820 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wdmomo/esp32-cgc`. Main section: 主板开源地址：. |
+| `main/boards/wk-esp32s3-dev/README.md` | `md` | 1110 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wk-esp32s3-dev`. Main section: WK ESP32-S3 Dev Board（维控智能 ESP32-S3 开发板）. |
 | `main/boards/wk-esp32s3-dev/config.h` | `h` | 11641 | tracked | Pin map và compile-time hardware options cho board `main/boards/wk-esp32s3-dev`. |
 | `main/boards/wk-esp32s3-dev/config.json` | `json` | 138 | tracked | Board/release config: target `esp32s3`, type `wk-esp32s3-dev`, variants: wk-esp32s3-dev. |
 | `main/boards/wk-esp32s3-dev/esp_lcd_ili9486.c` | `c` | 14569 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_ili9486.c` trong `main/boards/wk-esp32s3-dev`. |
 | `main/boards/wk-esp32s3-dev/esp_lcd_ili9486.h` | `h` | 3895 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_ili9486.h` trong `main/boards/wk-esp32s3-dev`. |
 | `main/boards/wk-esp32s3-dev/esp_lcd_nv3030b.c` | `c` | 14216 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_nv3030b.c` trong `main/boards/wk-esp32s3-dev`. |
 | `main/boards/wk-esp32s3-dev/esp_lcd_nv3030b.h` | `h` | 3826 | tracked | Driver hoặc UI/display resource riêng của board `esp_lcd_nv3030b.h` trong `main/boards/wk-esp32s3-dev`. |
-| `main/boards/wk-esp32s3-dev/README.md` | `md` | 1110 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/wk-esp32s3-dev`. Main section: WK ESP32-S3 Dev Board（维控智能 ESP32-S3 开发板）. |
 | `main/boards/wk-esp32s3-dev/wk-esp32s3-dev.cc` | `cc` | 11402 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `wk-esp32s3-dev.cc` trong `main/boards/wk-esp32s3-dev`. Key types/methods: `WkEsp32s3Dev`. |
+| `main/boards/xmini/c3-4g/README.md` | `md` | 60 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xmini/c3-4g`. Main section: 开源地址. |
 | `main/boards/xmini/c3-4g/config.h` | `h` | 874 | tracked | Pin map và compile-time hardware options cho board `main/boards/xmini/c3-4g`. |
 | `main/boards/xmini/c3-4g/config.json` | `json` | 492 | tracked | Board/release config: target `esp32c3`, type `xmini-c3-4g`, variants: xmini-c3-4g. |
-| `main/boards/xmini/c3-4g/README.md` | `md` | 60 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xmini/c3-4g`. Main section: 开源地址. |
 | `main/boards/xmini/c3-4g/xmini_c3_4g_board.cc` | `cc` | 7097 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `xmini_c3_4g_board.cc` trong `main/boards/xmini/c3-4g`. Key types/methods: `XminiC3Board`. |
+| `main/boards/xmini/c3-v3/README.md` | `md` | 57 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xmini/c3-v3`. Main section: 开源地址. |
 | `main/boards/xmini/c3-v3/config.h` | `h` | 773 | tracked | Pin map và compile-time hardware options cho board `main/boards/xmini/c3-v3`. |
 | `main/boards/xmini/c3-v3/config.json` | `json` | 358 | tracked | Board/release config: target `esp32c3`, type `xmini-c3-v3`, variants: xmini-c3-v3. |
-| `main/boards/xmini/c3-v3/README.md` | `md` | 57 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xmini/c3-v3`. Main section: 开源地址. |
 | `main/boards/xmini/c3-v3/xmini_c3_board.cc` | `cc` | 6909 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `xmini_c3_board.cc` trong `main/boards/xmini/c3-v3`. Key types/methods: `XminiC3Board`. |
 | `main/boards/xmini/c3/config.h` | `h` | 774 | tracked | Pin map và compile-time hardware options cho board `main/boards/xmini/c3`. |
 | `main/boards/xmini/c3/config.json` | `json` | 352 | tracked | Board/release config: target `esp32c3`, type `xmini-c3`, variants: xmini-c3. |
 | `main/boards/xmini/c3/xmini_c3_board.cc` | `cc` | 7582 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `xmini_c3_board.cc` trong `main/boards/xmini/c3`. Key types/methods: `XminiC3Board`. |
+| `main/boards/xorigin/aipi-lite/README.md` | `md` | 1030 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xorigin/aipi-lite`. Main section: 编译命令. |
+| `main/boards/xorigin/aipi-lite/README_en.md` | `md` | 1231 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xorigin/aipi-lite`. Main section: Build Instructions. |
 | `main/boards/xorigin/aipi-lite/aipi-lite.cc` | `cc` | 8754 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `aipi-lite.cc` trong `main/boards/xorigin/aipi-lite`. Key types/methods: `AIPILite`. |
 | `main/boards/xorigin/aipi-lite/config.h` | `h` | 1557 | tracked | Pin map và compile-time hardware options cho board `main/boards/xorigin/aipi-lite`. |
 | `main/boards/xorigin/aipi-lite/config.json` | `json` | 159 | tracked | Board/release config: target `esp32s3`, type `aipi-lite`, variants: aipi-lite. |
 | `main/boards/xorigin/aipi-lite/power_manager.h` | `h` | 6142 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/xorigin/aipi-lite`. Key types/methods: `PowerManager`. |
-| `main/boards/xorigin/aipi-lite/README.md` | `md` | 1030 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xorigin/aipi-lite`. Main section: 编译命令. |
-| `main/boards/xorigin/aipi-lite/README_en.md` | `md` | 1231 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/xorigin/aipi-lite`. Main section: Build Instructions. |
+| `main/boards/yunliao-s3/README.md` | `md` | 3026 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/yunliao-s3`. Main section: 小智云聊 S3. |
 | `main/boards/yunliao-s3/config.h` | `h` | 2019 | tracked | Pin map và compile-time hardware options cho board `main/boards/yunliao-s3`. |
 | `main/boards/yunliao-s3/config.json` | `json` | 220 | tracked | Board/release config: target `esp32s3`, type `yunliao-s3`, variants: yunliao-s3. |
 | `main/boards/yunliao-s3/power_manager.cc` | `cc` | 7895 | tracked | Quản lý nguồn/pin/charger của board `power_manager.cc` trong `main/boards/yunliao-s3`. Key types/methods: `PowerManager::Initialize`, `PowerManager::CheckBatteryStatus`, `PowerManager::IsCharging`, `PowerManager::IsDischarging`, `PowerManager::IsChargingDone`, `PowerManager::GetBatteryLevel`, `PowerManager::OnChargingStatusChanged`, `PowerManager::OnChargingStatusDisChanged`. |
 | `main/boards/yunliao-s3/power_manager.h` | `h` | 1247 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/yunliao-s3`. Key types/methods: `PowerManager`. |
-| `main/boards/yunliao-s3/README.md` | `md` | 3026 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/yunliao-s3`. Main section: 小智云聊 S3. |
 | `main/boards/yunliao-s3/yunliao_s3.cc` | `cc` | 11514 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `yunliao_s3.cc` trong `main/boards/yunliao-s3`. Key types/methods: `YunliaoDisplay`, `YunliaoS3`. |
 | `main/boards/zectrix/zectrix-s3-epaper-4.2/board_power_bsp.cc` | `cc` | 4905 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.cc` trong `main/boards/zectrix/zectrix-s3-epaper-4.2`. Key types/methods: `BoardPowerBsp::PowerLedTask`, `BoardPowerBsp::PowerEpdOn`, `BoardPowerBsp::PowerEpdOff`, `BoardPowerBsp::PowerAmpOn`, `BoardPowerBsp::PowerAmpOff`, `BoardPowerBsp::PowerAudioOn`, `BoardPowerBsp::PowerAudioOff`, `BoardPowerBsp::VbatPowerOn`. |
 | `main/boards/zectrix/zectrix-s3-epaper-4.2/board_power_bsp.h` | `h` | 916 | tracked | Quản lý nguồn/pin/charger của board `board_power_bsp.h` trong `main/boards/zectrix/zectrix-s3-epaper-4.2`. Key types/methods: `ChargeStatus`, `BoardPowerBsp`. |
@@ -1623,30 +1647,29 @@
 | `main/boards/zectrix/zectrix-s3-epaper-4.2/zectrix-s3-epaper-4.2.cc` | `cc` | 12531 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `zectrix-s3-epaper-4.2.cc` trong `main/boards/zectrix/zectrix-s3-epaper-4.2`. Key types/methods: `CustomBoard`. |
 | `main/boards/zectrix/zectrix-s3-epaper-4.2/zectrix_nfc.cc` | `cc` | 22321 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `zectrix_nfc.cc` trong `main/boards/zectrix/zectrix-s3-epaper-4.2`. Key types/methods: `ZectrixNfc::Init`, `ZectrixNfc::PowerOn`, `ZectrixNfc::PowerOff`, `ZectrixNfc::IsPowered`, `ZectrixNfc::HasField`, `ZectrixNfc::SetFieldCallback`, `ZectrixNfc::ReadBlock`, `ZectrixNfc::WriteBlock`. |
 | `main/boards/zectrix/zectrix-s3-epaper-4.2/zectrix_nfc.h` | `h` | 3351 | tracked | Interface/helper riêng của board hoặc driver peripheral; đọc nơi được include `zectrix_nfc.h` trong `main/boards/zectrix/zectrix-s3-epaper-4.2`. Key types/methods: `ZectrixNfc`. |
+| `main/boards/zhengchen/1.54tft-ml307/README.md` | `md` | 506 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/1.54tft-ml307`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/1.54tft-ml307/config.h` | `h` | 1129 | tracked | Pin map và compile-time hardware options cho board `main/boards/zhengchen/1.54tft-ml307`. |
 | `main/boards/zhengchen/1.54tft-ml307/config.json` | `json` | 224 | tracked | Board/release config: target `esp32s3`, type `zhengchen-1.54tft-ml307`, variants: zhengchen-1.54tft-ml307. |
-| `main/boards/zhengchen/1.54tft-ml307/README.md` | `md` | 506 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/1.54tft-ml307`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/1.54tft-ml307/zhengchen-1.54tft-ml307.cc` | `cc` | 7769 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `zhengchen-1.54tft-ml307.cc` trong `main/boards/zhengchen/1.54tft-ml307`. Key types/methods: `ZHENGCHEN_1_54TFT_ML307`. |
+| `main/boards/zhengchen/1.54tft-wifi/README.md` | `md` | 505 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/1.54tft-wifi`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/1.54tft-wifi/config.h` | `h` | 1062 | tracked | Pin map và compile-time hardware options cho board `main/boards/zhengchen/1.54tft-wifi`. |
 | `main/boards/zhengchen/1.54tft-wifi/config.json` | `json` | 222 | tracked | Board/release config: target `esp32s3`, type `zhengchen-1.54tft-wifi`, variants: zhengchen-1.54tft-wifi. |
 | `main/boards/zhengchen/1.54tft-wifi/power_manager.h` | `h` | 8001 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/zhengchen/1.54tft-wifi`. Key types/methods: `PowerManager`. |
-| `main/boards/zhengchen/1.54tft-wifi/README.md` | `md` | 505 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/1.54tft-wifi`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/1.54tft-wifi/zhengchen-1.54tft-wifi.cc` | `cc` | 8188 | tracked | Tích hợp mạng riêng của board `zhengchen-1.54tft-wifi.cc` trong `main/boards/zhengchen/1.54tft-wifi`. Key types/methods: `ZHENGCHEN_1_54TFT_WIFI`. |
 | `main/boards/zhengchen/1.54tft-wifi/zhengchen_lcd_display.h` | `h` | 2301 | tracked | Driver hoặc UI/display resource riêng của board `zhengchen_lcd_display.h` trong `main/boards/zhengchen/1.54tft-wifi`. Key types/methods: `ZHENGCHEN_LcdDisplay`. |
+| `main/boards/zhengchen/cam-ml307/README.md` | `md` | 1240 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/cam-ml307`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/cam-ml307/config.h` | `h` | 1796 | tracked | Pin map và compile-time hardware options cho board `main/boards/zhengchen/cam-ml307`. |
 | `main/boards/zhengchen/cam-ml307/config.json` | `json` | 534 | tracked | Board/release config: target `esp32s3`, type `zhengchen-cam-ml307`, variants: zhengchen-cam-ml307. |
 | `main/boards/zhengchen/cam-ml307/mcp_controller.cc` | `cc` | 3136 | tracked | Điều khiển chức năng robot/peripheral riêng của board `mcp_controller.cc` trong `main/boards/zhengchen/cam-ml307`. Key types/methods: `MCPController`. |
 | `main/boards/zhengchen/cam-ml307/power_manager.h` | `h` | 7966 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/zhengchen/cam-ml307`. Key types/methods: `PowerManager`. |
-| `main/boards/zhengchen/cam-ml307/README.md` | `md` | 1240 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/cam-ml307`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/cam-ml307/zhengchen_cam_board_ml307.cc` | `cc` | 11910 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `zhengchen_cam_board_ml307.cc` trong `main/boards/zhengchen/cam-ml307`. Key types/methods: `Pca9557`, `CustomAudioCodec`, `ZhengchenCamBoard_ML307`. |
+| `main/boards/zhengchen/cam/README.md` | `md` | 1198 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/cam`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/cam/config.h` | `h` | 1730 | tracked | Pin map và compile-time hardware options cho board `main/boards/zhengchen/cam`. |
 | `main/boards/zhengchen/cam/config.json` | `json` | 522 | tracked | Board/release config: target `esp32s3`, type `zhengchen-cam`, variants: zhengchen-cam. |
 | `main/boards/zhengchen/cam/mcp_controller.cc` | `cc` | 3136 | tracked | Điều khiển chức năng robot/peripheral riêng của board `mcp_controller.cc` trong `main/boards/zhengchen/cam`. Key types/methods: `MCPController`. |
 | `main/boards/zhengchen/cam/power_manager.h` | `h` | 7966 | tracked | Quản lý nguồn/pin/charger của board `power_manager.h` trong `main/boards/zhengchen/cam`. Key types/methods: `PowerManager`. |
-| `main/boards/zhengchen/cam/README.md` | `md` | 1198 | tracked | Hướng dẫn/phần cứng/build notes cho board `main/boards/zhengchen/cam`. Main section: 产品相关介绍网址. |
 | `main/boards/zhengchen/cam/zhengchen_cam_board.cc` | `cc` | 11508 | tracked | Triển khai board và kết nối phần cứng cụ thể qua các Board interface `zhengchen_cam_board.cc` trong `main/boards/zhengchen/cam`. Key types/methods: `Pca9557`, `CustomAudioCodec`, `ZhengchenCamBoard`. |
 | `main/cjson_utils.h` | `h` | 544 | tracked | Helper truy cập/serialize JSON với cJSON. Key types/methods: `CJsonDeleter`, `CJsonStringDeleter`. |
-| `main/CMakeLists.txt` | `txt` | 68825 | tracked | Main ESP-IDF component composition: common/selected-board sources, fonts, emojis, locale and asset generation. |
 | `main/device_state.h` | `h` | 427 | tracked | Enum và type trạng thái thiết bị. Key types/methods: `DeviceState`. |
 | `main/device_state_machine.cc` | `cc` | 5221 | tracked | Quy tắc và thực thi chuyển trạng thái hợp lệ. Key types/methods: `DeviceStateMachine::GetStateName`, `DeviceStateMachine::IsValidTransition`, `DeviceStateMachine::CanTransitionTo`, `DeviceStateMachine::TransitionTo`, `DeviceStateMachine::AddStateChangeListener`, `DeviceStateMachine::RemoveStateChangeListener`, `DeviceStateMachine::NotifyStateChange`. |
 | `main/device_state_machine.h` | `h` | 2283 | tracked | Giao diện state machine và callback state change. Key types/methods: `DeviceStateMachine`. |
@@ -1664,13 +1687,13 @@
 | `main/display/lvgl_display/dynamic_glyph_cache.h` | `h` | 1229 | tracked | Font, text glyph hoặc glyph cache logic của LVGL. Key types/methods: `DynamicGlyphCache`, `Entry`. |
 | `main/display/lvgl_display/emoji_collection.cc` | `cc` | 647 | tracked | Chọn/load emoji collection cho LVGL display. Key types/methods: `EmojiCollection::AddEmoji`, `EmojiCollection::GetEmojiImage`. |
 | `main/display/lvgl_display/emoji_collection.h` | `h` | 466 | tracked | Chọn/load emoji collection cho LVGL display. Key types/methods: `EmojiCollection`. |
+| `main/display/lvgl_display/gif/LICENSE.txt` | `txt` | 130 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
+| `main/display/lvgl_display/gif/README.md` | `md` | 368 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. Main section: 说明 / Description. |
 | `main/display/lvgl_display/gif/gifdec.c` | `c` | 22702 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
 | `main/display/lvgl_display/gif/gifdec.h` | `h` | 1373 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. Key types/methods: `_gd_GIF`. |
 | `main/display/lvgl_display/gif/gifdec_mve.h` | `h` | 5338 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
-| `main/display/lvgl_display/gif/LICENSE.txt` | `txt` | 130 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
 | `main/display/lvgl_display/gif/lvgl_gif.cc` | `cc` | 6224 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. Key types/methods: `LvglGif::image_dsc`, `LvglGif::Start`, `LvglGif::Pause`, `LvglGif::Resume`, `LvglGif::Stop`, `LvglGif::IsPlaying`, `LvglGif::IsLoaded`, `LvglGif::GetLoopCount`. |
 | `main/display/lvgl_display/gif/lvgl_gif.h` | `h` | 2327 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. Key types/methods: `LvglGif`. |
-| `main/display/lvgl_display/gif/README.md` | `md` | 368 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. Main section: 说明 / Description. |
 | `main/display/lvgl_display/jpg/image_to_jpeg.cpp` | `cpp` | 16007 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
 | `main/display/lvgl_display/jpg/image_to_jpeg.h` | `h` | 3124 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
 | `main/display/lvgl_display/jpg/jpeg_to_image.c` | `c` | 8687 | tracked | Image/JPEG/GIF decoding/rendering cho LVGL. |
@@ -1690,7 +1713,6 @@
 | `main/display/text_glyph.cc` | `cc` | 118 | tracked | Helper chuyển đổi/validation glyph văn bản. |
 | `main/display/text_glyph.h` | `h` | 1751 | tracked | Mô hình dữ liệu glyph văn bản. Key types/methods: `TextGlyphAllocator`, `TextGlyph`. |
 | `main/idf_component.yml` | `yml` | 4130 | tracked | Khai báo dependency/component của main ESP-IDF component. |
-| `main/Kconfig.projbuild` | `projbuild` | 45624 | tracked | Project Kconfig: target-gated board choice, languages, audio/AEC, display/assets and feature options. |
 | `main/led/circular_strip.cc` | `cc` | 8103 | tracked | LED abstraction hoặc GPIO/circular-strip implementation. Key types/methods: `CircularStrip::SetAllColor`, `CircularStrip::SetSingleColor`, `CircularStrip::SetMultiColors`, `CircularStrip::Blink`, `CircularStrip::FadeOut`, `CircularStrip::Breathe`, `CircularStrip::Scroll`, `CircularStrip::StartStripTask`. |
 | `main/led/circular_strip.h` | `h` | 1905 | tracked | LED abstraction hoặc GPIO/circular-strip implementation. Key types/methods: `StripColor`, `CircularStrip`. |
 | `main/led/gpio_led.cc` | `cc` | 8136 | tracked | LED abstraction hoặc GPIO/circular-strip implementation. Key types/methods: `GpioLed::SetBrightness`, `GpioLed::TurnOn`, `GpioLed::TurnOff`, `GpioLed::BlinkOnce`, `GpioLed::Blink`, `GpioLed::StartContinuousBlink`, `GpioLed::StartBlinkTask`, `GpioLed::OnBlinkTimer`. |
@@ -1701,6 +1723,9 @@
 | `main/main.cc` | `cc` | 798 | tracked | Entry point app_main: NVS init rồi khởi chạy Application. |
 | `main/mcp_server.cc` | `cc` | 26717 | tracked | MCP JSON-RPC parsing, tool listing/calling và built-in tools. Key types/methods: `McpServer::AddCommonTools`, `std::unexpected`, `std::move`, `McpServer::AddUserOnlyTools`, `McpServer::AddTool`, `McpServer::AddUserOnlyTool`, `McpServer::ParseMessage`, `McpServer::ParseCapabilities`. |
 | `main/mcp_server.h` | `h` | 18287 | tracked | MCP tool/property types, callbacks và server API. Key types/methods: `ImageContent`, `PropertyList`, `PropertyType`, `Property`, `McpTool`, `McpServer`, `std::unexpected`, `std::string`. |
+| `main/nabi_esp_contract.h` | `h` | 630 | first-party untracked | Generated constants for Nabi BLE, OTA, WebSocket and protocol-v3 contract. |
+| `main/nabi_esp_provisioning.cc` | `cc` | 11245 | first-party untracked | Protocomm BLE Security 2, first-pair code, device key, hotspot credential provisioning and DHCP gateway lookup. |
+| `main/nabi_esp_provisioning.h` | `h` | 1074 | first-party untracked | OSTB Nabi provisioning service interface and pairing/session state. |
 | `main/notify/notify_player.cc` | `cc` | 10124 | tracked | Phát audio thông báo và đồng bộ phụ đề. Key types/methods: `NotifyPlayer::Start`, `NotifyPlayer::Stop`, `NotifyPlayer::IsActive`, `NotifyPlayer::IsBusy`, `NotifyPlayer::IsCancelled`, `NotifyPlayer::OnPlaybackProgress`, `NotifyPlayer::CompleteLocked`, `NotifyPlayer::OnPlaybackDrained`. |
 | `main/notify/notify_player.h` | `h` | 1877 | tracked | Phát audio thông báo và đồng bộ phụ đề. Key types/methods: `NotifySubtitle`, `NotifyPlayer`. |
 | `main/ota.cc` | `cc` | 19554 | tracked | OTA download/check/flash logic. Key types/methods: `timeval`, `Ota::GetCheckVersionUrl`, `Ota::SetupHttp`, `Ota::CheckVersion`, `std::unexpected`, `Ota::MarkCurrentVersionValid`, `Ota::Upgrade`, `Ota::StartUpgrade`. |
@@ -1718,7 +1743,7 @@
 | `main/settings.h` | `h` | 792 | tracked | API đọc/ghi cấu hình persistent. Key types/methods: `Settings`. |
 | `main/system_info.cc` | `cc` | 4978 | tracked | Thu thập và serialize thông tin thiết bị/build. Key types/methods: `SystemInfo::GetFlashSize`, `SystemInfo::GetMinimumFreeHeapSize`, `SystemInfo::GetFreeHeapSize`, `SystemInfo::GetMacAddress`, `std::string`, `SystemInfo::GetChipModelName`, `SystemInfo::GetUserAgent`, `SystemInfo::PrintTaskCpuUsage`. |
 | `main/system_info.h` | `h` | 579 | tracked | Interface dữ liệu hệ thống thiết bị. Key types/methods: `SystemInfo`. |
-| `partitions/ostb-xiaozhi-3st-16m.csv` | `csv` | 510 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
+| `partitions/ostb-xiaozhi-3st-16m.csv` | `csv` | 541 | tracked | Bảng phân vùng source OSTB 3ST 16 MB với hai OTA app slots, assets, data và nvs_user. |
 | `partitions/v1/16m.csv` | `csv` | 329 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
 | `partitions/v1/16m_custom_wakeword.csv` | `csv` | 329 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
 | `partitions/v1/16m_echoear.csv` | `csv` | 372 | tracked | Bố cục phân vùng flash ESP-IDF; xác định offset và kích thước NVS/OTA/model/assets. |
@@ -1734,12 +1759,14 @@
 | `partitions/v2/README.md` | `md` | 4193 | tracked | Design rationale and migration guidance for partition-table generation. Main section: Version 2 Partition Table. |
 | `phone_app/.gitignore` | `no extension` | 746 | tracked | Bỏ qua output build, cache, IDE và file riêng tư của ứng dụng Flutter. |
 | `phone_app/.metadata` | `no extension` | 968 | tracked | Metadata Flutter dùng để nhận diện loại dự án và phiên bản công cụ. |
+| `phone_app/README.md` | `md` | 4522 | tracked | Hướng dẫn nạp model local, chạy foreground server và cấu hình OTA URL trên ESP. |
 | `phone_app/analysis_options.yaml` | `yaml` | 1547 | tracked | Quy tắc lint và phân tích tĩnh cho Dart. |
 | `phone_app/android/.gitignore` | `no extension` | 263 | tracked | Bỏ qua cache/build Android, Gradle wrapper cục bộ và signing keys. |
 | `phone_app/android/app/build.gradle.kts` | `kts` | 1793 | tracked | Cấu hình Android application, SDK và build APK cho app Flutter. |
 | `phone_app/android/app/src/debug/AndroidManifest.xml` | `xml` | 378 | tracked | Manifest bổ sung dành riêng cho debug build. |
-| `phone_app/android/app/src/main/AndroidManifest.xml` | `xml` | 2383 | tracked | Khai báo app Android, quyền mạng/giữ máy thức và cấu hình cleartext LAN. |
-| `phone_app/android/app/src/main/kotlin/com/xiaozhi/xiaozhi_local_ai/MainActivity.kt` | `kt` | 130 | tracked | Activity Android khởi chạy Flutter app. |
+| `phone_app/android/app/src/main/AndroidManifest.xml` | `xml` | 2952 | tracked | Khai báo app Android, quyền mạng local, foreground service connectedDevice, notification và cleartext LAN. |
+| `phone_app/android/app/src/main/kotlin/com/xiaozhi/xiaozhi_local_ai/MainActivity.kt` | `kt` | 5042 | tracked | Activity Flutter giữ engine trong cache và nối quyền runtime cùng native service channels. |
+| `phone_app/android/app/src/main/kotlin/com/xiaozhi/xiaozhi_local_ai/XiaoZhiServerService.kt` | `kt` | 6108 | first-party untracked | Android connectedDevice foreground service, notification điều khiển server và partial CPU wake lock. |
 | `phone_app/android/app/src/main/res/drawable-v21/launch_background.xml` | `xml` | 438 | tracked | Nền màn hình khởi chạy cho Android API 21 trở lên. |
 | `phone_app/android/app/src/main/res/drawable/launch_background.xml` | `xml` | 434 | tracked | Nền màn hình khởi chạy Android mặc định. |
 | `phone_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.png` | `png` | 544 | tracked | Launcher icon PNG cho density hdpi của Android. |
@@ -1754,18 +1781,19 @@
 | `phone_app/android/gradle.properties` | `properties` | 300 | tracked | Tuỳ chọn runtime và bộ nhớ cho Gradle/Android build. |
 | `phone_app/android/gradle/wrapper/gradle-wrapper.properties` | `properties` | 202 | tracked | Phiên bản Gradle distribution được Flutter Android build dùng. |
 | `phone_app/android/settings.gradle.kts` | `kts` | 770 | tracked | Khai báo plugin loader và module Android của app Flutter. |
-| `phone_app/lib/main.dart` | `dart` | 37280 | tracked | Giao diện Flutter cho chat local, model, server ESP và tuỳ chọn hội thoại/giọng nói. |
+| `phone_app/lib/main.dart` | `dart` | 39823 | tracked | Giao diện chat/model/ESP, chọn interface hotspot và điều khiển server nền. |
 | `phone_app/lib/models/local_model.dart` | `dart` | 1940 | tracked | Thông tin catalog model local, nguồn tải và checksum. |
 | `phone_app/lib/services/local_ai_service.dart` | `dart` | 4218 | tracked | Nạp model GGUF, chạy suy luận local và nhận dạng giọng nói Whisper. |
 | `phone_app/lib/services/model_service.dart` | `dart` | 7877 | tracked | Tải, xác thực, nhập và lưu model trong vùng dữ liệu riêng của app. |
-| `phone_app/lib/services/voice_service.dart` | `dart` | 6515 | tracked | TTS Android, chuyển audio thành PCM và đóng gói Opus cho ESP. |
-| `phone_app/lib/services/xiaozhi_server.dart` | `dart` | 9949 | tracked | HTTP OTA config và WebSocket server tương thích XiaoZhi; định tuyến STT/LLM/TTS local. |
+| `phone_app/lib/services/phone_server_lifecycle.dart` | `dart` | 1243 | first-party untracked | MethodChannel bridge giữa Flutter server và Android foreground service/notification. |
+| `phone_app/lib/services/voice_service.dart` | `dart` | 6968 | tracked | TTS Android, chuyển audio thành PCM và đóng gói Opus cho ESP. |
+| `phone_app/lib/services/xiaozhi_server.dart` | `dart` | 15404 | tracked | HTTP OTA và WebSocket XiaoZhi; bind IPv4 chọn trước, giám sát đổi IP và xử lý STT/LLM/TTS local. |
 | `phone_app/pubspec.lock` | `lock` | 22796 | tracked | Khoá phiên bản dependency Dart/Flutter đã phân giải. |
 | `phone_app/pubspec.yaml` | `yaml` | 4183 | tracked | Metadata package và dependency của ứng dụng Flutter. |
-| `phone_app/README.md` | `md` | 3447 | tracked | Hướng dẫn cài model local, cấu hình app và kết nối ESP qua mạng nội bộ. |
-| `README.md` | `md` | 10335 | tracked | Tổng quan sản phẩm, SDK được hỗ trợ, tính năng, board, cách phát triển và tài liệu. Main section: An MCP-based Chatbot. |
-| `README_ja.md` | `md` | 11885 | tracked | Bản tiếng Nhật của tổng quan dự án. Main section: MCP ベースのチャットボット. |
-| `README_zh.md` | `md` | 9939 | tracked | Bản tiếng Trung của tổng quan dự án. Main section: An MCP-based Chatbot. |
+| `scripts/Image_Converter/LVGLImage.py` | `py` | 46186 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Entry points/types: `uint8_t`, `uint16_t`, `uint24_t`, `uint32_t`, `color_pre_multiply`, `Error`, `FormatError`, `ParameterError`. |
+| `scripts/Image_Converter/README.md` | `md` | 1075 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Main section: LVGL图片转换工具. |
+| `scripts/Image_Converter/lvgl_tools_gui.py` | `py` | 11003 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Entry points/types: `ImageConverterApp`. |
+| `scripts/Image_Converter/requirements.txt` | `txt` | 46 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. |
 | `scripts/audio_debug_server.py` | `py` | 1802 | tracked | Development/build/release helper `audio_debug_server.py`; inspect entry point and references before running. Entry points/types: `main`. |
 | `scripts/build.py` | `py` | 73765 | tracked | Entry point build board/variant, list, CI selection và sdkconfig orchestration. Entry points/types: `_emit_build_stage`, `get_project_version`, `_get_idf_command`, `_run_idf`, `merge_bin`, `zip_bin`, `_get_manufacturer`, `_validate_reported_identifier`. |
 | `scripts/build_default_assets.py` | `py` | 44023 | tracked | Đóng gói assets mặc định/models theo sdkconfig và partition. Entry points/types: `struct_pack_string`, `read_data`, `pack_models`, `ensure_dir`, `copy_file`, `copy_directory`, `copy_wakenet_model`, `process_sr_models`. |
@@ -1773,26 +1801,22 @@
 | `scripts/ci/representative-variants.json` | `json` | 3133 | tracked | CI-specific sdkconfig defaults or representative variant selection. Top-level fields: `schema_version`, `selection_date`, `selection_basis`, `variants`. |
 | `scripts/download_github_runs.py` | `py` | 8940 | tracked | Development/build/release helper `download_github_runs.py`; inspect entry point and references before running. Entry points/types: `parse_github_run_url`, `get_artifacts`, `download_artifact`, `rename_artifact`, `get_default_releases_dir`, `main`. |
 | `scripts/gen_lang.py` | `py` | 7021 | tracked | Sinh lang_config.h từ locale JSON và Ogg prompts. Entry points/types: `load_base_language`, `get_sound_files`, `generate_header`. |
-| `scripts/Image_Converter/lvgl_tools_gui.py` | `py` | 11003 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Entry points/types: `ImageConverterApp`. |
-| `scripts/Image_Converter/LVGLImage.py` | `py` | 46186 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Entry points/types: `uint8_t`, `uint16_t`, `uint24_t`, `uint32_t`, `color_pre_multiply`, `Error`, `FormatError`, `ParameterError`. |
-| `scripts/Image_Converter/README.md` | `md` | 1075 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. Main section: LVGL图片转换工具. |
-| `scripts/Image_Converter/requirements.txt` | `txt` | 46 | tracked | Công cụ chuyển ảnh cho LVGL hoặc tài liệu/dependency liên quan. |
 | `scripts/mp3_to_ogg.sh` | `sh` | 134 | tracked | Development/build/release helper `mp3_to_ogg.sh`; inspect entry point and references before running. |
 | `scripts/ogg_converter/README.md` | `md` | 999 | tracked | Công cụ chuyển đổi Ogg/Opus hoặc tài liệu sử dụng. Main section: ogg_covertor 小智AI OGG 音效批量转换器. |
 | `scripts/ogg_converter/xiaozhi_ogg_converter.py` | `py` | 9665 | tracked | Công cụ chuyển đổi Ogg/Opus hoặc tài liệu sử dụng. Entry points/types: `AudioConverterApp`. |
+| `scripts/p3_tools/README.md` | `md` | 2260 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Main section: P3音频格式转换与播放工具. |
 | `scripts/p3_tools/batch_convert_gui.py` | `py` | 9321 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Entry points/types: `AudioConverterApp`. |
 | `scripts/p3_tools/convert_audio_to_p3.py` | `py` | 2786 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Entry points/types: `encode_audio_to_opus`. |
 | `scripts/p3_tools/convert_p3_to_audio.py` | `py` | 1395 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Entry points/types: `decode_p3_to_audio`. |
 | `scripts/p3_tools/img/img.png` | `png` | 144945 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. |
 | `scripts/p3_tools/p3_gui_player.py` | `py` | 8445 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Entry points/types: `play_p3_file`, `P3PlayerApp`. |
 | `scripts/p3_tools/play_p3.py` | `py` | 2071 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Entry points/types: `play_p3_file`, `main`. |
-| `scripts/p3_tools/README.md` | `md` | 2260 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. Main section: P3音频格式转换与播放工具. |
 | `scripts/p3_tools/requirements.txt` | `txt` | 113 | tracked | Công cụ chuyển đổi/phát file âm thanh P3, tài liệu hoặc tài nguyên. |
 | `scripts/release.py` | `py` | 11638 | tracked | Helper tạo/kiểm tra firmware release packages. Entry points/types: `gh_json`, `find_release`, `preflight`, `create_manifest`, `firmware_metadata`, `verify_assets`, `publish`, `main`. |
+| `scripts/spiffs_assets/README.md` | `md` | 3091 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Main section: SPIFFS Assets Builder. |
 | `scripts/spiffs_assets/build.py` | `py` | 13996 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Entry points/types: `ensure_dir`, `copy_file`, `copy_directory`, `process_wakenet_model`, `process_text_font`, `process_emoji_collection`, `load_emoji_config`, `process_board_emoji_collection`. |
 | `scripts/spiffs_assets/build_all.py` | `py` | 4619 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Entry points/types: `ensure_dir`, `get_file_path`, `build_assets`, `main`. |
 | `scripts/spiffs_assets/pack_model.py` | `py` | 3941 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Entry points/types: `struct_pack_string`, `read_data`, `pack_models`. |
-| `scripts/spiffs_assets/README.md` | `md` | 3091 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Main section: SPIFFS Assets Builder. |
 | `scripts/spiffs_assets/spiffs_assets_gen.py` | `py` | 23174 | tracked | Công cụ build, chuyển đổi hoặc đóng gói SPIFFS/assets/model. Entry points/types: `AssetCopyConfig`, `PackModelsConfig`, `generate_header_filename`, `compute_checksum`, `sort_key`, `download_v8_script`, `download_v9_script`, `split_image`. |
 | `scripts/tests/test_assets.py` | `py` | 19591 | tracked | Host-side test cases for `assets` tooling/logic; not firmware hardware validation. Entry points/types: `AssetsTest`. |
 | `scripts/tests/test_build.py` | `py` | 74578 | tracked | Host-side test cases for `build` tooling/logic; not firmware hardware validation. Entry points/types: `VersionTests`, `BoardSelectionTests`, `BoardMenuTests`, `InvalidConfigTests`, `PreviewTargetTests`, `TargetConfigurationTests`, `BuildOptionTests`, `LanguageBuildTests`. |

@@ -7,6 +7,7 @@
 #include "display.h"
 #include "mcp_server.h"
 #include "mqtt_protocol.h"
+#include "nabi_esp_provisioning.h"
 #include "settings.h"
 #include "system_info.h"
 #include "text_glyph_payload.h"
@@ -299,13 +300,26 @@ void Application::HandleNetworkConnectedEvent() {
     ESP_LOGI(TAG, "Network connected");
     auto state = GetDeviceState();
 
-    if (state == kDeviceStateStarting || state == kDeviceStateWifiConfiguring) {
-        // Network is ready, start activation
-        SetDeviceState(kDeviceStateActivating);
+    bool should_activate =
+        state == kDeviceStateStarting || state == kDeviceStateWifiConfiguring;
+#if CONFIG_NABI_ESP_ASSISTANT
+    // A phone hotspot may stop between sessions. Once the paired ESP rejoins
+    // the current hotspot, fetch a fresh WebSocket token from the phone.
+    if (state == kDeviceStateIdle && NabiEspProvisioning::GetInstance().IsPaired()) {
+        should_activate = true;
+        if (protocol_ != nullptr) {
+            protocol_->CloseAudioChannel();
+        }
+    }
+#endif
+
+    if (should_activate) {
         if (activation_task_handle_ != nullptr) {
             ESP_LOGW(TAG, "Activation task already running");
             return;
         }
+        // Network is ready, start activation
+        SetDeviceState(kDeviceStateActivating);
 
         xTaskCreate(
             [](void* arg) {
@@ -328,8 +342,14 @@ void Application::HandleNetworkDisconnectedEvent() {
     if (state == kDeviceStateNotifying) {
         StopNotification();
     }
-    if (state == kDeviceStateConnecting || state == kDeviceStateListening ||
-        state == kDeviceStateSpeaking) {
+    bool close_audio_channel = state == kDeviceStateConnecting ||
+                               state == kDeviceStateListening ||
+                               state == kDeviceStateSpeaking;
+#if CONFIG_NABI_ESP_ASSISTANT
+    close_audio_channel = close_audio_channel ||
+                          (protocol_ != nullptr && protocol_->IsAudioChannelOpened());
+#endif
+    if (close_audio_channel && protocol_ != nullptr) {
         ESP_LOGI(TAG, "Closing audio channel due to network disconnection");
         protocol_->CloseAudioChannel();
     }
@@ -344,6 +364,25 @@ void Application::HandleActivationDoneEvent() {
 
     SystemInfo::PrintHeapStats();
     SetDeviceState(kDeviceStateIdle);
+
+#if CONFIG_NABI_ESP_ASSISTANT
+    if (NabiEspProvisioning::GetInstance().IsPaired() && ota_ != nullptr &&
+        ota_->HasWebsocketConfig()) {
+        // Keep the authenticated channel open while idle so Nabi's app can
+        // start and stop listening without requiring a physical ESP button.
+        Schedule([this]() {
+            if (protocol_ == nullptr || GetDeviceState() != kDeviceStateIdle ||
+                protocol_->IsAudioChannelOpened()) {
+                return;
+            }
+            if (protocol_->OpenAudioChannel()) {
+                ESP_LOGI(TAG, "Nabi local WebSocket channel is ready");
+            } else {
+                ESP_LOGW(TAG, "Could not open Nabi local WebSocket channel");
+            }
+        });
+    }
+#endif
 
     has_server_time_ = ota_->HasServerTime();
 
@@ -628,6 +667,45 @@ void Application::InitializeProtocol() {
             Schedule([this, url = std::string(audio_url->valuestring),
                       subtitles = std::move(subtitles)]() mutable {
                 StartNotification(std::move(url), std::move(subtitles));
+            });
+        } else if (strcmp(type->valuestring, "nabi.control") == 0) {
+            auto request_id_json = cJSON_GetObjectItem(root, "request_id");
+            auto action_json = cJSON_GetObjectItem(root, "action");
+            if (!cJSON_IsString(request_id_json) || !cJSON_IsString(action_json)) {
+                return;
+            }
+            const std::string request_id(request_id_json->valuestring);
+            const std::string action(action_json->valuestring);
+            const bool valid_request_id = !request_id.empty() && request_id.size() <= 64 &&
+                std::all_of(request_id.begin(), request_id.end(), [](unsigned char c) {
+                    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                           (c >= '0' && c <= '9') || c == '-' || c == '_';
+                });
+            const bool starts_listening = action == "listen.start";
+            const bool stops_listening = action == "listen.stop";
+            if (!valid_request_id || (!starts_listening && !stops_listening)) {
+                return;
+            }
+            Schedule([this, request_id, starts_listening]() {
+                if (protocol_ == nullptr) {
+                    return;
+                }
+                const auto state = GetDeviceState();
+                if (starts_listening) {
+                    if (state == kDeviceStateIdle || state == kDeviceStateSpeaking) {
+                        StartListening();
+                        protocol_->SendNabiControlAck(request_id, true, "listening");
+                    } else if (state == kDeviceStateListening) {
+                        protocol_->SendNabiControlAck(request_id, true, "listening");
+                    } else {
+                        protocol_->SendNabiControlAck(request_id, false, "busy");
+                    }
+                } else if (state == kDeviceStateListening || state == kDeviceStateIdle) {
+                    StopListening();
+                    protocol_->SendNabiControlAck(request_id, true, "idle");
+                } else {
+                    protocol_->SendNabiControlAck(request_id, false, "busy");
+                }
             });
         } else if (strcmp(type->valuestring, "tts") == 0) {
             auto state = cJSON_GetObjectItem(root, "state");

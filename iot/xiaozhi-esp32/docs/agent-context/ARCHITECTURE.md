@@ -56,3 +56,11 @@ Audio changes must consider capture, playback, wake/VAD, interruption, reconnect
 ## Thành phần build
 
 The root CMake project loads ESP-IDF; `main/CMakeLists.txt` selects common sources, one board directory, fonts/emojis, language resources, and asset generation based on Kconfig. `main/Kconfig.projbuild` declares board and feature choices. `scripts/build.py` is the canonical entry point that maps board config and release variant into an ESP-IDF build. The coupled selection chain and partition safety are described in [`BOARDS_AND_BUILD.md`](BOARDS_AND_BUILD.md).
+
+## Nabi phone-local AI integration
+
+The NanoBioAI main Flutter app owns `lib/app_versions/v1/features/nabi_esp_assistant/`; it is the phone-side AI host for this integration. `iot/xiaozhi-esp32/phone_app/` is a separate app and is not an implementation dependency. Shared values come from `iot/nabi_esp_contract.json`; `iot/tools/generate_nabi_esp_contract.py` generates the Dart, Kotlin, and ESP C header views. Run the generator with `--check` after edits.
+
+The OSTB-only `CONFIG_NABI_ESP_ASSISTANT` profile starts BLE Protocomm Security 2, displays a one-time pairing code on first pairing, accepts current LocalOnlyHotspot credentials over the custom endpoint, and persists a pairing key in NVS. After station connection, `main/ota.cc` derives the OTA URL from the DHCP gateway and authenticates with `X-Nabi-Device-Key`. The phone responds with the protocol-v3 WebSocket URL and per-session bearer token. Listen controls are handed from the WebSocket receive callback to the Application event loop and acknowledged with request id. The manual Wi-Fi configuration AP remains available for recovery.
+
+Current contract: port `8386`, OTA `/nabi/ota/`, WebSocket `/nabi/v1/`; host is the phone hotspot gateway supplied by DHCP. These are integration source values, not proof that a given ESP has been provisioned or booted with the current build. Keep Tech/QA/Privacy release gates closed until device acceptance.

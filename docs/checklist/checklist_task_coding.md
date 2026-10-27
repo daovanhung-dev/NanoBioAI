@@ -7,7 +7,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 | Field | Value |
 |---|---|
 | Nguon | `docs/checklist/checklist_complete_DD.md`, `BD-BIOAI-WELLNESS-REWARDS-001`, `BD-NABI-NOTIFICATION-001` va Advanced Health BD |
-| Ngay cap nhat | 2026-10-18 |
+| Ngay cap nhat | 2026-10-23 |
 | Lifecycle | Current |
 | Source-truth baseline | `598daf04` + M22 local reminder slice |
 | Verification | Static-verified; Targeted-tests-pass; Runtime-unverified; Sandbox-unverified |
@@ -512,3 +512,10 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Targeted Dart tests, format/analyze và PostgreSQL 17 disposable migration smoke đã qua.
 - [x] SQLite v32→v33 migration tests pass bằng thư viện native giải nén tạm trong `/tmp`.
 - [ ] Supabase sandbox và tương tác UI acceptance trên thiết bị còn chờ.
+
+### Nabi ESP assistant — 2026-10-23
+
+- Preview route/tile is Android-only, under the collapsed planned group, with a disabled connection button. No model, Wi-Fi, BLE, audio, or server behavior is connected.
+- Draft design: `docs/DD/nabi_esp_assistant/`. Do not enable runtime work until Tech, QA, and Privacy reviews are recorded; PO intent is in the approved user plan.
+- OSTB 3ST still requires a first USB firmware/partition deployment; current connected-device profile is in `iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`.
+- Next: collect Tech/QA/Privacy review evidence; refine firmware key lifecycle and Android service ownership; then implement and validate on Android + ESP hardware.

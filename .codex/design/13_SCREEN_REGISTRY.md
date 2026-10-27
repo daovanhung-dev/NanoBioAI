@@ -56,6 +56,7 @@ Working-tree snapshot 2026-10-07: **94 repository surface specs** mapped from cu
 - **V1-X15 — Sleep Safety Contacts** · `source-sub-surface` · Sleep Tracking contacts action · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_contacts_page.dart`
 - **V1-X16 — Sleep Safety Schedule** · `source-sub-surface` · Sleep Tracking schedule action · `lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_schedule_page.dart`
 - **V1-X17 — Sleep Safety Audio Meter** · `embedded-widget` · Sleep Tracking safety setup · `lib/app_versions/v1/features/sleep_tracking/presentation/widgets/sleep_safety_audio_level_meter.dart`
+- **V1-X18 — Nabi ESP Assistant Preview** · `release-gated placeholder` · Feature Hub planned group on Android · `lib/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart`
 - **V2-01 — Auth Gate** · `gate` · `V2RoutePaths.authGate` · `lib/app_versions/v2/features/auth/presentation/pages/auth_gate_page.dart`
 - **V2-02 — Login** · `active-route` · `V2RoutePaths.login` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`
 - **V2-03 — Register** · `active-route` · `V2RoutePaths.register` · `lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart`

@@ -1,177 +1,129 @@
-# Luồng AI local giữa XiaoZhi ESP32 và điện thoại Android
+# Luồng AI local giữa Nabi Android và ESP OSTB 3ST
 
-**Cập nhật đối chiếu mã nguồn:** 2026-10-23
+**Cập nhật:** 2026-10-23
+**Phạm vi:** ứng dụng NanoBioAI chính (`lib/app_versions/v1/features/nabi_esp_assistant/`) và firmware `ostb/ostb-xiaozhi-3st`. `iot/xiaozhi-esp32/phone_app/` là ứng dụng riêng, không tham gia luồng này.
 
-**Phạm vi:** firmware XiaoZhi trong `iot/xiaozhi-esp32/` và ứng dụng Android trong `iot/xiaozhi-esp32/phone_app/`.
+## 1. Kiến trúc
 
-## 1. Tóm tắt kiến trúc
+Điện thoại Android tạo mạng `LocalOnlyHotspot`, chạy HTTP/WebSocket server và giữ model local. ESP OSTB 3ST nhận Wi-Fi qua BLE Security 2, hỏi cấu hình WebSocket từ điện thoại rồi gửi audio Opus. Whisper, model GGUF và Android TTS chạy trên điện thoại; ESP thu/phát âm thanh và hiển thị trạng thái.
 
-Điện thoại chạy một máy chủ XiaoZhi tương thích trong mạng nội bộ. ESP32 thu âm và gửi âm thanh Opus qua WebSocket. Ứng dụng điện thoại giải mã âm thanh, chạy Whisper để nhận dạng tiếng Việt, chạy model GGUF local để tạo câu trả lời, dùng Android Text-to-Speech để tạo giọng đọc, rồi gửi văn bản và audio Opus về ESP32.
+SSID, mật khẩu và IP hotspot do Android cấp. App không đặt SSID cố định, không dùng mật khẩu mẫu, và không giả định IP tĩnh. ESP tìm server bằng gateway được cấp trong DHCP.
 
-Model không chạy trên ESP32. ESP32 không gọi dịch vụ AI cloud trong luồng này. HTTP OTA endpoint trên điện thoại chỉ giúp firmware lấy cấu hình kết nối WebSocket; suy luận AI diễn ra trong ứng dụng điện thoại.
+## 2. Hợp đồng app-firmware
 
-Ứng dụng và firmware là hai phần độc lập của snapshot XiaoZhi, không phải một tích hợp với runtime Flutter chính của NanoBioAI.
+Nguồn chuẩn duy nhất là [`iot/nabi_esp_contract.json`](../../nabi_esp_contract.json). Chạy `python3 iot/tools/generate_nabi_esp_contract.py --check` để xác nhận các giá trị sinh trong Dart, Kotlin và C header còn đồng bộ.
 
-## 2. Các thành phần và trách nhiệm
+| Giá trị | Hợp đồng |
+|---|---|
+| Phiên bản hợp đồng | `1` |
+| Giao thức XiaoZhi | `3` |
+| Cổng TCP | `8386` |
+| HTTP cấu hình OTA | `/nabi/ota/` |
+| WebSocket | `/nabi/v1/` |
+| Xác thực OTA | Header `X-Nabi-Device-Key` |
+| Xác thực WebSocket | `Authorization: Bearer <token-phiên>` |
+| BLE | Prefix `NABI_`, Security 2, endpoint `nabi-config` |
+| Host | Gateway IPv4 hiện hành do DHCP cấp cho ESP |
 
-| Thành phần | Trách nhiệm trong luồng |
-| --- | --- |
-| Firmware ESP32 | Kết nối Wi-Fi, hỏi cấu hình OTA, mở WebSocket, gửi sự kiện nghe và audio Opus, phát audio nhận về. |
-| Ứng dụng Android | Giữ model và Whisper, mở HTTP/WebSocket server trên cổng `8765`, điều phối STT → LLM → TTS. |
-| Whisper local | Chuyển PCM từ audio ESP32 thành câu chữ. Cấu hình hiện dùng ngôn ngữ `vi`. |
-| GGUF local | Sinh câu trả lời bằng ChatML trên điện thoại. |
-| Android TTS | Tổng hợp câu trả lời thành WAV; ứng dụng đổi sang mono 24 kHz rồi mã hóa thành các gói Opus. |
-| Wi-Fi LAN | Chuyển HTTP, WebSocket và audio giữa điện thoại với ESP32. Hai thiết bị phải liên lạc được qua cùng mạng. |
+Giá trị trên là source contract. Chỉ build/đọc trực tiếp thiết bị mới xác nhận được firmware đang dùng hợp đồng đó.
 
-## 3. Luồng kết nối từ lúc khởi động
+## 3. Luồng kết nối
 
-### 3.1 Chuẩn bị ứng dụng điện thoại
+### 3.1 Bắt đầu từ Nabi
 
-1. Cài hoặc nhập một model GGUF tương thích ChatML trong ứng dụng. Model tải từ Internet lần đầu; model sau khi có trên điện thoại có thể suy luận local.
-2. Cài và nạp Whisper. Ứng dụng hiện dùng Whisper tiny Q5.
-3. Chọn voice Android TTS. Nếu muốn hoạt động khi không có Internet, cần cài voice offline trên Android.
-4. Kết nối điện thoại vào Wi-Fi dùng chung với ESP32 hoặc bật hotspot điện thoại rồi kết nối ESP32 vào đó.
-5. Mở tab **ESP** và chọn **Khởi chạy server AI local**. Server chỉ khởi chạy khi cả LLM và Whisper đã nạp xong.
+1. Người dùng tải/chọn model GGUF và Whisper, chọn voice Android TTS ngoại tuyến. Tải model lần đầu cần Internet.
+2. Người dùng mở trang **Nabi - Siêu trợ lý AI** và bấm **Kết nối Nabi**. App kiểm tra AI sẵn sàng, xin quyền cần thiết, khởi chạy foreground service `connectedDevice`, rồi yêu cầu Android mở `LocalOnlyHotspot`.
+3. Android trả SSID/mật khẩu hiện tại. App dò interface IPv4 mới của hotspot, bind server vào địa chỉ đó tại cổng `8386`, rồi báo **AI trên điện thoại sẵn sàng, đang chờ ESP**. Trạng thái này chưa có nghĩa ESP đã nối.
+4. App bắt đầu scan BLE theo prefix và service UUID của hợp đồng. Nếu có nhiều địa chỉ host phù hợp mà không phân biệt được interface hotspot, UI yêu cầu chọn host trước khi báo sẵn sàng.
 
-Khi khởi chạy, ứng dụng chọn một địa chỉ IPv4 của điện thoại, khởi tạo Opus và bind HTTP server vào `0.0.0.0:8765` để nhận kết nối qua các interface IPv4. Giao diện hiển thị địa chỉ nội bộ và OTA URL. Nếu giao diện chỉ ra `127.0.0.1`, địa chỉ đó chỉ dùng được trong chính điện thoại; ESP32 cần địa chỉ LAN có thể truy cập.
+### 3.2 Ghép đôi BLE và chuyển Wi-Fi
 
-### 3.2 ESP32 lấy cấu hình WebSocket
+1. ESP được nạp firmware XiaoZhi có `CONFIG_NABI_ESP_ASSISTANT=y` và khởi động với OSTB 3ST. Lần ghép đầu, ESP tạo mã 8 chữ số dùng một lần, hiển thị mã trên màn hình và dùng mã làm Proof of Possession cho Security 2. Mã hết hạn sau 2 phút.
+2. Người dùng nhập mã trên app. Espressif Provisioning Android và Protocomm trao đổi BLE Security 2 (SRP6a/AES-GCM). App không gửi mã hoặc mật khẩu vào log.
+3. App gửi JSON qua custom endpoint BLE gồm phiên bản hợp đồng/giao thức, port/path và credential LocalOnlyHotspot hiện hành.
+4. ESP kiểm tra toàn bộ hợp đồng, lưu khóa ghép ngẫu nhiên trong namespace `nabi_esp` của NVS, thay thông tin Wi-Fi trong `SsidManager` và kết nối như station. Khóa được trả về trong phiên BLE đã mã hóa; app lưu bằng Android Keystore.
+5. Ở phiên sau, app xác thực bằng khóa ghép đã lưu rồi gửi lại SSID/mật khẩu hotspot mới. Như vậy việc Android tạo credential mới sau khi dừng hotspot không yêu cầu ghép lại.
+6. Nếu BLE hoặc hotspot không hoạt động, người dùng vẫn có thể vào manual Wi-Fi configuration AP của firmware để phục hồi mạng. Luồng này không tự bypass xác nhận quyền Android.
 
-Trong quá trình khởi tạo mạng, firmware gọi endpoint OTA đã cấu hình. Firmware có thể dùng HTTP GET hoặc POST tùy dữ liệu system-info; server của điện thoại định tuyến theo URL và không cần body để trả cấu hình.
+### 3.3 ESP lấy cấu hình dịch vụ AI
 
-OTA URL có dạng:
+Sau khi Wi-Fi station kết nối, ESP đọc IPv4 gateway từ `WIFI_STA_DEF` và tạo URL:
 
 ```text
-http://<IP-điện-thoại>:8765/xiaozhi/ota/
+http://<gateway-dhcp>:8386/nabi/ota/
 ```
 
-Ứng dụng trả JSON có cấu trúc tương tự sau. Token là giá trị sinh riêng trên máy, không ghi token thật vào tài liệu hoặc log chia sẻ:
+`main/ota.cc` gửi URL này cùng header `X-Nabi-Device-Key`. Server so sánh khóa thiết bị theo thời gian hằng; khóa thiếu/sai nhận HTTP 401. Cấu hình OTA không hard-code địa chỉ điện thoại.
+
+Khi hợp lệ, app trả cấu hình session, ví dụ:
 
 ```json
 {
   "websocket": {
-    "url": "ws://<IP-điện-thoại>:8765/xiaozhi/v1/",
-    "token": "<token-local-của-ứng-dụng>",
+    "url": "ws://<gateway-dhcp>:8386/nabi/v1/",
+    "token": "<token-phiên>",
     "version": 3
   }
 }
 ```
 
-Firmware lưu các trường `url`, `token`, `version` vào cấu hình WebSocket trong NVS. Nếu phản hồi không yêu cầu cập nhật firmware, firmware chọn `WebsocketProtocol` vì phản hồi có đối tượng `websocket`. Endpoint này là **bootstrap cấu hình kết nối**; nó không phải endpoint suy luận AI và cũng không gửi firmware binary trong phản hồi hiện tại của ứng dụng.
+`<token-phiên> tác` trong ví dụ chỉ là placeholder; token thực được sinh ngẫu nhiên mỗi lần server chạy, không lưu vào tài liệu. Firmware ghi URL/token/version vào NVS phần WebSocket. WebSocket yêu cầu đúng bearer token, chỉ nhận một ESP mỗi phiên và từ chối phiên thứ hai.
 
-### 3.3 Cấu hình OTA theo IP điện thoại
+Profile dùng URL `0.0.0.0` làm fallback build không định tuyến; sau khi có Wi-Fi, firmware ưu tiên URL sinh động từ gateway DHCP. `CONFIG_OTA_URL_IGNORE_NVS=y` làm URL cũ trong NVS không ghim ESP vào hotspot trước. Không cần nhập **Custom OTA URL** cho luồng Nabi.
 
-Firmware chọn OTA URL theo cấu hình build:
+### 3.4 Hội thoại và lệnh nghe
 
-- Nếu `CONFIG_OTA_URL_IGNORE_NVS` bật, firmware luôn dùng URL compile-time trong `CONFIG_OTA_URL`.
-- Nếu tùy chọn đó tắt, firmware ưu tiên OTA URL đã lưu trong NVS; khi NVS trống mới dùng URL mặc định từ build.
+1. ESP mở WebSocket v3 và gửi `hello`, khai báo Opus mono 16 kHz. Server trả `hello` và mô tả audio trả về mono 24 kHz.
+2. Người dùng bấm bắt đầu nghe trong app. Nabi gửi:
 
-Profile OSTB XiaoZhi 3ST `config.local-ai.json` hiện đặt URL `192.168.11.145` và bật `CONFIG_OTA_URL_IGNORE_NVS`. Với profile này, thay đổi **Custom OTA URL** đã lưu trong NVS không có hiệu lực. Nếu IP điện thoại thay đổi, cần cập nhật profile và build lại, hoặc dùng build profile tôn trọng URL NVS rồi nhập OTA URL hiện tại trong trang cấu hình ESP.
+   ```json
+   {"type":"nabi.control","request_id":"abc123","action":"listen.start"}
+   ```
 
-Giữ nguyên phân vùng 16 MB của board OSTB 3ST khi build/flash. Không dùng cấu hình board này cho một board khác.
+   Firmware kiểm tra id/action, chuyển yêu cầu qua `Application` event loop và trả `nabi.control_ack` có cùng `request_id`.
 
-## 4. Bắt tay WebSocket
+3. ESP gửi frame Opus khi đang nghe. App gom tối đa 60 giây PCM trong RAM, chạy Whisper tiếng Việt, gọi local AI turn datasource và Android TTS, rồi gửi câu trả lời cùng các frame Opus 24 kHz về ESP.
+4. Nút dừng nghe gửi `listen.stop`; ESP gửi hết lượt hiện tại và trở về chờ. Hội thoại theo lượt, không phải streaming STT/LLM/TTS đầu-cuối.
+5. Transcript/audio không được lưu xuống ổ đĩa hoặc ghi log. Lịch sử giới hạn 6 lượt trong RAM của phiên app.
 
-Khi cần mở audio channel, firmware đọc `url`, `token` và `version` đã nhận từ OTA, rồi kết nối tới WebSocket trên điện thoại. Handshake có các header:
+## 4. Vòng đời và khôi phục
 
-```text
-Authorization: Bearer <token>
-Protocol-Version: 3
-Device-Id: <MAC-của-ESP>
-Client-Id: <UUID-của-board>
-```
+- Foreground notification thể hiện server đang chờ hoặc có ESP và có hành động dừng. Dừng từ UI/notification đóng WebSocket listener, trả tài nguyên hotspot và dừng service.
+- Nếu Android dừng LocalOnlyHotspot hoặc interface biến mất, ESP mất đường tới server. Người dùng khởi động lại kết nối trong Nabi; app lấy credential/gateway mới và provision lại ESP bằng khóa ghép đã lưu.
+- Sau reboot ESP, credential được giữ trong Wi-Fi settings của firmware; khi gateway đổi, firmware tự dựng lại OTA URL từ DHCP khi gọi bootstrap.
+- Nếu server dừng giữa phiên, bearer token cũ không còn dùng được. ESP cần lấy OTA configuration mới sau khi server chạy lại.
+- Kết quả chạy nền tùy mẫu máy, Doze và chính sách pin. Cần thử khi màn hình khóa và điện thoại cắm sạc.
 
-Ứng dụng từ chối WebSocket nếu Bearer token không khớp. Sau khi kết nối, ESP gửi JSON `hello` chứa protocol version và audio format. Với luồng hiện tại, audio từ ESP là Opus mono 16 kHz. Điện thoại trả `hello` xác nhận transport WebSocket và khai báo audio trả về mono 24 kHz, frame 60 ms. Firmware chờ server hello tối đa 10 giây.
+## 5. Bảo mật và giới hạn
 
-Phiên bản binary protocol 3 đóng gói mỗi gói audio với header 4 byte: `type`, `reserved`, `payload_size` 16-bit big-endian, tiếp theo là payload Opus. Ứng dụng điện thoại và firmware hiện cùng xử lý định dạng này.
+- BLE provisioning dùng Security 2. Khóa ghép phía app được mã hóa bằng Android Keystore; firmware lưu khóa trong NVS. Thiết bị hiện có Flash Encryption tắt, vì vậy người truy cập trực tiếp flash có thể đọc NVS.
+- HTTP/WebSocket trong phiên dùng plaintext; mã hóa BLE không thay TLS cho LAN. Chỉ dùng hotspot riêng, không thêm thiết bị lạ và không forward cổng `8386` ra Internet.
+- Khóa pairing dùng như header OTA và bearer token giới hạn theo phiên cho WebSocket. Không ghi password, pairing key, session token, transcript hoặc audio vào log.
+- LocalOnlyHotspot không cung cấp Internet cho ESP. AI hoạt động offline chỉ sau khi model, Whisper và voice offline đã sẵn sàng.
+- ESP demo LCD hiện hữu không có giao thức provisioning này. Lần cài firmware XiaoZhi/partition tương thích đầu tiên cần USB; không flash partition table nếu bản đang nạp đã tương thích.
+- Tính năng vẫn review-gated. Chưa hoàn tất Tech, QA, Privacy sign-off hoặc thử nghiệm hội thoại vật lý thì không mở phát hành.
 
-## 5. Luồng một lượt hội thoại
+## 6. Kiểm tra và nghiệm thu
 
-1. Người dùng kích hoạt nghe trên ESP32 bằng thao tác được board hỗ trợ, chẳng hạn nút hoặc wake word.
-2. ESP mở audio channel nếu chưa có, gửi `listen` với `state: start`, rồi bắt đầu gửi các frame Opus nhị phân.
-3. Điện thoại kiểm tra header version 3, lấy payload Opus và giải mã thành PCM 16 kHz mono. PCM của toàn bộ lượt nói được giữ lại trong bộ nhớ khi firmware đang ở trạng thái nghe.
-4. Khi ESP gửi `listen` với `state: stop`, điện thoại đưa PCM đã gom vào Whisper. Whisper nhận mảng PCM float, dùng cấu hình tiếng Việt và trả văn bản nhận dạng.
-5. Điện thoại gửi JSON `stt` chứa văn bản nhận dạng để firmware có thể hiển thị.
-6. Ứng dụng đưa văn bản, system prompt, lịch sử hội thoại và cấu hình nhiệt độ vào model GGUF. Inference chạy trên điện thoại bằng ChatML; cấu hình hiện tại dùng tối đa 256 token đầu ra.
-7. Ứng dụng gửi sự kiện `llm`, sau đó `tts` với trạng thái `start` và `sentence_start`; trường `text` chứa toàn bộ câu trả lời.
-8. Android TTS tổng hợp câu trả lời thành WAV. Ứng dụng chuyển âm thanh thành mono 24 kHz, mã hóa Opus theo frame 60 ms và gửi các frame nhị phân version 3.
-9. Ứng dụng gửi `tts` với trạng thái `stop`. Firmware kết thúc phát audio và trở về trạng thái chờ hoặc tiếp tục nghe theo chế độ hoạt động của nó.
+| Bước | Tiêu chí |
+|---|---|
+| Contract | Generator `--check` pass; Dart/Kotlin/C dùng port/path/protocol/BLE values giống nhau |
+| App setup | Model, Whisper, voice offline sẵn sàng; LocalOnlyHotspot/server chạy; UI ghi rõ đang chờ ESP |
+| First pairing | Mã sai/hết hạn bị từ chối; mã đúng ghép Security 2, khóa lưu an toàn; không lộ secret trong log |
+| Reconnect | Dừng/bật hotspot tạo credential mới; app provision lại bằng khóa cũ và ESP nhận gateway mới |
+| OTA | URL gọi `/nabi/ota/`; khóa sai nhận 401; khóa đúng trả WebSocket URL, bearer token và version 3 |
+| WebSocket | Token sai bị từ chối; một ESP hoạt động; token phiên cũ mất hiệu lực khi server dừng |
+| Controls/audio | `listen.start/stop` có ack đúng id; câu tiếng Việt ngắn được Whisper nhận dạng và TTS nghe được qua loa ESP |
+| Offline/background | Sau khi tải model/voice, tắt Internet nhưng giữ hotspot; thử app nền/màn hình khóa khi cắm sạc |
 
-```mermaid
-sequenceDiagram
-    participant U as Người dùng
-    participant E as ESP32
-    participant P as App Android / server local
-    participant W as Whisper local
-    participant L as GGUF local
-    participant T as Android TTS
+Build source, test loopback hoặc serial boot không chứng minh được BLE, hotspot, UI LCD, micro, loa hay hội thoại. Ghi riêng kết quả từng lớp.
 
-    U->>E: Kích hoạt nghe và nói
-    E->>P: WebSocket hello + listen start
-    E->>P: Các frame Opus 16 kHz
-    U->>E: Kết thúc lượt nói
-    E->>P: listen stop
-    P->>W: PCM 16 kHz mono của lượt nói
-    W-->>P: Văn bản nhận dạng
-    P-->>E: JSON stt
-    P->>L: Văn bản + prompt + lịch sử
-    L-->>P: Câu trả lời
-    P-->>E: JSON llm và tts start/sentence_start
-    P->>T: Tổng hợp câu trả lời
-    T-->>P: WAV
-    P-->>E: Các frame Opus 24 kHz
-    P-->>E: JSON tts stop
-    E-->>U: Phát câu trả lời qua loa
-```
+## 7. Source of truth
 
-## 6. Dữ liệu đi qua mạng và lưu trữ
-
-- Audio microphone được truyền qua mạng LAN đến điện thoại; firmware không gửi audio lên AI cloud trong luồng này.
-- Ứng dụng xử lý audio, văn bản nhận dạng và prompt trong bộ nhớ tiến trình để gọi Whisper và LLM local.
-- Model GGUF và model Whisper được lưu trong vùng dữ liệu riêng của ứng dụng Android. Việc tải model lần đầu cần Internet; suy luận sau khi model đã sẵn sàng chạy trên điện thoại.
-- Token WebSocket được lưu trong SharedPreferences của ứng dụng. OTA endpoint trả token cho thiết bị; WebSocket endpoint yêu cầu token đó.
-- Endpoint hiện dùng HTTP và WebSocket thường (`http://`, `ws://`), chưa mã hóa TLS. Chỉ chạy trên mạng nội bộ đáng tin cậy; không chuyển tiếp cổng `8765` ra Internet hoặc mạng công cộng.
-- Nếu Android TTS đang dùng voice phụ thuộc mạng, phần tổng hợp giọng nói vẫn có thể cần Internet dù LLM chạy local.
-
-## 7. Giới hạn hiện tại
-
-- Ứng dụng chưa đăng ký Android foreground service. Ứng dụng giữ màn hình bật khi server đang chạy, nhưng người dùng cần để app mở ở foreground để tránh hệ thống dừng server.
-- Nhận dạng chỉ bắt đầu sau `listen stop`; LLM tạo xong câu trả lời trước khi TTS tổng hợp toàn bộ file WAV. Đây là hội thoại theo lượt, chưa phải streaming STT/LLM/TTS đầu-cuối.
-- Âm thanh của một lượt được gom vào bộ nhớ trước khi Whisper chạy. Lượt nói quá dài làm tăng bộ nhớ và thời gian chờ.
-- Lịch sử hội thoại hiện là một danh sách dùng chung trong server; chưa tách theo từng thiết bị. Nên nghiệm thu với một ESP32 trước. Muốn phục vụ nhiều ESP đồng thời cần tách session và điều phối tài nguyên model/TTS.
-- IP điện thoại có thể đổi khi đổi Wi-Fi hoặc bật/tắt hotspot. Cần lấy OTA URL mới trong app và bảo đảm cấu hình firmware sử dụng đúng URL đó.
-
-## 8. Kiểm tra và xử lý lỗi
-
-| Triệu chứng | Kiểm tra |
-| --- | --- |
-| Không khởi chạy được server | Xác nhận LLM và Whisper đều báo sẵn sàng trong tab ESP; xem lỗi hiện trên app. |
-| ESP không nhận được OTA config | Kiểm tra hai thiết bị cùng mạng, IP điện thoại, cổng `8765`, đường dẫn `/xiaozhi/ota/` và profile OTA đang chạy trên firmware. |
-| Đổi Custom OTA URL nhưng ESP vẫn gọi IP cũ | Kiểm tra `CONFIG_OTA_URL_IGNORE_NVS`; profile local-ai OSTB hiện bật tùy chọn này. |
-| WebSocket trả Unauthorized | Firmware đang dùng token cũ hoặc cấu hình WebSocket không lấy từ lần OTA hiện tại; khởi động lại quy trình cấu hình OTA và không chép token từ thiết bị khác. |
-| Kết nối WebSocket hết thời gian chờ hello | Đảm bảo app vẫn mở, server đang chạy và IP/port có thể truy cập được từ ESP. |
-| Nhận STT nhưng không nghe thấy câu trả lời | Kiểm tra trạng thái TTS, voice Android đã chọn, file WAV có được Android TTS tạo và luồng loa ESP hoạt động. |
-
-### Checklist nghiệm thu MVP
-
-1. Tab ESP báo model ngôn ngữ và Whisper sẵn sàng.
-2. `/health` trên địa chỉ LAN trả `ok: true`, `llm: true`, `stt: true`.
-3. ESP lấy được JSON OTA có URL WebSocket, token và version `3`.
-4. ESP kết nối WebSocket, gửi `hello` và nhận `hello` từ app.
-5. Thử một câu ngắn bằng micro ESP; xác nhận có `stt`, câu trả lời LLM và audio phát qua loa.
-6. Sau khi model và voice đã cài, ngắt Internet nhưng giữ LAN; xác nhận hội thoại local vẫn chạy.
-7. Để app về nền hoặc tắt màn hình trong một khoảng thời gian; ghi nhận rõ hành vi thực tế của Android và kết nối trước khi coi luồng always-on đã đạt.
-
-Checklist trên là tiêu chí đề xuất. Tài liệu này chưa ghi nhận kết quả chạy trên thiết bị thật.
-
-## 9. Source of truth trong repository
-
-- [Hướng dẫn app và kết nối ESP](../phone_app/README.md)
-- [Server HTTP/WebSocket của app](../phone_app/lib/services/xiaozhi_server.dart)
-- [Suy luận GGUF và Whisper](../phone_app/lib/services/local_ai_service.dart)
-- [Android TTS và mã hóa Opus](../phone_app/lib/services/voice_service.dart)
-- [OTA firmware](../main/ota.cc)
-- [Chọn protocol sau OTA](../main/application.cc)
-- [WebSocket firmware](../main/protocols/websocket_protocol.cc)
-- [Hồ sơ local AI cho OSTB 3ST](../main/boards/ostb/ostb-xiaozhi-3st/config.local-ai.json)
-- [Hướng dẫn board OSTB 3ST](../main/boards/ostb/ostb-xiaozhi-3st/README.md)
+- [Hợp đồng dùng chung](../../nabi_esp_contract.json)
+- [Generator contract](../../tools/generate_nabi_esp_contract.py)
+- [Nabi app feature](../../../lib/app_versions/v1/features/nabi_esp_assistant/)
+- [Firmware provisioning](../main/nabi_esp_provisioning.cc)
+- [OTA/auth firmware](../main/ota.cc)
+- [Control/event loop](../main/application.cc)
+- [Hồ sơ ESP OSTB 3ST](agent-context/CONNECTED_DEVICE_OSTB_3ST.md)

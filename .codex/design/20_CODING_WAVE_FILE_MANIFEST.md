@@ -1,6 +1,6 @@
 # Coding Wave File Manifest
 
-Current working-tree source count is **266 UI-affecting Dart files** and the screen registry is **94 surfaces**. The per-wave counts below remain historical; refresh current rows with `python3 tools/refresh_ui_design_inventory.py`.
+Current working-tree source count is **274 UI-affecting Dart files** and the screen registry is **95 surfaces**. The per-wave counts below remain historical; refresh current rows with `python3 tools/refresh_ui_design_inventory.py`.
 
 Exact file scope derived from the UI file matrix. W11 cleanup/certification spans all migrated files.
 

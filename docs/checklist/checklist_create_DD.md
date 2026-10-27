@@ -9,7 +9,7 @@ Commit de xuat: docs(dd): cap nhat checklist tao DD
 | Current BD | `docs/BD/project_flow/BD_BioAI_Product_Flow_Sale_Admin_v2.0.md` (`BD-BIOAI-PRODUCT-FLOW-002`) |
 | Advanced Health BD | `docs/BD/advanced_health/BD_BioAI_Advanced_Health_Features_v1.0.md` (`BD-BIOAI-ADVANCED-HEALTH-001`) |
 | Current DD folder | `docs/DD/` contains M01-M19, limited M22 medication reminder DD, and M30; other M20-M29 folders do not exist |
-| Ngay cap nhat | 2026-10-15 |
+| Ngay cap nhat | 2026-10-23 |
 | Lifecycle | Current |
 | DD decision | M01-M19/M30 Approved; M22 approved for M22-F01/F02 local reminders only; remaining M20-M29 scope Draft |
 | Implementation | See `docs/DD/README.md`; DD approval does not imply runtime completion |
@@ -72,9 +72,17 @@ UI catalog cards and the shared development placeholder are approved shell work 
 | 31 | DD-SLEEP-SAFETY-MONITORING-001 | M31 SLEEP_SAFETY_MONITORING | Approved / Implemented | docs/DD/sleep_safety_monitoring/ | 2026-08-24 | Source is documented; runtime/device/Supabase evidence remains separate. |
 | 32 | DD-FITNESS-TRAINING-001 | M32 FITNESS_TRAINING | Draft / In Progress | docs/DD/fitness_training/ | 2026-10-01 | PO-directed pilot implementation present; Tech, Privacy, Clinical and QA sign-off plus device/Sandbox acceptance remain pending. |
 
+## IoT Feature DD Addendum — 2026-10-23
+
+| DD | Module | DD decision / implementation | Output path | Created | Source / blocker |
+|---|---|---|---|---|---|
+| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft / Placeholder | `docs/DD/nabi_esp_assistant/` | 2026-10-23 | User-approved product plan; Tech, QA and Privacy reviews plus Android/ESP device acceptance are pending. |
+
 M20-M21 and M23-M29 remain without module DD. M22 has an approved DD only for
 the local Guest reminder slice. M32 is a separate Draft module with pilot
-runtime code; it is not release-approved.
+runtime code; it is not release-approved. `NABI_ESP_ASSISTANT` is a Draft
+integration outside the M01-M32 numbering and does not change those module
+progress totals.
 
 ## Deleted Historical DD Claims
 

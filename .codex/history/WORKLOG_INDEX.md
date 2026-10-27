@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 262
+- Total worklogs: 267
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -271,3 +271,8 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-22 | Xay backend va agent context cho BE. | supabase-schema | backend/, .codex/, tai lieu backend va worklog NanoBio. | [Worklog - NanoBioAI self-hosted backend](../../docs/worklog/2026-10-22/001-worklog-self-hosted-backend.md) |
 | 2026-10-22 | cài Flutter, tăng version Android và xuất release artifact | test | Flutter SDK, Android App Bundle | [Worklog - Cài Flutter stable và xuất AAB Nabi 1.0.2](../../docs/worklog/2026-10-22/002-worklog-flutter-install-and-aab.md) |
 | 2026-10-23 | docs-context | docs-context | iot/xiaozhi-esp32/, phone-local AI và WebSocket firmware | [Worklog - Mô tả luồng AI local giữa điện thoại và ESP32](../../docs/worklog/2026-10-23/001-worklog-phone-local-ai-flow-doc.md) |
+| 2026-10-23 | docs-context | docs-context | IoT, XiaoZhi ESP32 OSTB 3ST và NanoBio agent context | [Worklog - Hồ sơ ESP OSTB 3ST và bắt buộc nạp context IoT](../../docs/worklog/2026-10-23/002-worklog-connected-esp32-profile.md) |
+| 2026-10-23 | triển khai app Android, profile firmware ESP và tài liệu nghiệm thu | docs-context | iot/xiaozhi-esp32/phone_app/ và profile OSTB 3ST | [Worklog - Chạy XiaoZhi local AI qua hotspot điện thoại](../../docs/worklog/2026-10-23/003-worklog-phone-hotspot-local-ai.md) |
+| 2026-10-23 | Flutter UI, route, widget test, DD và design registry | test | lib/app_versions/v1/features/features_hub/ và tính năng mới nabi_esp_assistant | [Worklog - Nabi ESP assistant trong Feature Hub](../../docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md) |
+| 2026-10-23 | build, nạp firmware và nghiệm thu boot trên thiết bị thật. | test | iot/xiaozhi-esp32, profile ostb/ostb-xiaozhi-3st với config.local-ai.json. | [Worklog - Build và boot XiaoZhi trên OSTB 3ST](../../docs/worklog/2026-10-23/005-worklog-xiaozhi-ostb3st-flash-boot.md) |
+| 2026-10-23 | unknown | docs-context | unknown | [Worklog - Nabi tự kết nối với ESP OSTB 3ST](../../docs/worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md) |

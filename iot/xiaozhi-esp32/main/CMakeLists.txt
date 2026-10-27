@@ -37,6 +37,7 @@ set(SOURCES "audio/audio_codec.cc"
             "system_info.cc"
             "application.cc"
             "ota.cc"
+            "nabi_esp_provisioning.cc"
             "settings.cc"
             "device_state_machine.cc"
             "assets.cc"
@@ -1148,6 +1149,7 @@ idf_component_register(SRCS ${SOURCES}
                         mbedtls
                         console
                         efuse
+                        protocomm
                         bt
                         fatfs
                         xiaozhi-fonts

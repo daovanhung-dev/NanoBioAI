@@ -1,28 +1,28 @@
 # Canonical Design Control Manifest
 
-Generated for the current Blue Wellness source snapshot on 2026-10-07. Tracks selected canonical documents, 94 screen/surface specs, and 266 UI source files; hashes do not prove render or QA acceptance.
+Generated for the current Blue Wellness source snapshot on 2026-10-23. Tracks selected canonical documents, 95 screen/surface specs, and 274 UI source files; hashes do not prove render or QA acceptance.
 
 | File | Bytes | SHA-256 |
 |---|---:|---|
-| `.codex/design/README.md` | 3197 | `c714b1ddfc9522f15c7e7f1b5eb33d1e74ae19be29fdff5ec2bd469bf934ef8d` |
+| `.codex/design/README.md` | 3197 | `1043a4dbee6a7ee2ac0be253d9178a425146ffc742e949f6a4ca6029b4fd8dc4` |
 | `.codex/design/00_NABI_KINETIC_AURA_MASTER_DESIGN.md` | 2344 | `79bafb8bdcdc7be42ca8c334cac1bf678c935d5139b5014b7739ce295fdaa0a8` |
 | `.codex/design/02_COLOR_LIGHT_DEPTH_SYSTEM.md` | 1742 | `b8a7513fa1900f90a5bd198df3d2f506a15e788f3d631c3857ca20ddd738113d` |
 | `.codex/design/03_MOTION_SYSTEM.md` | 610 | `c338155158009a74fc404e49ce752d89f2d03287b6d3758a39371f1fee402131` |
 | `.codex/design/05_SOUND_HAPTIC_SYSTEM.md` | 392 | `772b0da4c988c6a7a4f9f5b78f2286b7855eacc964decacb07183c56821d57ee` |
-| `.codex/design/12_UI_FILE_DESIGN_MATRIX.md` | 19370 | `b7e1b74f345f3c0b66edad15d93da30dad9124196fa06139420938e6008e80f8` |
-| `.codex/design/13_SCREEN_REGISTRY.md` | 16879 | `9311e4b5c611ec9ef7d59341f7c0d467b5e829ac1489e853a0a337b378916204` |
-| `.codex/design/14_ROUTE_MATRIX.md` | 1534 | `a05f502ed8c4e046e3eea2f51f59dfcfacef1d590bbb8c0e390bb37bc51d06c9` |
+| `.codex/design/12_UI_FILE_DESIGN_MATRIX.md` | 19625 | `ebc2afd93a95242a6d9d746f8b3e4410c7cd06ef2ea8b621fc4ed14b82529a79` |
+| `.codex/design/13_SCREEN_REGISTRY.md` | 17095 | `6e21a2dc4001dca00e9d9332670127adefd5f29d45e70c1127814e7e90e32e05` |
+| `.codex/design/14_ROUTE_MATRIX.md` | 1712 | `d6de370f90278fd42c1253a1548ff6466cded8ee4ef2d4273f8ff1c79b4d7956` |
 | `.codex/design/15_CODING_PLAN.md` | 2462 | `68f92844eb399c2b00d4b0ce6d084775a6ed045c87558c32eae6702111cf6217` |
-| `.codex/design/16_ACCEPTANCE_CHECKLIST.md` | 4023 | `89d7af3d79bcca298a3e7858ca2b9598a13a864ccf71eef09708e13e80f112ac` |
+| `.codex/design/16_ACCEPTANCE_CHECKLIST.md` | 4023 | `a03dee0b54ea810c09506531edda4b34b9eecd2e6b79a0aee068f594b35a1e8c` |
 | `.codex/design/17_THEME_MIGRATION_MAP.md` | 11048 | `a3ec63cdcefa27391ab0afbfdddfacea0b4cab8c3f88e85f401f1e557a6ce1c2` |
-| `.codex/design/20_CODING_WAVE_FILE_MANIFEST.md` | 24653 | `3d5c6eadacf5c325d89c066596c0c1ff42963d9b39fe9d3519074fe13d7aa7e9` |
-| `.codex/design/21_CODING_IMPLEMENTATION_STATUS.md` | 5750 | `a233522d1eb944d472bcc083a6009504d0d5980a5587ba2d2e6fc7435174d460` |
+| `.codex/design/20_CODING_WAVE_FILE_MANIFEST.md` | 24653 | `66c91a5192df5a4bbb715c14e98ee1cbbfb92468538630898d9db0f3393369f0` |
+| `.codex/design/21_CODING_IMPLEMENTATION_STATUS.md` | 5981 | `a7c60fcce54a6b217586b2e41120f9b7f7fd50a8f6e8eb1105aaef4771f68e0d` |
 | `.codex/design/21_ADMIN_DESIGN_SYSTEM.md` | 579 | `1315c0afb3da3c72db0c644c700fcadf674350c532c2edf6f7a9b12765cf1acb` |
 | `.codex/design/30_MASTER_CHEAT_SHEET.md` | 1069 | `a862bc477e2227bd2c65a5efff7d7f848d0502e2994e592d65877f1f40c5b448` |
 | `.codex/design/groups/01_foundation_shell.md` | 1348 | `0afea0835f13d1fba7d985425b68a3d79709865967b7494bded6e05d74454fc1` |
 | `.codex/design/groups/03_dashboard_health.md` | 1741 | `ab9a81958e5fdbab26965880362650fe2999ee2aeb1d8a0bc938a7305876cc6c` |
 | `.codex/design/groups/06_v2_v3_access.md` | 1530 | `3d8ecc783a845c2ea8717e4719756f878addda7c3634192a78300e40246b0d47` |
-| `.codex/design/inventory/COVERAGE_REPORT.md` | 1266 | `1e77d07e2430434088d6e04e3c75d16714697c65f41ccd9931c3f5acd62a2eb3` |
+| `.codex/design/inventory/COVERAGE_REPORT.md` | 1345 | `f42b364fb535958fd9e9dae68ee8bb29301bb74b6fb1e12e0bfcdea78a38cc6f` |
 | `.codex/design/inventory/DESIGN_TOKEN_MAPPING.md` | 1108 | `b896e0c089e457225a4ee8912619ab7e12a07722f2327982aaca1e76d1d08564` |
 | `.codex/design/inventory/SOURCE_DRIFT_NOTES.md` | 1880 | `2728148dbbdf931ba3715a762188b46bbcfd531f13b35d27f75ae6b6d8c6f585` |
 | `.codex/design/inventory/STATE_COVERAGE_MATRIX.md` | 9894 | `960fd6a4f7e96549d8f792701c9f32213a7f4c02348793e2ce39cba928ae4b27` |
@@ -31,9 +31,9 @@ Generated for the current Blue Wellness source snapshot on 2026-10-07. Tracks se
 | `.codex/design/handoff/QA_CHECKLIST.md` | 1021 | `e0d50c8a5899928ea94b2158647c1b638aa23671b4c3b8af20affad1f46f0265` |
 | `.codex/design/handoff/CHANGELOG_REEXECUTION.md` | 1311 | `210beeeafed16ed5408b04b7175625b4df2a86c0aecb68ab746690253991a42c` |
 | `.codex/design/22_SALE_DESIGN_SYSTEM.md` | 417 | `35604d790207eb3311282e741166b59527f6a55c35e884713af101bf479b4dbf` |
-| `.codex/design/inventory/ui_source_audit.csv` | 96898 | `f51c4ae996784c6c57252f9282c2402015ae35ec52ddca0cace483f98a380151` |
-| `.codex/design/inventory/coding_implementation_status.csv` | 62546 | `92d12aacf508f0c9dd48e379cda2d3cf8f95a36a9d179f97e7effc4d9f508208` |
-| `.codex/design/inventory/SURFACE_IMPLEMENTATION_STATUS.csv` | 41626 | `787899c86581f8113af016ebd27e502910d19351e0d6b5da486e51e3c0f49537` |
+| `.codex/design/inventory/ui_source_audit.csv` | 100762 | `6a69c71ecaac79fd20cf5393512027b6de86c5a13fd97c9c561ace2efcf8071e` |
+| `.codex/design/inventory/coding_implementation_status.csv` | 64605 | `ff89cbe1433f79bcb2b521f7a8dd36c4b1815c29803ffafe1735f2ca4df0e298` |
+| `.codex/design/inventory/SURFACE_IMPLEMENTATION_STATUS.csv` | 42061 | `71d68c9b351bef08ebd2168fa9197b2e28074f97ad28ddbe38d6269ef9e25046` |
 | `tools/refresh_ui_design_inventory.py` | 18266 | `2df6812d9af4b3fa7dd41a1093f2520c2b480790330b1b5eb3c5936ca0387855` |
 | `design.md` | 303 | `a7e64160e0644e9f6f8e4b524db5d1892f3860c9c9410340b4d45c2e2af3020d` |
 | `.codex/design/screens/adm-01-admin-login.md` | 6728 | `8e52c78e60432eab3837a6b66ac2a6c5452348873c725f4294bec9f2dde6bbb2` |
@@ -60,7 +60,7 @@ Generated for the current Blue Wellness source snapshot on 2026-10-07. Tracks se
 | `.codex/design/screens/onb-07-extras-step.md` | 6821 | `e2ed7de9b156c5c2ac9492fafff5b403c36db71b77bc88b9e4ae96673f592d71` |
 | `.codex/design/screens/onb-08-daily-routine-step.md` | 6854 | `0916c9def3e3f6f820a4ecaec81f8cfed517ba6d4be54d33e9d05e9503bef916` |
 | `.codex/design/screens/onb-09-consent-step.md` | 6856 | `3cd923e676068c8faeca1c07539888d0ae2c4263ec1a97f21555fde98be899c8` |
-| `.codex/design/screens/onb-10-review-step.md` | 6820 | `3474d62f19e45858922038a0b7241a166c9bac40a231baeeefe6a07d48892818` |
+| `.codex/design/screens/onb-10-review-step.md` | 7256 | `a0a04de3990a8d60a1a461c59f65e8734600e14ec0ebbe2efe50dad9f028b92f` |
 | `.codex/design/screens/onb-11-result-step.md` | 7045 | `1b879afaa95bfdb335f2efb26bb74fd270eaba3eece545eca563563fe6ec5c01` |
 | `.codex/design/screens/sale-01-sale-participation.md` | 6819 | `20fbb7ffdfaaae1cf041a79094b4836ed86482beac4649c4809a9881aaa01f7e` |
 | `.codex/design/screens/sale-02-payout-profile-gate.md` | 6897 | `e89e7b367a737b75d2dc3f9741e5a5d3d546b806f3695d0870963e410c671bc6` |
@@ -94,7 +94,7 @@ Generated for the current Blue Wellness source snapshot on 2026-10-07. Tracks se
 | `.codex/design/screens/v1-24-profile-review.md` | 956 | `4bf8a21e60646165d052d5383de0344e8aefdc14d7dcd72d66121fedc549ff9a` |
 | `.codex/design/screens/v1-25-fitness-training.md` | 1009 | `7220353ba4065a8c85a2107926709bb00dfa2e8e86a0814064246e2a86ac8844` |
 | `.codex/design/screens/v1-26-notification-settings.md` | 1061 | `885d886fdc81762171631161e2fc8b9159fc79ef6086da15afc0f8b6cb2034df` |
-| `.codex/design/screens/v1-x01-features-hub.md` | 10839 | `e0e93f1061f6b1f69bfaedaa304ec2f4dc12214b8ba3b4dc5c40a3afdf7c24e3` |
+| `.codex/design/screens/v1-x01-features-hub.md` | 11498 | `f1529521f076f67258d888786edec6d9b84b811738e20293267403d46274f2d0` |
 | `.codex/design/screens/v1-x02-health-insights-g-c-nabi.md` | 6864 | `669a731e3abcc8a420d2e3e04f4987fdc6752c092b4da3708905cf304b25f967` |
 | `.codex/design/screens/v1-x03-schedule-proof-gallery.md` | 6912 | `39ab307295c6eb5491dc5e207faeb43f958c16ffbe1aab95b688cd37f9ebad82` |
 | `.codex/design/screens/v1-x04-dev-database-viewer.md` | 6907 | `f6e72dd9dbfcc38354d3b75d10adf1dea15b9ffdc781d054970ba75910527619` |
@@ -129,3 +129,4 @@ Generated for the current Blue Wellness source snapshot on 2026-10-07. Tracks se
 | `.codex/design/screens/v3-03-familyplus.md` | 7050 | `61579319a3c7fea43ecdc1c6e4fa6efad975a7e7f3d43a66844f1bb8abedab6f` |
 | `.codex/design/screens/v3-04-food-scan.md` | 1038 | `e5d30ee966f222dc8a8e5e4af7a34848f769d48b335d16c9f87ed24bb9b27206` |
 | `.codex/design/screens/v3-05-food-scan-history.md` | 911 | `7f4703cacf09484cce54855026771256f46f36a4260a01830e883c611c7f6417` |
+| `.codex/design/screens/v1-x18-nabi-esp-assistant.md` | 1841 | `aceeeb0d3e19a1ad19911a72ab996e9db3a857f0ea86a6080f21baa7d4c9d619` |

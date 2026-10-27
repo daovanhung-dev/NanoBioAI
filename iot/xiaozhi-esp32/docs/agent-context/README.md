@@ -5,10 +5,14 @@ Thư mục này là bản đồ dự án dành cho coding agent. Tài liệu gi�
 ## Cách nạp context
 
 1. Read the repository [`AGENTS.md`](../../AGENTS.md), then run `git status --short`. Preserve changes already present in the worktree.
-2. Read [`ARCHITECTURE.md`](ARCHITECTURE.md) for the subsystem boundaries and runtime/data flow.
-3. Use [`TASK_ROUTING.md`](TASK_ROUTING.md) to select the owning source, authoritative project docs, and validation for the requested task.
-4. For board selection, variants, Kconfig, CMake, partitions, or releases, also read [`BOARDS_AND_BUILD.md`](BOARDS_AND_BUILD.md).
-5. Use [`FILE_INDEX.md`](FILE_INDEX.md) to find any individual file and understand its role. Read the current file before editing it; the index is an orientation aid, not a substitute for source inspection.
+2. For every IoT/ESP32 task, read
+   [`CONNECTED_DEVICE_OSTB_3ST.md`](CONNECTED_DEVICE_OSTB_3ST.md) before selecting
+   source or running device commands. Distinguish measured device state from
+   repository source profiles; use its board-specific values only for this OSTB 3ST.
+3. Read [`ARCHITECTURE.md`](ARCHITECTURE.md) for subsystem boundaries and runtime/data flow.
+4. Use [`TASK_ROUTING.md`](TASK_ROUTING.md) to select the owning source, authoritative project docs, and validation for the requested task.
+5. For board selection, variants, Kconfig, CMake, partitions, or releases, also read [`BOARDS_AND_BUILD.md`](BOARDS_AND_BUILD.md).
+6. Use [`FILE_INDEX.md`](FILE_INDEX.md) to find any individual file and understand its role. Read the current file before editing it; the index is an orientation aid, not a substitute for source inspection.
 
 Sau điểm vào này, chỉ nạp các nhánh context liên quan đến task. Không chép toàn bộ file index hoặc mọi board implementation vào context của task thông thường.
 

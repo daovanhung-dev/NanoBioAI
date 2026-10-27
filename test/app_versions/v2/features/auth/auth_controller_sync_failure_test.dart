@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v2/features/auth/presentation/controllers/auth_controller.dart';
@@ -45,6 +47,42 @@ void main() {
       AuthSyncReason.authGateRefresh,
       AuthSyncReason.signIn,
     ]);
+  });
+
+  test('initial identity resolves while cloud sync is still pending', () async {
+    final syncGate = Completer<void>();
+    final syncStarted = Completer<void>();
+    final authRepository = _FakeAuthRepository();
+    final syncRepository = _FakeCloudSyncRepository(
+      barriers: {AuthSyncReason.authGateRefresh: syncGate},
+      onBarrierStarted: syncStarted,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        authBackendAvailabilityProvider.overrideWithValue(
+          AuthBackendAvailability.ready,
+        ),
+        v2AuthRepositoryProvider.overrideWithValue(authRepository),
+        authenticatedUserDataSyncRepositoryProvider.overrideWithValue(
+          syncRepository,
+        ),
+      ],
+    );
+    addTearDown(() async {
+      if (!syncGate.isCompleted) syncGate.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      container.dispose();
+    });
+
+    final routeStateFuture = container.read(v2AuthControllerProvider.future);
+    await syncStarted.future.timeout(const Duration(seconds: 1));
+    final routeState = await routeStateFuture.timeout(
+      const Duration(seconds: 1),
+    );
+
+    expect(routeState.status, AuthRouteStatus.unauthenticated);
+    expect(syncRepository.reasons, [AuthSyncReason.authGateRefresh]);
+    expect(syncGate.isCompleted, isFalse);
   });
 
   test('current user identity follows auth session events', () async {
@@ -136,9 +174,15 @@ class _FakeAuthRepository implements AuthRepository {
 
 class _FakeCloudSyncRepository implements AuthenticatedUserDataSyncRepository {
   final Set<AuthSyncReason> failReasons;
+  final Map<AuthSyncReason, Completer<void>> barriers;
+  final Completer<void>? onBarrierStarted;
   final reasons = <AuthSyncReason>[];
 
-  _FakeCloudSyncRepository({this.failReasons = const {}});
+  _FakeCloudSyncRepository({
+    this.failReasons = const {},
+    this.barriers = const {},
+    this.onBarrierStarted,
+  });
 
   @override
   Future<UserDataSyncOutcome> syncAfterAuthenticatedSession(
@@ -146,6 +190,13 @@ class _FakeCloudSyncRepository implements AuthenticatedUserDataSyncRepository {
     GuestMergeAction? guestAction,
   }) async {
     reasons.add(reason);
+    final barrier = barriers[reason];
+    if (barrier != null) {
+      if (onBarrierStarted != null && !onBarrierStarted!.isCompleted) {
+        onBarrierStarted!.complete();
+      }
+      await barrier.future;
+    }
     if (failReasons.contains(reason)) {
       throw StateError('post-auth sync failed');
     }

@@ -13,6 +13,7 @@ import 'package:opus_codec_dart/opus_codec_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'local_ai_service.dart';
+import 'phone_server_lifecycle.dart';
 import 'voice_service.dart';
 
 class XiaozhiServer extends ChangeNotifier {
@@ -21,15 +22,43 @@ class XiaozhiServer extends ChangeNotifier {
   final LocalAiService ai;
   final VoiceService voice;
   HttpServer? _server;
+  Timer? _networkMonitor;
   String? _token;
   String? hostAddress;
   String? error;
+  List<ServerNetworkAddress> availableAddresses = const [];
+  String? selectedAddress;
+  WebSocket? _activeSocket;
   final List<ChatMessage> _conversation = [];
 
   bool get isRunning => _server != null;
   String get otaUrl => 'http://${hostAddress ?? '0.0.0.0'}:8765/xiaozhi/ota/';
   String get websocketUrl =>
       'ws://${hostAddress ?? '0.0.0.0'}:8765/xiaozhi/v1/';
+
+  Future<void> refreshAddresses() async {
+    final previousSelection = selectedAddress;
+    availableAddresses = await _findLocalIpv4Candidates();
+    final matching = availableAddresses
+        .where((candidate) => candidate.address == previousSelection)
+        .firstOrNull;
+    if (matching != null) {
+      selectedAddress = matching.address;
+    } else if (availableAddresses.length == 1) {
+      selectedAddress = availableAddresses.single.address;
+    } else {
+      selectedAddress = null;
+    }
+    notifyListeners();
+  }
+
+  void selectAddress(String address) {
+    if (!availableAddresses.any((candidate) => candidate.address == address)) {
+      return;
+    }
+    selectedAddress = address;
+    notifyListeners();
+  }
 
   Future<void> start() async {
     if (isRunning) return;
@@ -39,7 +68,39 @@ class XiaozhiServer extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    if (!voice.isReady) {
+      error =
+          'Chọn một giọng Android TTS trong tab Cài đặt trước khi khởi chạy.';
+      notifyListeners();
+      return;
+    }
+    if (!voice.selectedVoiceIsOffline) {
+      error = 'Giọng Android TTS đang chọn cần mạng. Chọn voice ngoại tuyến để bảo đảm hội thoại hoạt động khi mất Internet.';
+      notifyListeners();
+      return;
+    }
     try {
+      final permissionsGranted =
+          await PhoneServerLifecycle.requestServerPermissions();
+      if (!permissionsGranted) {
+        error =
+            'Cần cho phép notification để Android hiển thị trạng thái server.';
+        notifyListeners();
+        return;
+      }
+      await refreshAddresses();
+      if (availableAddresses.isEmpty) {
+        error = 'Không tìm thấy IPv4 nội bộ của hotspot. Bật hotspot rồi thử quét lại.';
+        notifyListeners();
+        return;
+      }
+      if (selectedAddress == null) {
+        error =
+            'Có nhiều địa chỉ mạng. Chọn địa chỉ hotspot của điện thoại trước.';
+        notifyListeners();
+        return;
+      }
+      await PhoneServerLifecycle.startForegroundService();
       final prefs = await SharedPreferences.getInstance();
       _token = prefs.getString('server_token');
       if (_token == null || _token!.length < 24) {
@@ -52,10 +113,10 @@ class XiaozhiServer extends ChangeNotifier {
             .toString();
         await prefs.setString('server_token', _token!);
       }
-      hostAddress = await _findLocalIpv4();
+      hostAddress = selectedAddress;
       await _initializeOpus();
       _server = await HttpServer.bind(
-        InternetAddress.anyIPv4,
+        InternetAddress(hostAddress!),
         8765,
         shared: false,
       );
@@ -66,25 +127,81 @@ class XiaozhiServer extends ChangeNotifier {
           notifyListeners();
         },
       );
+      _networkMonitor?.cancel();
+      _networkMonitor = Timer.periodic(
+        const Duration(seconds: 8),
+        (_) => unawaited(_checkBoundAddress()),
+      );
+      await PhoneServerLifecycle.updateForegroundService(
+        'Server AI local đang chạy',
+        'OTA: $otaUrl',
+      );
     } catch (value) {
       error = '$value';
+      await _server?.close(force: true);
       _server = null;
+      _networkMonitor?.cancel();
+      _networkMonitor = null;
+      hostAddress = null;
+      await PhoneServerLifecycle.stopForegroundService();
     }
     notifyListeners();
   }
 
   Future<void> stop() async {
+    _networkMonitor?.cancel();
+    _networkMonitor = null;
     await _server?.close(force: true);
     _server = null;
+    _activeSocket = null;
+    await PhoneServerLifecycle.stopForegroundService();
     notifyListeners();
+  }
+
+  Future<void> _checkBoundAddress() async {
+    if (!isRunning || hostAddress == null) return;
+    try {
+      final latest = await _findLocalIpv4Candidates();
+      availableAddresses = latest;
+      if (latest.any((candidate) => candidate.address == hostAddress)) return;
+      final previousAddress = hostAddress;
+      await _server?.close(force: true);
+      _server = null;
+      _networkMonitor?.cancel();
+      _networkMonitor = null;
+      hostAddress = null;
+      _activeSocket = null;
+      selectedAddress = latest.length == 1 ? latest.single.address : null;
+      error = latest.isEmpty
+          ? 'Hotspot mất kết nối. Bật lại hotspot, cập nhật OTA URL trên ESP và khởi động lại ESP.'
+          : 'Địa chỉ hotspot đã đổi từ $previousAddress. Chọn địa chỉ mới, cập nhật OTA URL trên ESP và khởi động lại ESP.';
+      await PhoneServerLifecycle.updateForegroundService(
+        'Địa chỉ hotspot đã thay đổi',
+        'Cập nhật OTA URL trên ESP rồi khởi động lại ESP.',
+      );
+      notifyListeners();
+    } catch (value) {
+      error = 'Không kiểm tra được địa chỉ hotspot: $value';
+      notifyListeners();
+    }
   }
 
   Future<void> _handleRequest(HttpRequest request) async {
     if (request.uri.path == '/health') {
+      final llmReady = ai.llmReady;
+      final sttReady = ai.whisperReady;
+      final ttsReady = voice.isReady;
+      final ttsOffline = voice.selectedVoiceIsOffline;
       request.response
         ..headers.contentType = ContentType.json
         ..write(
-          jsonEncode({'ok': true, 'llm': ai.llmReady, 'stt': ai.whisperReady}),
+          jsonEncode({
+            'ok': llmReady && sttReady && ttsReady && ttsOffline,
+            'llm': llmReady,
+            'stt': sttReady,
+            'tts': ttsReady,
+            'tts_offline': ttsOffline,
+          }),
         );
       await request.response.close();
       return;
@@ -109,7 +226,14 @@ class XiaozhiServer extends ChangeNotifier {
         await request.response.close();
         return;
       }
+      if (_activeSocket != null &&
+          _activeSocket!.readyState == WebSocket.open) {
+        request.response.statusCode = HttpStatus.conflict;
+        await request.response.close();
+        return;
+      }
       final socket = await WebSocketTransformer.upgrade(request);
+      _activeSocket = socket;
       unawaited(_handleSocket(socket));
       return;
     }
@@ -173,9 +297,11 @@ class XiaozhiServer extends ChangeNotifier {
       },
       onDone: () {
         decoder.destroy();
+        if (identical(_activeSocket, socket)) _activeSocket = null;
       },
       onError: (_) {
         decoder.destroy();
+        if (identical(_activeSocket, socket)) _activeSocket = null;
       },
       cancelOnError: true,
     );
@@ -280,33 +406,47 @@ class XiaozhiServer extends ChangeNotifier {
     if (socket.readyState == WebSocket.open) socket.add(jsonEncode(message));
   }
 
-  Future<String> _findLocalIpv4() async {
+  Future<List<ServerNetworkAddress>> _findLocalIpv4Candidates() async {
     final interfaces = await NetworkInterface.list(
       includeLoopback: false,
       type: InternetAddressType.IPv4,
     );
-    final ordered = [...interfaces]
-      ..sort((left, right) {
-        int rank(NetworkInterface interface) {
-          final name = interface.name.toLowerCase();
-          if (name.contains('wlan') ||
-              name.contains('wifi') ||
-              name.contains('ap')) {
-            return 0;
-          }
-          if (name.contains('p2p') || name.contains('vpn')) return 2;
-          return 1;
-        }
-
-        return rank(left).compareTo(rank(right));
-      });
-    for (final interface in ordered) {
+    final candidates = <ServerNetworkAddress>[];
+    for (final interface in interfaces) {
+      final name = interface.name.toLowerCase();
+      if (name.contains('p2p') ||
+          name.contains('vpn') ||
+          name.contains('tun') ||
+          name.contains('lo')) {
+        continue;
+      }
       for (final address in interface.addresses) {
         final value = address.address;
-        if (!address.isLoopback && !value.startsWith('169.254.')) return value;
+        if (!_isPrivateIpv4(value) || address.isLoopback) continue;
+        candidates.add(ServerNetworkAddress(interface.name, value));
       }
     }
-    return '127.0.0.1';
+    candidates.sort((left, right) {
+      final byInterface = left.interfaceName.compareTo(right.interfaceName);
+      return byInterface != 0
+          ? byInterface
+          : left.address.compareTo(right.address);
+    });
+    return candidates;
+  }
+
+  bool _isPrivateIpv4(String value) {
+    final parts = value.split('.');
+    if (parts.length != 4) return false;
+    final octets = parts.map(int.tryParse).toList();
+    if (octets.any((part) => part == null || part < 0 || part > 255)) {
+      return false;
+    }
+    final first = octets[0]!;
+    final second = octets[1]!;
+    return first == 10 ||
+        first == 192 && second == 168 ||
+        first == 172 && second >= 16 && second <= 31;
   }
 
   Future<void> _initializeOpus() async {
@@ -318,4 +458,14 @@ class XiaozhiServer extends ChangeNotifier {
     unawaited(stop());
     super.dispose();
   }
+}
+
+class ServerNetworkAddress {
+  const ServerNetworkAddress(this.interfaceName, this.address);
+
+  final String interfaceName;
+  final String address;
+
+  @override
+  String toString() => '$address · $interfaceName';
 }

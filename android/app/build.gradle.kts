@@ -60,6 +60,8 @@ android {
 dependencies {
     // Required for Java 8+ APIs used by flutter_local_notifications
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("com.github.espressif:esp-idf-provisioning-android:lib-2.4.4")
+    implementation("org.greenrobot:eventbus:3.3.1")
 }
 
 flutter {

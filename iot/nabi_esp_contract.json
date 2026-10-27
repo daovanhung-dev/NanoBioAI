@@ -1,0 +1,12 @@
+{
+  "contractVersion": 1,
+  "protocolVersion": 3,
+  "port": 8386,
+  "otaPath": "/nabi/ota/",
+  "websocketPath": "/nabi/v1/",
+  "deviceKeyHeader": "X-Nabi-Device-Key",
+  "bleNamePrefix": "NABI_",
+  "bleServiceUuid": "3b1d0001-6d3a-4d7f-9f21-3f591b9a6a01",
+  "bleSecurityUsername": "nabi",
+  "bleConfigEndpoint": "nabi-config"
+}

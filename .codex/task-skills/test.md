@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 24 worklog(s).
+- Generated from 26 worklog(s).
 
 ## When To Read
 
@@ -28,6 +28,8 @@
 - Historical task type: Coding và kiểm chứng theo plan đã duyệt. (1)
 - Historical task type: Triển khai bugfix và kiểm chứng theo plan đã duyệt. (1)
 - Historical task type: cài Flutter, tăng version Android và xuất release artifact (1)
+- Historical task type: Flutter UI, route, widget test, DD và design registry (1)
+- Historical task type: build, nạp firmware và nghiệm thu boot trên thiết bị thật. (1)
 
 ## Common Modules
 

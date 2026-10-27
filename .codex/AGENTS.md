@@ -80,6 +80,14 @@ For work inside `iot/xiaozhi-esp32/`, also read
 `iot/xiaozhi-esp32/docs/agent-context/README.md` before selecting task-specific
 source. Preserve the imported snapshot and any existing changes.
 
+For every IoT/ESP32 task in this repository, read
+`iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md` before
+selecting source, making hardware claims, or running device commands, even when
+the task is outside `iot/xiaozhi-esp32/`. This is a device-specific snapshot;
+apply its pins and limits only when the task targets this OSTB 3ST. If another
+board is involved, keep the profile as reference and verify that board's own
+configuration.
+
 ## Task Skill Router
 
 After choosing the workflow, read `.codex/task-skills/README.md` and then the matching task file if present. If no exact task key exists, continue with the workflow and record the missing/needed task-skill in the worklog self-review.

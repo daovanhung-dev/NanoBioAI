@@ -44,16 +44,18 @@ class AuthController extends AsyncNotifier<AuthRouteState> {
       unawaited(_refreshFromAuthEvent());
     });
 
-    await _trySyncAfterAuth(
-      AuthSyncReason.authGateRefresh,
-      updateSyncState: false,
-    );
     final next = await ref
         .watch(v2AuthRepositoryProvider)
         .resolveAuthRouteState();
     if (next.status == AuthRouteStatus.unauthenticated) {
       _invalidateLocalUserData();
     }
+    // Resolve the visible account surface before optional cloud sync. Network
+    // sync can be slow or offline and must not leave the whole app on its
+    // account-loading screen.
+    unawaited(
+      _trySyncAfterAuth(AuthSyncReason.authGateRefresh, updateSyncState: false),
+    );
     return next;
   }
 

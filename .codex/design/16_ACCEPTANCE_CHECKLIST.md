@@ -8,8 +8,8 @@ Unchecked means no acceptance claim. Evidence must identify the surface, state, 
 - [ ] Every Stitch pair has an owner, runtime route/invocation, state mapping and QA evidence link.
 - [ ] PNG governs layout and HTML governs typography/token intent; Approved DD/runtime governs business.
 - [ ] Repository registry count and route classifications match the working tree.
-- [ ] All 94 screen/subsurface specs map to source and a redesign/verification status.
-- [ ] Current 266-file UI source inventory can be regenerated and has no missing files.
+- [ ] All 95 screen/subsurface specs map to source and a redesign/verification status.
+- [ ] Current 274-file UI source inventory can be regenerated and has no missing files.
 - [ ] `/today-tasks` has its own active-route spec and state evidence.
 - [ ] No placeholder or alias is described as an implemented business capability.
 

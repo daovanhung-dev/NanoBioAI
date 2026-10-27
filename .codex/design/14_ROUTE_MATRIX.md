@@ -1,8 +1,8 @@
-# Route Matrix — working-tree snapshot 2026-10-07
+# Route Matrix — working-tree snapshot 2026-10-23
 
 ## Direct route counts
 
-- V1: **32** route entries from `v1Routes`, including `buildLifestyleScheduleRoute()`.
+- V1: **33** route entries from `v1Routes`, including `buildLifestyleScheduleRoute()`.
 - V2: **13** routes from `v2Routes`.
 - V3: **5** routes from `v3Routes`; the standalone router also reuses V1 Lifestyle Schedule.
 - Admin: **12** routes (login plus 11 protected workspace destinations); `/admin` redirects to dashboard.
@@ -13,6 +13,7 @@
 - `/water-tracking`, `/weekly-summary`, `/personal-goals`, `/quick-care` and `/gentle-care` now expose their existing V1 pages.
 - `/nami-care` is an active hub that links only to the existing Water, Goals, Quick Care, Gentle Care and Weekly Summary pages; it does not add expert or booking behavior.
 - `/v3/familyplus` exposes the existing FamilyPlus page behind authentication and effective-access protection.
+- `/nabi-esp-assistant` is a no-auth V1 preview route reached from the Android-only planned Feature Hub group; network, BLE and audio behavior remain release-gated and inactive.
 
 ## Important drift classification
 

@@ -1049,6 +1049,18 @@ menu "WiFi Configuration Method"
             The provisioning client must support ffdhe3072, SHA-256, and AES-CTR.
 endmenu
 
+config NABI_ESP_ASSISTANT
+    bool "Enable Nabi local AI provisioning for OSTB 3ST"
+    default n
+    depends on BOARD_TYPE_OSTB_XIAOZHI_3ST
+    select BT_ENABLED
+    select BT_BLE_42_FEATURES_SUPPORTED
+    select ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_2
+    help
+        Enable BLE Security 2 provisioning for the Nabi Android app. The phone
+        supplies its current LocalOnlyHotspot credentials; the existing Wi-Fi
+        configuration AP remains available as a manual recovery path.
+
 config AUDIO_DEBUG_UDP_SERVER
     string "Audio Debug UDP Server Address"
     default "192.168.2.100:8000"

@@ -1,4 +1,4 @@
-# Partition layout matching the OSTB XiaoZhi 3ST firmware currently on device.
+# Source partition layout for OSTB XiaoZhi 3ST (16 MB flash); not the currently attached demo firmware table.
 # Name,      Type, SubType, Offset,   Size,      Flags
 nvs,         data, nvs,     0x9000,   0x4000,
 otadata,     data, ota,     0xd000,   0x2000,
