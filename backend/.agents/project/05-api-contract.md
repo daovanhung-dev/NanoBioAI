@@ -9,5 +9,7 @@
 - FamilyPlus routes use `/family-plus/context`, `/family-plus/group`, and
   `/family-plus/members`; enforce an active plan and owner-scoped subjects.
 - Never return ORM objects, credentials, password hashes, provider secrets, or private file paths.
-- AI legacy routes are present but return 503 `FEATURE_NOT_ENABLED`; six source-less functions have no route.
+- `POST /ai/generate` requires a FastAPI bearer access token and active account. It accepts 1–8 `user`/`assistant` text messages, ending in `user`, with a 16 KiB request-body cap. The server controls the Nabi system instruction, model, provider URL, and inference options.
+- AI success data contains `text`, `model`, and optional provider token counts. The route is disabled unless `OLLAMA_ENABLED=true`; provider context overflow maps to 413, timeout to 504, unavailability to 503, and invalid provider responses to 502. Errors never include raw provider payloads.
+- `POST /food/scan/analyze` remains disabled; six source-less functions have no route. Flutter AI remains on-device and does not call this endpoint.
 - HTTP status must match error/success semantics. Unexpected errors are safe and include only a trace ID.

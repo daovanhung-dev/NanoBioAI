@@ -78,10 +78,14 @@ verified. Back up `/var/lib/nanobio-backend/uploads` under the same protection.
 - Liveness/readiness: `/health/live`, `/health/ready`.
 - API base: `/api/v1`.
 - All JSON responses use the documented envelope; protected APIs use bearer access JWTs.
+- `POST /api/v1/ai/generate` is a text-only, non-streaming endpoint protected by a FastAPI access JWT. It accepts 1–8 user/assistant messages in a body of at most 16 KiB; the final message must be from the user. The server supplies Nabi's health and safety instruction and selects `qwen3:4b-instruct`.
+- Ollama access is disabled by default. To enable it in a controlled environment, configure `OLLAMA_ENABLED=true`, keep `OLLAMA_BASE_URL` on loopback, and use the bounded context/output and timeout settings in `.env.example`. The endpoint applies a technical limit of six attempts per user per minute; this does not grant plan entitlements or commercial quota.
+- Ollama errors are mapped to safe API errors; prompts and provider response bodies are not logged or returned on failure. The endpoint does not stream, accept images, or expose the Ollama URL/model/options to callers.
+- Flutter AI continues to use its on-device runtime. Flutter does not call this backend endpoint or fall back to it.
 - FamilyPlus: `GET /family-plus/context`, `PUT /family-plus/group`,
   `PUT /family-plus/members`, and `DELETE /family-plus/members/{id}` require an
   active `family_plus` subscription and enforce owner-scoped subject access.
-- Legacy AI generation endpoints remain disabled and do not call Gemini.
+- `POST /api/v1/ai/generate` calls loopback Ollama only when `OLLAMA_ENABLED=true`; `POST /api/v1/food/scan/analyze` remains disabled. Neither route calls Gemini.
 
 ## Quality commands
 

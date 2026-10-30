@@ -12,5 +12,6 @@
 | Storage | configured local directory, served only through ownership-checked APIs |
 | Dependency/quality | uv, Ruff, mypy, pytest, HTTPX |
 | Runtime | systemd service; native PostgreSQL service |
+| Server text inference | Ollama `/api/chat` over loopback only; `qwen3:4b-instruct`, feature-gated |
 
-Do not copy Study Server's hard-coded connection/JWT constants. Do not add Gemini, Redis, containers, or a worker queue without a concrete approved use case. Use UTC for persisted timestamps.
+Do not copy Study Server's hard-coded connection/JWT constants. Do not add Gemini, Redis, containers, or a worker queue without a concrete approved use case. Flutter inference remains local; the backend Ollama endpoint is separate and is not a fallback. Use UTC for persisted timestamps.

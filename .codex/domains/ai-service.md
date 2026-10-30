@@ -10,9 +10,9 @@
 
 ## Rules
 
-- Production AI uses the provider-neutral `AiTextClient` contract with
+- Flutter production AI uses the provider-neutral `AiTextClient` contract with
   `LocalAiTextClient` backed by the app-owned `lib/core/ai_local/` runtime. Do
-  not add provider keys or route prompts/images to an AI service.
+  not add provider keys or route Flutter prompts/images to a remote AI service.
 - Native user builds require an explicitly selected and downloaded text model.
   Food Scan downloads its local vision model and projector on first use. Web AI
   must fail with a clear unsupported-platform message.
@@ -24,13 +24,20 @@
 - Supabase remains in use for auth, sync, data, and existing quota flows. Do not
   edit or deploy the retained AI Edge Functions as part of app-local inference.
 - Never trust AI output blindly; validate schema, type, range, and Vietnamese user-facing text.
-- Tests must not call a remote AI service or download large model assets.
+- Flutter AI tests must not call a remote AI service or download large model assets.
 - Handle download resume/cancel, checksum mismatch, storage errors, unsupported
   platform, timeout, quota, invalid JSON, context overflow, and model load
   failure safely.
 - Do not let AI chat history/context grow without bounds.
 - Log only safe summaries: stage, status, counts, error type; no raw prompt/response or secrets.
 - Guest/free/Plus generation and chat quota must follow access rules.
+
+## Backend boundary
+
+- The separate self-hosted FastAPI backend has a text-only `/api/v1/ai/generate`
+  route to loopback Ollama behind a default-off feature flag. Flutter does not
+  call this route and must not use it as an inference fallback. Backend access
+  does not change the app-local model, quota, or privacy behavior.
 
 ## Search
 

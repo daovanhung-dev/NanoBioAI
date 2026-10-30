@@ -21,7 +21,7 @@
 | `sleep-safety-contact-verification` | `/api/v1/sleep-safety/contacts/verification` | SOURCE_BACKED; SMS provider required |
 | `sleep-safety-dispatch` | `POST /api/v1/sleep-safety/dispatch` | SOURCE_BACKED; rollout/provider required |
 | `sleep-safety-provider-webhook` | `/api/v1/webhooks/sleep-safety/{provider}` | SOURCE_BACKED; signature required |
-| `nabi-ai-generate` | `POST /api/v1/ai/generate` | DECLARED_NOT_ENABLED; 503 by decision |
+| `nabi-ai-generate` | `POST /api/v1/ai/generate` | IMPLEMENTED; Ollama feature flag defaults off; live backend deployment not verified |
 | `food-scan-analyze` | `POST /api/v1/food/scan/analyze` | DECLARED_NOT_ENABLED; 503 by decision |
 | `admin-backup-control` | none | NOT_FOUND (empty source directory) |
 | `admin-purge-gmail-accounts` | none | NOT_FOUND (empty source directory) |
@@ -44,7 +44,7 @@ The currently called RPC inventory (38 function names) and direct PostgREST/Stor
 | `cloud_sync` | Versioned per-user snapshot with SQL-source column allowlists | `models.py`, `contract.py`, `validate.py`, `query.py`, `view.py`, `router.py` |
 | `payments` | Google Play verification and local manual bank-transfer request lifecycle | `models.py`, `validate.py`, `query.py`, `view.py`, `router.py` |
 | `admin` | Local roles, account/membership operations, audit, early-access lead management | `models.py`, `query.py`, `view.py`, `router.py` |
-| `edge_api` | Early Access, food evidence, AI-content reports, Google Play route orchestration, disabled legacy AI | `models.py`, `view.py`, `router.py` |
+| `edge_api` | Early Access, food evidence, AI-content reports, Google Play route orchestration, feature-gated Ollama text generation | `models.py`, `view.py`, `router.py` |
 | `sleep_safety` | Contacts, verification, dispatch, provider webhook | `models.py`, `validate.py`, `query.py`, `view.py`, `router.py` |
 | `storage` | Local file upload/download/delete with owner scope | `query.py`, `view.py`, `router.py` |
 

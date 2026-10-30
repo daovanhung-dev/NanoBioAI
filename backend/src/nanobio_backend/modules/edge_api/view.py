@@ -1,7 +1,7 @@
 import hashlib
 import hmac
 import unicodedata
-from typing import Any
+from typing import Any, cast
 
 from fastapi import Request
 from sqlalchemy import select
@@ -14,6 +14,8 @@ from nanobio_backend.db.models import AiContentReport, EarlyAccessLead, User
 from nanobio_backend.modules.auth.validate import normalize_vietnam_phone
 from nanobio_backend.modules.auth.view import consume_rate_limit
 from nanobio_backend.modules.edge_api.models import (
+    AiGenerateRequest,
+    AiGenerateResponseData,
     AiReportRequest,
     EarlyAccessRequest,
     FoodEvidenceRequest,
@@ -27,9 +29,99 @@ from nanobio_backend.services.google_play import (
     GooglePlayProviderError,
     verify_subscription,
 )
+from nanobio_backend.services.ollama_client import (
+    OllamaChatMessage,
+    OllamaClient,
+    OllamaContextLimitError,
+    OllamaInvalidResponseError,
+    OllamaTimeoutError,
+    OllamaUnavailableError,
+)
 
 _ALLOWED_GENDERS = {"male", "female", "other", "prefer_not_to_say"}
 _EXPECTED_APK_URL = "https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk"
+_NABI_AI_SYSTEM_INSTRUCTION = """Bạn là Nabi, trợ lý sức khỏe thông minh và thân thiện.
+
+Vai trò:
+- Tư vấn về dinh dưỡng, giấc ngủ, căng thẳng và lối sống lành mạnh.
+- Đưa ra gợi ý cá nhân hóa dựa trên thông tin sức khỏe người dùng.
+- Luôn lắng nghe, thấu hiểu và trả lời thực tế.
+
+Phong cách:
+- Luôn trả lời bằng tiếng Việt có dấu.
+- Gọi người dùng là "bạn", tự xưng là "mình".
+- Câu trả lời ngắn gọn, dễ hiểu, thường từ 2 đến 4 câu.
+- Ưu tiên câu ngắn để phản hồi giọng nói bắt đầu nhanh.
+- Không dùng markdown hoặc ký tự trang trí đặc biệt trong câu trả lời.
+- Tránh thuật ngữ y khoa phức tạp khi không cần thiết.
+- Có giọng thân thiện, ấm áp và chuyên nghiệp.
+
+Nguyên tắc an toàn:
+- Không đưa ra chẩn đoán y tế.
+- Không thay thế bác sĩ hoặc chuyên gia điều trị.
+- Khuyến khích gặp bác sĩ khi triệu chứng nghiêm trọng, kéo dài hoặc bất thường.
+- Tập trung vào thói quen sinh hoạt, dinh dưỡng, vận động và nghỉ ngơi.
+- Chỉ dùng token kỹ thuật phổ biến khi thật cần thiết, ví dụ AI, BMI, kcal hoặc ml.
+"""
+
+
+def generate_ai(
+    payload: AiGenerateRequest,
+    request: Request,
+    user: User,
+    db: Session,
+) -> dict[str, Any]:
+    settings = request.app.state.settings
+    if not settings.ollama_enabled:
+        raise ApiError(503, "FEATURE_NOT_ENABLED", "Tính năng này chưa được bật trên máy chủ.")
+
+    rate_limit_key = settings.rate_limit_hmac_key
+    if rate_limit_key is None or len(rate_limit_key.get_secret_value()) < 32:
+        raise ApiError(503, "AI_NOT_CONFIGURED", "Dịch vụ AI chưa được cấu hình.")
+    subject_hash = hmac.new(
+        rate_limit_key.get_secret_value().encode(),
+        str(user.id).encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    with atomic(db):
+        if consume_rate_limit(
+            db,
+            scope="ai-generate",
+            subject_hash=subject_hash,
+            limit=settings.ollama_technical_requests_per_minute,
+            window_seconds=60,
+        ):
+            raise ApiError(429, "RATE_LIMITED", "Bạn gửi yêu cầu hơi nhanh. Hãy thử lại sau.")
+
+    messages: list[OllamaChatMessage] = [{"role": "system", "content": _NABI_AI_SYSTEM_INSTRUCTION}]
+    for message in payload.messages:
+        messages.append({"role": message.role, "content": message.content})
+    transport_factory = cast(Any, getattr(request.app.state, "ollama_transport_factory", None))
+    try:
+        result = OllamaClient(settings, transport_factory=transport_factory).generate(messages)
+    except OllamaContextLimitError as exc:
+        raise ApiError(
+            413,
+            "MODEL_CONTEXT_LIMIT_EXCEEDED",
+            "Nội dung vượt quá giới hạn xử lý của trợ lý.",
+        ) from exc
+    except OllamaTimeoutError as exc:
+        raise ApiError(504, "AI_TIMEOUT", "Trợ lý phản hồi quá thời gian chờ.") from exc
+    except OllamaUnavailableError as exc:
+        raise ApiError(503, "AI_UNAVAILABLE", "Trợ lý tạm thời chưa sẵn sàng.") from exc
+    except OllamaInvalidResponseError as exc:
+        raise ApiError(
+            502, "AI_PROVIDER_FAILURE", "Trợ lý chưa thể tạo câu trả lời hợp lệ."
+        ) from exc
+
+    return AiGenerateResponseData(
+        text=result.text,
+        model=settings.ollama_model,
+        usage={
+            "input_tokens": result.input_tokens,
+            "output_tokens": result.output_tokens,
+        },
+    ).model_dump(by_alias=True)
 
 
 def register_early_access(

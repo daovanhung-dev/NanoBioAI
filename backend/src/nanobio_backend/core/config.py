@@ -1,7 +1,9 @@
 from functools import lru_cache
+from ipaddress import ip_address
 from pathlib import Path
+from urllib.parse import urlsplit
 
-from pydantic import SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -37,6 +39,14 @@ class Settings(BaseSettings):
     sleep_safety_max_dispatches_per_hour: int = 3
     sleep_safety_event_freshness_seconds: int = 600
     sleep_safety_verification_ttl_seconds: int = 600
+    ollama_enabled: bool = False
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_model: str = "qwen3:4b-instruct"
+    ollama_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    ollama_read_timeout_seconds: int = Field(default=120, ge=1, le=120)
+    ollama_num_ctx: int = Field(default=2048, ge=256, le=2048)
+    ollama_num_predict: int = Field(default=96, ge=1, le=96)
+    ollama_technical_requests_per_minute: int = Field(default=6, ge=1, le=60)
 
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
@@ -50,6 +60,34 @@ class Settings(BaseSettings):
     def positive_values(cls, value: int) -> int:
         if value <= 0:
             raise ValueError("must be greater than zero")
+        return value
+
+    @field_validator("ollama_base_url")
+    @classmethod
+    def loopback_ollama_url(cls, value: str) -> str:
+        try:
+            parsed = urlsplit(value)
+            host = parsed.hostname
+            is_loopback = host == "localhost" or (host is not None and ip_address(host).is_loopback)
+        except ValueError as exc:
+            raise ValueError("Ollama URL must be a valid loopback URL") from exc
+        if (
+            parsed.scheme != "http"
+            or not is_loopback
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("Ollama URL must use HTTP on a loopback host")
+        return value.rstrip("/")
+
+    @field_validator("ollama_model")
+    @classmethod
+    def selected_ollama_model(cls, value: str) -> str:
+        if value != "qwen3:4b-instruct":
+            raise ValueError("Only qwen3:4b-instruct is enabled for this backend phase")
         return value
 
 

@@ -9,7 +9,7 @@ This is the source of truth for the self-hosted FastAPI backend. It adapts the r
 - Public routes use `/api/v1`; canonical envelope fields are `success`, `businessCode`, `message`, `data`, `meta`, `traceId`; errors carry `data: null`.
 - Request trace header is `X-Trace-Id`. Settings and credentials come from process environment or a protected Ubuntu environment file.
 - Auth is first-party Vietnam phone/password, Argon2id, signed access JWT and opaque rotating refresh token. Existing Supabase accounts are not imported in this phase.
-- App AI inference remains on-device. `nabi-ai-generate` and `food-scan-analyze` are declared but return `503 FEATURE_NOT_ENABLED`; do not add Gemini calls.
+- Flutter app AI inference remains on-device and does not call or fall back to the backend AI route. `POST /api/v1/ai/generate` is a separate text-only FastAPI endpoint to loopback Ollama, gated by `OLLAMA_ENABLED` (default `false`); `food-scan-analyze` remains `503 FEATURE_NOT_ENABLED`. Do not add Gemini calls.
 - Only source-backed Supabase Edge Functions may become routes. Six empty directories are recorded as `NOT_FOUND` in the function inventory; do not invent their APIs.
 - This phase does not edit app, Admin Web or website code, deploy, or access/import production data.
 

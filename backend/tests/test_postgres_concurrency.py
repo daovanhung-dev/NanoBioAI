@@ -13,9 +13,11 @@ from sqlalchemy.orm import sessionmaker
 
 from nanobio_backend.core.config import Settings
 from nanobio_backend.core.responses import ApiError
+from nanobio_backend.core.uow import atomic
 from nanobio_backend.db import models  # noqa: F401
 from nanobio_backend.db.base import Base
-from nanobio_backend.db.models import ManualPaymentEvent, User
+from nanobio_backend.db.models import ManualPaymentEvent, RateLimitBucket, User
+from nanobio_backend.modules.auth.view import consume_rate_limit
 from nanobio_backend.modules.payments.view import create_manual_membership_payment
 
 
@@ -92,5 +94,58 @@ def test_concurrent_open_payment_requests_serialize_on_owner_row() -> None:
             if user is not None:
                 db.delete(user)
                 db.commit()
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+
+
+@pytest.mark.skipif(
+    not os.getenv("NANOBIO_TEST_DATABASE_URL"),
+    reason="NANOBIO_TEST_DATABASE_URL must point to an isolated disposable PostgreSQL database",
+)
+def test_concurrent_ai_rate_limit_requests_do_not_lose_bucket_updates() -> None:
+    database_url = os.environ["NANOBIO_TEST_DATABASE_URL"]
+    parsed_url = make_url(database_url)
+    if (
+        not parsed_url.drivername.startswith("postgresql")
+        or parsed_url.host not in {"127.0.0.1", "localhost", "::1"}
+        or "test" not in (parsed_url.database or "").casefold()
+    ):
+        pytest.fail(
+            "NANOBIO_TEST_DATABASE_URL must be a disposable loopback PostgreSQL database "
+            "whose name contains 'test'"
+        )
+    engine = create_engine(database_url, pool_size=8, max_overflow=0)
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    scope = f"ai-generate-test-{uuid4()}"
+    subject_hash = uuid4().hex
+
+    def consume_request() -> bool:
+        with factory() as db, atomic(db):
+            return consume_rate_limit(
+                db,
+                scope=scope,
+                subject_hash=subject_hash,
+                limit=6,
+                window_seconds=3600,
+            )
+
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = list(pool.map(lambda _: consume_request(), range(12)))
+        assert results.count(False) == 6
+        assert results.count(True) == 6
+        with factory() as db:
+            bucket = db.scalar(
+                select(RateLimitBucket).where(
+                    RateLimitBucket.scope == scope,
+                    RateLimitBucket.subject_hash == subject_hash,
+                )
+            )
+            assert bucket is not None
+            assert bucket.hits == 12
+            db.delete(bucket)
+            db.commit()
+    finally:
         Base.metadata.drop_all(engine)
         engine.dispose()

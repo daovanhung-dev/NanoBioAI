@@ -9,6 +9,7 @@ from nanobio_backend.core.security import current_user
 from nanobio_backend.db.models import User
 from nanobio_backend.modules.edge_api import view
 from nanobio_backend.modules.edge_api.models import (
+    AiGenerateRequest,
     AiReportRequest,
     EarlyAccessRequest,
     FoodEvidenceRequest,
@@ -19,8 +20,19 @@ router = APIRouter()
 
 
 @router.post("/ai/generate")
-def nabi_ai_generate(request: Request) -> Any:
-    raise ApiError(503, "FEATURE_NOT_ENABLED", "Tính năng này chưa được bật trên máy chủ.")
+def nabi_ai_generate(
+    payload: AiGenerateRequest,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    result = view.generate_ai(payload, request, user, db)
+    return success_response(
+        request,
+        result,
+        business_code="AI_GENERATED",
+        message="Nabi đã trả lời.",
+    )
 
 
 @router.post("/food/scan/analyze")

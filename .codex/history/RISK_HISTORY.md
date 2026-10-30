@@ -1335,3 +1335,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: - Chua fix: Tech/QA/Privacy review chưa được ghi nhận, nên theo release gate luồng kết nối vẫn là preview.
 - docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md :: - Can kiem tra tiep: sau các review, triển khai và nghiệm thu Android hotspot/foreground service, BLE provisioning, auth/token, Whisper/Opus/TTS, điều khiển listening và firmware trên OSTB thực.
 - docs/worklog/2026-10-23/005-worklog-xiaozhi-ostb3st-flash-boot.md :: ## Rủi ro và giới hạn
+- docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - Them settings loopback-only, timeout/context/output bounds, provider error mapping, gioi han 6 request/user/phut qua `RateLimitBucket`; khong giu transaction trong inference.
+- docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - `uv run --no-sync pytest`: PASS, 43 passed; 2 PostgreSQL-only tests skipped vi khong co `NANOBIO_TEST_DATABASE_URL`.
+- docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - Chua fix: chua chay concurrency test tren PostgreSQL disposable; chua deploy backend endpoint len Ubuntu server.
+- docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - Can kiem tra tiep: sau khi co phe duyet deploy rieng, cau hinh `OLLAMA_ENABLED` trong moi truong test, smoke-test endpoint tren service backend that, va giu Ollama/DB loopback.

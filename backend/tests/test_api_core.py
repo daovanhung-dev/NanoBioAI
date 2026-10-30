@@ -179,12 +179,24 @@ def test_admin_route_denies_member_and_grant_is_audited_and_idempotent(runtime):
         assert len(subscriptions) == 1
 
 
-def test_ai_legacy_routes_are_declared_but_disabled(runtime):
+def test_ai_generation_is_disabled_by_default_and_food_scan_stays_disabled(runtime):
     client, _, _ = runtime
-    response = client.post("/api/v1/ai/generate", json={"contents": []})
+    _signup(client)
+    access_token = client.post(
+        "/api/v1/auth/login", json={"phone": "0912345678", "password": "StrongPass123"}
+    ).json()["data"]["access_token"]
+    response = client.post(
+        "/api/v1/ai/generate",
+        headers={"Authorization": f"Bearer {access_token}"},
+        json={"messages": [{"role": "user", "content": "Chào Nabi."}]},
+    )
     assert response.status_code == 503
     assert response.json()["businessCode"] == "FEATURE_NOT_ENABLED"
     assert response.json()["data"] is None
+
+    food_scan = client.post("/api/v1/food/scan/analyze", json={})
+    assert food_scan.status_code == 503
+    assert food_scan.json()["businessCode"] == "FEATURE_NOT_ENABLED"
 
 
 def test_google_play_provider_failure_is_safe_and_retryable(runtime, monkeypatch):

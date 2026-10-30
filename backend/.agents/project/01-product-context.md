@@ -6,7 +6,7 @@
 - Backend goal: replace app, Admin Web and website calls to Supabase Auth, PostgREST, RPC, Storage and configured Edge Functions with self-hosted `/api/v1` APIs.
 - This phase builds the backend only. Client migration, Supabase shutdown, deployment, production-data import, and data reconciliation are later phases.
 - Existing Supabase users cannot sign in until a separately approved migration; local test data is disposable and synthetic.
-- AI inference stays on-device. The legacy AI generation routes return `FEATURE_NOT_ENABLED`.
+- Flutter app AI inference stays on-device and does not call or fall back to backend AI. Separately, `POST /api/v1/ai/generate` provides text inference through loopback Ollama when its feature flag is enabled; it is disabled by default. Food Scan analysis remains disabled.
 
 ## Actors
 

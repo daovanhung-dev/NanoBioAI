@@ -16,7 +16,7 @@ Tao backend FastAPI modular monolith de NanoBioAI co the chay tren Ubuntu va Pos
 
 ## API da co
 
-- Chuyen 19 Edge Function da duoc cau hinh thanh route BE; hai endpoint AI legacy duoc khai bao nhung tra `503 FEATURE_NOT_ENABLED` vi AI inference van chay tren thiet bi.
+- Chuyen 19 Edge Function da duoc cau hinh thanh route BE. `POST /api/v1/ai/generate` la endpoint text Ollama rieng cua FastAPI, bat bang feature flag (mac dinh tat); `food-scan-analyze` van tra `503 FEATURE_NOT_ENABLED`. AI cua Flutter van chay tren thiet bi va khong goi endpoint backend nay.
 - Co first party phone/password Auth voi Argon2id, access JWT va refresh token rotation.
 - Co API profile, membership, manual membership payment, Google Play verification, cloud snapshot, account deletion, Admin account/membership, early access, AI content report, food evidence, sleep safety va storage `sale-payout-proofs`.
 - Port RPC FamilyPlus cho context, group va member; signup tao self health subject. Cac thao tac kiem tra paid plan, owner subject va gioi han member.
@@ -29,7 +29,7 @@ Tao backend FastAPI modular monolith de NanoBioAI co the chay tren Ubuntu va Pos
 
 Cloud snapshot hien la allowlisted per-user JSON snapshot, chua thay the cac side effect quan he/subject/reward cua RPC Supabase. Sale, wellness/reward va nhieu thao tac Admin Web con duoc danh dau chua port. Khong tao route placeholder cho cac contract nay.
 
-Hai thu muc Edge Function khong duoc bat; khong goi Gemini tu server. Sau thu muc function empty khong co source nen khong tao API tu suy doan. Tai khoan/dataset Supabase hien tai khong duoc import.
+Khong goi Gemini tu server. Sau thu muc function empty khong co source nen khong tao API tu suy doan. Tai khoan/dataset Supabase hien tai khong duoc import. Endpoint Ollama khong cap membership/quota thuong mai va khong thay the AI local trong app.
 
 ## Van hanh Ubuntu
 

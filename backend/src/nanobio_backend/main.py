@@ -12,6 +12,10 @@ from nanobio_backend.api.v1.router import router as api_v1_router
 from nanobio_backend.core.config import Settings, get_settings
 from nanobio_backend.core.database import create_session_factory
 from nanobio_backend.core.middleware import TraceMiddleware, register_exception_handlers
+from nanobio_backend.core.request_limits import (
+    AI_GENERATE_MAX_REQUEST_BYTES,
+    AiGenerateRequestLimitMiddleware,
+)
 from nanobio_backend.core.responses import ApiError
 
 
@@ -35,6 +39,12 @@ def create_app(
     app = FastAPI(title=resolved_settings.app_name, version="0.1.0", lifespan=lifespan)
     app.state.settings = resolved_settings
     app.state.session_factory = session_factory
+    app.state.ollama_transport_factory = None
+    app.add_middleware(
+        AiGenerateRequestLimitMiddleware,
+        path=f"{resolved_settings.api_v1_prefix.rstrip('/')}/ai/generate",
+        max_bytes=AI_GENERATE_MAX_REQUEST_BYTES,
+    )
     app.add_middleware(TraceMiddleware)
     app.add_middleware(
         CORSMiddleware,

@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 267
+- Total worklogs: 268
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -276,3 +276,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-23 | Flutter UI, route, widget test, DD và design registry | test | lib/app_versions/v1/features/features_hub/ và tính năng mới nabi_esp_assistant | [Worklog - Nabi ESP assistant trong Feature Hub](../../docs/worklog/2026-10-23/004-worklog-nabi-esp-assistant.md) |
 | 2026-10-23 | build, nạp firmware và nghiệm thu boot trên thiết bị thật. | test | iot/xiaozhi-esp32, profile ostb/ostb-xiaozhi-3st với config.local-ai.json. | [Worklog - Build và boot XiaoZhi trên OSTB 3ST](../../docs/worklog/2026-10-23/005-worklog-xiaozhi-ostb3st-flash-boot.md) |
 | 2026-10-23 | unknown | docs-context | unknown | [Worklog - Nabi tự kết nối với ESP OSTB 3ST](../../docs/worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md) |
+| 2026-10-30 | coding, test va cap nhat context backend | test | backend/modules/edge_api, backend/services/ollama_client.py | [Worklog - FastAPI Ollama text endpoint](../../docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md) |
