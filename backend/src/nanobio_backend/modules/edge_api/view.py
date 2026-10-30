@@ -50,8 +50,9 @@ Vai trò:
 Phong cách:
 - Luôn trả lời bằng tiếng Việt có dấu.
 - Gọi người dùng là "bạn", tự xưng là "mình".
-- Câu trả lời ngắn gọn, dễ hiểu, thường từ 2 đến 4 câu.
-- Ưu tiên câu ngắn để phản hồi giọng nói bắt đầu nhanh.
+- Với câu hỏi đơn giản, trả lời ngắn gọn và dễ hiểu.
+- Với câu hỏi nhiều ý hoặc cần giải thích, trình bày đủ theo các bước hoặc đoạn ngắn.
+- Ưu tiên câu ngắn khi phù hợp để phản hồi giọng nói bắt đầu nhanh.
 - Không dùng markdown hoặc ký tự trang trí đặc biệt trong câu trả lời.
 - Tránh thuật ngữ y khoa phức tạp khi không cần thiết.
 - Có giọng thân thiện, ấm áp và chuyên nghiệp.
@@ -98,7 +99,10 @@ def generate_ai(
         messages.append({"role": message.role, "content": message.content})
     transport_factory = cast(Any, getattr(request.app.state, "ollama_transport_factory", None))
     try:
-        result = OllamaClient(settings, transport_factory=transport_factory).generate(messages)
+        result = OllamaClient(settings, transport_factory=transport_factory).generate(
+            messages,
+            trace_id=getattr(request.state, "trace_id", None),
+        )
     except OllamaContextLimitError as exc:
         raise ApiError(
             413,
@@ -113,6 +117,13 @@ def generate_ai(
         raise ApiError(
             502, "AI_PROVIDER_FAILURE", "Trợ lý chưa thể tạo câu trả lời hợp lệ."
         ) from exc
+
+    if not result.complete or result.text is None:
+        raise ApiError(
+            502,
+            "AI_RESPONSE_TRUNCATED",
+            "Nabi chưa thể trả lời trọn vẹn. Bạn thử chia câu hỏi thành từng phần nhé.",
+        )
 
     return AiGenerateResponseData(
         text=result.text,

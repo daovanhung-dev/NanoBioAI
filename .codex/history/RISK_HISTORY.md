@@ -1340,3 +1340,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: ## Loi/Rui ro
 - docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - Chua fix: chua chay concurrency test tren PostgreSQL disposable; chua deploy backend endpoint len Ubuntu server.
 - docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md :: - Can kiem tra tiep: sau khi co phe duyet deploy rieng, cau hinh `OLLAMA_ENABLED` trong moi truong test, smoke-test endpoint tren service backend that, va giu Ollama/DB loopback.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - Tach `done_reason=length` thanh output incomplete; chi tra text khi hoan tat. Neu khong retry duoc hoac retry van bi cat, API tra HTTP 502 `AI_RESPONSE_TRUNCATED`, khong tra partial text. Phan hoi sai dinh dang tiep tuc la `AI_PROVIDER_FAILURE`.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - `backend/src/nanobio_backend/core/config.py` - tang bounded output/context, them feature flag retry va tong timeout.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - `backend/src/nanobio_backend/services/ollama_client.py` - phan loai truncated, retry toi da mot lan, timeout chung va log metadata an toan.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - `uv run --no-sync pytest`: PASS, 54 passed; 2 PostgreSQL-only tests skipped vi khong co `NANOBIO_TEST_DATABASE_URL`.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - `Settings(_env_file='.env.example')` voi cac assert cho output/context/retry/timeout va CORS: PASS.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: ## Loi/Rui ro
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - Da fix: `done_reason=length` truoc day bi map thanh `AI_PROVIDER_FAILURE`; gio co status code rieng va khong tra text chua hoan tat.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - Chua fix: chua xac nhan Ollama context 4096 chay 100% tren GPU trong staging; retry van default off.
+- docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md :: - Can kiem tra tiep: neu muon bat retry, bench context 4096 tren staging, xac nhan `ollama ps` bao 100% GPU va latency/VRAM/OOM dat yeu cau; deploy can approval rieng.

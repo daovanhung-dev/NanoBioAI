@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import Callable
 from uuid import uuid4
 
@@ -59,8 +60,11 @@ def test_ollama_client_sends_fixed_chat_settings_and_reads_usage() -> None:
     result = _client(provider).generate(messages)
 
     assert result.text == "Mình nghe bạn."
+    assert result.complete is True
     assert result.input_tokens == 15
     assert result.output_tokens == 5
+    assert result.done_reason == "stop"
+    assert result.retry_count == 0
     assert len(captured) == 1
     assert captured[0].url == "http://127.0.0.1:11434/api/chat"
     body = json.loads(captured[0].content)
@@ -68,7 +72,7 @@ def test_ollama_client_sends_fixed_chat_settings_and_reads_usage() -> None:
     assert body["messages"] == messages
     assert body["stream"] is False
     assert body["keep_alive"] == "30s"
-    assert body["options"] == {"num_ctx": 2048, "num_predict": 96}
+    assert body["options"] == {"num_ctx": 2048, "num_predict": 1024}
 
 
 def test_ollama_client_allows_missing_usage_metrics() -> None:
@@ -83,14 +87,178 @@ def test_ollama_client_allows_missing_usage_metrics() -> None:
     assert result.output_tokens is None
 
 
+def test_ollama_client_retries_truncation_once_when_context_and_flag_allow() -> None:
+    responses = [
+        _provider_payload(content="partial", done_reason="length", eval_count=1024),
+        _provider_payload(content="Mình đã hoàn tất câu trả lời."),
+    ]
+    captured: list[httpx.Request] = []
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        return httpx.Response(200, json=responses.pop(0))
+
+    settings = Settings(ollama_num_ctx=4096, ollama_truncation_retry_enabled=True)
+    result = _client(provider, settings).generate([{"role": "user", "content": "Giải thích."}])
+
+    assert result.complete is True
+    assert result.text == "Mình đã hoàn tất câu trả lời."
+    assert result.retry_count == 1
+    assert len(captured) == 2
+    assert json.loads(captured[0].content)["options"] == {
+        "num_ctx": 4096,
+        "num_predict": 1024,
+    }
+    assert json.loads(captured[1].content)["options"] == {
+        "num_ctx": 4096,
+        "num_predict": 2048,
+    }
+
+
+@pytest.mark.parametrize(
+    ("content", "prompt_tokens"),
+    [("Phần trả lời dở.", 15), ("", 15), ("Phần trả lời dở.", None)],
+)
+def test_ollama_client_classifies_length_as_truncated_without_exposing_partial_text(
+    content: str, prompt_tokens: int | None
+) -> None:
+    payload: dict[str, object] = _provider_payload(content=content, done_reason="length")
+    if prompt_tokens is None:
+        payload.pop("prompt_eval_count")
+
+    result = _client(lambda request: httpx.Response(200, json=payload)).generate(
+        [{"role": "user", "content": "Giải thích."}]
+    )
+
+    assert result.complete is False
+    assert result.text is None
+    assert result.done_reason == "length"
+    assert result.retry_count == 0
+    assert result.input_tokens == prompt_tokens
+
+
+def test_ollama_client_returns_truncated_after_single_retry_is_still_cut() -> None:
+    responses = [
+        _provider_payload(content="Phần đầu.", done_reason="length"),
+        _provider_payload(content="Phần tiếp theo.", done_reason="length"),
+    ]
+    calls = 0
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(200, json=responses.pop(0))
+
+    settings = Settings(ollama_num_ctx=4096, ollama_truncation_retry_enabled=True)
+    result = _client(provider, settings).generate([{"role": "user", "content": "Giải thích."}])
+
+    assert calls == 2
+    assert result.complete is False
+    assert result.text is None
+    assert result.done_reason == "length"
+    assert result.retry_count == 1
+
+
+@pytest.mark.parametrize(
+    "settings_kwargs",
+    [
+        {"ollama_num_ctx": 2048, "ollama_truncation_retry_enabled": True},
+        {"ollama_num_ctx": 4096, "ollama_truncation_retry_enabled": False},
+    ],
+)
+def test_ollama_client_does_not_retry_without_4096_context_and_enabled_flag(
+    settings_kwargs: dict[str, object],
+) -> None:
+    calls = 0
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(200, json=_provider_payload(done_reason="length"))
+
+    result = _client(provider, Settings(**settings_kwargs)).generate(
+        [{"role": "user", "content": "Giải thích."}]
+    )
+
+    assert calls == 1
+    assert result.complete is False
+    assert result.retry_count == 0
+
+
+def test_ollama_client_skips_retry_when_time_budget_is_insufficient() -> None:
+    calls = 0
+    fake_clock = [0.0]
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        fake_clock[0] = 91.0
+        return httpx.Response(200, json=_provider_payload(done_reason="length"))
+
+    settings = Settings(ollama_num_ctx=4096, ollama_truncation_retry_enabled=True)
+    client = OllamaClient(
+        settings,
+        transport_factory=lambda: httpx.MockTransport(provider),
+        clock=lambda: fake_clock[0],
+    )
+    result = client.generate([{"role": "user", "content": "Giải thích."}])
+
+    assert calls == 1
+    assert result.complete is False
+    assert result.retry_count == 0
+    assert result.latency_ms == 91_000
+
+
+def test_ollama_client_skips_retry_when_prompt_leaves_insufficient_context() -> None:
+    calls = 0
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(
+            200,
+            json=_provider_payload(done_reason="length", prompt_eval_count=2049),
+        )
+
+    settings = Settings(ollama_num_ctx=4096, ollama_truncation_retry_enabled=True)
+    result = _client(provider, settings).generate([{"role": "user", "content": "Giải thích."}])
+
+    assert calls == 1
+    assert result.complete is False
+    assert result.retry_count == 0
+
+
+def test_ollama_client_enforces_total_deadline_across_attempts() -> None:
+    calls = 0
+    fake_clock = [0.0]
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        fake_clock[0] += 80.0 if calls == 1 else 41.0
+        return httpx.Response(200, json=_provider_payload(done_reason="length"))
+
+    settings = Settings(ollama_num_ctx=4096, ollama_truncation_retry_enabled=True)
+    client = OllamaClient(
+        settings,
+        transport_factory=lambda: httpx.MockTransport(provider),
+        clock=lambda: fake_clock[0],
+    )
+
+    with pytest.raises(OllamaTimeoutError):
+        client.generate([{"role": "user", "content": "Giải thích."}])
+
+    assert calls == 2
+
+
 @pytest.mark.parametrize(
     "settings",
     [
         {"ollama_base_url": "http://example.com:11434"},
         {"ollama_base_url": "http://127.0.0.1:11434/path"},
         {"ollama_model": "attacker-model"},
-        {"ollama_num_ctx": 4096},
-        {"ollama_num_predict": 97},
+        {"ollama_num_ctx": 4097},
+        {"ollama_num_predict": 2049},
     ],
 )
 def test_ollama_settings_reject_non_loopback_or_out_of_bounds_values(settings) -> None:
@@ -304,6 +472,40 @@ def test_ai_endpoint_maps_provider_failures_without_leaking_prompt_or_error(runt
     assert response.json()["businessCode"] == "AI_UNAVAILABLE"
     assert prompt not in response.text
     assert "private provider traceback" not in response.text
+
+
+def test_ai_endpoint_returns_truncated_code_without_partial_text_or_sensitive_logs(
+    runtime, caplog
+) -> None:
+    client, _, _ = runtime
+    prompt = "private health prompt that needs a detailed explanation"
+    partial = "private partial health answer"
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json=_provider_payload(content=partial, done_reason="length"),
+        )
+
+    _enable_ai(client, provider)
+    token = _signup_and_token(client)
+    caplog.set_level(logging.INFO, logger="nanobio.ai")
+    response = client.post(
+        "/api/v1/ai/generate",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"messages": [{"role": "user", "content": prompt}]},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["businessCode"] == "AI_RESPONSE_TRUNCATED"
+    assert response.json()["data"] is None
+    assert prompt not in response.text
+    assert partial not in response.text
+    assert prompt not in caplog.text
+    assert partial not in caplog.text
+    assert "status=truncated" in caplog.text
+    assert "done_reason=length" in caplog.text
+    assert "retry_count=0" in caplog.text
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Literal, TypedDict
@@ -10,6 +12,10 @@ import httpx
 from nanobio_backend.core.config import Settings
 
 MAX_PROVIDER_RESPONSE_BYTES = 64 * 1024
+TRUNCATION_RETRY_NUM_PREDICT = 2048
+MIN_RETRY_REMAINING_SECONDS = 30
+
+logger = logging.getLogger("nanobio.ai")
 
 
 class OllamaChatMessage(TypedDict):
@@ -17,11 +23,27 @@ class OllamaChatMessage(TypedDict):
     content: str
 
 
+SafeDoneReason = Literal["stop", "length", "other"]
+
+
 @dataclass(frozen=True)
 class OllamaChatResult:
-    text: str
+    text: str | None
+    complete: bool
     input_tokens: int | None
     output_tokens: int | None
+    done_reason: SafeDoneReason | None
+    retry_count: int
+    latency_ms: int
+
+
+@dataclass(frozen=True)
+class _ParsedOllamaResponse:
+    text: str | None
+    complete: bool
+    input_tokens: int | None
+    output_tokens: int | None
+    done_reason: SafeDoneReason | None
 
 
 class OllamaProviderError(Exception):
@@ -50,11 +72,102 @@ class OllamaClient:
         settings: Settings,
         *,
         transport_factory: Callable[[], httpx.BaseTransport] | None = None,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._settings = settings
         self._transport_factory = transport_factory
+        self._clock = clock
 
-    def generate(self, messages: Sequence[OllamaChatMessage]) -> OllamaChatResult:
+    def generate(
+        self,
+        messages: Sequence[OllamaChatMessage],
+        *,
+        trace_id: str | None = None,
+    ) -> OllamaChatResult:
+        started_at = self._clock()
+        deadline = started_at + self._settings.ollama_total_timeout_seconds
+        parsed: _ParsedOllamaResponse | None = None
+        retry_count = 0
+
+        try:
+            parsed = self._request(
+                messages,
+                num_predict=self._settings.ollama_num_predict,
+                time_budget=self._remaining_seconds(deadline),
+                deadline=deadline,
+            )
+            if self._clock() >= deadline:
+                raise OllamaTimeoutError
+
+            if parsed.done_reason == "length" and self._retry_is_allowed(parsed, deadline):
+                retry_count = 1
+                parsed = self._request(
+                    messages,
+                    num_predict=TRUNCATION_RETRY_NUM_PREDICT,
+                    time_budget=self._remaining_seconds(deadline),
+                    deadline=deadline,
+                )
+                if self._clock() >= deadline:
+                    raise OllamaTimeoutError
+
+            latency_ms = max(0, round((self._clock() - started_at) * 1000))
+            result = OllamaChatResult(
+                text=parsed.text if parsed.complete else None,
+                complete=parsed.complete,
+                input_tokens=parsed.input_tokens,
+                output_tokens=parsed.output_tokens,
+                done_reason=parsed.done_reason,
+                retry_count=retry_count,
+                latency_ms=latency_ms,
+            )
+            self._log_metrics(
+                trace_id,
+                status="complete" if result.complete else "truncated",
+                done_reason=result.done_reason,
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+                latency_ms=result.latency_ms,
+                retry_count=retry_count,
+            )
+            return result
+        except OllamaProviderError as exc:
+            status = _safe_error_status(exc)
+            latency_ms = max(0, round((self._clock() - started_at) * 1000))
+            self._log_metrics(
+                trace_id,
+                status=status,
+                done_reason=parsed.done_reason if parsed else None,
+                input_tokens=parsed.input_tokens if parsed else None,
+                output_tokens=parsed.output_tokens if parsed else None,
+                latency_ms=latency_ms,
+                retry_count=retry_count,
+            )
+            raise
+
+    def _retry_is_allowed(self, response: _ParsedOllamaResponse, deadline: float) -> bool:
+        prompt_tokens = response.input_tokens
+        return (
+            self._settings.ollama_truncation_retry_enabled
+            and self._settings.ollama_num_ctx == 4096
+            and prompt_tokens is not None
+            and prompt_tokens + TRUNCATION_RETRY_NUM_PREDICT <= self._settings.ollama_num_ctx
+            and deadline - self._clock() >= MIN_RETRY_REMAINING_SECONDS
+        )
+
+    def _remaining_seconds(self, deadline: float) -> float:
+        remaining = deadline - self._clock()
+        if remaining <= 0:
+            raise OllamaTimeoutError
+        return remaining
+
+    def _request(
+        self,
+        messages: Sequence[OllamaChatMessage],
+        *,
+        num_predict: int,
+        time_budget: float,
+        deadline: float,
+    ) -> _ParsedOllamaResponse:
         payload = {
             "model": self._settings.ollama_model,
             "messages": list(messages),
@@ -62,14 +175,19 @@ class OllamaClient:
             "keep_alive": "30s",
             "options": {
                 "num_ctx": self._settings.ollama_num_ctx,
-                "num_predict": self._settings.ollama_num_predict,
+                "num_predict": num_predict,
             },
         }
+        connect_timeout = min(self._settings.ollama_connect_timeout_seconds, time_budget)
+        read_timeout = min(
+            self._settings.ollama_read_timeout_seconds,
+            max(0.05, time_budget - connect_timeout),
+        )
         timeout = httpx.Timeout(
-            connect=self._settings.ollama_connect_timeout_seconds,
-            read=self._settings.ollama_read_timeout_seconds,
-            write=self._settings.ollama_connect_timeout_seconds,
-            pool=self._settings.ollama_connect_timeout_seconds,
+            connect=connect_timeout,
+            read=read_timeout,
+            write=min(connect_timeout, time_budget),
+            pool=min(connect_timeout, time_budget),
         )
         transport = self._transport_factory() if self._transport_factory else None
 
@@ -82,7 +200,11 @@ class OllamaClient:
                 ) as client,
                 client.stream("POST", "/api/chat", json=payload) as response,
             ):
-                response_body = _read_bounded_response(response)
+                response_body = _read_bounded_response(
+                    response,
+                    deadline=deadline,
+                    clock=self._clock,
+                )
                 status_code = response.status_code
         except httpx.TimeoutException as exc:
             raise OllamaTimeoutError from exc
@@ -99,31 +221,96 @@ class OllamaClient:
 
         if not isinstance(decoded, dict):
             raise OllamaInvalidResponseError
+
         message = decoded.get("message")
         content = message.get("content") if isinstance(message, dict) else None
-        if (
-            decoded.get("done") is not True
-            or decoded.get("done_reason") == "length"
-            or not isinstance(content, str)
-            or not content.strip()
-        ):
+        done_reason = _safe_done_reason(decoded.get("done_reason"))
+        input_tokens = _non_negative_integer(decoded.get("prompt_eval_count"))
+        output_tokens = _non_negative_integer(decoded.get("eval_count"))
+
+        if done_reason == "length":
+            return _ParsedOllamaResponse(
+                text=None,
+                complete=False,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                done_reason="length",
+            )
+
+        if decoded.get("done") is not True or not isinstance(content, str) or not content.strip():
             raise OllamaInvalidResponseError
 
-        return OllamaChatResult(
+        return _ParsedOllamaResponse(
             text=content.strip(),
-            input_tokens=_non_negative_integer(decoded.get("prompt_eval_count")),
-            output_tokens=_non_negative_integer(decoded.get("eval_count")),
+            complete=True,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            done_reason=done_reason,
+        )
+
+    @staticmethod
+    def _log_metrics(
+        trace_id: str | None,
+        *,
+        status: str,
+        done_reason: SafeDoneReason | None,
+        input_tokens: int | None,
+        output_tokens: int | None,
+        latency_ms: int,
+        retry_count: int,
+    ) -> None:
+        if trace_id is None:
+            return
+        logger.info(
+            "AI inference trace_id=%s status=%s done_reason=%s prompt_tokens=%s "
+            "output_tokens=%s latency_ms=%d retry_count=%d",
+            trace_id,
+            status,
+            done_reason,
+            input_tokens,
+            output_tokens,
+            latency_ms,
+            retry_count,
         )
 
 
-def _read_bounded_response(response: httpx.Response) -> bytes:
+def _safe_error_status(error: OllamaProviderError) -> str:
+    if isinstance(error, OllamaTimeoutError):
+        return "timeout"
+    if isinstance(error, OllamaUnavailableError):
+        return "unavailable"
+    if isinstance(error, OllamaContextLimitError):
+        return "context_limit"
+    return "provider_failure"
+
+
+def _safe_done_reason(value: object) -> SafeDoneReason | None:
+    if value == "stop":
+        return "stop"
+    if value == "length":
+        return "length"
+    if value is None:
+        return None
+    return "other"
+
+
+def _read_bounded_response(
+    response: httpx.Response,
+    *,
+    deadline: float,
+    clock: Callable[[], float],
+) -> bytes:
     chunks: list[bytes] = []
     total = 0
     for chunk in response.iter_bytes():
+        if clock() >= deadline:
+            raise OllamaTimeoutError
         total += len(chunk)
         if total > MAX_PROVIDER_RESPONSE_BYTES:
             raise OllamaInvalidResponseError
         chunks.append(chunk)
+    if clock() >= deadline:
+        raise OllamaTimeoutError
     return b"".join(chunks)
 
 

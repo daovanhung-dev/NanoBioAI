@@ -44,8 +44,10 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen3:4b-instruct"
     ollama_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
     ollama_read_timeout_seconds: int = Field(default=120, ge=1, le=120)
-    ollama_num_ctx: int = Field(default=2048, ge=256, le=2048)
-    ollama_num_predict: int = Field(default=96, ge=1, le=96)
+    ollama_total_timeout_seconds: int = Field(default=120, ge=30, le=120)
+    ollama_num_ctx: int = Field(default=2048, ge=256, le=4096)
+    ollama_num_predict: int = Field(default=1024, ge=1, le=2048)
+    ollama_truncation_retry_enabled: bool = False
     ollama_technical_requests_per_minute: int = Field(default=6, ge=1, le=60)
 
     @field_validator("cors_allowed_origins", mode="before")
