@@ -54,10 +54,14 @@ export class BackendClient {
     return { unsubscribe: () => this.listeners.delete(listener) };
   }
 
-  async signIn(email: string, password: string): Promise<BackendAuthSession> {
+  async signIn(identifier: string, password: string): Promise<BackendAuthSession> {
+    const normalizedIdentifier = identifier.trim();
+    const credentials = normalizedIdentifier.includes('@')
+      ? { email: normalizedIdentifier.toLowerCase(), password }
+      : { phone: normalizedIdentifier, password };
     const data = await this.requestData('/auth/login', {
       method: 'POST',
-      body: { email: email.trim().toLowerCase(), password },
+      body: credentials,
       authenticated: false,
     });
     return this.saveSession(parseSession(data));

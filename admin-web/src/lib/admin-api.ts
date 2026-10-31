@@ -58,9 +58,9 @@ export class AdminApi {
     return this.client.watchAuth(listener);
   }
 
-  async signIn(email: string, password: string): Promise<void> {
+  async signIn(identifier: string, password: string): Promise<void> {
     try {
-      await this.client.signIn(email, password);
+      await this.client.signIn(identifier, password);
     } catch (error) {
       if (error instanceof BackendRequestError) {
         throw new AdminApiError(error.message, error.statusCode >= 500);

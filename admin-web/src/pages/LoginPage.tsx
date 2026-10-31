@@ -8,7 +8,7 @@ export function LoginPage() {
   const { status, session, message, signIn, refresh } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -18,13 +18,13 @@ export function LoginPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
-    if (!email.trim() || password.length < 1) {
-      setFormError('Vui lòng nhập email và mật khẩu.');
+    if (!identifier.trim() || password.length < 1) {
+      setFormError('Vui lòng nhập email hoặc số điện thoại và mật khẩu.');
       return;
     }
     setBusy(true);
     try {
-      await signIn(email, password);
+      await signIn(identifier, password);
       const destination = typeof location.state?.from === 'string' ? location.state.from : '/admin/dashboard';
       navigate(destination, { replace: true });
     } catch (error) {
@@ -50,8 +50,8 @@ export function LoginPage() {
           <h2>Chào mừng trở lại</h2>
           <p className="login-subtitle">Đăng nhập bằng tài khoản đã được cấp quyền quản trị.</p>
           {(formError || (configurationError ? message : null)) && <div className="inline-alert danger" role="alert">{formError || message}</div>}
-          <label className="field-label" htmlFor="admin-email">Email</label>
-          <input id="admin-email" className="input" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@nanobio.vn" />
+          <label className="field-label" htmlFor="admin-identifier">Email hoặc số điện thoại</label>
+          <input id="admin-identifier" className="input" type="text" autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="admin@nanobio.vn hoặc 0912 345 678" />
           <label className="field-label" htmlFor="admin-password">Mật khẩu</label>
           <input id="admin-password" className="input" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Nhập mật khẩu" />
           <button className="button primary wide" disabled={busy || status === 'loading'}>{busy ? 'Đang kiểm tra…' : <>Đăng nhập <ArrowRight size={17} /></>}</button>

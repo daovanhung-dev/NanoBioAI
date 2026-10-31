@@ -64,6 +64,23 @@ describe('Admin API backend transport', () => {
     expect(new Headers(calls[1]?.init.headers).get('authorization')).toBe('Bearer access');
   });
 
+  it('authenticates a phone-only admin account through the backend phone contract', async () => {
+    const { api, calls } = harness((url) => url.pathname.endsWith('/auth/login')
+      ? envelope({
+        access_token: 'access',
+        refresh_token: 'refresh-token-value-that-is-long-enough',
+        expires_in: 900,
+        user: { id: 'admin-1', email: null, roles: ['super_admin'] },
+      })
+      : envelope({ user_id: 'admin-1', roles: ['super_admin'], permissions: ['*'], is_active: true }));
+
+    await api.signIn(' 0912 345 678 ', 'AdminPass123');
+
+    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
+      phone: '0912 345 678', password: 'AdminPass123',
+    });
+  });
+
   it('loads a bounded early access page and sends an audited status update', async () => {
     const { api, calls } = harness((url) => url.pathname.endsWith('/early-access/leads')
       ? envelope({

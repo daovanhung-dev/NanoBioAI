@@ -11,7 +11,7 @@ type AuthContextValue = {
   session: AdminSession | null;
   userEmail: string | null;
   message: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (identifier: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -81,11 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription?.unsubscribe();
   }, [api, loadFromSession, refresh]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (identifier: string, password: string) => {
     setStatus('loading');
     setMessage(null);
     try {
-      await api.signIn(email, password);
+      await api.signIn(identifier, password);
       const current = await api.getCurrentSession();
       const next = await loadFromSession(current, true, true);
       if (!next) {
