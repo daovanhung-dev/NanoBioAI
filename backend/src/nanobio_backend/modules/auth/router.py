@@ -50,9 +50,11 @@ def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)
     result = view.login(
         request,
         db,
-        payload.phone or payload.email or "",
-        payload.password,
-        client_ip(request),
+        phone=payload.phone,
+        email=payload.email,
+        username=payload.username,
+        password=payload.password,
+        client_ip=client_ip(request),
     )
     return success_response(
         request, result, business_code="AUTHENTICATED", message="Đăng nhập thành công."

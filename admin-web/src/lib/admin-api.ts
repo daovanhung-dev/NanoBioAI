@@ -37,7 +37,11 @@ import {
 } from "../types";
 
 export class AdminApiError extends Error {
-  constructor(message: string, readonly retryable = false) {
+  constructor(
+    message: string,
+    readonly retryable = false,
+    readonly businessCode = 'ADMIN_API_ERROR',
+  ) {
     super(message);
     this.name = "AdminApiError";
   }
@@ -58,14 +62,25 @@ export class AdminApi {
     return this.client.watchAuth(listener);
   }
 
-  async signIn(identifier: string, password: string): Promise<void> {
+  async signIn(identifier: string, password: string): Promise<BackendAuthSession> {
     try {
-      await this.client.signIn(identifier, password);
+      return await this.client.signIn(identifier, password);
     } catch (error) {
       if (error instanceof BackendRequestError) {
-        throw new AdminApiError(error.message, error.statusCode >= 500);
+        throw new AdminApiError(error.message, error.statusCode >= 500, error.businessCode);
       }
       throw new AdminApiError("Thông tin đăng nhập chưa đúng hoặc tài khoản chưa thể sử dụng.");
+    }
+  }
+
+  async changePassword(newPassword: string): Promise<BackendAuthSession> {
+    try {
+      return await this.client.changePassword(newPassword);
+    } catch (error) {
+      if (error instanceof BackendRequestError) {
+        throw new AdminApiError(error.message, error.statusCode >= 500, error.businessCode);
+      }
+      throw new AdminApiError("Chưa thể cập nhật mật khẩu lúc này.");
     }
   }
 
@@ -74,8 +89,15 @@ export class AdminApi {
   }
 
   async fetchAdminSession(): Promise<AdminSession> {
-    const data = await this.client.requestData<unknown>("/admin/session");
-    return toAdminSession(data);
+    try {
+      const data = await this.client.requestData<unknown>("/admin/session");
+      return toAdminSession(data);
+    } catch (error) {
+      if (error instanceof BackendRequestError) {
+        throw new AdminApiError(error.message, error.statusCode >= 500, error.businessCode);
+      }
+      throw error;
+    }
   }
 
   async fetchEarlyAccessLeads(

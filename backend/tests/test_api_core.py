@@ -157,6 +157,98 @@ def test_admin_can_login_with_email_without_a_phone_number(runtime):
     assert session.json()["data"]["roles"] == ["super_admin"]
 
 
+def test_admin_username_login_is_case_insensitive_and_keeps_phone_login(runtime):
+    client, factory, _ = runtime
+    with factory() as db:
+        user = User(
+            phone="+84912345678",
+            username="admin",
+            email=None,
+            password_hash=PasswordHasher().hash("InitPass456"),
+            full_name="Test Admin",
+        )
+        user.roles.append(AdminUserRole(role_code="super_admin"))
+        db.add(user)
+        db.commit()
+
+    username_login = client.post(
+        "/api/v1/auth/login",
+        json={"username": " ADMIN ", "password": "InitPass456"},
+    )
+    assert username_login.status_code == 200
+    assert username_login.json()["data"]["user"]["username"] == "admin"
+
+    phone_login = client.post(
+        "/api/v1/auth/login",
+        json={"phone": "0912345678", "password": "InitPass456"},
+    )
+    assert phone_login.status_code == 200
+
+
+def test_login_requires_exactly_one_identifier(runtime):
+    client, _, _ = runtime
+    neither = client.post("/api/v1/auth/login", json={"password": "InitPass456"})
+    multiple = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "phone": "0912345678", "password": "InitPass456"},
+    )
+    assert neither.status_code == 422
+    assert multiple.status_code == 422
+
+
+def test_admin_username_temporary_password_flow_requires_rotation(runtime):
+    client, factory, _ = runtime
+    with factory() as db:
+        user = User(
+            phone="+84912345678",
+            username="admin",
+            password_hash=PasswordHasher().hash("InitPass456"),
+            full_name="Test Admin",
+            force_password_change=True,
+        )
+        user.roles.append(AdminUserRole(role_code="super_admin"))
+        db.add(user)
+        db.commit()
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "password": "InitPass456"},
+    )
+    assert login.status_code == 200
+    session = login.json()["data"]
+    assert session["must_change_password"] is True
+    headers = {"Authorization": f"Bearer {session['access_token']}"}
+
+    denied = client.get("/api/v1/admin/session", headers=headers)
+    assert denied.status_code == 403
+    assert denied.json()["businessCode"] == "PASSWORD_CHANGE_REQUIRED"
+
+    changed = client.post(
+        "/api/v1/auth/change-password",
+        headers=headers,
+        json={"new_password": "PersonalPass456"},
+    )
+    assert changed.status_code == 200
+    replacement = changed.json()["data"]
+    assert replacement["must_change_password"] is False
+
+    old_password = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "password": "InitPass456"},
+    )
+    new_password = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "password": "PersonalPass456"},
+    )
+    assert old_password.status_code == 401
+    assert new_password.status_code == 200
+    allowed = client.get(
+        "/api/v1/admin/session",
+        headers={"Authorization": f"Bearer {new_password.json()['data']['access_token']}"},
+    )
+    assert allowed.status_code == 200
+
+
 def test_auth_rejects_invalid_phone_and_duplicate_account(runtime):
     client, _, _ = runtime
     invalid = _signup(client, phone="123")

@@ -97,6 +97,7 @@ def _issue_pair(
                 "id": str(user.id),
                 "phone": user.phone,
                 "email": user.email,
+                "username": user.username,
                 "full_name": user.full_name,
                 "roles": sorted(user.admin_roles),
             },
@@ -158,12 +159,29 @@ def sign_up(
 
 
 def login(
-    request: Request, db: Session, identifier: str, password: str, client_ip: str
+    request: Request,
+    db: Session,
+    *,
+    phone: str | None,
+    email: str | None,
+    username: str | None,
+    password: str,
+    client_ip: str,
 ) -> dict[str, object]:
-    normalized_identifier = identifier.strip().lower()
-    is_email = "@" in normalized_identifier
-    if not is_email:
-        normalized_identifier = validate.normalize_vietnam_phone(identifier)
+    if username is not None:
+        identifier_kind = "username"
+        normalized_username = validate.normalize_username(username)
+        normalized_identifier = normalized_username
+    elif email is not None:
+        identifier_kind = "email"
+        normalized_email = email.strip().lower()
+        normalized_identifier = normalized_email
+    elif phone is not None:
+        identifier_kind = "phone"
+        normalized_phone = validate.normalize_vietnam_phone(phone)
+        normalized_identifier = normalized_phone
+    else:
+        raise ApiError(422, "LOGIN_IDENTIFIER_REQUIRED", "Hãy nhập thông tin đăng nhập.")
     with atomic(db):
         if consume_rate_limit(
             db,
@@ -173,18 +191,19 @@ def login(
             window_seconds=900,
         ):
             raise ApiError(429, "RATE_LIMITED", "Bạn đã thử đăng nhập quá nhiều lần.")
-        user = (
-            query.get_user_by_email(db, normalized_identifier)
-            if is_email
-            else query.get_user_by_phone(db, normalized_identifier)
-        )
+        if identifier_kind == "username":
+            user = query.get_user_by_username(db, normalized_identifier)
+        elif identifier_kind == "email":
+            user = query.get_user_by_email(db, normalized_identifier)
+        else:
+            user = query.get_user_by_phone(db, normalized_identifier)
         if (
             user is None
             or not user.is_active
             or user.admin_status != "active"
             or not verify_password(user.password_hash, password)
         ):
-            raise ApiError(401, "INVALID_CREDENTIALS", "Số điện thoại hoặc mật khẩu chưa đúng.")
+            raise ApiError(401, "INVALID_CREDENTIALS", "Thông tin đăng nhập chưa đúng.")
         pair, _ = _issue_pair(request, db, user)
         return pair
 

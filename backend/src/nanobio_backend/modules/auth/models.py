@@ -16,12 +16,14 @@ class LoginRequest(BaseModel):
 
     phone: str | None = Field(default=None, min_length=1, max_length=32)
     email: str | None = Field(default=None, min_length=3, max_length=320)
+    username: str | None = Field(default=None, min_length=3, max_length=32)
     password: str = Field(min_length=1, max_length=128)
 
     @model_validator(mode="after")
     def require_one_identifier(self) -> "LoginRequest":
-        if bool(self.phone) == bool(self.email):
-            raise ValueError("provide either phone or email")
+        identifiers = (self.phone, self.email, self.username)
+        if sum(bool(value) for value in identifiers) != 1:
+            raise ValueError("provide exactly one login identifier")
         if self.email and "@" not in self.email:
             raise ValueError("email is invalid")
         return self

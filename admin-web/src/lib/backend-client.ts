@@ -58,13 +58,23 @@ export class BackendClient {
     const normalizedIdentifier = identifier.trim();
     const credentials = normalizedIdentifier.includes('@')
       ? { email: normalizedIdentifier.toLowerCase(), password }
-      : { phone: normalizedIdentifier, password };
+      : /^[+\d(]/.test(normalizedIdentifier)
+      ? { phone: normalizedIdentifier, password }
+      : { username: normalizedIdentifier.toLowerCase(), password };
     const data = await this.requestData('/auth/login', {
       method: 'POST',
       body: credentials,
       authenticated: false,
     });
     return this.saveSession(parseSession(data));
+  }
+
+  async changePassword(newPassword: string): Promise<BackendAuthSession> {
+    const data = await this.requestData('/auth/change-password', {
+      method: 'POST',
+      body: { new_password: newPassword },
+    });
+    return this.saveSession(parseSession(data, this.session ?? undefined));
   }
 
   async signOut(): Promise<void> {
@@ -231,7 +241,9 @@ function parseSession(value: unknown, previous?: BackendAuthSession): BackendAut
       email: typeof user.email === 'string' ? user.email : previous?.user.email ?? null,
       roles,
     },
-    mustChangePassword: data.must_change_password === true || previous?.mustChangePassword === true,
+    mustChangePassword: typeof data.must_change_password === 'boolean'
+      ? data.must_change_password
+      : previous?.mustChangePassword ?? false,
   };
 }
 

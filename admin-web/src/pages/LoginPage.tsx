@@ -5,11 +5,13 @@ import { useAdminAuth } from '../auth/AuthProvider';
 import { ErrorState } from '../components/Ui';
 
 export function LoginPage() {
-  const { status, session, message, signIn, refresh } = useAdminAuth();
+  const { status, session, message, signIn, changePassword, signOut, refresh } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -18,13 +20,38 @@ export function LoginPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
+    if (status === 'password_change_required') {
+      if (newPassword.length < 8) {
+        setFormError('Mật khẩu mới cần ít nhất 8 ký tự.');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setFormError('Mật khẩu nhập lại chưa khớp.');
+        return;
+      }
+      setBusy(true);
+      try {
+        await changePassword(newPassword);
+        navigate('/admin/dashboard', { replace: true });
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Chưa thể cập nhật mật khẩu.');
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
     if (!identifier.trim() || password.length < 1) {
-      setFormError('Vui lòng nhập email hoặc số điện thoại và mật khẩu.');
+      setFormError('Vui lòng nhập tên đăng nhập, email hoặc số điện thoại cùng mật khẩu.');
       return;
     }
     setBusy(true);
     try {
-      await signIn(identifier, password);
+      const canContinue = await signIn(identifier, password);
+      if (!canContinue) {
+        setPassword('');
+        return;
+      }
       const destination = typeof location.state?.from === 'string' ? location.state.from : '/admin/dashboard';
       navigate(destination, { replace: true });
     } catch (error) {
@@ -47,14 +74,27 @@ export function LoginPage() {
         <form className="login-card" onSubmit={submit}>
           <div className="mobile-login-logo"><ShieldCheck size={24} /></div>
           <span className="eyebrow">Khu vực nội bộ</span>
-          <h2>Chào mừng trở lại</h2>
-          <p className="login-subtitle">Đăng nhập bằng tài khoản đã được cấp quyền quản trị.</p>
+          <h2>{status === 'password_change_required' ? 'Đặt mật khẩu mới' : 'Chào mừng trở lại'}</h2>
+          <p className="login-subtitle">
+            {status === 'password_change_required'
+              ? 'Hãy đổi mật khẩu tạm để tiếp tục vào khu quản trị.'
+              : 'Đăng nhập bằng tài khoản đã được cấp quyền quản trị.'}
+          </p>
           {(formError || (configurationError ? message : null)) && <div className="inline-alert danger" role="alert">{formError || message}</div>}
-          <label className="field-label" htmlFor="admin-identifier">Email hoặc số điện thoại</label>
-          <input id="admin-identifier" className="input" type="text" autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="admin@nanobio.vn hoặc 0912 345 678" />
-          <label className="field-label" htmlFor="admin-password">Mật khẩu</label>
-          <input id="admin-password" className="input" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Nhập mật khẩu" />
-          <button className="button primary wide" disabled={busy || status === 'loading'}>{busy ? 'Đang kiểm tra…' : <>Đăng nhập <ArrowRight size={17} /></>}</button>
+          {status === 'password_change_required' ? <>
+            <label className="field-label" htmlFor="admin-new-password">Mật khẩu mới</label>
+            <input id="admin-new-password" className="input" type="password" autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Ít nhất 8 ký tự" />
+            <label className="field-label" htmlFor="admin-confirm-password">Nhập lại mật khẩu mới</label>
+            <input id="admin-confirm-password" className="input" type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Nhập lại mật khẩu mới" />
+            <button className="button primary wide" disabled={busy}>{busy ? 'Đang cập nhật…' : 'Lưu mật khẩu mới'}</button>
+            <button className="button secondary wide" type="button" disabled={busy} onClick={() => void signOut()}>Đăng xuất</button>
+          </> : <>
+            <label className="field-label" htmlFor="admin-identifier">Tên đăng nhập, email hoặc số điện thoại</label>
+            <input id="admin-identifier" className="input" type="text" autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="admin, admin@nanobio.vn hoặc 0912 345 678" />
+            <label className="field-label" htmlFor="admin-password">Mật khẩu</label>
+            <input id="admin-password" className="input" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Nhập mật khẩu" />
+            <button className="button primary wide" disabled={busy || status === 'loading'}>{busy ? 'Đang kiểm tra…' : <>Đăng nhập <ArrowRight size={17} /></>}</button>
+          </>}
           {status === 'forbidden' && <p className="login-hint">Tài khoản đăng nhập được nhưng chưa có vai trò quản trị đang hoạt động.</p>}
           {status === 'error' && !configurationError && message && !formError && <ErrorState message={message} onRetry={() => void refresh()} />}
           <small className="login-footer">NanoBio · Vận hành có trách nhiệm</small>

@@ -3,6 +3,7 @@ import re
 from nanobio_backend.core.responses import ApiError
 
 _VIET_PHONE = re.compile(r"^[+\d\s().-]+$")
+_USERNAME = re.compile(r"^[a-z0-9][a-z0-9._-]{2,31}$", re.IGNORECASE)
 
 
 def normalize_vietnam_phone(value: str) -> str:
@@ -21,6 +22,13 @@ def normalize_vietnam_phone(value: str) -> str:
     if not re.fullmatch(r"\d{9}", local):
         raise ApiError(422, "INVALID_PHONE", "Số điện thoại chưa hợp lệ.")
     return f"+84{local}"
+
+
+def normalize_username(value: str) -> str:
+    normalized = value.strip().lower()
+    if not _USERNAME.fullmatch(normalized):
+        raise ApiError(422, "INVALID_USERNAME", "Tên đăng nhập chưa hợp lệ.")
+    return normalized
 
 
 def validate_referral(code: str | None, fingerprint: str | None) -> str | None:

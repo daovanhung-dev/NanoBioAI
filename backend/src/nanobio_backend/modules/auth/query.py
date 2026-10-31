@@ -22,6 +22,10 @@ def get_user_by_email(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
 
 
+def get_user_by_username(db: Session, username: str) -> User | None:
+    return db.scalar(select(User).where(func.lower(User.username) == username.strip().lower()))
+
+
 def get_user(db: Session, user_id: UUID) -> User | None:
     return db.get(User, user_id)
 

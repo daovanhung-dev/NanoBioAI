@@ -81,6 +81,44 @@ describe('Admin API backend transport', () => {
     });
   });
 
+  it('authenticates by username and clears the forced-change flag after password rotation', async () => {
+    const { api, calls } = harness((url) => {
+      if (url.pathname.endsWith('/auth/login')) {
+        return envelope({
+          access_token: 'temporary-access',
+          refresh_token: 'temporary-refresh-token-value-long-enough',
+          expires_in: 900,
+          must_change_password: true,
+          user: { id: 'admin-1', username: 'admin', email: null, roles: ['super_admin'] },
+        });
+      }
+      if (url.pathname.endsWith('/auth/change-password')) {
+        return envelope({
+          updated: true,
+          access_token: 'rotated-access',
+          refresh_token: 'rotated-refresh-token-value-long-enough',
+          expires_in: 900,
+          must_change_password: false,
+          user: { id: 'admin-1', username: 'admin', email: null, roles: ['super_admin'] },
+        });
+      }
+      throw new Error(`Unexpected request: ${url.pathname}`);
+    });
+
+    const temporary = await api.signIn(' ADMIN ', 'InitialPass123');
+    expect(temporary.mustChangePassword).toBe(true);
+    expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
+      username: 'admin', password: 'InitialPass123',
+    });
+
+    const rotated = await api.changePassword('PersonalPass456');
+    expect(rotated.mustChangePassword).toBe(false);
+    expect(rotated.accessToken).toBe('rotated-access');
+    expect(calls[1]?.url.pathname).toBe('/api/v1/auth/change-password');
+    expect(new Headers(calls[1]?.init.headers).get('authorization')).toBe('Bearer temporary-access');
+    expect(JSON.parse(String(calls[1]?.init.body))).toEqual({ new_password: 'PersonalPass456' });
+  });
+
   it('loads a bounded early access page and sends an audited status update', async () => {
     const { api, calls } = harness((url) => url.pathname.endsWith('/early-access/leads')
       ? envelope({

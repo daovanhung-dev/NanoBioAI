@@ -17,6 +17,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    func,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -33,6 +34,7 @@ class User(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     phone: Mapped[str | None] = mapped_column(String(16), unique=True, index=True, nullable=True)
+    username: Mapped[str | None] = mapped_column(String(32), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(512))
     full_name: Mapped[str] = mapped_column(String(120))
     email: Mapped[str | None] = mapped_column(String(320), nullable=True)
@@ -64,6 +66,9 @@ class User(Base):
     @property
     def admin_roles(self) -> set[str]:
         return {role.role_code for role in self.roles}
+
+
+Index("uq_users_username_lower", func.lower(User.username), unique=True)
 
 
 class AdminUserRole(Base):
