@@ -6,6 +6,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 AI_GENERATE_MAX_REQUEST_BYTES = 16 * 1024
+FOOD_SCAN_MAX_REQUEST_BYTES = 12 * 1024 * 1024
 
 
 class AiGenerateRequestLimitMiddleware:

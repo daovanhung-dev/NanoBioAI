@@ -14,6 +14,7 @@ from nanobio_backend.core.database import create_session_factory
 from nanobio_backend.core.middleware import TraceMiddleware, register_exception_handlers
 from nanobio_backend.core.request_limits import (
     AI_GENERATE_MAX_REQUEST_BYTES,
+    FOOD_SCAN_MAX_REQUEST_BYTES,
     AiGenerateRequestLimitMiddleware,
 )
 from nanobio_backend.core.responses import ApiError
@@ -44,6 +45,16 @@ def create_app(
         AiGenerateRequestLimitMiddleware,
         path=f"{resolved_settings.api_v1_prefix.rstrip('/')}/ai/generate",
         max_bytes=AI_GENERATE_MAX_REQUEST_BYTES,
+    )
+    app.add_middleware(
+        AiGenerateRequestLimitMiddleware,
+        path=f"{resolved_settings.api_v1_prefix.rstrip('/')}/ai/generate/stream",
+        max_bytes=AI_GENERATE_MAX_REQUEST_BYTES,
+    )
+    app.add_middleware(
+        AiGenerateRequestLimitMiddleware,
+        path=f"{resolved_settings.api_v1_prefix.rstrip('/')}/food/scan/analyze",
+        max_bytes=FOOD_SCAN_MAX_REQUEST_BYTES,
     )
     app.add_middleware(TraceMiddleware)
     app.add_middleware(

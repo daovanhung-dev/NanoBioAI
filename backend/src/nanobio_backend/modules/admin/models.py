@@ -37,8 +37,8 @@ class MembershipAdjustmentRequest(BaseModel):
 
 class EarlyAccessLeadStatusRequest(BaseModel):
     status: str
-    reason: str = Field(min_length=2, max_length=500)
-    idempotency_key: str = Field(min_length=8, max_length=160)
+    reason: str = Field(min_length=5, max_length=300)
+    idempotency_key: str = Field(min_length=8, max_length=120)
 
 
 class BulkMembershipGrantRequest(BaseModel):
@@ -79,5 +79,11 @@ class UserProfileUpdateRequest(BaseModel):
     full_name: str | None = Field(default=None, min_length=2, max_length=120)
     gender: str | None = None
     birth_year: int | None = Field(default=None, ge=1900, le=2100)
+    reason: str = Field(min_length=2, max_length=500)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class UserStatusUpdateRequest(BaseModel):
+    status: str = Field(min_length=1, max_length=24)
     reason: str = Field(min_length=2, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=160)

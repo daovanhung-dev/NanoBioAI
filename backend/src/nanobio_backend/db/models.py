@@ -9,7 +9,9 @@ from sqlalchemy import (
     Boolean,
     CheckConstraint,
     DateTime,
+    Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -30,7 +32,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    phone: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    phone: Mapped[str | None] = mapped_column(String(16), unique=True, index=True, nullable=True)
     password_hash: Mapped[str] = mapped_column(String(512))
     full_name: Mapped[str] = mapped_column(String(120))
     email: Mapped[str | None] = mapped_column(String(320), nullable=True)
@@ -42,6 +44,8 @@ class User(Base):
         DateTime(timezone=True), nullable=True
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    app_access_mode: Mapped[str] = mapped_column(String(16), default="user")
+    admin_status: Mapped[str] = mapped_column(String(24), default="active")
     force_password_change: Mapped[bool] = mapped_column(Boolean, default=False)
     membership_tier: Mapped[str] = mapped_column(String(32), default="free")
     sale_status: Mapped[str] = mapped_column(String(24), default="none")
@@ -140,6 +144,74 @@ class MembershipSubscription(Base):
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class UsageQuotaRule(Base):
+    __tablename__ = "usage_quota_rules"
+    __table_args__ = (
+        CheckConstraint(
+            "period_unit in ('day', 'month', 'lifetime', 'none')",
+            name="ck_usage_quota_period_unit",
+        ),
+        UniqueConstraint("plan_code", "feature_key", "period_unit", name="uq_usage_quota_rule"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    plan_code: Mapped[str] = mapped_column(String(32))
+    feature_key: Mapped[str] = mapped_column(String(80))
+    period_unit: Mapped[str] = mapped_column(String(16))
+    max_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reset_timezone: Mapped[str] = mapped_column(String(64), default="Asia/Ho_Chi_Minh")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+
+
+class UsageQuotaCounter(Base):
+    __tablename__ = "usage_quota_counters"
+    __table_args__ = (
+        UniqueConstraint("user_id", "feature_key", "period_key", name="uq_usage_quota_counter"),
+        CheckConstraint("used_count >= 0", name="ck_usage_quota_used_nonnegative"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    feature_key: Mapped[str] = mapped_column(String(80))
+    period_key: Mapped[str] = mapped_column(String(32))
+    plan_code: Mapped[str] = mapped_column(String(32))
+    used_count: Mapped[int] = mapped_column(Integer, default=0)
+    limit_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reset_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+
+
+class UsageEvent(Base):
+    __tablename__ = "usage_events"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "feature_key", "idempotency_key", name="uq_usage_event_request"
+        ),
+        CheckConstraint(
+            "event_source in ('trusted_backend', 'edge_function', 'sql_job', 'admin')",
+            name="ck_usage_event_source",
+        ),
+        Index("ix_usage_events_user_feature_created", "user_id", "feature_key", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    feature_key: Mapped[str] = mapped_column(String(80))
+    period_key: Mapped[str] = mapped_column(String(32))
+    count_delta: Mapped[int] = mapped_column(Integer, default=1)
+    idempotency_key: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    event_source: Mapped[str] = mapped_column(String(24), default="trusted_backend")
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
@@ -335,9 +407,11 @@ class SleepSafetyContact(Base):
     priority: Mapped[int] = mapped_column(Integer, default=1)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     verification_status: Mapped[str] = mapped_column(String(24), default="pending")
+    allow_phone_fallback: Mapped[bool] = mapped_column(Boolean, default=True)
     allow_unverified_voice_alert: Mapped[bool] = mapped_column(Boolean, default=False)
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
 class SleepSafetyVerificationChallenge(Base):
@@ -358,14 +432,93 @@ class SleepSafetyVerificationChallenge(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
+class SleepSafetyPreference(Base):
+    __tablename__ = "sleep_safety_preferences"
+    __table_args__ = (
+        CheckConstraint("sensitivity in ('low', 'balanced', 'high')"),
+        CheckConstraint("schedule_start_minutes between 0 and 1439"),
+        CheckConstraint("schedule_end_minutes between 0 and 1439"),
+        CheckConstraint("cooldown_seconds between 30 and 900"),
+    )
+
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    sensitivity: Mapped[str] = mapped_column(String(16), default="balanced")
+    schedule_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    schedule_start_minutes: Mapped[int] = mapped_column(Integer, default=1350)
+    schedule_end_minutes: Mapped[int] = mapped_column(Integer, default=390)
+    timezone: Mapped[str] = mapped_column(String(64), default="Asia/Ho_Chi_Minh")
+    selected_weekdays: Mapped[list[int]] = mapped_column(
+        JSON, default=lambda: [1, 2, 3, 4, 5, 6, 7]
+    )
+    calibration_required: Mapped[bool] = mapped_column(Boolean, default=True)
+    calibration_noise_floor: Mapped[float | None] = mapped_column(Float, nullable=True)
+    calibration_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    cooldown_seconds: Mapped[int] = mapped_column(Integer, default=120)
+    consent_version: Mapped[str] = mapped_column(String(80), default="sleep-safety-v1")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class SleepSafetySession(Base):
+    __tablename__ = "sleep_safety_sessions"
+    __table_args__ = (
+        UniqueConstraint("id", "user_id", name="uq_sleep_session_id_user"),
+        Index("ix_sleep_safety_sessions_user_started", "user_id", "started_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    scheduled_window_start: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    scheduled_window_end: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    sensitivity: Mapped[str] = mapped_column(String(16))
+    calibration_noise_floor: Mapped[float | None] = mapped_column(Float, nullable=True)
+    status: Mapped[str] = mapped_column(String(32))
+    start_source: Mapped[str] = mapped_column(String(32))
+    stop_reason: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    platform: Mapped[str] = mapped_column(String(40))
+    app_version: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
 class SleepSafetyEvent(Base):
     __tablename__ = "sleep_safety_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "user_id"],
+            ["sleep_safety_sessions.id", "sleep_safety_sessions.user_id"],
+            ondelete="CASCADE",
+            name="fk_sleep_event_session_owner",
+        ),
+    )
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    session_id: Mapped[str | None] = mapped_column(String(160), nullable=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    response: Mapped[str] = mapped_column(String(32))
+    event_type: Mapped[str] = mapped_column(String(48), default="unknownHighEnergyEvent")
+    severity: Mapped[str] = mapped_column(String(16), default="attention")
+    confidence: Mapped[float] = mapped_column(Float, default=0)
+    relative_energy: Mapped[float] = mapped_column(Float, default=0)
+    baseline_delta: Mapped[float] = mapped_column(Float, default=0)
+    repetition_count: Mapped[int] = mapped_column(Integer, default=1)
+    state: Mapped[str] = mapped_column(String(40), default="detected")
+    response: Mapped[str] = mapped_column(String(32), default="none")
+    response_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     escalation_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    escalation_status: Mapped[str] = mapped_column(String(24), default="notRequired")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
 class SleepSafetyDispatch(Base):
@@ -378,7 +531,7 @@ class SleepSafetyDispatch(Base):
     )
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    event_id: Mapped[UUID] = mapped_column(
+    event_id: Mapped[str] = mapped_column(
         ForeignKey("sleep_safety_events.id", ondelete="CASCADE"), index=True
     )
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -492,6 +645,7 @@ class ReferralRelationship(Base):
         ForeignKey("users.id", ondelete="CASCADE"), unique=True
     )
     device_fingerprint_hash: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(24), default="active")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
@@ -524,3 +678,7 @@ class FileObject(Base):
     media_type: Mapped[str] = mapped_column(String(120))
     size_bytes: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+# Register the business-domain tables before Alembic reads Base.metadata.
+from nanobio_backend.db import business_models as _business_models  # noqa: E402, F401

@@ -366,7 +366,15 @@ def test_ai_endpoint_returns_envelope_and_uses_server_prompt(runtime) -> None:
     response = client.post(
         "/api/v1/ai/generate",
         headers={"Authorization": f"Bearer {token}", "X-Trace-Id": trace_id},
-        json={"messages": [{"role": "user", "content": "Chào Nabi."}]},
+        json={
+            "messages": [{"role": "user", "content": "Chào Nabi."}],
+            "system_instruction": "Ưu tiên câu trả lời ngắn.",
+            "response_format": "json",
+            "json_schema": {"type": "object"},
+            "max_output_tokens": 128,
+            "temperature": 0.2,
+            "top_p": 0.8,
+        },
     )
 
     assert response.status_code == 200
@@ -386,6 +394,76 @@ def test_ai_endpoint_returns_envelope_and_uses_server_prompt(runtime) -> None:
     messages = json.loads(captured[0].content)["messages"]
     assert messages[0]["role"] == "system"
     assert "Không đưa ra chẩn đoán y tế." in messages[0]["content"]
+    assert messages[1] == {"role": "system", "content": "Ưu tiên câu trả lời ngắn."}
+    payload = json.loads(captured[0].content)
+    assert payload["format"] == {"type": "object"}
+    assert payload["options"] == {
+        "num_ctx": 2048,
+        "num_predict": 128,
+        "temperature": 0.2,
+        "top_p": 0.8,
+    }
+
+
+def test_ollama_stream_emits_text_and_applies_requested_options() -> None:
+    captured: list[httpx.Request] = []
+
+    def provider(request: httpx.Request) -> httpx.Response:
+        captured.append(request)
+        events = [
+            {"message": {"content": "Mình "}, "done": False},
+            {"message": {"content": "nghe bạn."}, "done": False},
+            {"message": {"content": ""}, "done": True, "done_reason": "stop"},
+        ]
+        return httpx.Response(
+            200,
+            content="".join(json.dumps(event) + "\n" for event in events).encode(),
+        )
+
+    deltas = list(
+        _client(provider).stream(
+            [{"role": "user", "content": "Chào Nabi."}],
+            response_format="json",
+            generation_options={"num_predict": 96, "temperature": 0.1},
+        )
+    )
+
+    assert deltas == ["Mình ", "nghe bạn."]
+    body = json.loads(captured[0].content)
+    assert body["stream"] is True
+    assert body["format"] == "json"
+    assert body["options"] == {
+        "num_ctx": 2048,
+        "num_predict": 96,
+        "temperature": 0.1,
+    }
+
+
+def test_ai_stream_endpoint_returns_ndjson(runtime) -> None:
+    client, _, _ = runtime
+    _enable_ai(
+        client,
+        lambda request: httpx.Response(
+            200,
+            content=(
+                json.dumps({"message": {"content": "Mình nghe bạn."}, "done": False})
+                + "\n"
+                + json.dumps({"message": {"content": ""}, "done": True, "done_reason": "stop"})
+                + "\n"
+            ).encode(),
+        ),
+    )
+    token = _signup_and_token(client)
+    response = client.post(
+        "/api/v1/ai/generate/stream",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"messages": [{"role": "user", "content": "Chào Nabi."}]},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/x-ndjson")
+    assert '"type":"delta"' in response.text
+    assert '"type":"complete"' in response.text
 
 
 def test_ai_route_is_registered_once(runtime) -> None:

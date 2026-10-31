@@ -26,6 +26,8 @@ def profile_view(user: User) -> dict[str, Any]:
         "avatar_url": user.avatar_url,
         "gender": user.gender,
         "birth_year": user.birth_year,
+        "subscription_tier": user.membership_tier,
+        "admin_status": user.admin_status,
         "onboarding_status": user.onboarding_status,
         "onboarding_completed_at": (
             user.onboarding_completed_at.isoformat() if user.onboarding_completed_at else None

@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 from dataclasses import dataclass
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import select
@@ -13,6 +13,9 @@ from nanobio_backend.core.uow import atomic
 from nanobio_backend.db.models import (
     SleepSafetyContact,
     SleepSafetyDispatch,
+    SleepSafetyEvent,
+    SleepSafetyPreference,
+    SleepSafetySession,
     SleepSafetyVerificationChallenge,
     User,
     now_utc,
@@ -40,7 +43,7 @@ SMS_MESSAGE = (
 
 @dataclass(frozen=True)
 class DispatchSnapshot:
-    event_id: UUID
+    event_id: str
     user_id: UUID
     contact_id: UUID
     priority: int
@@ -72,6 +75,128 @@ def runtime_config(settings: Settings) -> dict[str, object]:
     }
 
 
+def sync_preference(db: Session, user: User, *, values: dict[str, object]) -> dict[str, object]:
+    with atomic(db):
+        preference = db.get(SleepSafetyPreference, user.id)
+        if preference is None:
+            preference = SleepSafetyPreference(user_id=user.id)
+            db.add(preference)
+        for field, value in values.items():
+            setattr(preference, field, value)
+        preference.selected_weekdays = sorted(set(preference.selected_weekdays))
+        return {"saved": True}
+
+
+def sync_session(
+    db: Session, user: User, *, session_id: str, values: dict[str, object]
+) -> dict[str, object]:
+    normalized_id = session_id.strip()
+    if not normalized_id or len(normalized_id) > 160:
+        raise ApiError(422, "INVALID_SESSION_ID", "Mã phiên giám sát chưa hợp lệ.")
+    with atomic(db):
+        session = db.get(SleepSafetySession, normalized_id)
+        if session is not None and session.user_id != user.id:
+            raise ApiError(
+                409, "SESSION_OWNERSHIP_CONFLICT", "Phiên giám sát không thuộc tài khoản này."
+            )
+        if session is None:
+            session = SleepSafetySession(id=normalized_id, user_id=user.id)
+            db.add(session)
+        for field, value in values.items():
+            setattr(session, field, value)
+        return {"id": session.id, "saved": True}
+
+
+def sync_event(
+    db: Session,
+    user: User,
+    *,
+    event_id: str,
+    values: dict[str, object],
+) -> dict[str, object]:
+    normalized_id = event_id.strip()
+    if not normalized_id or len(normalized_id) > 160:
+        raise ApiError(422, "INVALID_EVENT_ID", "Mã sự kiện chưa hợp lệ.")
+    session_id = str(values["session_id"])
+    with atomic(db):
+        session = db.get(SleepSafetySession, session_id)
+        if session is None or session.user_id != user.id:
+            raise ApiError(409, "SESSION_NOT_FOUND", "Phiên giám sát chưa sẵn sàng để đồng bộ.")
+        event = db.get(SleepSafetyEvent, normalized_id)
+        if event is not None and event.user_id != user.id:
+            raise ApiError(409, "EVENT_OWNERSHIP_CONFLICT", "Sự kiện không thuộc tài khoản này.")
+        if event is None:
+            event = SleepSafetyEvent(
+                id=normalized_id, user_id=user.id, detected_at=datetime.now(UTC)
+            )
+            db.add(event)
+        for field, value in values.items():
+            setattr(event, field, value)
+        return {"id": event.id, "saved": True}
+
+
+def list_history(
+    db: Session, user: User, *, limit: int, before: datetime | None
+) -> dict[str, list[dict[str, object]]]:
+    sessions_stmt = select(SleepSafetySession).where(SleepSafetySession.user_id == user.id)
+    events_stmt = select(SleepSafetyEvent).where(SleepSafetyEvent.user_id == user.id)
+    if before is not None:
+        sessions_stmt = sessions_stmt.where(SleepSafetySession.started_at < before)
+        events_stmt = events_stmt.where(SleepSafetyEvent.detected_at < before)
+    sessions = list(
+        db.scalars(sessions_stmt.order_by(SleepSafetySession.started_at.desc()).limit(limit))
+    )
+    events = list(
+        db.scalars(events_stmt.order_by(SleepSafetyEvent.detected_at.desc()).limit(limit))
+    )
+    return {
+        "sessions": [
+            {
+                "id": row.id,
+                "started_at": row.started_at.isoformat(),
+                "ended_at": row.ended_at.isoformat() if row.ended_at else None,
+                "scheduled_window_start": (
+                    row.scheduled_window_start.isoformat() if row.scheduled_window_start else None
+                ),
+                "scheduled_window_end": (
+                    row.scheduled_window_end.isoformat() if row.scheduled_window_end else None
+                ),
+                "sensitivity": row.sensitivity,
+                "calibration_noise_floor": row.calibration_noise_floor,
+                "status": row.status,
+                "start_source": row.start_source,
+                "stop_reason": row.stop_reason,
+                "platform": row.platform,
+                "app_version": row.app_version,
+                "created_at": row.created_at.isoformat(),
+                "updated_at": row.updated_at.isoformat(),
+            }
+            for row in sessions
+        ],
+        "events": [
+            {
+                "id": row.id,
+                "session_id": row.session_id,
+                "detected_at": row.detected_at.isoformat(),
+                "event_type": row.event_type,
+                "severity": row.severity,
+                "confidence": row.confidence,
+                "relative_energy": row.relative_energy,
+                "baseline_delta": row.baseline_delta,
+                "repetition_count": row.repetition_count,
+                "state": row.state,
+                "response": row.response,
+                "response_at": row.response_at.isoformat() if row.response_at else None,
+                "escalation_required": row.escalation_required,
+                "escalation_status": row.escalation_status,
+                "created_at": row.created_at.isoformat(),
+                "updated_at": row.updated_at.isoformat(),
+            }
+            for row in events
+        ],
+    }
+
+
 def upsert_contact(
     db: Session,
     user: User,
@@ -81,6 +206,7 @@ def upsert_contact(
     relationship: str,
     phone_e164: str,
     priority: int,
+    allow_phone_fallback: bool,
     allow_unverified_voice_alert: bool,
 ) -> dict[str, object]:
     phone = validate.normalize_contact_phone(phone_e164)
@@ -104,7 +230,9 @@ def upsert_contact(
         contact.priority = priority
         contact.sort_order = priority
         contact.active = True
+        contact.allow_phone_fallback = allow_phone_fallback
         contact.allow_unverified_voice_alert = allow_unverified_voice_alert
+        contact.updated_at = now_utc()
         db.flush()
         return _contact_view(contact)
 
@@ -112,14 +240,18 @@ def upsert_contact(
 def _contact_view(contact: SleepSafetyContact) -> dict[str, object]:
     return {
         "id": str(contact.id),
+        "user_id": str(contact.user_id),
         "name": contact.name,
         "relationship": contact.relation,
         "phone_e164": contact.phone,
         "priority": contact.priority,
         "active": contact.active,
+        "allow_phone_fallback": contact.allow_phone_fallback,
         "verification_status": contact.verification_status,
         "verified_at": contact.verified_at.isoformat() if contact.verified_at else None,
         "allow_unverified_voice_alert": contact.allow_unverified_voice_alert,
+        "created_at": contact.created_at.isoformat() if contact.created_at else None,
+        "updated_at": contact.updated_at.isoformat() if contact.updated_at else None,
     }
 
 
@@ -243,7 +375,7 @@ def request_or_confirm_verification(
 def _persist_dispatch(
     db: Session,
     *,
-    event_id: UUID,
+    event_id: str,
     user_id: UUID,
     contact: SleepSafetyContact,
     channel: str,
@@ -282,7 +414,7 @@ def _send_dispatch(
     db: Session,
     settings: Settings,
     *,
-    event_id: UUID,
+    event_id: str,
     user_id: UUID,
     contact: SleepSafetyContact,
     channel: str,
@@ -321,7 +453,7 @@ def dispatch_event(
     db: Session,
     user: User,
     *,
-    event_id: UUID,
+    event_id: str,
     idempotency_key: str,
     settings: Settings,
     callback_url: str | None,

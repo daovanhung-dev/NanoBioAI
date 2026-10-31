@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,9 @@ from nanobio_backend.modules.sleep_safety import view
 from nanobio_backend.modules.sleep_safety.models import (
     ContactUpsertRequest,
     DispatchRequest,
+    SleepSafetyEventSync,
+    SleepSafetyPreferenceSync,
+    SleepSafetySessionSync,
     VerificationRequest,
 )
 
@@ -38,6 +42,67 @@ def get_runtime_config(request: Request, user: User = Depends(current_user)) -> 
         request,
         view.runtime_config(request.app.state.settings),
         business_code="SLEEP_SAFETY_CONFIG_RETRIEVED",
+    )
+
+
+@router.get("/sleep-safety/history")
+def list_sleep_safety_history(
+    request: Request,
+    limit: int = Query(default=100, ge=1, le=200),
+    before: datetime | None = None,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    data = view.list_history(db, user, limit=limit, before=before)
+    return success_response(
+        request,
+        data,
+        business_code="SLEEP_SAFETY_HISTORY_RETRIEVED",
+        meta={"session_count": len(data["sessions"]), "event_count": len(data["events"])},
+    )
+
+
+@router.put("/sleep-safety/preferences")
+def sync_preferences(
+    payload: SleepSafetyPreferenceSync,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    return success_response(
+        request,
+        view.sync_preference(db, user, values=payload.model_dump()),
+        business_code="SLEEP_SAFETY_PREFERENCES_SYNCED",
+    )
+
+
+@router.put("/sleep-safety/sessions/{session_id}")
+def sync_session(
+    session_id: str,
+    payload: SleepSafetySessionSync,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    return success_response(
+        request,
+        view.sync_session(db, user, session_id=session_id, values=payload.model_dump()),
+        business_code="SLEEP_SAFETY_SESSION_SYNCED",
+    )
+
+
+@router.put("/sleep-safety/events/{event_id}")
+def sync_event(
+    event_id: str,
+    payload: SleepSafetyEventSync,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    return success_response(
+        request,
+        view.sync_event(db, user, event_id=event_id, values=payload.model_dump()),
+        business_code="SLEEP_SAFETY_EVENT_SYNCED",
     )
 
 
@@ -67,6 +132,7 @@ def create_contact(
         relationship=payload.relationship,
         phone_e164=payload.phone_e164,
         priority=payload.priority,
+        allow_phone_fallback=payload.allow_phone_fallback,
         allow_unverified_voice_alert=payload.allow_unverified_voice_alert,
     )
     return success_response(request, result, business_code="CONTACT_CREATED", status_code=201)
@@ -88,6 +154,7 @@ def update_contact(
         relationship=payload.relationship,
         phone_e164=payload.phone_e164,
         priority=payload.priority,
+        allow_phone_fallback=payload.allow_phone_fallback,
         allow_unverified_voice_alert=payload.allow_unverified_voice_alert,
     )
     return success_response(request, result, business_code="CONTACT_UPDATED")

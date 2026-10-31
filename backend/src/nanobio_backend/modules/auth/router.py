@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from nanobio_backend.core.database import get_db
 from nanobio_backend.core.responses import success_response
-from nanobio_backend.core.security import current_user
+from nanobio_backend.core.security import authenticated_user
 from nanobio_backend.db.models import User
 from nanobio_backend.modules.auth import view
 from nanobio_backend.modules.auth.models import (
@@ -47,7 +47,13 @@ def phone_signup(
 
 @router.post("/login")
 def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)) -> Any:
-    result = view.login(request, db, payload.phone, payload.password, client_ip(request))
+    result = view.login(
+        request,
+        db,
+        payload.phone or payload.email or "",
+        payload.password,
+        client_ip(request),
+    )
     return success_response(
         request, result, business_code="AUTHENTICATED", message="Đăng nhập thành công."
     )
@@ -65,13 +71,13 @@ def refresh(payload: RefreshRequest, request: Request, db: Session = Depends(get
 def change_password(
     payload: ChangePasswordRequest,
     request: Request,
-    user: User = Depends(current_user),
+    user: User = Depends(authenticated_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    view.change_password(db, user, payload.new_password)
+    result = view.change_password(request, db, user, payload.new_password)
     return success_response(
         request,
-        {"updated": True},
+        {"updated": True, **result},
         business_code="PASSWORD_CHANGED",
         message="Đã cập nhật mật khẩu.",
     )
@@ -81,7 +87,7 @@ def change_password(
 def logout(
     payload: RefreshRequest,
     request: Request,
-    user: User = Depends(current_user),
+    user: User = Depends(authenticated_user),
     db: Session = Depends(get_db),
 ) -> Any:
     view.logout(db, user, payload.refresh_token)

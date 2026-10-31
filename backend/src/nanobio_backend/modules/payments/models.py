@@ -24,3 +24,11 @@ class AdminPaymentReviewRequest(BaseModel):
     reason: str = Field(min_length=2, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=160)
     transfer_verified: bool = False
+
+
+class AdminPaymentReversalRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    decision: Literal["refund", "cancel", "chargeback"]
+    reason: str = Field(min_length=2, max_length=500)
+    idempotency_key: str = Field(min_length=8, max_length=160)

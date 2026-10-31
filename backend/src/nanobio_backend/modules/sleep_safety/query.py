@@ -70,7 +70,7 @@ def paid_access(db: Session, user_id: UUID, now: datetime) -> bool:
     )
 
 
-def get_event(db: Session, user_id: UUID, event_id: UUID) -> SleepSafetyEvent | None:
+def get_event(db: Session, user_id: UUID, event_id: str) -> SleepSafetyEvent | None:
     return db.scalar(
         select(SleepSafetyEvent).where(
             SleepSafetyEvent.id == event_id, SleepSafetyEvent.user_id == user_id

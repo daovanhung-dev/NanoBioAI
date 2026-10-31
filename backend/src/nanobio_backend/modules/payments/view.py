@@ -2,6 +2,7 @@ import calendar
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -10,14 +11,23 @@ from sqlalchemy.orm import Session
 
 from nanobio_backend.core.responses import ApiError
 from nanobio_backend.core.uow import atomic
+from nanobio_backend.db.business_models import (
+    CommissionRate,
+    CommissionRecord,
+    PaymentEvent,
+    SalePointAdjustment,
+    SaleProfile,
+)
 from nanobio_backend.db.models import (
     AdminAuditEvent,
     GooglePlayPurchase,
     ManualPaymentEvent,
     MembershipSubscription,
+    ReferralRelationship,
     User,
     now_utc,
 )
+from nanobio_backend.modules.admin import query as admin_query
 from nanobio_backend.modules.payments import query
 from nanobio_backend.modules.payments.validate import parse_payment_configuration
 from nanobio_backend.services.google_play import PRODUCT_PLANS, parse_provider_time, purchase_state
@@ -203,6 +213,7 @@ def create_manual_membership_payment(
             )
             db.add(event)
             db.flush()
+        _sync_manual_payment_event(db, event)
     return manual_payment_view(event)
 
 
@@ -241,6 +252,7 @@ def cancel_manual_membership_payment(
             event.status = "canceled"
         elif event.status != "canceled":
             raise ApiError(409, "PAYMENT_CANCELLATION_NOT_ALLOWED", "Yêu cầu này không thể hủy.")
+        _sync_manual_payment_event(db, event)
     return manual_payment_view(event)
 
 
@@ -460,6 +472,9 @@ def review_manual_membership_payment(
             "subscription_transition": transition,
             "subscription_id": str(subscription.id) if subscription else None,
         }
+        payment_event = _sync_manual_payment_event(db, event)
+        if normalized_decision == "approve":
+            _create_direct_referral_commission(db, payment_event)
         db.add(
             AdminAuditEvent(
                 actor_id=actor.id,
@@ -483,6 +498,280 @@ def review_manual_membership_payment(
         "subscription_id": str(event.subscription_id) if event.subscription_id else None,
         "idempotent_replay": False,
     }
+
+
+def reverse_manual_membership_payment(
+    db: Session,
+    actor: User,
+    payment_id: UUID,
+    *,
+    decision: str,
+    reason: str,
+    idempotency_key: str,
+) -> dict[str, object]:
+    normalized_decision = decision.strip().casefold()
+    if normalized_decision not in {"refund", "cancel", "chargeback"}:
+        raise ApiError(
+            422,
+            "INVALID_PAYMENT_REVERSAL_DECISION",
+            "Quyết định hoàn hoặc hủy thanh toán chưa hợp lệ.",
+        )
+    clean_reason = reason.strip()
+    clean_key = idempotency_key.strip()
+    if not clean_reason or not clean_key:
+        raise ApiError(
+            422,
+            "PAYMENT_REVIEW_CONTEXT_REQUIRED",
+            "Cần có lý do và mã thao tác.",
+        )
+
+    with atomic(db):
+        event = query.lock_manual_payment(db, payment_id)
+        if event is None:
+            raise ApiError(404, "PAYMENT_NOT_FOUND", "Không tìm thấy giao dịch.")
+        if actor.id == event.user_id:
+            raise ApiError(
+                403,
+                "PAYMENT_SELF_REVIEW_FORBIDDEN",
+                "Bạn không thể tự xử lý giao dịch của mình.",
+            )
+        previous_key = event.metadata_json.get("admin_reversal_idempotency_key")
+        if event.status in {"refunded", "chargeback", "failed"}:
+            if previous_key == clean_key:
+                return {
+                    "success": True,
+                    "payment_event_id": str(event.id),
+                    "status": event.status,
+                    "idempotent_replay": True,
+                }
+            raise ApiError(409, "PAYMENT_ALREADY_REVERSED", "Giao dịch đã được xử lý trước đó.")
+        if event.status != "succeeded":
+            raise ApiError(
+                409,
+                "PAYMENT_REVERSAL_NOT_ALLOWED",
+                "Chỉ giao dịch đã duyệt mới có thể hoàn hoặc hủy.",
+            )
+        now = now_utc()
+        paid_at = event.paid_at or event.reviewed_at or event.created_at
+        if _as_utc(paid_at) < now - timedelta(hours=24):
+            raise ApiError(
+                409,
+                "PAYMENT_REVERSAL_WINDOW_EXPIRED",
+                "Giao dịch đã quá thời hạn xử lý hoàn hoặc hủy.",
+            )
+        new_status = {
+            "refund": "refunded",
+            "cancel": "failed",
+            "chargeback": "chargeback",
+        }[normalized_decision]
+        event.status = new_status
+        event.reviewed_by = actor.id
+        event.reviewed_at = now
+        event.review_reason = clean_reason
+        event.metadata_json = {
+            **event.metadata_json,
+            "admin_decision": normalized_decision,
+            "admin_reversal_idempotency_key": clean_key,
+        }
+        payment_event = _sync_manual_payment_event(db, event)
+        _create_sale_point_reversals(
+            db,
+            actor=actor,
+            payment_event=payment_event,
+            reason=clean_reason,
+            decision=normalized_decision,
+        )
+        if event.subscription_id:
+            subscription = db.scalar(
+                select(MembershipSubscription)
+                .where(MembershipSubscription.id == event.subscription_id)
+                .with_for_update()
+            )
+            if subscription and subscription.status in {"trialing", "active", "past_due"}:
+                subscription.status = "canceled"
+                subscription.ends_at = min(_as_utc(subscription.ends_at or now), now)
+                subscription.current_period_end = subscription.ends_at
+                subscription.metadata_json = {
+                    **subscription.metadata_json,
+                    "reversed_payment_event_id": str(event.id),
+                    "reversal_decision": normalized_decision,
+                    "reversed_at": now.isoformat(),
+                }
+                payer = db.get(User, event.user_id)
+                if payer is not None:
+                    current = admin_query.current_membership(db, payer.id, now)
+                    payer.membership_tier = current.plan_code if current else "free"
+        db.add(
+            AdminAuditEvent(
+                actor_id=actor.id,
+                action="admin_refund_or_cancel_payment",
+                target_user_id=event.user_id,
+                reason=clean_reason,
+                idempotency_key=clean_key,
+                metadata_json={
+                    "payment_event_id": str(event.id),
+                    "decision": normalized_decision,
+                    "reversal_policy": "membership_entitlement_revoked",
+                },
+            )
+        )
+    return {
+        "success": True,
+        "payment_event_id": str(event.id),
+        "status": event.status,
+        "idempotent_replay": False,
+    }
+
+
+def _sync_manual_payment_event(db: Session, event: ManualPaymentEvent) -> PaymentEvent:
+    payment = db.scalar(
+        select(PaymentEvent)
+        .where(
+            PaymentEvent.provider == "manual_membership_request",
+            PaymentEvent.provider_event_id == str(event.id),
+        )
+        .with_for_update()
+    )
+    if payment is None:
+        payment = PaymentEvent(
+            id=event.id,
+            payer_user_id=event.user_id,
+            plan_code=event.plan_code,
+            provider="manual_membership_request",
+            provider_event_id=str(event.id),
+            amount_cents=event.amount_cents,
+            currency=event.currency,
+            status="pending",
+        )
+        db.add(payment)
+    payment.payer_user_id = event.user_id
+    payment.subscription_id = event.subscription_id
+    payment.plan_code = event.plan_code
+    payment.transfer_reference = event.transfer_reference
+    payment.transfer_memo = event.transfer_reference
+    payment.amount_cents = event.amount_cents
+    payment.list_price_cents = event.amount_cents
+    payment.commission_base_cents = event.amount_cents
+    payment.currency = event.currency
+    payment.status = "failed" if event.status == "canceled" else event.status
+    payment.paid_at = event.paid_at
+    payment.reviewed_by = event.reviewed_by
+    payment.reviewed_at = event.reviewed_at
+    payment.review_reason = event.review_reason
+    payment.idempotency_key = event.idempotency_key
+    payment.metadata_json = {
+        **(payment.metadata_json or {}),
+        **(event.metadata_json or {}),
+        "manual_payment_event_id": str(event.id),
+        "manual_payment_status": event.status,
+    }
+    db.flush()
+    return payment
+
+
+def _create_direct_referral_commission(db: Session, payment: PaymentEvent) -> None:
+    if payment.status != "succeeded" or payment.paid_at is None:
+        return
+    referral = db.scalar(
+        select(ReferralRelationship)
+        .where(
+            ReferralRelationship.referred_id == payment.payer_user_id,
+            ReferralRelationship.status == "active",
+        )
+        .limit(1)
+    )
+    if referral is None:
+        return
+    sale_profile = db.get(SaleProfile, referral.referrer_id)
+    if sale_profile is None or sale_profile.status != "active":
+        return
+    rate = db.scalar(
+        select(CommissionRate).where(
+            CommissionRate.code == "direct_referral", CommissionRate.is_active.is_(True)
+        )
+    )
+    if rate is None:
+        return
+    existing = db.scalar(
+        select(CommissionRecord).where(
+            CommissionRecord.payment_event_id == payment.id,
+            CommissionRecord.receiver_user_id == referral.referrer_id,
+        )
+    )
+    if existing is not None:
+        return
+
+    base_cents = payment.commission_base_cents
+    if base_cents is None:
+        base_cents = payment.list_price_cents
+    if base_cents is None:
+        for key in ("commission_base_cents", "list_price_cents"):
+            value = payment.metadata_json.get(key)
+            if value is not None:
+                try:
+                    base_cents = int(value)
+                except (TypeError, ValueError):
+                    continue
+                break
+    if base_cents is None:
+        base_cents = payment.amount_cents
+    amount = int(
+        (Decimal(base_cents) * Decimal(rate.rate)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    )
+    db.add(
+        CommissionRecord(
+            payment_event_id=payment.id,
+            receiver_user_id=referral.referrer_id,
+            payer_user_id=payment.payer_user_id,
+            source_referral_id=referral.id,
+            rate=rate.rate,
+            amount_cents=amount,
+            currency=payment.currency,
+            status="pending",
+            available_at=payment.paid_at + timedelta(hours=24),
+        )
+    )
+
+
+def _create_sale_point_reversals(
+    db: Session,
+    *,
+    actor: User,
+    payment_event: PaymentEvent,
+    reason: str,
+    decision: str,
+) -> None:
+    commissions = db.scalars(
+        select(CommissionRecord).where(
+            CommissionRecord.payment_event_id == payment_event.id,
+            CommissionRecord.amount_cents > 0,
+        )
+    ).all()
+    for commission in commissions:
+        idempotency_key = f"sale-reversal-{commission.id}"
+        exists = db.scalar(
+            select(SalePointAdjustment.id).where(
+                SalePointAdjustment.idempotency_key == idempotency_key
+            )
+        )
+        if exists is not None:
+            continue
+        db.add(
+            SalePointAdjustment(
+                sale_user_id=commission.receiver_user_id,
+                point_delta_cents=-commission.amount_cents,
+                currency=commission.currency,
+                reason=reason,
+                reviewed_by=actor.id,
+                idempotency_key=idempotency_key,
+                metadata_json={
+                    "payment_event_id": str(payment_event.id),
+                    "commission_record_id": str(commission.id),
+                    "reversal_decision": decision,
+                    "ledger_policy": "negative_adjustment_without_overwriting_commission",
+                },
+            )
+        )
 
 
 def _as_utc(value: datetime) -> datetime:

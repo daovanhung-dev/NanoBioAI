@@ -3,10 +3,12 @@ from uuid import UUID, uuid4
 
 from fastapi import Request, UploadFile
 from fastapi.responses import FileResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from nanobio_backend.core.responses import ApiError
 from nanobio_backend.core.uow import atomic
+from nanobio_backend.db.business_models import SalePointConversion
 from nanobio_backend.db.models import FileObject, User
 from nanobio_backend.modules.storage import query
 
@@ -67,6 +69,28 @@ def get_file_response(
         raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy tệp.")
     root = request.app.state.settings.upload_root.resolve()
     path = (root / str(user.id) / record.storage_name).resolve()
+    if root not in path.parents or not path.is_file():
+        raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy tệp.")
+    return FileResponse(path, media_type=record.media_type, filename=str(record.id))
+
+
+def get_admin_payout_proof_response(
+    bucket: str, file_id: UUID, request: Request, user: User, db: Session
+) -> FileResponse:
+    if bucket != "sale-payout-proofs":
+        raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy vị trí lưu tệp.")
+    record = db.get(FileObject, file_id)
+    if record is None or record.bucket != bucket:
+        raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy tệp.")
+    attached = db.scalar(
+        select(SalePointConversion.id)
+        .where(SalePointConversion.metadata_json["payment_proof_path"].as_string() == str(file_id))
+        .limit(1)
+    )
+    if attached is None:
+        raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy tệp.")
+    root = request.app.state.settings.upload_root.resolve()
+    path = (root / str(record.owner_id) / record.storage_name).resolve()
     if root not in path.parents or not path.is_file():
         raise ApiError(404, "RESOURCE_NOT_FOUND", "Không tìm thấy tệp.")
     return FileResponse(path, media_type=record.media_type, filename=str(record.id))

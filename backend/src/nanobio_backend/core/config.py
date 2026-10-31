@@ -40,8 +40,10 @@ class Settings(BaseSettings):
     sleep_safety_event_freshness_seconds: int = 600
     sleep_safety_verification_ttl_seconds: int = 600
     ollama_enabled: bool = False
+    ollama_vision_enabled: bool = False
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen3:4b-instruct"
+    ollama_vision_model: str = "qwen3-vl:4b"
     ollama_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
     ollama_read_timeout_seconds: int = Field(default=120, ge=1, le=120)
     ollama_total_timeout_seconds: int = Field(default=120, ge=30, le=120)
@@ -90,6 +92,13 @@ class Settings(BaseSettings):
     def selected_ollama_model(cls, value: str) -> str:
         if value != "qwen3:4b-instruct":
             raise ValueError("Only qwen3:4b-instruct is enabled for this backend phase")
+        return value
+
+    @field_validator("ollama_vision_model")
+    @classmethod
+    def selected_ollama_vision_model(cls, value: str) -> str:
+        if value != "qwen3-vl:4b":
+            raise ValueError("Only qwen3-vl:4b is enabled for Food Scan")
         return value
 
 

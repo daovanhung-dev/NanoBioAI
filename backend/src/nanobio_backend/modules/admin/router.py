@@ -2,6 +2,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from nanobio_backend.core.database import get_db
@@ -18,20 +19,80 @@ from nanobio_backend.modules.admin.models import (
     MembershipAdjustmentRequest,
     MembershipGrantRequest,
     UserProfileUpdateRequest,
+    UserStatusUpdateRequest,
 )
 from nanobio_backend.modules.auth.validate import normalize_vietnam_phone
 from nanobio_backend.modules.payments import view as payments_view
-from nanobio_backend.modules.payments.models import AdminPaymentReviewRequest
+from nanobio_backend.modules.payments.models import (
+    AdminPaymentReversalRequest,
+    AdminPaymentReviewRequest,
+)
+from nanobio_backend.modules.storage import view as storage_view
 
 router = APIRouter()
 
 
 @router.get("/session")
 def admin_session(request: Request, actor: User = Depends(current_user)) -> Any:
-    require_admin(actor)
+    require_admin(
+        actor,
+        "super_admin",
+        "support_admin",
+        "operations_admin",
+        "finance_admin",
+        "content_admin",
+    )
+    roles = sorted(actor.admin_roles)
+    permissions_by_role = {
+        "support_admin": [
+            "dashboard.read",
+            "users.write",
+            "early_access.read",
+            "early_access.update",
+            "audit.read",
+        ],
+        "operations_admin": [
+            "dashboard.read",
+            "sales.write",
+            "reconciliation.write",
+            "plans.write",
+            "reports.write",
+            "config.write",
+            "early_access.read",
+            "early_access.update",
+            "audit.read",
+        ],
+        "finance_admin": [
+            "dashboard.read",
+            "payments.write",
+            "reconciliation.write",
+            "reports.write",
+            "audit.read",
+        ],
+        "content_admin": [
+            "dashboard.read",
+            "wellness_rewards.read",
+            "wellness_rewards.write",
+            "audit.read",
+        ],
+    }
+    permissions = (
+        ["*"]
+        if "super_admin" in actor.admin_roles
+        else sorted(
+            {permission for role in roles for permission in permissions_by_role.get(role, [])}
+        )
+    )
     return success_response(
         request,
-        {"user_id": str(actor.id), "roles": sorted(actor.admin_roles)},
+        {
+            "user_id": str(actor.id),
+            "roles": roles,
+            "permissions": permissions,
+            "is_active": actor.is_active and bool(roles),
+            "app_access_mode": actor.app_access_mode,
+            "can_use_user_app": actor.app_access_mode in {"user", "both"},
+        },
         business_code="ADMIN_SESSION_RETRIEVED",
     )
 
@@ -191,6 +252,19 @@ def update_user_profile(
     )
 
 
+@router.patch("/users/{user_id}/status")
+def update_user_status(
+    user_id: UUID,
+    payload: UserStatusUpdateRequest,
+    request: Request,
+    actor: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    require_admin(actor)
+    result = view.update_user_status(db, actor, user_id, payload.model_dump())
+    return success_response(request, result, business_code="USER_STATUS_UPDATED")
+
+
 @router.post("/users/{user_id}/password-reset")
 def reset_user_password(
     user_id: UUID,
@@ -268,6 +342,26 @@ def review_payment(
     return success_response(request, result, business_code="PAYMENT_REVIEWED")
 
 
+@router.post("/payments/{payment_id}/reversal")
+def reverse_payment(
+    payment_id: UUID,
+    payload: AdminPaymentReversalRequest,
+    request: Request,
+    actor: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    require_admin(actor, "super_admin", "finance_admin")
+    result = payments_view.reverse_manual_membership_payment(
+        db,
+        actor,
+        payment_id,
+        decision=payload.decision,
+        reason=payload.reason,
+        idempotency_key=payload.idempotency_key,
+    )
+    return success_response(request, result, business_code="PAYMENT_REVERSED")
+
+
 @router.get("/early-access/leads")
 def early_access_leads(
     request: Request,
@@ -296,3 +390,15 @@ def update_early_access_lead(
     require_admin(actor, "super_admin", "support_admin", "operations_admin")
     result = view.update_lead_status(db, actor, lead_id, payload.model_dump())
     return success_response(request, result, business_code="LEAD_STATUS_UPDATED")
+
+
+@router.get("/files/{bucket}/{file_id}")
+def download_payout_proof(
+    bucket: str,
+    file_id: UUID,
+    request: Request,
+    actor: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    require_admin(actor, "super_admin", "finance_admin")
+    return storage_view.get_admin_payout_proof_response(bucket, file_id, request, actor, db)

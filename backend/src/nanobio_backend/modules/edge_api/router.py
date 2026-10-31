@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from nanobio_backend.core.database import get_db
@@ -13,6 +14,7 @@ from nanobio_backend.modules.edge_api.models import (
     AiReportRequest,
     EarlyAccessRequest,
     FoodEvidenceRequest,
+    FoodScanAnalyzeRequest,
     GooglePlayVerifyRequest,
 )
 
@@ -36,8 +38,33 @@ def nabi_ai_generate(
 
 
 @router.post("/food/scan/analyze")
-def food_scan_analyze(request: Request) -> Any:
-    raise ApiError(503, "FEATURE_NOT_ENABLED", "Tính năng này chưa được bật trên máy chủ.")
+def food_scan_analyze(
+    payload: FoodScanAnalyzeRequest,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    result = view.food_scan_analyze(payload, request, user, db)
+    return success_response(
+        request,
+        result,
+        business_code="FOOD_SCAN_ANALYZED",
+    )
+
+
+@router.post("/ai/generate/stream")
+def nabi_ai_generate_stream(
+    payload: AiGenerateRequest,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    events = view.stream_ai(payload, request, user, db)
+    return StreamingResponse(
+        events,
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.post("/early-access")

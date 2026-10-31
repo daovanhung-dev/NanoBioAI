@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class PhoneSignupRequest(BaseModel):
@@ -12,8 +12,19 @@ class PhoneSignupRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    phone: str = Field(min_length=1, max_length=32)
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    phone: str | None = Field(default=None, min_length=1, max_length=32)
+    email: str | None = Field(default=None, min_length=3, max_length=320)
     password: str = Field(min_length=1, max_length=128)
+
+    @model_validator(mode="after")
+    def require_one_identifier(self) -> "LoginRequest":
+        if bool(self.phone) == bool(self.email):
+            raise ValueError("provide either phone or email")
+        if self.email and "@" not in self.email:
+            raise ValueError("email is invalid")
+        return self
 
 
 class RefreshRequest(BaseModel):

@@ -92,7 +92,14 @@ def _issue_pair(
             "token_type": "bearer",
             "expires_in": settings.access_token_minutes * 60,
             "refresh_token": raw_refresh,
-            "user": {"id": str(user.id), "phone": user.phone, "full_name": user.full_name},
+            "must_change_password": user.force_password_change,
+            "user": {
+                "id": str(user.id),
+                "phone": user.phone,
+                "email": user.email,
+                "full_name": user.full_name,
+                "roles": sorted(user.admin_roles),
+            },
         },
         refresh,
     )
@@ -151,20 +158,32 @@ def sign_up(
 
 
 def login(
-    request: Request, db: Session, phone: str, password: str, client_ip: str
+    request: Request, db: Session, identifier: str, password: str, client_ip: str
 ) -> dict[str, object]:
-    normalized_phone = validate.normalize_vietnam_phone(phone)
+    normalized_identifier = identifier.strip().lower()
+    is_email = "@" in normalized_identifier
+    if not is_email:
+        normalized_identifier = validate.normalize_vietnam_phone(identifier)
     with atomic(db):
         if consume_rate_limit(
             db,
-            scope="phone-login",
+            scope="account-login",
             subject_hash=_subject_hash(request, client_ip),
             limit=20,
             window_seconds=900,
         ):
             raise ApiError(429, "RATE_LIMITED", "Bạn đã thử đăng nhập quá nhiều lần.")
-        user = query.get_user_by_phone(db, normalized_phone)
-        if user is None or not user.is_active or not verify_password(user.password_hash, password):
+        user = (
+            query.get_user_by_email(db, normalized_identifier)
+            if is_email
+            else query.get_user_by_phone(db, normalized_identifier)
+        )
+        if (
+            user is None
+            or not user.is_active
+            or user.admin_status != "active"
+            or not verify_password(user.password_hash, password)
+        ):
             raise ApiError(401, "INVALID_CREDENTIALS", "Số điện thoại hoặc mật khẩu chưa đúng.")
         pair, _ = _issue_pair(request, db, user)
         return pair
@@ -193,7 +212,9 @@ def rotate_refresh(request: Request, db: Session, raw_token: str) -> dict[str, o
         raise ApiError(409, "REFRESH_TOKEN_REPLAYED", "Phiên đăng nhập đã được làm mới.") from exc
 
 
-def change_password(db: Session, user: User, new_password: str) -> None:
+def change_password(
+    request: Request, db: Session, user: User, new_password: str
+) -> dict[str, object]:
     with atomic(db):
         user.password_hash = hash_password(new_password)
         user.force_password_change = False
@@ -202,6 +223,8 @@ def change_password(db: Session, user: User, new_password: str) -> None:
             RefreshSession.user_id == user.id,
             RefreshSession.revoked_at.is_(None),
         ).update({RefreshSession.revoked_at: now_utc()}, synchronize_session=False)
+        pair, _ = _issue_pair(request, db, user)
+        return pair
 
 
 def logout(db: Session, user: User, raw_refresh_token: str) -> None:

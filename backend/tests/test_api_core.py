@@ -1,15 +1,27 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from argon2 import PasswordHasher
 from pydantic import SecretStr
 from sqlalchemy import select
 
+from nanobio_backend.db.business_models import (
+    CommissionRate,
+    CommissionRecord,
+    PaymentEvent,
+    SalePointAdjustment,
+    SalePointConversion,
+    SaleProfile,
+)
 from nanobio_backend.db.models import (
     AdminUserRole,
     FamilyMember,
     HealthSubject,
     MembershipSubscription,
+    ReferralRelationship,
+    SleepSafetyPreference,
+    UsageQuotaRule,
     User,
 )
 
@@ -51,6 +63,98 @@ def test_phone_signup_login_and_refresh_rotation(runtime):
     replay = client.post("/api/v1/auth/refresh", json={"refresh_token": original_refresh})
     assert replay.status_code == 401
     assert replay.json()["data"] is None
+
+
+def test_membership_access_is_server_derived_and_defaults_to_free(runtime):
+    client, _, _ = runtime
+    _signup(client)
+    login = client.post(
+        "/api/v1/auth/login", json={"phone": "0912345678", "password": "StrongPass123"}
+    ).json()["data"]
+    response = client.get(
+        "/api/v1/membership/me",
+        headers={"Authorization": f"Bearer {login['access_token']}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["data"]["product_access"] == "free"
+    assert response.json()["data"]["membership_plan"] == "free"
+
+
+def test_usage_quota_check_commit_and_idempotency_are_server_owned(runtime):
+    client, factory, _ = runtime
+    _signup(client)
+    with factory() as db:
+        db.add(
+            UsageQuotaRule(
+                plan_code="free",
+                feature_key="ai_chat_message",
+                period_unit="day",
+                max_count=3,
+                reset_timezone="Asia/Ho_Chi_Minh",
+                is_active=True,
+            )
+        )
+        db.commit()
+    login = client.post(
+        "/api/v1/auth/login", json={"phone": "0912345678", "password": "StrongPass123"}
+    ).json()["data"]
+    headers = {"Authorization": f"Bearer {login['access_token']}"}
+    check = client.post(
+        "/api/v1/usage-quota/check",
+        headers=headers,
+        json={"feature_key": "ai_chat_message", "request_id": "chat-1"},
+    )
+    assert check.status_code == 200
+    assert check.json()["data"]["allowed"] is True
+    assert check.json()["data"]["limit_count"] == 3
+
+    payload = {"feature_key": "ai_chat_message", "request_id": "chat-1"}
+    first = client.post("/api/v1/usage-quota/commit", headers=headers, json=payload)
+    repeated = client.post("/api/v1/usage-quota/commit", headers=headers, json=payload)
+    assert first.json()["data"]["used_count"] == 1
+    assert repeated.json()["data"]["used_count"] == 1
+
+    for request_id in ("chat-2", "chat-3"):
+        assert (
+            client.post(
+                "/api/v1/usage-quota/commit",
+                headers=headers,
+                json={"feature_key": "ai_chat_message", "request_id": request_id},
+            ).json()["data"]["committed"]
+            is True
+        )
+    exhausted = client.post(
+        "/api/v1/usage-quota/check",
+        headers=headers,
+        json={"feature_key": "ai_chat_message", "request_id": "chat-4"},
+    )
+    assert exhausted.json()["data"]["allowed"] is False
+    assert exhausted.json()["data"]["reason_code"] == "quota_exceeded"
+
+
+def test_admin_can_login_with_email_without_a_phone_number(runtime):
+    client, factory, _ = runtime
+    with factory() as db:
+        user = User(
+            phone=None,
+            email="admin@example.test",
+            password_hash=PasswordHasher().hash("AdminPass123"),
+            full_name="Test Admin",
+        )
+        user.roles.append(AdminUserRole(role_code="super_admin"))
+        db.add(user)
+        db.commit()
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"email": "ADMIN@example.test", "password": "AdminPass123"},
+    )
+    assert login.status_code == 200
+    assert login.json()["data"]["user"]["email"] == "admin@example.test"
+    token = login.json()["data"]["access_token"]
+    session = client.get("/api/v1/admin/session", headers={"Authorization": f"Bearer {token}"})
+    assert session.status_code == 200
+    assert session.json()["data"]["roles"] == ["super_admin"]
 
 
 def test_auth_rejects_invalid_phone_and_duplicate_account(runtime):
@@ -111,6 +215,45 @@ def test_change_password_revokes_refresh_sessions(runtime):
         "/api/v1/auth/login", json={"phone": "0912345678", "password": "ChangedPass456"}
     )
     assert new_login.status_code == 200
+
+
+def test_temporary_password_session_is_locked_until_password_change(runtime):
+    client, factory, _ = runtime
+    created = _signup(client, password="12345678")
+    assert created.status_code == 201
+    with factory() as db:
+        user = db.scalar(select(User).where(User.phone == "+84912345678"))
+        user.force_password_change = True
+        db.commit()
+
+    login = client.post("/api/v1/auth/login", json={"phone": "0912345678", "password": "12345678"})
+    assert login.status_code == 200
+    original = login.json()["data"]
+    assert original["must_change_password"] is True
+    headers = {"Authorization": f"Bearer {original['access_token']}"}
+
+    blocked = client.get("/api/v1/profile/me", headers=headers)
+    assert blocked.status_code == 403
+    assert blocked.json()["businessCode"] == "PASSWORD_CHANGE_REQUIRED"
+    assert blocked.json()["data"] is None
+
+    changed = client.post(
+        "/api/v1/auth/change-password",
+        headers=headers,
+        json={"new_password": "PersonalPass456"},
+    )
+    assert changed.status_code == 200
+    replacement = changed.json()["data"]
+    assert replacement["must_change_password"] is False
+    assert replacement["refresh_token"] != original["refresh_token"]
+
+    profile = client.get(
+        "/api/v1/profile/me",
+        headers={"Authorization": f"Bearer {replacement['access_token']}"},
+    )
+    assert profile.status_code == 200
+    replay = client.post("/api/v1/auth/refresh", json={"refresh_token": original["refresh_token"]})
+    assert replay.status_code == 401
 
 
 def test_admin_route_denies_member_and_grant_is_audited_and_idempotent(runtime):
@@ -194,7 +337,15 @@ def test_ai_generation_is_disabled_by_default_and_food_scan_stays_disabled(runti
     assert response.json()["businessCode"] == "FEATURE_NOT_ENABLED"
     assert response.json()["data"] is None
 
-    food_scan = client.post("/api/v1/food/scan/analyze", json={})
+    food_scan = client.post(
+        "/api/v1/food/scan/analyze",
+        headers={"Authorization": f"Bearer {access_token}"},
+        json={
+            "image_base64": "A" * 64,
+            "mime_type": "image/jpeg",
+            "prompt": "Nhận diện thực phẩm.",
+        },
+    )
     assert food_scan.status_code == 503
     assert food_scan.json()["businessCode"] == "FEATURE_NOT_ENABLED"
 
@@ -227,7 +378,7 @@ def test_google_play_provider_failure_is_safe_and_retryable(runtime, monkeypatch
 
 
 def test_storage_upload_checks_file_signature_and_enforces_owner(runtime):
-    client, _, _ = runtime
+    client, factory, _ = runtime
     _signup(client)
     owner_token = client.post(
         "/api/v1/auth/login", json={"phone": "0912345678", "password": "StrongPass123"}
@@ -260,6 +411,44 @@ def test_storage_upload_checks_file_signature_and_enforces_owner(runtime):
     downloaded = client.get(f"{bucket}/{file_id}", headers=owner_headers)
     assert downloaded.status_code == 200
     assert downloaded.content == b"%PDF-1.4\nproof"
+
+    with factory() as db:
+        owner = db.scalar(select(User).where(User.phone == "+84912345678"))
+        reviewer = User(
+            phone="+84910000113",
+            full_name="Finance Reviewer",
+            password_hash=PasswordHasher().hash("FinancePass123"),
+        )
+        db.add(reviewer)
+        db.flush()
+        db.add(AdminUserRole(user_id=reviewer.id, role_code="finance_admin"))
+        db.add(SaleProfile(user_id=owner.id, status="active"))
+        db.add(
+            SalePointConversion(
+                sale_user_id=owner.id,
+                requested_point_cents=10000,
+                point_to_money_rate=Decimal("1.0000"),
+                money_amount_cents=10000,
+                status="requested",
+                metadata_json={"payment_proof_path": file_id},
+            )
+        )
+        reviewer_phone = reviewer.phone
+        db.commit()
+    reviewer_token = client.post(
+        "/api/v1/auth/login",
+        json={"phone": reviewer_phone, "password": "FinancePass123"},
+    ).json()["data"]["access_token"]
+    admin_download = client.get(
+        f"/api/v1/admin/files/sale-payout-proofs/{file_id}",
+        headers={"Authorization": f"Bearer {reviewer_token}"},
+    )
+    assert admin_download.status_code == 200
+    assert admin_download.content == b"%PDF-1.4\nproof"
+    unprivileged_admin_download = client.get(
+        f"/api/v1/admin/files/sale-payout-proofs/{file_id}", headers=other_headers
+    )
+    assert unprivileged_admin_download.status_code == 403
     deleted = client.delete(f"{bucket}/{file_id}", headers=owner_headers)
     assert deleted.status_code == 200
 
@@ -310,6 +499,104 @@ def test_sleep_safety_contacts_are_owner_scoped_and_disabled_by_default(runtime)
     )
     assert verification.status_code == 503
     assert verification.json()["businessCode"] == "SLEEP_SAFETY_DISABLED"
+
+
+def test_sleep_safety_sync_is_owner_scoped_and_session_bound(runtime):
+    client, factory, _ = runtime
+    _signup(client)
+    owner = client.post(
+        "/api/v1/auth/login", json={"phone": "0912345678", "password": "StrongPass123"}
+    ).json()["data"]
+    owner_headers = {"Authorization": f"Bearer {owner['access_token']}"}
+    owner_id = owner["user"]["id"]
+
+    preference = client.put(
+        "/api/v1/sleep-safety/preferences",
+        headers=owner_headers,
+        json={
+            "user_id": str(uuid4()),
+            "enabled": True,
+            "sensitivity": "balanced",
+            "schedule_enabled": False,
+            "schedule_start_minutes": 1350,
+            "schedule_end_minutes": 390,
+            "timezone": "Asia/Ho_Chi_Minh",
+            "selected_weekdays": [1, 2, 3, 4, 5, 6, 7],
+            "calibration_required": True,
+            "calibration_noise_floor": 0.02,
+            "calibration_updated_at": "2026-10-30T10:00:00Z",
+            "cooldown_seconds": 120,
+            "consent_version": "sleep-safety-v1",
+            "updated_at": "2026-10-30T10:00:00Z",
+        },
+    )
+    assert preference.status_code == 200
+    with factory() as db:
+        stored_preference = db.get(SleepSafetyPreference, UUID(owner_id))
+        assert stored_preference is not None
+        assert stored_preference.user_id == UUID(owner_id)
+
+    session_id = "local-sleep-session-1"
+    session = client.put(
+        f"/api/v1/sleep-safety/sessions/{session_id}",
+        headers=owner_headers,
+        json={
+            "started_at": "2026-10-30T10:00:00Z",
+            "sensitivity": "balanced",
+            "status": "monitoring",
+            "start_source": "manual",
+            "platform": "android",
+            "app_version": "1.0.0",
+            "created_at": "2026-10-30T10:00:00Z",
+            "updated_at": "2026-10-30T10:00:00Z",
+        },
+    )
+    assert session.status_code == 200
+    assert session.json()["data"]["id"] == session_id
+
+    event_id = "local-sleep-event-1"
+    event_payload = {
+        "session_id": session_id,
+        "detected_at": "2026-10-30T10:01:00Z",
+        "event_type": "suddenLoudSound",
+        "severity": "high",
+        "confidence": 0.9,
+        "relative_energy": 1.2,
+        "baseline_delta": 0.8,
+        "repetition_count": 1,
+        "state": "detected",
+        "response": "noResponse",
+        "escalation_required": True,
+        "escalation_status": "pending",
+        "created_at": "2026-10-30T10:01:00Z",
+        "updated_at": "2026-10-30T10:01:00Z",
+    }
+    event = client.put(
+        f"/api/v1/sleep-safety/events/{event_id}",
+        headers=owner_headers,
+        json=event_payload,
+    )
+    assert event.status_code == 200
+    history = client.get("/api/v1/sleep-safety/history", headers=owner_headers)
+    assert history.status_code == 200
+    assert history.json()["data"]["sessions"][0]["id"] == session_id
+    assert history.json()["data"]["events"][0]["id"] == event_id
+
+    _signup(client, phone="0912345679", name="Other Member")
+    other = client.post(
+        "/api/v1/auth/login", json={"phone": "0912345679", "password": "StrongPass123"}
+    ).json()["data"]
+    other_headers = {"Authorization": f"Bearer {other['access_token']}"}
+    other_history = client.get("/api/v1/sleep-safety/history", headers=other_headers)
+    assert other_history.status_code == 200
+    assert other_history.json()["data"] == {"sessions": [], "events": []}
+    denied = client.put(
+        f"/api/v1/sleep-safety/events/{event_id}",
+        headers=other_headers,
+        json=event_payload,
+    )
+    assert denied.status_code == 409
+    assert denied.json()["businessCode"] == "SESSION_NOT_FOUND"
 
 
 def test_profile_membership_and_cloud_snapshot_are_user_scoped(runtime):
@@ -565,6 +852,17 @@ def test_manual_membership_payment_idempotency_ownership_and_no_early_access(run
             password_hash=PasswordHasher().hash("OtherPass123"),
         )
         db.add(other)
+        db.flush()
+        db.add(SaleProfile(user_id=other.id, status="active"))
+        db.add(
+            ReferralRelationship(
+                referrer_id=other.id,
+                referred_id=owner.id,
+                device_fingerprint_hash="a" * 64,
+                status="active",
+            )
+        )
+        db.add(CommissionRate(code="direct_referral", rate=Decimal("0.1000"), is_active=True))
         owner_phone = owner.phone
         db.commit()
     settings.membership_payment_prices_json = (
@@ -657,6 +955,20 @@ def test_manual_membership_payment_idempotency_ownership_and_no_early_access(run
     )
     assert approved.status_code == 200, approved.text
     assert approved.json()["data"]["status"] == "succeeded"
+    sale_dashboard = client.get("/api/v1/sale/dashboard", headers=reviewer_headers)
+    assert sale_dashboard.status_code == 200
+    assert sale_dashboard.json()["data"]["successful_payments"] == 1
+    with factory() as db:
+        payment_event = db.get(PaymentEvent, UUID(payment_id))
+        assert payment_event is not None
+        assert payment_event.status == "succeeded"
+        commission = db.scalar(
+            select(CommissionRecord).where(CommissionRecord.payment_event_id == UUID(payment_id))
+        )
+        assert commission is not None
+        assert commission.receiver_user_id == other.id
+        assert commission.amount_cents == 19900
+        assert commission.available_at - payment_event.paid_at == timedelta(hours=24)
     replayed_review = client.post(
         review_path,
         headers=reviewer_headers,
@@ -668,6 +980,40 @@ def test_manual_membership_payment_idempotency_ownership_and_no_early_access(run
     assert membership.json()["data"]["membership_plan"] == "plus"
     payment_alert = client.get("/api/v1/admin/payments/review-alert", headers=owner_headers)
     assert payment_alert.json()["data"]["pending_review_count"] == 0
+    reversal_payload = {
+        "decision": "refund",
+        "reason": "Transfer reversed by bank",
+        "idempotency_key": "payment-reversal-001",
+    }
+    reversed_payment = client.post(
+        f"/api/v1/admin/payments/{payment_id}/reversal",
+        headers=reviewer_headers,
+        json=reversal_payload,
+    )
+    assert reversed_payment.status_code == 200, reversed_payment.text
+    assert reversed_payment.json()["data"]["status"] == "refunded"
+    replayed_reversal = client.post(
+        f"/api/v1/admin/payments/{payment_id}/reversal",
+        headers=reviewer_headers,
+        json=reversal_payload,
+    )
+    assert replayed_reversal.status_code == 200
+    assert replayed_reversal.json()["data"]["idempotent_replay"] is True
+    sale_dashboard_after_reversal = client.get("/api/v1/sale/dashboard", headers=reviewer_headers)
+    assert sale_dashboard_after_reversal.status_code == 200
+    assert sale_dashboard_after_reversal.json()["data"]["successful_payments"] == 0
+    with factory() as db:
+        adjustments = db.scalars(
+            select(SalePointAdjustment).where(
+                SalePointAdjustment.idempotency_key.like("sale-reversal-%")
+            )
+        ).all()
+        assert len(adjustments) == 1
+        assert adjustments[0].sale_user_id == other.id
+        assert adjustments[0].point_delta_cents == -19900
+        assert adjustments[0].metadata_json["ledger_policy"] == (
+            "negative_adjustment_without_overwriting_commission"
+        )
 
     rejected_request = client.post(
         "/api/v1/payments/membership-requests",

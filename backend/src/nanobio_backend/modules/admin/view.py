@@ -25,7 +25,7 @@ from nanobio_backend.modules.auth.validate import normalize_vietnam_phone
 from nanobio_backend.services.health_subjects import ensure_self_subject
 
 MEMBERSHIP_PLANS = {"plus", "family_plus"}
-LEAD_STATUSES = {"new", "contacted", "qualified", "converted", "closed", "rejected"}
+LEAD_STATUSES = {"new", "contacted", "registered", "converted", "rejected"}
 _EMAIL_PATTERN = re.compile(r"^[^\s@|]+@[^\s@|]+\.[^\s@|]+$", re.IGNORECASE)
 _RESET_PASSWORD = "12345678"
 
@@ -280,7 +280,7 @@ def search_users(db: Session, *, term: str, limit: int) -> list[dict[str, Any]]:
                 "id": str(user.id),
                 "title": user.full_name or user.email or str(user.id),
                 "subtitle": subtitle,
-                "status": "active" if user.is_active else "disabled",
+                "status": user.admin_status,
                 "section": "users",
                 "created_at": user.created_at.isoformat(),
                 "plan_code": plan,
@@ -309,10 +309,12 @@ def list_early_access_leads(db: Session, *, term: str, page: int, page_size: int
     data = [
         {
             "id": str(row.id),
-            "phone_masked": f"{row.phone[:5]}***{row.phone[-2:]}",
+            "phone_e164": row.phone,
+            "phone_display": row.phone,
             "full_name": row.full_name,
             "age": row.age,
             "gender": row.gender,
+            "address": row.address,
             "status": row.status,
             "created_at": row.created_at.isoformat(),
         }
@@ -323,30 +325,54 @@ def list_early_access_leads(db: Session, *, term: str, page: int, page_size: int
 
 def update_lead_status(
     db: Session, actor: User, lead_id: UUID, payload: dict[str, Any]
-) -> dict[str, str]:
+) -> dict[str, Any]:
     if payload["status"] not in LEAD_STATUSES:
         raise ApiError(422, "INVALID_STATUS", "Trạng thái hồ sơ chưa hợp lệ.")
+    operation = "early_access_lead_status_updated"
+    normalized_payload = {"lead_id": str(lead_id), "status": payload["status"]}
+    key = payload["idempotency_key"]
     with atomic(db):
+        cached = _idempotent_result(
+            db,
+            actor=actor,
+            operation=operation,
+            key=key,
+            payload=normalized_payload,
+        )
+        if cached is not None:
+            return cached
         lead = db.scalar(
             select(EarlyAccessLead).where(EarlyAccessLead.id == lead_id).with_for_update()
         )
         if lead is None:
             raise ApiError(404, "LEAD_NOT_FOUND", "Không tìm thấy hồ sơ.")
-        if lead.status == "closed":
-            raise ApiError(409, "LEAD_CLOSED", "Hồ sơ đã đóng và không thể cập nhật.")
+        old_status = lead.status
         lead.status = payload["status"]
-        if lead.status in {"closed", "rejected", "converted"}:
+        if lead.status in {"rejected", "converted"}:
             lead.closed_at = datetime.now(UTC)
         query.add_audit(
             db,
             actor_id=actor.id,
-            action="early-access-status",
+            action=operation,
             target_user_id=None,
             reason=payload["reason"],
-            idempotency_key=payload["idempotency_key"],
-            metadata={"lead_id": str(lead.id), "status": lead.status},
+            idempotency_key=key,
+            metadata={
+                "lead_id": str(lead.id),
+                "from_status": old_status,
+                "to_status": lead.status,
+            },
         )
-        return {"lead_id": str(lead.id), "status": lead.status}
+        result = {"success": True, "message": "Đã cập nhật trạng thái hồ sơ."}
+        query.add_idempotency(
+            db,
+            actor_id=actor.id,
+            operation=operation,
+            key=key,
+            digest=query.payload_hash(normalized_payload),
+            result=result,
+        )
+        return result
 
 
 def grant_membership_bulk(db: Session, actor: User, payload: dict[str, Any]) -> dict[str, Any]:
@@ -662,6 +688,57 @@ def update_user_profile(
             operation=operation,
             key=key,
             digest=query.payload_hash(idempotency_payload),
+            result=result,
+        )
+        return result
+
+
+def update_user_status(
+    db: Session, actor: User, user_id: UUID, payload: dict[str, Any]
+) -> dict[str, Any]:
+    status = str(payload.get("status", ""))
+    if status not in {"active", "suspended", "closed"}:
+        raise ApiError(422, "INVALID_USER_STATUS", "Trạng thái tài khoản chưa hợp lệ.")
+    operation = "admin_update_user_status"
+    normalized_payload = {"user_id": str(user_id), "status": status}
+    key = str(payload["idempotency_key"])
+    with atomic(db):
+        cached = _idempotent_result(
+            db,
+            actor=actor,
+            operation=operation,
+            key=key,
+            payload=normalized_payload,
+        )
+        if cached is not None:
+            return cached
+        user = query.get_user_for_update(db, user_id)
+        if user is None:
+            raise ApiError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.")
+        user.admin_status = status
+        user.is_active = status == "active"
+        user.updated_at = now_utc()
+        if status != "active":
+            db.query(RefreshSession).filter(
+                RefreshSession.user_id == user.id,
+                RefreshSession.revoked_at.is_(None),
+            ).update({RefreshSession.revoked_at: now_utc()}, synchronize_session=False)
+        result = {"success": True, "message": "Đã cập nhật trạng thái tài khoản."}
+        query.add_audit(
+            db,
+            actor_id=actor.id,
+            action=operation,
+            target_user_id=user.id,
+            reason=str(payload["reason"]).strip(),
+            idempotency_key=key,
+            metadata={"status": status},
+        )
+        query.add_idempotency(
+            db,
+            actor_id=actor.id,
+            operation=operation,
+            key=key,
+            digest=query.payload_hash(normalized_payload),
             result=result,
         )
         return result

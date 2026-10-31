@@ -14,6 +14,12 @@ class AiGenerateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     messages: list[AiGenerateMessage] = Field(min_length=1, max_length=8)
+    system_instruction: str | None = Field(default=None, max_length=12_000)
+    response_format: Literal["text", "json"] = "text"
+    json_schema: dict[str, object] | None = Field(default=None, max_length=32)
+    max_output_tokens: int | None = Field(default=None, ge=1, le=2048)
+    temperature: float | None = Field(default=None, ge=0, le=2)
+    top_p: float | None = Field(default=None, gt=0, le=1)
 
     @model_validator(mode="after")
     def require_user_turn(self) -> Self:
@@ -66,6 +72,14 @@ class FoodEvidenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     ingredients: list[str] = Field(min_length=1, max_length=30)
+
+
+class FoodScanAnalyzeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    image_base64: str = Field(min_length=64, max_length=10_000_000)
+    mime_type: Literal["image/jpeg", "image/png", "image/webp"] = "image/jpeg"
+    prompt: str = Field(min_length=1, max_length=12_000)
 
 
 class GooglePlayVerifyRequest(BaseModel):

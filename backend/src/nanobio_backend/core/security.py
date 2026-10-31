@@ -80,7 +80,7 @@ def decode_access_token(request: Request, token: str) -> UUID:
         raise ApiError(401, "AUTHENTICATION_REQUIRED", "Phiên đăng nhập không hợp lệ.") from exc
 
 
-def current_user(
+def authenticated_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
@@ -89,9 +89,21 @@ def current_user(
         raise ApiError(401, "AUTHENTICATION_REQUIRED", "Vui lòng đăng nhập để tiếp tục.")
     user_id = decode_access_token(request, credentials.credentials)
     user = db.get(User, user_id)
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or user.admin_status != "active":
         raise ApiError(401, "AUTHENTICATION_REQUIRED", "Phiên đăng nhập không hợp lệ.")
     db.commit()
+    return user
+
+
+def current_user(
+    user: User = Depends(authenticated_user),
+) -> User:
+    if user.force_password_change:
+        raise ApiError(
+            403,
+            "PASSWORD_CHANGE_REQUIRED",
+            "Hãy đổi mật khẩu tạm trước khi tiếp tục.",
+        )
     return user
 
 

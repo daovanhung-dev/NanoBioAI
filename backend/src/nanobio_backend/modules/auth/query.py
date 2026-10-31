@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from nanobio_backend.db.models import (
@@ -16,6 +16,10 @@ from nanobio_backend.db.models import (
 
 def get_user_by_phone(db: Session, phone: str) -> User | None:
     return db.scalar(select(User).where(User.phone == phone))
+
+
+def get_user_by_email(db: Session, email: str) -> User | None:
+    return db.scalar(select(User).where(func.lower(User.email) == email.strip().lower()))
 
 
 def get_user(db: Session, user_id: UUID) -> User | None:
