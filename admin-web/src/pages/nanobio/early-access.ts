@@ -31,10 +31,14 @@ export class EarlyAccessError extends Error {
   }
 }
 
-type FunctionResponse = {
+type ApiResponse = {
   success?: unknown;
-  code?: unknown;
+  businessCode?: unknown;
   message?: unknown;
+  data?: Record<string, unknown>;
+};
+
+type EarlyAccessData = {
   download_url?: unknown;
   download_available?: unknown;
   expires_at?: unknown;
@@ -42,8 +46,7 @@ type FunctionResponse = {
 };
 
 export type SubmitOptions = {
-  supabaseUrl: string;
-  anonKey: string;
+  apiBaseUrl: string;
   fetcher?: typeof fetch;
   timeoutMs?: number;
 };
@@ -58,7 +61,7 @@ export async function submitEarlyAccess(
       config = options;
     } else {
       const runtime = readRuntimeConfig();
-      config = { supabaseUrl: runtime.supabaseUrl, anonKey: runtime.supabaseAnonKey };
+      config = { apiBaseUrl: runtime.apiBaseUrl };
     }
   } catch {
     throw new EarlyAccessError('not_configured');
@@ -69,12 +72,10 @@ export async function submitEarlyAccess(
   let response: Response;
   try {
     response = await (config.fetcher ?? fetch)(
-      `${config.supabaseUrl.replace(/\/$/, '')}/functions/v1/register-early-access`,
+      `${config.apiBaseUrl.replace(/\/$/, '')}/api/v1/early-access`,
       {
         method: 'POST',
         headers: {
-          apikey: config.anonKey,
-          authorization: `Bearer ${config.anonKey}`,
           'content-type': 'application/json',
         },
         body: JSON.stringify(payload),
@@ -87,27 +88,29 @@ export async function submitEarlyAccess(
     globalThis.clearTimeout(timeout);
   }
 
-  let body: FunctionResponse;
+  let envelope: ApiResponse;
   try {
-    body = await response.json() as FunctionResponse;
+    envelope = await response.json() as ApiResponse;
   } catch {
     throw new EarlyAccessError(response.status === 429 ? 'rate_limited' : 'server');
   }
 
-  if (response.status === 429 || body.code === 'RATE_LIMITED') throw new EarlyAccessError('rate_limited');
-  if (!response.ok || body.success !== true) {
-    if (body.code === 'INVALID_PHONE') throw new EarlyAccessError('invalid_phone');
-    if (body.code === 'CONSENT_REQUIRED') throw new EarlyAccessError('consent_required');
+  const code = String(envelope.businessCode ?? '');
+  if (response.status === 429 || code === 'RATE_LIMITED') throw new EarlyAccessError('rate_limited');
+  if (!response.ok || envelope.success !== true) {
+    if (code === 'INVALID_PHONE') throw new EarlyAccessError('invalid_phone');
+    if (code === 'CONSENT_REQUIRED') throw new EarlyAccessError('consent_required');
     throw new EarlyAccessError('server');
   }
 
+  const body = (envelope.data ?? {}) as EarlyAccessData;
   const downloadUrl = typeof body.download_url === 'string' && body.download_available === true
     ? safeDownloadUrl(body.download_url)
     : null;
 
   return {
     success: true,
-    message: typeof body.message === 'string' ? body.message : 'Đã ghi nhận đăng ký của bạn.',
+    message: typeof envelope.message === 'string' ? envelope.message : 'Đã ghi nhận đăng ký của bạn.',
     downloadUrl,
     downloadAvailable: downloadUrl !== null,
     expiresAt: typeof body.expires_at === 'string' ? body.expires_at : null,

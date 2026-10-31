@@ -1,14 +1,14 @@
 # NanoBio Admin Web
 
 SPA React + TypeScript + Vite cho không gian vận hành Admin NanoBio. Ứng dụng
-dùng Supabase Auth hiện có, các RPC/Edge Function được cấp quyền và bucket
-`sale-payout-proofs`; không chứa service-role key, database URL hoặc Gemini key.
+dùng API FastAPI tự host qua HTTPS; không chứa Supabase key, database URL hoặc
+khóa AI.
 
 ## Chạy local
 
 ```bash
 cp .env.example .env.local
-# điền VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY
+# VITE_API_BASE_URL mặc định là https://42.118.174.147
 npm install
 npm run dev
 ```
@@ -30,17 +30,8 @@ Pages hoàn tất.
 
 Trong repository, tạo:
 
-- Repository Variable `NANOBIO_SUPABASE_URL`.
-- Repository Secret `NANOBIO_SUPABASE_ANON_KEY`.
+- Repository Variable `NANOBIO_API_BASE_URL` (mặc định là `https://42.118.174.147`).
 
-Bật GitHub Pages với source **GitHub Actions**. Anon/publishable key và URL có
-thể xuất hiện trong bundle frontend; RLS, permission check và RPC security
-definer ở Supabase mới là lớp bảo vệ dữ liệu cuối cùng. Chỉ tài khoản có
-`get_my_admin_session` hợp lệ mới vào được khu Admin.
-
-Workflow không chạy các thao tác schema, không quản lý secret Supabase và không
-được xem là bằng chứng backend production-ready. Contract test Supabase vẫn
-cần chạy trong môi trường có Dart/Supabase runtime phù hợp.
-
-Workflow có bước preflight không in giá trị cấu hình: nếu thiếu URL, anon key
-hoặc URL không phải HTTP(S), job sẽ dừng trước khi tạo artifact Pages.
+Bật GitHub Pages với source **GitHub Actions**. Admin Web chỉ dùng phiên đăng
+nhập backend; workflow không cần Supabase URL hoặc anon key. Quyền truy cập được
+kiểm tra lại ở FastAPI trên mọi endpoint quản trị.

@@ -1,9 +1,9 @@
-import type {
-  AuthChangeEvent,
-  Session,
-  SupabaseClient,
-} from "@supabase/supabase-js";
-import { getSupabaseClient } from "./supabase";
+import {
+  BackendClient,
+  BackendRequestError,
+  createBackendClient,
+  type BackendAuthSession,
+} from "./backend-client";
 import {
   type AccountCreateInput,
   type AdminAuditEvent,
@@ -43,48 +43,38 @@ export class AdminApiError extends Error {
   }
 }
 
-type AuthListener = (event: AuthChangeEvent, session: Session | null) => void;
+type AuthListener = (session: BackendAuthSession | null) => void;
 
 export class AdminApi {
   constructor(
-    private readonly getClient: () => SupabaseClient = getSupabaseClient,
+    private readonly client: BackendClient = createBackendClient(),
   ) {}
 
-  async getCurrentSession(): Promise<Session | null> {
-    const { data, error } = await this.getClient().auth.getSession();
-    if (error) throw toSafeError(error);
-    return data.session;
+  async getCurrentSession(): Promise<BackendAuthSession | null> {
+    return this.client.getCurrentSession();
   }
 
   watchAuth(listener: AuthListener): { unsubscribe: () => void } {
-    const { data } = this.getClient().auth.onAuthStateChange(listener);
-    return data.subscription;
+    return this.client.watchAuth(listener);
   }
 
   async signIn(email: string, password: string): Promise<void> {
-    const { error } = await this.getClient().auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    if (error) {
-      throw new AdminApiError(
-        "Thông tin đăng nhập chưa đúng hoặc tài khoản chưa thể sử dụng.",
-      );
+    try {
+      await this.client.signIn(email, password);
+    } catch (error) {
+      if (error instanceof BackendRequestError) {
+        throw new AdminApiError(error.message, error.statusCode >= 500);
+      }
+      throw new AdminApiError("Thông tin đăng nhập chưa đúng hoặc tài khoản chưa thể sử dụng.");
     }
   }
 
   async signOut(): Promise<void> {
-    const { error } = await this.getClient().auth.signOut();
-    if (error) {
-      throw new AdminApiError(
-        "Chưa thể đăng xuất lúc này. Bạn thử lại sau nhé.",
-        true,
-      );
-    }
+    await this.client.signOut();
   }
 
   async fetchAdminSession(): Promise<AdminSession> {
-    const data = await this.rpc<unknown>("get_my_admin_session");
+    const data = await this.client.requestData<unknown>("/admin/session");
     return toAdminSession(data);
   }
 
@@ -93,14 +83,11 @@ export class AdminApi {
     page: number,
     pageSize = 25,
   ): Promise<EarlyAccessLeadPage> {
-    const data = await this.invoke<unknown>("admin-early-access-leads", {
-      action: "list",
-      query: query.trim(),
-      page,
-      page_size: pageSize,
+    const data = await this.client.requestData<unknown>("/admin/early-access/leads", {
+      query: { q: query.trim(), page, page_size: pageSize },
     });
     const response = normalizeMap(data);
-    if (response.success !== true) {
+    if (!Array.isArray(response.rows)) {
       throw new AdminApiError(
         "Chưa tải được danh sách thông tin sự kiện.",
         true,
@@ -129,23 +116,22 @@ export class AdminApi {
     ) {
       throw new AdminApiError("Chưa chọn hồ sơ hoặc trạng thái hợp lệ.");
     }
-    return toMutationResult(
-      await this.invoke<unknown>("admin-early-access-leads", {
-        action: "update_status",
-        lead_id: input.leadId,
-        status: input.status,
-        reason: input.reason.trim(),
-        idempotency_key: input.idempotencyKey,
-      }),
-    );
+    return toMutationResult(await this.client.requestData<unknown>(
+      `/admin/early-access/leads/${encodeURIComponent(input.leadId)}`,
+      {
+        method: "PATCH",
+        body: {
+          status: input.status,
+          reason: input.reason.trim(),
+          idempotency_key: input.idempotencyKey,
+        },
+      },
+    ));
   }
 
   async fetchDashboard(from: Date, to: Date): Promise<DashboardMetric[]> {
-    const data = await this.rpc<unknown>("get_admin_dashboard_summary", {
-      p_from: from.toISOString(),
-      p_to: to.toISOString(),
-      p_scope: "global",
-      p_time_zone: "Asia/Ho_Chi_Minh",
+    const data = await this.client.requestData<unknown>("/admin/dashboard", {
+      query: { from: from.toISOString(), to: to.toISOString() },
     });
     return normalizeArray<Record<string, unknown>>(data).map((row) => ({
       key: String(row.metric_key ?? "unknown"),
@@ -522,75 +508,321 @@ export class AdminApi {
     if (file.size > 5 * 1024 * 1024) {
       throw new AdminApiError("Ảnh cần nhỏ hơn 5 MB.");
     }
-    const safeConversion = conversionId.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path =
-      `sale-point-conversions/${safeConversion}/${Date.now()}-${safeName}`;
-    const { error } = await this.getClient().storage.from("sale-payout-proofs")
-      .upload(path, file, {
-        contentType: file.type,
-        upsert: false,
-      });
-    if (error) {
-      throw new AdminApiError(
-        "Chưa tải được ảnh xác nhận. Hãy thử lại với ảnh khác.",
-        true,
-      );
-    }
-    return path;
+    if (!conversionId.trim()) throw new AdminApiError("Chưa chọn giao dịch cần xác nhận.");
+    const form = new FormData();
+    form.append("file", file, file.name);
+    const data = normalizeMap(await this.client.requestData<unknown>(
+      "/files/sale-payout-proofs",
+      { method: "POST", body: form },
+    ));
+    const fileId = String(data.id ?? "");
+    if (!fileId) throw new AdminApiError("Máy chủ chưa trả về mã tệp.", true);
+    return fileId;
   }
 
   async signedPayoutProof(path: string): Promise<string> {
-    const { data, error } = await this.getClient().storage.from(
-      "sale-payout-proofs",
-    ).createSignedUrl(path, 600);
-    if (error || !data?.signedUrl) {
-      throw new AdminApiError("Chưa mở được ảnh xác nhận.", true);
+    const fileId = path.trim().split("/").at(-1) ?? "";
+    if (!/^[0-9a-f-]{36}$/i.test(fileId)) {
+      throw new AdminApiError("Mã tệp chưa hợp lệ.");
     }
-    return data.signedUrl;
+    const blob = await this.client.requestBlob(
+      `/admin/files/sale-payout-proofs/${encodeURIComponent(fileId)}`,
+    );
+    return URL.createObjectURL(blob);
   }
 
   private async rpc<T>(
     name: string,
     params?: Record<string, unknown>,
   ): Promise<T> {
-    const { data, error } = await this.getClient().rpc(name, params);
-    if (error) throw toSafeError(error);
-    return data as T;
+    const p = params ?? {};
+    try {
+      switch (name) {
+        case "get_admin_dashboard_summary":
+          return await this.client.requestData<T>("/admin/dashboard", {
+            query: {
+              from: String(p.p_from ?? ""),
+              to: String(p.p_to ?? ""),
+            },
+          });
+        case "get_my_admin_session":
+          return await this.client.requestData<T>("/admin/session");
+        case "admin_search_users":
+          return await this.client.requestData<T>("/admin/users/search", {
+            query: {
+              q: typeof p.p_query === "string" ? p.p_query : "",
+              limit: typeof p.p_limit === "number" ? p.p_limit : 50,
+            },
+          });
+        case "admin_list_payments":
+          return await this.client.requestData<T>("/admin/payments", {
+            query: {
+              q: typeof p.p_query === "string" ? p.p_query : "",
+              limit: typeof p.p_limit === "number" ? p.p_limit : 50,
+            },
+          });
+        case "admin_get_payment_review_alert":
+          return await this.client.requestData<T>("/admin/payments/review-alert");
+        case "admin_list_audit_events":
+          return await this.client.requestData<T>("/admin/audit-events", {
+            query: { limit: typeof p.p_limit === "number" ? p.p_limit : 100 },
+          });
+        case "admin_review_payment":
+          return await this.client.requestData<T>(
+            `/admin/payments/${encodeURIComponent(String(p.p_payment_event_id ?? ""))}/review`,
+            {
+              method: "POST",
+              body: {
+                decision: p.p_decision,
+                reason: p.p_reason,
+                idempotency_key: p.p_idempotency_key,
+                transfer_verified: p.p_transfer_verified === true,
+              },
+            },
+          );
+        case "admin_refund_or_cancel_payment":
+          return await this.client.requestData<T>(
+            `/admin/payments/${encodeURIComponent(String(p.p_payment_event_id ?? ""))}/reversal`,
+            {
+              method: "POST",
+              body: {
+                decision: p.p_decision,
+                reason: p.p_reason,
+                idempotency_key: p.p_idempotency_key,
+              },
+            },
+          );
+        case "admin_update_user_status":
+          return await this.client.requestData<T>(
+            `/admin/users/${encodeURIComponent(String(p.p_user_id ?? ""))}/status`,
+            {
+              method: "PATCH",
+              body: {
+                status: p.p_status,
+                reason: p.p_reason,
+                idempotency_key: p.p_idempotency_key,
+              },
+            },
+          );
+        case "admin_list_sales":
+        case "admin_list_sale_point_conversions":
+        case "admin_list_wellness_rewards":
+        case "admin_list_reconciliation_discrepancies":
+        case "admin_list_plan_config_versions":
+        case "admin_list_report_catalog":
+        case "admin_list_config_versions":
+        case "admin_list_report_exports": {
+          const sectionByName: Record<string, string> = {
+            admin_list_sales: "sales",
+            admin_list_sale_point_conversions: "sale-conversions",
+            admin_list_wellness_rewards: "wellness-rewards",
+            admin_list_reconciliation_discrepancies: "reconciliation",
+            admin_list_plan_config_versions: "plans",
+            admin_list_report_catalog: "reports",
+            admin_list_config_versions: "config",
+            admin_list_report_exports: "report-exports",
+          };
+          return await this.client.requestData<T>(
+            `/admin/business/${sectionByName[name]}`,
+            {
+              query: {
+                q: typeof p.p_query === "string" ? p.p_query : "",
+                limit: typeof p.p_limit === "number" ? p.p_limit : 100,
+              },
+            },
+          );
+        }
+        case "admin_review_sale_profile":
+          return await this.adminBusinessMutation<T>("sales", {
+            action: p.p_decision,
+            target_id: p.p_sale_user_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+          });
+        case "admin_adjust_sale_points":
+          return await this.adminBusinessMutation<T>("sale-conversions", {
+            action: "adjust_points",
+            target_id: p.p_sale_user_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: { point_delta_cents: p.p_point_delta_cents },
+          });
+        case "admin_review_sale_point_conversion":
+          return await this.adminBusinessMutation<T>("sale-conversions", {
+            action: p.p_decision,
+            target_id: p.p_conversion_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: { payment_proof_path: p.p_payment_proof_path },
+          });
+        case "admin_create_reconciliation_run":
+          return await this.adminBusinessMutation<T>("reconciliation", {
+            action: "create_run",
+            target_id: p.p_scope,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+          });
+        case "admin_update_reconciliation_discrepancy_status":
+          return await this.adminBusinessMutation<T>("reconciliation", {
+            action: p.p_status,
+            target_id: p.p_discrepancy_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+          });
+        case "admin_upsert_config_version":
+          return await this.adminBusinessMutation<T>("config", {
+            action: "upsert_config",
+            target_id: p.p_config_key,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: { config_value: p.p_config_value },
+          });
+        case "admin_request_report_export":
+          return await this.adminBusinessMutation<T>("reports", {
+            action: "request_export",
+            target_id: p.p_report_type,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: { filters: p.p_filters },
+          });
+        case "admin_upsert_reward_offer":
+        case "admin_upsert_reward_offer_v2":
+          return await this.adminBusinessMutation<T>("wellness-rewards", {
+            action: "upsert_offer",
+            target_id: p.p_offer_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: {
+              reward_type: p.p_reward_type ?? "voucher",
+              title: p.p_title,
+              description: p.p_description,
+              provider_name: p.p_provider_name,
+              cost_points: p.p_cost_points,
+              stock_count: p.p_stock_count ?? 0,
+              eligible_plan_codes: p.p_eligible_plan_codes,
+              available_from: p.p_available_from,
+              available_until: p.p_available_until,
+              voucher_expires_at: p.p_voucher_expires_at,
+              is_active: p.p_is_active,
+            },
+          });
+        case "admin_import_reward_codes":
+          return await this.adminBusinessMutation<T>("wellness-rewards", {
+            action: "import_codes",
+            target_id: p.p_offer_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: {
+              codes: p.p_codes,
+              voucher_expires_at: p.p_voucher_expires_at,
+            },
+          });
+        case "admin_cancel_reward_redemption":
+          return await this.adminBusinessMutation<T>("wellness-rewards", {
+            action: "cancel",
+            target_id: p.p_redemption_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+            payload: { external_revocation_confirmed: true },
+          });
+        case "admin_mark_reward_redemption_received":
+          return await this.adminBusinessMutation<T>("wellness-rewards", {
+            action: "mark_received",
+            target_id: p.p_redemption_id,
+            reason: p.p_reason,
+            idempotency_key: p.p_idempotency_key,
+          });
+        default:
+          throw new AdminApiError(`Nghiệp vụ ${name} chưa được cung cấp trên backend tự host.`);
+      }
+    } catch (error) {
+      throw safeBackendError(error);
+    }
+  }
+
+  private async adminBusinessMutation<T>(
+    section: string,
+    body: Record<string, unknown>,
+  ): Promise<T> {
+    return this.client.requestData<T>(`/admin/business/${section}`, {
+      method: "POST",
+      body,
+    });
   }
 
   private async invoke<T>(
     name: string,
     body: Record<string, unknown>,
   ): Promise<T> {
-    const { data, error } = await this.getClient().functions.invoke(name, {
-      body,
-    });
-    if (error) {
-      const context = (error as { context?: unknown }).context;
-      if (context instanceof Response) {
-        try {
-          const payload = await context.clone().json() as Record<
-            string,
-            unknown
-          >;
-          const message = typeof payload.message === "string"
-            ? payload.message.trim()
-            : "";
-          if (message && message.length <= 240) {
-            throw new AdminApiError(message, false);
+    try {
+      switch (name) {
+        case "admin-create-account":
+          return await this.client.requestData<T>("/admin/accounts", {
+            method: "POST",
+            body,
+          });
+        case "admin-grant-membership":
+          return await this.client.requestData<T>("/admin/memberships/grant", {
+            method: "POST",
+            body,
+          });
+        case "admin-adjust-membership-period":
+          return await this.client.requestData<T>("/admin/memberships/adjust-period", {
+            method: "POST",
+            body,
+          });
+        case "admin-provision-accounts-bulk":
+          return await this.client.requestData<T>(
+            body.mode === "preview"
+              ? "/admin/accounts/bulk-provision/preview"
+              : "/admin/accounts/bulk-provision",
+            { method: "POST", body },
+          );
+        case "admin-user-management": {
+          const userId = encodeURIComponent(String(body.user_id ?? ""));
+          if (body.operation === "detail") {
+            return await this.client.requestData<T>(`/admin/users/${userId}`, {
+              query: { reason: body.reason as string },
+            });
           }
-        } catch (nextError) {
-          if (nextError instanceof AdminApiError) throw nextError;
+          if (body.operation === "update_profile") {
+            return await this.client.requestData<T>(`/admin/users/${userId}/profile`, {
+              method: "PATCH",
+              body: {
+                full_name: body.full_name,
+                gender: body.gender,
+                birth_year: body.birth_year,
+                reason: body.reason,
+                idempotency_key: body.idempotency_key,
+              },
+            });
+          }
+          if (body.operation === "reset_member_password") {
+            return await this.client.requestData<T>(`/admin/users/${userId}/password-reset`, {
+              method: "POST",
+              query: {
+                reason: body.reason as string,
+                idempotency_key: body.idempotency_key as string,
+              },
+            });
+          }
+          throw new AdminApiError("Thao tác tài khoản này chưa được cung cấp.");
         }
+        default:
+          throw new AdminApiError(`Nghiệp vụ ${name} chưa được cung cấp trên backend tự host.`);
       }
-      throw new AdminApiError(
-        "Thao tác chưa hoàn tất. Bạn thử lại sau nhé.",
-        true,
-      );
+    } catch (error) {
+      throw safeBackendError(error);
     }
-    return data as T;
   }
+}
+
+function safeBackendError(error: unknown): AdminApiError {
+  if (error instanceof AdminApiError) return error;
+  if (error instanceof BackendRequestError) {
+    return new AdminApiError(error.message, error.statusCode >= 500 || error.statusCode === 0);
+  }
+  return new AdminApiError("Máy chủ chưa thể hoàn tất thao tác này. Bạn thử lại sau nhé.", true);
 }
 
 export function makeKey(action: string, target = ""): string {
@@ -692,8 +924,8 @@ function toEarlyAccessLead(value: Record<string, unknown>): EarlyAccessLead {
       : "new";
   return {
     id: String(value.id ?? ""),
-    phoneE164: String(value.phone_e164 ?? ""),
-    phoneDisplay: nullableString(value.phone_display),
+    phoneE164: String(value.phone_e164 ?? value.phone_masked ?? ""),
+    phoneDisplay: nullableString(value.phone_display ?? value.phone_masked),
     fullName: nullableString(value.full_name),
     age: nullableNumber(value.age),
     gender: nullableString(value.gender),
@@ -830,29 +1062,4 @@ function auditAsWorkItem(event: AdminAuditEvent): AdminWorkItem {
     createdAt: event.createdAt,
     metadata: {},
   };
-}
-
-function toSafeError(error: unknown): AdminApiError {
-  const source = normalizeMap(error);
-  const code = String(source.code ?? "").toLowerCase();
-  const rawMessage = error instanceof Error
-    ? error.message
-    : String(source.message ?? "");
-  const message = rawMessage.toLowerCase();
-  if (
-    code === "42501" || message.includes("permission") ||
-    message.includes("forbidden") || message.includes("not authorized") ||
-    message.includes("insufficient privilege")
-  ) {
-    return new AdminApiError("Tài khoản chưa được cấp quyền cho thao tác này.");
-  }
-  if (
-    code === "401" || code === "jwt_expired" || message.includes("jwt") ||
-    message.includes("session") || message.includes("unauthorized")
-  ) {
-    return new AdminApiError(
-      "Phiên đăng nhập đã hết hạn. Bạn đăng nhập lại nhé.",
-    );
-  }
-  return new AdminApiError("Chưa tải được dữ liệu. Bạn thử lại sau nhé.", true);
 }

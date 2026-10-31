@@ -1,6 +1,5 @@
 export type RuntimeConfig = {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
+  apiBaseUrl: string;
 };
 
 export class RuntimeConfigError extends Error {
@@ -11,19 +10,20 @@ export class RuntimeConfigError extends Error {
 }
 
 export function readRuntimeConfig(): RuntimeConfig {
-  const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
-  const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim();
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new RuntimeConfigError('Trang quản trị chưa có cấu hình kết nối. Hãy bổ sung cấu hình triển khai.');
-  }
-
+  const apiBaseUrl = String(
+    import.meta.env.VITE_API_BASE_URL ?? 'https://42.118.174.147',
+  ).trim().replace(/\/+$/, '');
   try {
-    const url = new URL(supabaseUrl);
-    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('invalid protocol');
+    const url = new URL(apiBaseUrl);
+    const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) {
+      throw new Error('HTTPS is required');
+    }
+    if (url.username || url.password || url.search || url.hash) {
+      throw new Error('Invalid API origin');
+    }
   } catch {
-    throw new RuntimeConfigError('Địa chỉ dịch vụ chưa hợp lệ. Hãy kiểm tra cấu hình triển khai.');
+    throw new RuntimeConfigError('Địa chỉ máy chủ chưa hợp lệ. Hãy kiểm tra cấu hình triển khai.');
   }
-
-  return { supabaseUrl, supabaseAnonKey };
+  return { apiBaseUrl };
 }

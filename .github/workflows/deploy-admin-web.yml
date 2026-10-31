@@ -48,31 +48,22 @@ jobs:
 
       - name: Validate deployment configuration
         env:
-          VITE_SUPABASE_URL: ${{ vars.NANOBIO_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.NANOBIO_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ vars.NANOBIO_API_BASE_URL }}
         run: |
           set -eu
-          if [ -z "${VITE_SUPABASE_URL:-}" ]; then
-            echo "::error::Missing GitHub Actions Variable NANOBIO_SUPABASE_URL"
-            exit 1
-          fi
-          case "$VITE_SUPABASE_URL" in
-            http://*|https://*) ;;
+          VITE_API_BASE_URL="${VITE_API_BASE_URL:-https://42.118.174.147}"
+          case "$VITE_API_BASE_URL" in
+            https://*) ;;
             *)
-              echo "::error::NANOBIO_SUPABASE_URL must be an HTTP(S) URL"
+              echo "::error::NANOBIO_API_BASE_URL must use HTTPS"
               exit 1
               ;;
           esac
-          if [ -z "${VITE_SUPABASE_ANON_KEY:-}" ]; then
-            echo "::error::Missing GitHub Actions Secret NANOBIO_SUPABASE_ANON_KEY"
-            exit 1
-          fi
 
       - name: Build
         working-directory: admin-web
         env:
-          VITE_SUPABASE_URL: ${{ vars.NANOBIO_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.NANOBIO_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ vars.NANOBIO_API_BASE_URL }}
         run: npm run build
 
       - name: Configure GitHub Pages

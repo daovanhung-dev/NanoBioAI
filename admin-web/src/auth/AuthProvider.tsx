@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { Session } from '@supabase/supabase-js';
 import { AdminApi, AdminApiError } from '../lib/admin-api';
+import type { BackendAuthSession } from '../lib/backend-client';
 import type { AdminSession } from '../types';
 
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in' | 'forbidden' | 'error';
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const loadFromSession = useCallback(async (authSession: Session | null, signOutNonAdmin = true, throwOnError = false): Promise<AdminSession | null> => {
+  const loadFromSession = useCallback(async (authSession: BackendAuthSession | null, signOutNonAdmin = true, throwOnError = false): Promise<AdminSession | null> => {
     if (!authSession) {
       setSession(null);
       setUserEmail(null);
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    setUserEmail(authSession.user.email ?? null);
+    setUserEmail(authSession.user.email);
     try {
       const adminSession = await api.fetchAdminSession();
       if (!adminSession.active || adminSession.roles.length === 0) {
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
     let subscription: { unsubscribe: () => void } | undefined;
     try {
-      subscription = api.watchAuth((_event, authSession) => {
+      subscription = api.watchAuth((authSession) => {
         void loadFromSession(authSession, false);
       });
     } catch (error) {

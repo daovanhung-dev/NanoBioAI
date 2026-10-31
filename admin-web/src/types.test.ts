@@ -84,7 +84,7 @@ describe('NanoBio Admin permission matrix', () => {
   });
 });
 
-describe('Supabase response normalization', () => {
+describe('backend response normalization', () => {
   it('normalizes a session row and ignores unknown roles', () => {
     expect(toAdminSession([{ user_id: 'admin-1', roles: ['finance_admin', 'owner'], permissions: ['payments.write'], is_active: true }])).toEqual({
       userId: 'admin-1', roles: ['finance_admin'], permissions: ['payments.write'], active: true, canUseUserApp: true,

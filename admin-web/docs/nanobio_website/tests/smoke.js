@@ -8,8 +8,8 @@ const css=fs.readFileSync(path.join(root,'assets/css/styles.css'),'utf8');
 const app=fs.readFileSync(path.join(root,'assets/js/app.js'),'utf8');
 const data=fs.readFileSync(path.join(root,'assets/js/data.js'),'utf8');
 const config=fs.readFileSync(path.join(root,'assets/js/config.js'),'utf8');
-const migration=fs.readFileSync(path.join(root,'supabase/migrations/20261006_early_access.sql'),'utf8');
-const edge=fs.readFileSync(path.join(root,'supabase/functions/register-early-access/index.ts'),'utf8');
+const migration=fs.readFileSync(path.join(root,'docs/archive/legacy-supabase/project/migrations/20261006_early_access.sql'),'utf8');
+const edge=fs.readFileSync(path.join(root,'docs/archive/legacy-supabase/project/functions/register-early-access/index.ts'),'utf8');
 
 ok(html.includes('data-open-vip-modal'),'Download CTA opens VIP modal');
 ok(html.includes('id="vipModal"'),'VIP modal exists');

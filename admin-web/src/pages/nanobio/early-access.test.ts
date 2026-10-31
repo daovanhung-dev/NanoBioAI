@@ -15,16 +15,16 @@ function response(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 }
 
-describe('Early Access function client', () => {
-  it('posts only the consented form data with the publishable key', async () => {
-    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => response({ success: true, message: 'Đã ghi nhận.', download_available: false }));
-    const result = await submitEarlyAccess(payload, { supabaseUrl: 'https://nano.example', anonKey: 'publishable-test', fetcher });
+describe('Early Access backend client', () => {
+  it('posts only the consented form data to the self-hosted API', async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => response({ success: true, message: 'Đã ghi nhận.', data: { download_available: false } }));
+    const result = await submitEarlyAccess(payload, { apiBaseUrl: 'https://nano.example', fetcher });
 
     expect(result.success).toBe(true);
     expect(result.downloadUrl).toBeNull();
-    expect(fetcher).toHaveBeenCalledWith('https://nano.example/functions/v1/register-early-access', expect.objectContaining({
+    expect(fetcher).toHaveBeenCalledWith('https://nano.example/api/v1/early-access', expect.objectContaining({
       method: 'POST',
-      headers: expect.objectContaining({ apikey: 'publishable-test', authorization: 'Bearer publishable-test' }),
+      headers: expect.objectContaining({ 'content-type': 'application/json' }),
     }));
     const request = fetcher.mock.calls[0]?.[1];
     expect(JSON.parse(String(request?.body))).toEqual(payload);
@@ -32,12 +32,12 @@ describe('Early Access function client', () => {
 
   it('accepts only the approved public GitHub release APK URL', async () => {
     const accepted = await submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public',
-      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk' }),
+      apiBaseUrl: 'https://nano.example',
+      fetcher: async () => response({ success: true, data: { download_available: true, download_url: 'https://github.com/daovanhung-dev/NanoBioAI/releases/download/nanobio-early-access-v1.0.1-build4/app-release.apk' } }),
     });
     const rejected = await submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public',
-      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://attacker.example/apk' }),
+      apiBaseUrl: 'https://nano.example',
+      fetcher: async () => response({ success: true, data: { download_available: true, download_url: 'https://attacker.example/apk' } }),
     });
     expect(accepted.downloadAvailable).toBe(true);
     expect(rejected.downloadAvailable).toBe(false);
@@ -45,21 +45,21 @@ describe('Early Access function client', () => {
 
   it('does not accept a different GitHub repository or release asset', async () => {
     const result = await submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public',
-      fetcher: async () => response({ success: true, download_available: true, download_url: 'https://github.com/attacker/repo/releases/download/x/app-release.apk' }),
+      apiBaseUrl: 'https://nano.example',
+      fetcher: async () => response({ success: true, data: { download_available: true, download_url: 'https://github.com/attacker/repo/releases/download/x/app-release.apk' } }),
     });
     expect(result.downloadAvailable).toBe(false);
   });
 
   it('maps rate limits and backend failures to safe typed errors', async () => {
     await expect(submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public', fetcher: async () => response({ code: 'RATE_LIMITED' }, 429),
+      apiBaseUrl: 'https://nano.example', fetcher: async () => response({ businessCode: 'RATE_LIMITED' }, 429),
     })).rejects.toMatchObject({ code: 'rate_limited' });
     await expect(submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public', fetcher: async () => response({ message: 'raw database detail' }, 500),
+      apiBaseUrl: 'https://nano.example', fetcher: async () => response({ message: 'raw database detail' }, 500),
     })).rejects.toBeInstanceOf(EarlyAccessError);
     await expect(submitEarlyAccess(payload, {
-      supabaseUrl: 'https://nano.example', anonKey: 'public', fetcher: async () => { throw new Error('private network detail'); },
+      apiBaseUrl: 'https://nano.example', fetcher: async () => { throw new Error('private network detail'); },
     })).rejects.toMatchObject({ code: 'network' });
   });
 
