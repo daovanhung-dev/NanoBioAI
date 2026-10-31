@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 import '../domain/entities/nutrition_intelligence_entity.dart';
 import 'nutrition_ai_response_validator.dart';
@@ -33,12 +33,18 @@ class NutritionAiService {
     try {
       final raw = textGenerator != null
           ? await textGenerator!(prompt).timeout(const Duration(seconds: 20))
-          : await _generateLocally(prompt).timeout(const Duration(seconds: 25));
+          : await _generateWithBackend(
+              prompt,
+            ).timeout(const Duration(seconds: 25));
       return validator.parse(raw, allowedEvidenceCodes: allowedEvidence);
     } on AiInferenceException catch (error) {
       return NutritionAiReport.fallback(
-        summary: error.status == 'unsupported_platform'
+        summary:
+            error.isAuthenticationFailure ||
+                error.status == 'unsupported_platform'
             ? error.message
+            : error.isNetworkFailure || error.isTransient
+            ? 'Dịch vụ AI tạm thời chưa khả dụng. Hãy kiểm tra mạng rồi thử lại.'
             : 'Nabi chưa thể phân tích dinh dưỡng lúc này. Bạn thử lại sau nhé.',
         missingData: intelligence.dataQuality.missingData,
       );
@@ -130,11 +136,11 @@ Trả duy nhất JSON đúng schema:
     };
   }
 
-  Future<String> _generateLocally(String prompt) async {
-    const client = LocalAiTextClient(operation: 'nutrition');
+  Future<String> _generateWithBackend(String prompt) async {
+    const client = BackendAiTextClient();
     return client
         .generateText(
-          model: LocalAiTextClient.modelId,
+          model: BackendAiTextClient.modelId,
           messages: [AiMessage.user(prompt)],
           systemInstruction:
               'Bạn là Nabi, trợ lý wellness dinh dưỡng. Chỉ dùng dữ liệu app cung cấp; không chẩn đoán, không kê thuốc, không phát minh số.',

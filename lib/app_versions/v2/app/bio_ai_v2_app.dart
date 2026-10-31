@@ -14,7 +14,7 @@ import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/app_experience.dart';
 import 'package:nano_app/core/theme/app_experience_preferences.dart';
 import 'package:nano_app/l10n/app_localizations.dart';
-import 'package:nano_app/services/supabase/cloud_sync/authenticated_sync_trigger_registry.dart';
+import 'package:nano_app/services/backend/cloud_sync/authenticated_sync_trigger_registry.dart';
 
 class BioAIV2App extends ConsumerStatefulWidget {
   const BioAIV2App({super.key});

@@ -13,7 +13,6 @@ import flutter_secure_storage_macos
 import flutter_timezone
 import flutter_tts
 import in_app_purchase_storekit
-import llamadart_llama_cpp_flutter
 import local_auth_darwin
 import opus_codec_macos
 import path_provider_foundation
@@ -32,7 +31,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterTimezonePlugin.register(with: registry.registrar(forPlugin: "FlutterTimezonePlugin"))
   FlutterTtsPlugin.register(with: registry.registrar(forPlugin: "FlutterTtsPlugin"))
   InAppPurchasePlugin.register(with: registry.registrar(forPlugin: "InAppPurchasePlugin"))
-  LlamadartLlamaCppPlugin.register(with: registry.registrar(forPlugin: "LlamadartLlamaCppPlugin"))
   LocalAuthPlugin.register(with: registry.registrar(forPlugin: "LocalAuthPlugin"))
   OpusFlutterMacosPlugin.register(with: registry.registrar(forPlugin: "OpusFlutterMacosPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))

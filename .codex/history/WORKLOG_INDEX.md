@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 269
+- Total worklogs: 275
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -278,3 +278,9 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-23 | unknown | docs-context | unknown | [Worklog - Nabi tự kết nối với ESP OSTB 3ST](../../docs/worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md) |
 | 2026-10-30 | coding, test va cap nhat context backend | test | backend/modules/edge_api, backend/services/ollama_client.py | [Worklog - FastAPI Ollama text endpoint](../../docs/worklog/2026-10-30/001-worklog-backend-ollama-text-api.md) |
 | 2026-10-30 | coding, test, diagnostic va cap nhat context backend | test | FastAPI edge API va Ollama HTTPX provider | [Worklog - Nang gioi han phan hoi AI va phan biet output bi cat](../../docs/worklog/2026-10-30/002-worklog-ai-output-limit-and-truncation.md) |
+| 2026-10-30 | coding, data migration rehearsal, server inspection va validation. | supabase-schema | Flutter Mobile, Admin Web, FastAPI backend, snapshot Supabase va PostgreSQL server. | [Worklog - Self-hosted backend cutover](../../docs/worklog/2026-10-30/003-worklog-self-hosted-cutover.md) |
+| 2026-10-30 | coding, kiểm tra và build APK. | test | Flutter Mobile AI, voice, Food Scan và onboarding. | [Worklog - Flutter backend AI only](../../docs/worklog/2026-10-30/004-worklog-backend-ai-only.md) |
+| 2026-10-30 | unknown | docs-context | unknown | [Worklog - HTTPS connection recovery](../../docs/worklog/2026-10-30/005-worklog-https-connection-recovery.md) |
+| 2026-10-31 | Chuyen va deploy Admin Web sang backend self-hosted. | supabase-schema | backend/, admin-web/, GitHub Pages environment. | [Worklog - Deploy Admin Web qua NanoBio backend](../../docs/worklog/2026-10-31/001-worklog-admin-web-self-hosted-deploy.md) |
+| 2026-10-31 | feature | coding | backend auth, Admin Web | [Worklog - Đăng nhập Admin bằng username và đổi mật khẩu lần đầu](../../docs/worklog/2026-10-31/002-worklog-admin-username-first-login.md) |
+| 2026-10-31 | bugfix va trien khai Admin Web | docs-context | Admin Web auth, Nginx HTTPS IP | [Worklog - Chuyen Admin Web sang cung origin voi API](../../docs/worklog/2026-10-31/003-worklog-admin-web-same-origin-access.md) |

@@ -7,8 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/nutrition/providers/nutrition_provider.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/app_versions/v3/router/v3_route_paths.dart';
-import 'package:nano_app/core/ai_local/local_ai_model_catalog.dart';
-import 'package:nano_app/core/ai_local/local_ai_runtime_service.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
@@ -192,7 +190,7 @@ class _FoodScanWorkbenchState extends ConsumerState<_FoodScanWorkbench> {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
-                  'Ảnh và thông tin hồ sơ sức khỏe liên quan được xử lý trên thiết bị, không gửi tới dịch vụ AI. Lần đầu quét, Nabi tải thêm model nhận diện ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}; hãy dùng Wi-Fi và bảo đảm đủ dung lượng. Ảnh JPEG được làm sạch metadata EXIF/GPS. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
+                  'Ảnh món ăn và phần dữ liệu sức khỏe cần thiết sẽ được gửi qua HTTPS tới máy chủ NanoBio để phân tích bằng AI. Ứng dụng làm sạch metadata EXIF/GPS khỏi ảnh trước khi gửi. Kết quả là ước tính, không thay thế bác sĩ hoặc chuyên gia dinh dưỡng.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                     height: 1.5,
@@ -221,7 +219,7 @@ class _ConsentCard extends StatelessWidget {
           Text('Phân tích món ăn bằng AI', style: AppTextStyles.heading4),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nabi xử lý ảnh món ăn và phần hồ sơ sức khỏe liên quan ngay trên thiết bị để nhận diện thực phẩm, ước tính dinh dưỡng và cá nhân hóa đánh giá. Không gửi ảnh hoặc hồ sơ này tới dịch vụ AI. Lần đầu quét, ứng dụng tải thêm model nhận diện ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}; bạn nên dùng Wi-Fi và bảo đảm đủ dung lượng. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
+            'Ảnh món ăn và phần dữ liệu sức khỏe cần thiết sẽ được gửi qua HTTPS tới máy chủ NanoBio để nhận diện, ước tính dinh dưỡng và cá nhân hóa đánh giá. Ứng dụng làm sạch metadata EXIF/GPS khỏi ảnh trước khi gửi. Kết quả có thể sai lệch vì ảnh không cho biết chính xác khối lượng, dầu, đường, sốt hoặc nguyên liệu bị che.',
             style: AppTextStyles.bodyMedium.copyWith(height: 1.55),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -332,7 +330,7 @@ class _ImagePreview extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Text(
-                'Lần phân tích đầu tiên sẽ tải model ảnh khoảng ${_formatAiBytes(localAiVisionDownloadBytes)}. Khuyến nghị thiết bị có ít nhất ${_formatAiBytes(localAiVisionRecommendedRamBytes)} RAM; ảnh được giữ trên thiết bị.',
+                'Ảnh đã chọn và dữ liệu sức khỏe liên quan sẽ được gửi tới máy chủ NanoBio qua HTTPS để phân tích. Bạn có thể thử lại nếu dịch vụ hoặc kết nối tạm thời gián đoạn.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: context.semanticColors.textSecondary,
                   height: 1.45,
@@ -358,67 +356,28 @@ class _AnalysisProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<LocalAiRuntimeProgress?>(
-      valueListenable: LocalAiRuntimeService.instance.progress,
-      builder: (context, progress, _) {
-        final downloadingVision =
-            phase == FoodScanPhase.analyzingVision &&
-            progress?.stage == LocalAiRuntimeStage.downloading &&
-            progress?.modelId == localAiVisionModelId;
-        final openingVision =
-            phase == FoodScanPhase.analyzingVision &&
-            progress?.stage == LocalAiRuntimeStage.loading &&
-            progress?.modelId == localAiVisionModelId;
-        final fraction = progress?.fraction?.clamp(0.0, 1.0);
-        final percent = fraction == null ? null : (fraction * 100).round();
-        final byteProgress = progress == null || progress.totalBytes <= 0
-            ? ''
-            : ' (${_formatAiBytes(progress.receivedBytes)} / ${_formatAiBytes(progress.totalBytes)})';
-        final label = downloadingVision
-            ? 'Đang tải model ảnh lần đầu…${percent == null ? '' : ' $percent%$byteProgress'}'
-            : openingVision
-            ? 'Nabi đang mở model nhận diện ảnh…'
-            : switch (phase) {
-                FoodScanPhase.selectingImage => 'Nabi đang chuẩn bị ảnh…',
-                FoodScanPhase.analyzingVision => 'Nabi đang nhận diện món ăn…',
-                FoodScanPhase.resolvingNutrition =>
-                  'Nabi đang tính dưỡng chất…',
-                FoodScanPhase.evaluatingHealth =>
-                  'Nabi đang đối chiếu hồ sơ sức khỏe…',
-                FoodScanPhase.saving => 'Nabi đang lưu bữa ăn và đồng bộ…',
-                _ => 'Nabi đang xử lý…',
-              };
-        return MedicalSurfaceCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(strokeWidth: 3),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: Text(label, style: AppTextStyles.bodyMedium)),
-                ],
-              ),
-              if (downloadingVision) ...[
-                const SizedBox(height: AppSpacing.md),
-                LinearProgressIndicator(value: fraction),
-              ],
-            ],
+    final label = switch (phase) {
+      FoodScanPhase.selectingImage => 'Nabi đang chuẩn bị ảnh…',
+      FoodScanPhase.analyzingVision => 'Nabi đang nhận diện món ăn…',
+      FoodScanPhase.resolvingNutrition => 'Nabi đang tính dưỡng chất…',
+      FoodScanPhase.evaluatingHealth => 'Nabi đang đối chiếu hồ sơ sức khỏe…',
+      FoodScanPhase.saving => 'Nabi đang lưu bữa ăn và đồng bộ…',
+      _ => 'Nabi đang xử lý…',
+    };
+    return MedicalSurfaceCard(
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 3),
           ),
-        );
-      },
+          const SizedBox(width: AppSpacing.md),
+          Expanded(child: Text(label, style: AppTextStyles.bodyMedium)),
+        ],
+      ),
     );
   }
-}
-
-String _formatAiBytes(int bytes) {
-  final gibibytes = bytes / (1024 * 1024 * 1024);
-  if (gibibytes >= 1) return '${gibibytes.toStringAsFixed(2)} GB';
-  return '${(bytes / (1024 * 1024)).round()} MB';
 }
 
 class _FoodScanResultView extends ConsumerWidget {
@@ -558,7 +517,7 @@ class _FoodScanResultView extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                'Đã ghi bữa ăn. Nabi đang đồng bộ dữ liệu dinh dưỡng với Supabase.',
+                                'Đã ghi bữa ăn. Nabi đang đồng bộ dữ liệu dinh dưỡng với máy chủ.',
                               ),
                             ),
                           );

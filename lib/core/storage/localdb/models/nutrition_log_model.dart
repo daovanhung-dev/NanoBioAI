@@ -12,7 +12,7 @@ class NutritionLogModel {
   final String? eatenAt;
 
   /// Rich local-only nutrition details. These fields are stored in the
-  /// `nutrition_log_details` companion table so the legacy Supabase snapshot
+  /// `nutrition_log_details` companion table so historical cloud snapshots
   /// contract for `nutrition_logs` remains unchanged.
   final double? servingQuantity;
   final String? servingUnit;

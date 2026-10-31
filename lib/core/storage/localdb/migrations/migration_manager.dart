@@ -275,7 +275,7 @@ class MigrationManager {
 
   /// v12 repairs legacy user-owned rows that were created without an `id`.
   /// Those rows bypassed the old outbox triggers (`NEW.id IS NOT NULL`) and
-  /// could never be included in a Supabase snapshot. Recreate the trigger set
+  /// could never be included in an earlier cloud snapshot. Recreate the trigger set
   /// after backfill so future inserts are normalized before outbox processing.
   static Future<void> _migrateToV12(Database db) async {
     await SyncOutboxSchema.create(db);

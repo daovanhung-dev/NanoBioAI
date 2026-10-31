@@ -13,7 +13,7 @@
 | Task | Read next |
 |---|---|
 | API or domain behavior | `project/02-architecture.md`, `project/05-api-contract.md`, matching module note, source function/call site |
-| PostgreSQL or migration | `project/07-database.md`, relevant schema contract in `docs/supabase/01_build_system.sql`, migration and query code |
+| PostgreSQL or migration | `project/07-database.md`, relevant schema contract in `docs/archive/legacy-supabase/sql/01_build_system.sql`, migration and query code |
 | Login, roles, tokens | `project/08-auth-security.md`, auth module and related Supabase function source |
 | Runtime/Ubuntu | `project/11-devops-operations.md`, `.env.example`, systemd unit |
 | Tests/quality | `project/06-validation.md`, `project/10-testing.md`, backend test config |

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/services/backend/cloud_sync/cloud_sync.dart';
 
 class DashboardUserDataSyncBanner extends ConsumerWidget {
   final UserDataSyncState state;

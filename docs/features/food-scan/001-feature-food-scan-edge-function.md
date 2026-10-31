@@ -2,10 +2,11 @@ Commit de xuat: feat(food-scan): them edge function phan tich mon an
 
 # Food Scan Edge Function
 
-> Runtime update 2026-10-18: this document records the retained server
-> implementation. The NanoBioAI app now runs Food Scan vision and health
-> inference locally and does not invoke `food-scan-analyze`. No Edge Function,
-> secret, or deployment state was changed for the local AI migration.
+> Runtime update 2026-10-30: the Flutter app sends sanitized Food Scan images
+> and the minimum analysis context through the authenticated NanoBio backend at
+> `/api/v1/food/scan/analyze` over HTTPS. No local vision or text model is used.
+> The Supabase Edge Function contract below is retained history and is not
+> called by the current Flutter runtime.
 
 ## Historical product contract
 

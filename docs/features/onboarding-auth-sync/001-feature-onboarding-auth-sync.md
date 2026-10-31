@@ -45,7 +45,7 @@ Commit de xuat: feat(auth): them onboarding entry va dong bo cloud sau auth
 - `lib/app_versions/v2/features/membership_entitlement/membership_entitlement.dart` - mapper/provider hien thi goi.
 - `lib/app_versions/v2/features/cloud_sync/` - contract, datasource, repository, provider sync.
 - `lib/app_versions/v2/features/auth/presentation/controllers/auth_controller.dart` - goi sync sau auth.
-- `docs/supabase/09-dev-seed-membership-test-accounts.sql` - dev seed account membership.
+- `docs/archive/legacy-supabase/sql/09-dev-seed-membership-test-accounts.sql` - dev seed account membership.
 
 ## Kiem chung
 

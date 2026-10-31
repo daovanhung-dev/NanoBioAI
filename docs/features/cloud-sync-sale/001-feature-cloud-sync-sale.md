@@ -72,7 +72,7 @@ Commit de xuat: feat(sync-sale): dong bo snapshot user va khong gian Sale cloud-
 - `lib/sale_referral/presentation/pages/sale_participation_page.dart`
 - `lib/sale_referral/presentation/pages/sale_shell_page.dart`
 - `lib/services/supabase/sale/*`
-- `docs/supabase/10-mobile-sync-and-sale-rpc.sql`
+- `docs/archive/legacy-supabase/sql/10-mobile-sync-and-sale-rpc.sql`
 
 ## Rui ro va diem can xac nhan
 

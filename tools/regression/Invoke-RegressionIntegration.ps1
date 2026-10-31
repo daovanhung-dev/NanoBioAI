@@ -17,9 +17,8 @@ param(
 
   [string]$MatrixPath = '',
 
-  [Parameter(Mandatory = $true)]
   [ValidateNotNullOrEmpty()]
-  [string]$ExpectedSandboxProjectRef,
+  [string]$ExpectedBackendHost = '42.118.174.147',
 
   [switch]$ResetState,
 
@@ -49,9 +48,9 @@ if ($LASTEXITCODE -ne 0) {
   throw 'Environment validation failed.'
 }
 
-$sandboxFingerprint = Assert-RegressionSandboxProject `
+$backendFingerprint = Assert-RegressionBackendEndpoint `
   -EnvFile $resolvedEnv `
-  -ExpectedProjectRef $ExpectedSandboxProjectRef
+  -ExpectedBackendHost $ExpectedBackendHost
 $device = Get-RegressionDeviceMetadata -DeviceId $DeviceId
 
 if ($ResetState) {

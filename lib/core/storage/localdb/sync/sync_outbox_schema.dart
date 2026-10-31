@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 /// SQLite write-through queue schema for all locally stored user data.
 ///
 /// The triggers enqueue a compact dirty marker in the same transaction as a
-/// user-data write. Dart drains that queue to Supabase using a full,
+/// user-data write. Dart drains that queue to the NanoBio backend using a full,
 /// user-scoped snapshot, therefore a local write can never be lost merely
 /// because the app goes offline immediately afterwards.
 class SyncOutboxSchema {
@@ -204,8 +204,8 @@ END
 ''';
 
   /// SQLite expression that produces a RFC 4122 version-4 UUID-shaped value.
-  /// The value remains a valid UUID when the snapshot RPC mirrors it to
-  /// Supabase, so reference fields such as `source_id` stay stable locally.
+  /// The value remains a valid UUID when the backend mirrors it, so reference
+  /// fields such as `source_id` stay stable locally.
   static String sqliteUuidExpression() =>
       "lower(hex(randomblob(4))) || '-' || "
       "lower(hex(randomblob(2))) || '-' || "

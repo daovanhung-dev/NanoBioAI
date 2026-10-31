@@ -94,12 +94,11 @@ class AppLogger {
       category: AppLogCategory.performance,
       scope: scope,
       operation: operation,
-      message: duration >= warnThreshold ? 'slow operation detected' : 'operation timing',
+      message: duration >= warnThreshold
+          ? 'slow operation detected'
+          : 'operation timing',
       duration: duration,
-      metadata: {
-        ...metadata,
-        'thresholdMs': warnThreshold.inMilliseconds,
-      },
+      metadata: {...metadata, 'thresholdMs': warnThreshold.inMilliseconds},
     );
   }
 
@@ -285,16 +284,6 @@ class AppLogger {
     );
   }
 
-  static void supabase(String tag, String operation) {
-    event(
-      level: AppLogLevel.debug,
-      category: AppLogCategory.supabase,
-      scope: tag,
-      operation: operation,
-      message: 'supabase operation',
-    );
-  }
-
   static void action(String tag, String action) {
     event(
       level: AppLogLevel.info,
@@ -340,7 +329,8 @@ class AppLogger {
 
   static String _format(AppLogEvent event) {
     final timestamp = event.timestamp;
-    final time = '${_two(timestamp.hour)}:${_two(timestamp.minute)}:'
+    final time =
+        '${_two(timestamp.hour)}:${_two(timestamp.minute)}:'
         '${_two(timestamp.second)}.${timestamp.millisecond.toString().padLeft(3, '0')}';
     final sequence = event.sequence.toString().padLeft(5, '0');
     final buffer = StringBuffer()

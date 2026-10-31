@@ -9,7 +9,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/widgets/states/dashboard_state_widgets.dart';
 import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/services/backend/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/shared/wellness_rank/presentation/widgets/wellness_rank_card.dart';
 
 class DashboardContent extends StatelessWidget {

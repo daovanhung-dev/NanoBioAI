@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../../../core/network/backend_api_client.dart';
 import '../../domain/entities/safety_contact.dart';
 import '../../domain/entities/sleep_safety_runtime_config.dart';
 import '../../domain/entities/sleep_safety_dispatch_exception.dart';
@@ -14,6 +14,20 @@ class SleepSafetyCloudException extends SleepSafetyDispatchException {
     Object error, {
     required String fallbackCode,
   }) {
+    if (error is BackendApiException) {
+      final code = switch (error.businessCode) {
+        'CONTACT_NOT_FOUND' => 'sleep_safety_contact_not_found',
+        'PAID_ACCESS_REQUIRED' => 'paid_access_required',
+        'SLEEP_SAFETY_DISABLED' => 'sleep_safety_rollout_disabled',
+        'EVENT_NOT_ELIGIBLE' => 'event_not_eligible_for_escalation',
+        'DISPATCH_RATE_LIMITED' => 'dispatch_rate_limited',
+        'ALL_CONTACTS_FAILED' => 'all_contacts_failed',
+        'PROVIDER_UNAVAILABLE' => 'provider_unavailable',
+        'NETWORK_UNAVAILABLE' => 'network_unavailable',
+        _ => error.businessCode.toLowerCase(),
+      };
+      return SleepSafetyCloudException(code);
+    }
     final raw = error.toString().toLowerCase();
     const knownCodes = [
       'sleep_safety_contact_limit',
@@ -107,54 +121,46 @@ class SleepSafetyCloudException extends SleepSafetyDispatchException {
 
 class SleepSafetyCloudDatasource {
   const SleepSafetyCloudDatasource({this.clientOverride});
-  final SupabaseClient? clientOverride;
-  SupabaseClient? get _client {
-    if (clientOverride != null) return clientOverride;
-    try {
-      return Supabase.instance.client;
-    } on AssertionError {
-      return null;
-    }
-  }
+  final BackendApiClient? clientOverride;
+  BackendApiClient get _client => clientOverride ?? BackendApiClient.shared;
 
   Future<SleepSafetyRuntimeConfig> fetchRuntimeConfig() async {
-    final client = _client;
-    if (client == null || client.auth.currentUser == null) {
+    if (_client.session == null) {
       return const SleepSafetyRuntimeConfig(
         enabled: false,
         maxDispatchesPerHour: 0,
       );
     }
-    final row = await client
-        .from('sleep_safety_runtime_config')
-        .select('enabled,max_dispatches_per_hour,event_freshness_seconds')
-        .eq('config_key', 'default')
-        .maybeSingle();
+    final row = await _client.requestMap(
+      'GET',
+      '/api/v1/sleep-safety/runtime-config',
+    );
     return SleepSafetyRuntimeConfig(
-      enabled: row?['enabled'] == true,
+      enabled: row['enabled'] == true,
       maxDispatchesPerHour:
-          (row?['max_dispatches_per_hour'] as num?)?.toInt() ?? 0,
+          (row['max_dispatches_per_hour'] as num?)?.toInt() ?? 0,
       eventFreshnessSeconds:
-          (row?['event_freshness_seconds'] as num?)?.toInt() ?? 600,
+          (row['event_freshness_seconds'] as num?)?.toInt() ?? 600,
     );
   }
 
   Future<List<SafetyContact>> fetchContacts() async {
-    final client = _client;
-    final userId = client?.auth.currentUser?.id;
-    if (client == null || userId == null) return const [];
-    final rows = await client
-        .from('sleep_safety_contacts')
-        .select()
-        .eq('user_id', userId)
-        .eq('active', true)
-        .order('priority');
-    return (rows as List)
-        .map(
-          (row) => SleepSafetyModelMapper.contactFromMap(
-            Map<String, Object?>.from(row as Map),
-          ),
-        )
+    if (_client.currentUserId == null) return const [];
+    final rows = await _client.request('GET', '/api/v1/sleep-safety/contacts');
+    if (rows is! List) {
+      throw const FormatException('Backend contacts response must be a list.');
+    }
+    return rows
+        .map((row) {
+          if (row is! Map) {
+            throw const FormatException(
+              'Backend contact row must be an object.',
+            );
+          }
+          return SleepSafetyModelMapper.contactFromMap(
+            Map<String, Object?>.from(row),
+          );
+        })
         .toList(growable: false);
   }
 
@@ -167,31 +173,24 @@ class SleepSafetyCloudDatasource {
     bool allowPhoneFallback = true,
     bool allowUnverifiedVoiceAlert = false,
   }) async {
-    final client = _requireClient();
     try {
-      final row = await client.rpc(
-        'upsert_sleep_safety_contact',
-        params: {
-          'p_contact_id': id,
-          'p_name': name,
-          'p_relationship': relationship,
-          'p_phone_e164': phoneE164,
-          'p_priority': priority,
-          'p_allow_phone_fallback': allowPhoneFallback,
-          'p_allow_unverified_voice_alert': allowUnverifiedVoiceAlert,
+      final client = _requireClient();
+      final path = id == null
+          ? '/api/v1/sleep-safety/contacts'
+          : '/api/v1/sleep-safety/contacts/${Uri.encodeComponent(id)}';
+      final row = await client.requestMap(
+        id == null ? 'POST' : 'PUT',
+        path,
+        body: {
+          'name': name,
+          'relationship': relationship,
+          'phone_e164': phoneE164,
+          'priority': priority,
+          'allow_phone_fallback': allowPhoneFallback,
+          'allow_unverified_voice_alert': allowUnverifiedVoiceAlert,
         },
       );
-      if (row is List && row.isNotEmpty) {
-        return SleepSafetyModelMapper.contactFromMap(
-          Map<String, Object?>.from(row.first as Map),
-        );
-      }
-      if (row is Map) {
-        return SleepSafetyModelMapper.contactFromMap(
-          Map<String, Object?>.from(row),
-        );
-      }
-      throw const SleepSafetyCloudException('contact_save_failed');
+      return SleepSafetyModelMapper.contactFromMap(row);
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
       throw SleepSafetyCloudException.from(
@@ -203,9 +202,9 @@ class SleepSafetyCloudDatasource {
 
   Future<void> deleteContact(String id) async {
     try {
-      await _requireClient().rpc(
-        'delete_sleep_safety_contact',
-        params: {'p_contact_id': id},
+      await _requireClient().requestMap(
+        'DELETE',
+        '/api/v1/sleep-safety/contacts/${Uri.encodeComponent(id)}',
       );
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
@@ -218,16 +217,11 @@ class SleepSafetyCloudDatasource {
 
   Future<void> requestVerification(String contactId) async {
     try {
-      final response = await _requireClient().functions.invoke(
-        'sleep-safety-contact-verification',
+      await _requireClient().requestMap(
+        'POST',
+        '/api/v1/sleep-safety/contacts/verification',
         body: {'action': 'request', 'contact_id': contactId},
       );
-      if (response.status < 200 || response.status >= 300) {
-        throw SleepSafetyCloudException.from(
-          response.data,
-          fallbackCode: 'verification_request_failed',
-        );
-      }
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
       throw SleepSafetyCloudException.from(
@@ -239,16 +233,11 @@ class SleepSafetyCloudDatasource {
 
   Future<void> confirmVerification(String contactId, String code) async {
     try {
-      final response = await _requireClient().functions.invoke(
-        'sleep-safety-contact-verification',
+      await _requireClient().requestMap(
+        'POST',
+        '/api/v1/sleep-safety/contacts/verification',
         body: {'action': 'confirm', 'contact_id': contactId, 'code': code},
       );
-      if (response.status < 200 || response.status >= 300) {
-        throw SleepSafetyCloudException.from(
-          response.data,
-          fallbackCode: 'verification_confirm_failed',
-        );
-      }
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
       throw SleepSafetyCloudException.from(
@@ -260,7 +249,21 @@ class SleepSafetyCloudDatasource {
 
   Future<void> syncRow(String table, Map<String, Object?> values) async {
     try {
-      await _requireClient().from(table).upsert(values);
+      final client = _requireClient();
+      final recordId = values['id']?.toString();
+      final path = switch (table) {
+        'sleep_safety_preferences' => '/api/v1/sleep-safety/preferences',
+        'sleep_safety_sessions' when recordId?.isNotEmpty == true =>
+          '/api/v1/sleep-safety/sessions/${Uri.encodeComponent(recordId!)}',
+        'sleep_safety_events' when recordId?.isNotEmpty == true =>
+          '/api/v1/sleep-safety/events/${Uri.encodeComponent(recordId!)}',
+        _ => throw ArgumentError.value(
+          table,
+          'table',
+          'Unsupported sync record.',
+        ),
+      };
+      await client.requestMap('PUT', path, body: values);
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
       throw SleepSafetyCloudException.from(
@@ -277,18 +280,12 @@ class SleepSafetyCloudDatasource {
     required String idempotencyKey,
   }) async {
     try {
-      final response = await _requireClient().functions.invoke(
-        'sleep-safety-dispatch',
+      final data = await _requireClient().requestMap(
+        'POST',
+        '/api/v1/sleep-safety/dispatch',
         body: {'event_id': eventId, 'idempotency_key': idempotencyKey},
       );
-      if (response.status < 200 || response.status >= 300) {
-        throw SleepSafetyCloudException.from(
-          response.data,
-          fallbackCode: 'dispatch_failed',
-        );
-      }
-      final data = response.data;
-      final accepted = data is Map && data['accepted'] == true;
+      final accepted = data['accepted'] == true;
       final route = accepted
           ? SleepSafetyDispatchRoute.cloudAccepted
           : SleepSafetyDispatchRoute.cloudFailed;
@@ -297,9 +294,7 @@ class SleepSafetyCloudDatasource {
         idempotencyKey: idempotencyKey,
         errorCode: accepted
             ? null
-            : data is Map
-            ? data['error']?.toString() ?? 'dispatch_failed'
-            : 'dispatch_failed',
+            : data['error']?.toString() ?? 'dispatch_failed',
       );
     } catch (error) {
       if (error is SleepSafetyCloudException) rethrow;
@@ -312,9 +307,9 @@ class SleepSafetyCloudDatasource {
     }
   }
 
-  SupabaseClient _requireClient() {
+  BackendApiClient _requireClient() {
     final client = _client;
-    if (client == null || client.auth.currentUser == null) {
+    if (client.session == null) {
       throw const SleepSafetyCloudException('authentication_required');
     }
     return client;

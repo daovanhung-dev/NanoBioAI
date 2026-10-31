@@ -5,7 +5,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/domain/entities/dash
 
 /// Pure calculation service for dashboard health status.
 ///
-/// This module does not know Flutter widgets, Riverpod, Supabase or SQLite.
+/// This module does not know Flutter widgets, Riverpod, network services, or SQLite.
 /// It only receives normalized health data and returns UI-ready scores.
 class DashboardHealthCalculator {
   const DashboardHealthCalculator._();

@@ -7,7 +7,7 @@ Use one domain context file by default.
 | Dashboard/health score/home     | `.codex/domains/dashboard.md`                  | `lib/app_versions/v1/features/dashboard/`                                                      |
 | Onboarding/profile assessment   | `.codex/domains/onboarding.md`                 | `lib/app_versions/v1/features/onboarding/`                                                     |
 | AI/meal/exercise/chat           | `.codex/domains/ai-service.md`                 | `lib/app_versions/v1/services/ai/`, meal/schedule/task features                                |
-| Access/auth/membership/referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/supabase/` |
+| Access/auth/membership/referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/backend/`, `lib/core/network/backend_api_client.dart` |
 | Notification/reminder/action    | `.codex/domains/notification.md`               | `lib/app_versions/v1/services/notifications/`                                                  |
 | SQLite/DAO/migration            | `.codex/domains/sqlite.md`                     | `lib/core/storage/localdb/`                                                                    |
 | UI/theme/Nabicopy               | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |

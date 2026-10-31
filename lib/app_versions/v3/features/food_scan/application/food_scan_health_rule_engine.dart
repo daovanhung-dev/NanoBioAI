@@ -45,7 +45,8 @@ class FoodScanHealthRuleEngine {
     var allergyMatch = false;
 
     for (final allergy in declaredAllergies) {
-      final match = mealAllergens.any((value) => _matches(value, allergy)) ||
+      final match =
+          mealAllergens.any((value) => _matches(value, allergy)) ||
           mealIngredients.any((value) => _matches(value, allergy));
       if (!match) continue;
       allergyMatch = true;
@@ -56,7 +57,8 @@ class FoodScanHealthRuleEngine {
     }
 
     for (final restriction in declaredRestrictions) {
-      final match = mealAllergens.any((value) => _matches(value, restriction)) ||
+      final match =
+          mealAllergens.any((value) => _matches(value, restriction)) ||
           mealIngredients.any((value) => _matches(value, restriction));
       if (!match) continue;
       warnings.add(

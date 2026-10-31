@@ -1,10 +1,11 @@
 # DD — AI Chat
 
-> Runtime update 2026-10-18: NanoBioAI now uses the selected on-device model
-> through `LocalAiTextClient` for chat and Voice Chat. The Gemini/API-key and
-> Edge transport described in older DD sections is historical and is not on the
-> app runtime route. Supabase quota/auth behavior remains in place; web AI is
-> unavailable because the local runtime is native-only.
+> Runtime update 2026-10-30: NanoBioAI sends text/JSON generation, streaming
+> chat, and generated voice replies through the authenticated NanoBio backend.
+> Local text-model setup and inference have been removed from the Flutter app.
+> Voice capture, platform speech recognition, and local TTS remain device-side.
+> Guests can use non-AI features; AI actions require sign-in. HTTPS readiness is
+> still required for live acceptance.
 
 | Attribute | Value |
 |---|---|
@@ -23,13 +24,13 @@
 
 ## Purpose
 Cho phép Member hỏi đáp AI bằng chữ theo quota và cung cấp hội thoại giọng nói
-tuần tự riêng cho Plus/FamilyPlus. Voice dùng model AI local trên thiết bị,
+tuần tự riêng cho Plus/FamilyPlus. Voice tạo câu trả lời qua backend,
 cho phép chọn endpointing 0,2/0,5/1/2 giây sau lời nói; đây không phải
 model response latency. Mỗi lượt đặt hard cap nghe 3 phút nhưng final,
 endpointing hoặc recognizer hệ điều hành có thể dừng sớm hơn. Guest, Free và mọi
 trạng thái quyền không xác định đều bị chặn trước khi khởi tạo micro/controller.
-User/history item Voice tối đa 6.000 ký tự; response tối đa 2.000 ký tự. Local
-model context limits and safety validation remain in force.
+User/history item Voice tối đa 6.000 ký tự; response tối đa 2.000 ký tự. Backend
+limits and safety validation remain in force.
 
 ## Documents in This Module
 - [Overall](./Overall.md)
@@ -52,7 +53,7 @@ model context limits and safety validation remain in force.
 - MEMBERSHIP_QUOTA: access/quota.
 - AUTH_PROFILE_SYNC: session.
 - AUDIT_SECURITY: safe logging.
-- Local AI runtime: text and voice use the model selected during device setup.
+- Self-hosted AI backend: text and generated voice replies use authenticated API routes.
 
 ## Answered Questions
 | ID | Question | Decision | Status |

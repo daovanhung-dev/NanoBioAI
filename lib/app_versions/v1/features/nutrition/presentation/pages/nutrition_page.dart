@@ -404,7 +404,7 @@ class _AiNutritionSection extends StatelessWidget {
                     Text('Nabi phân tích', style: AppTextStyles.heading3),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'AI chỉ diễn giải các chỉ số app đã tính và dữ liệu bạn đã cung cấp.',
+                      'Các chỉ số dinh dưỡng liên quan được gửi qua HTTPS tới máy chủ NanoBio để AI phân tích. AI chỉ diễn giải dữ liệu app đã tính và dữ liệu bạn đã cung cấp.',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: context.semanticColors.textSecondary,
                       ),

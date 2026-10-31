@@ -16,7 +16,7 @@ final textToSpeechGatewayProvider = Provider<TextToSpeechGateway>(
 );
 
 final voiceChatTurnDatasourceProvider = Provider<VoiceChatTurnDatasource>(
-  (ref) => LocalVoiceChatTurnDatasource(),
+  (ref) => BackendVoiceChatTurnDatasource(),
 );
 
 final aiVoiceRepositoryProvider = Provider<AiVoiceRepository>((ref) {

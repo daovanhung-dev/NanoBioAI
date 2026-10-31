@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final schema = File('docs/supabase/01_build_system.sql').readAsStringSync();
+  final schema = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
   final contactDatasource = File(
     'lib/app_versions/v1/features/sleep_tracking/data/datasources/sleep_safety_cloud_datasource.dart',
   ).readAsStringSync();
@@ -11,10 +11,10 @@ void main() {
     'lib/app_versions/v1/features/sleep_tracking/presentation/pages/sleep_safety_contacts_page.dart',
   ).readAsStringSync();
   final migration = File(
-    'supabase/migrations/20261006120000_m31_remove_zalo_channel.sql',
+    'docs/archive/legacy-supabase/project/migrations/20261006120000_m31_remove_zalo_channel.sql',
   ).readAsStringSync();
   final edgeHandler = File(
-    'supabase/functions/sleep-safety-dispatch/handler.ts',
+    'docs/archive/legacy-supabase/project/functions/sleep-safety-dispatch/handler.ts',
   ).readAsStringSync();
 
   test('canonical M31 schema has only voice and SMS server channels', () {

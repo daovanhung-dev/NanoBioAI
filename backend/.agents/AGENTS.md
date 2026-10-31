@@ -8,10 +8,10 @@ This is the source of truth for the self-hosted FastAPI backend. It adapts the r
 - PostgreSQL is installed and managed on Ubuntu; the API is managed by systemd. Local file storage is protected by authenticated routes.
 - Public routes use `/api/v1`; canonical envelope fields are `success`, `businessCode`, `message`, `data`, `meta`, `traceId`; errors carry `data: null`.
 - Request trace header is `X-Trace-Id`. Settings and credentials come from process environment or a protected Ubuntu environment file.
-- Auth is first-party Vietnam phone/password, Argon2id, signed access JWT and opaque rotating refresh token. Existing Supabase accounts are not imported in this phase.
-- Flutter app AI inference remains on-device and does not call or fall back to the backend AI route. `POST /api/v1/ai/generate` is a separate text-only FastAPI endpoint to loopback Ollama, gated by `OLLAMA_ENABLED` (default `false`); `food-scan-analyze` remains `503 FEATURE_NOT_ENABLED`. Do not add Gemini calls.
-- Only source-backed Supabase Edge Functions may become routes. Six empty directories are recorded as `NOT_FOUND` in the function inventory; do not invent their APIs.
-- This phase does not edit app, Admin Web or website code, deploy, or access/import production data.
+- Auth is first-party Vietnam phone/password, Argon2id, signed access JWT and opaque rotating refresh token. Supabase account import and production cutover are separate tasks.
+- Flutter, Admin Mobile, Admin Web, and the Early Access website use the versioned FastAPI API through `API_BASE_URL`. NanoBio Flutter text, JSON, streaming, health analysis, voice replies, and Food Scan use authenticated backend AI with no local inference fallback. Nabi ESP retains local Whisper speech recognition and offline TTS; generated replies use the backend.
+- The former Supabase project and SQL contracts are archived under `docs/archive/legacy-supabase/`; do not deploy or run them. Port only behavior that still has an active caller.
+- Code changes do not authorize production deployment, data import, write-freeze, or APK distribution unless the user explicitly includes those actions.
 
 ## Rules
 
@@ -25,4 +25,4 @@ This is the source of truth for the self-hosted FastAPI backend. It adapts the r
 
 ## Source priority
 
-Current NanoBio runtime and function source > executable backend/migrations/tests > `docs/supabase/` contract > this context > reusable examples. Study2Work is an architectural style reference only.
+Current NanoBio runtime source and executable backend/migrations/tests > `docs/archive/legacy-supabase/` historical contract > this context > reusable examples. Study2Work is an architectural style reference only.

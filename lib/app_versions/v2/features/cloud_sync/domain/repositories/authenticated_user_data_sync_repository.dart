@@ -1,2 +1,2 @@
-export 'package:nano_app/services/supabase/cloud_sync/authenticated_user_data_sync_contracts.dart'
+export 'package:nano_app/services/backend/cloud_sync/authenticated_user_data_sync_contracts.dart'
     show AuthenticatedUserDataSyncRepository;

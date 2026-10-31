@@ -1,6 +1,5 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 class FoodEvidenceLookupException implements Exception {
   const FoodEvidenceLookupException();
@@ -10,7 +9,7 @@ class FoodEvidenceLookupException implements Exception {
 }
 
 class FoodEvidenceRemoteDatasource {
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
   const FoodEvidenceRemoteDatasource({this.clientOverride});
 
@@ -31,13 +30,13 @@ class FoodEvidenceRemoteDatasource {
     }
 
     try {
-      final client = clientOverride ?? Supabase.instance.client;
-      final response = await client.functions.invoke(
-        'nabi-food-evidence',
+      final client = clientOverride ?? BackendApiClient.shared;
+      final data = await client.requestMap(
+        'POST',
+        '/api/v1/food/evidence',
         body: {'ingredients': names},
       );
-      final data = response.data;
-      if (data is! Map || data['foods'] is! List) {
+      if (data['foods'] is! List) {
         throw const FoodEvidenceLookupException();
       }
       final records = (data['foods'] as List)

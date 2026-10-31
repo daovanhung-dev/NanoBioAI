@@ -1014,7 +1014,7 @@ nano_app/
 │   ├── DD/                           # module design documents M01–M19
 │   ├── checklist/                    # development/DD/coding progress
 │   ├── features/, fixbug/, issues/, todo/, test/, worklog/
-│   └── supabase/                     # schema / RLS / sync context
+│   └── archive/legacy-supabase/       # historical schema / RLS / sync context
 ├── .codex/                           # mandatory agent workflows/domains/skills/history
 ├── .agents/                          # discovery bridges to .codex skills
 ├── lib/
@@ -1167,7 +1167,7 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/app_versions/admin/app/bio_ai_admin_app.dart` | 18 | `BioAIAdminApp` |
 | `lib/app_versions/admin/core/admin_logger.dart` | 227 | `AdminLogger` |
 | `lib/app_versions/admin/features/admin_panel/admin_panel.dart` | 4 | — |
-| `lib/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart` | 207 | `AdminSupabaseDatasource` |
+| `lib/app_versions/admin/features/admin_panel/data/datasources/admin_backend_datasource.dart` | 263 | `AdminBackendDatasource` |
 | `lib/app_versions/admin/features/admin_panel/data/repositories/admin_repository_impl.dart` | 61 | `AdminRepositoryImpl` |
 | `lib/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart` | 297 | `AdminRoleCode`, `AdminPanelSection`, `AdminPermissions`, `AdminTimeDefaults`, `AdminSession`, `AdminDashboardMetric` |
 | `lib/app_versions/admin/features/admin_panel/domain/repositories/admin_repository.dart` | 29 | `AdminRepository` |
@@ -1374,8 +1374,8 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/app_versions/v1/shared/widgets/ai_chat_fab.dart` | 493 | `AIChatFAB`, `_AIChatFABState`, `DraggableAIChatButton`, `_DraggableAIChatButtonState`, `_NamiChatBubble`, `_NamiStatusDot` |
 | `lib/app_versions/v2/app/bio_ai_v2_app.dart` | 18 | `BioAIV2App` |
 | `lib/app_versions/v2/features/auth/auth.dart` | 12 | — |
-| `lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart` | 123 | `SupabaseAuthRemoteDatasource` |
-| `lib/app_versions/v2/features/auth/data/repositories/supabase_auth_repository.dart` | 277 | `SupabaseAuthRepository` |
+| `lib/app_versions/v2/features/auth/data/datasources/backend_auth_remote_datasource.dart` | 116 | `BackendAuthRemoteDatasource` |
+| `lib/app_versions/v2/features/auth/data/repositories/backend_auth_repository.dart` | 338 | `BackendAuthRepository` |
 | `lib/app_versions/v2/features/auth/domain/entities/auth_commands.dart` | 37 | `RegisterCommand`, `LoginCommand`, `UpdatePasswordCommand`, `RegistrationResult` |
 | `lib/app_versions/v2/features/auth/domain/entities/auth_failure.dart` | 23 | `AuthFailureCode`, `AuthFailure` |
 | `lib/app_versions/v2/features/auth/domain/entities/auth_profile.dart` | 39 | `AuthSessionSnapshot`, `AuthProfile` |
@@ -1390,7 +1390,7 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/app_versions/v2/features/auth/providers/auth_providers.dart` | 11 | — |
 | `lib/app_versions/v2/features/cloud_sync/cloud_sync.dart` | 4 | — |
 | `lib/app_versions/v2/features/cloud_sync/data/datasources/sqlite_user_data_sync_local_datasource.dart` | 198 | `SqliteUserDataSyncLocalDatasource` |
-| `lib/app_versions/v2/features/cloud_sync/data/datasources/supabase_user_data_sync_remote_datasource.dart` | 247 | `SupabaseUserDataSyncRemoteDatasource` |
+| `lib/app_versions/v2/features/cloud_sync/data/datasources/backend_user_data_sync_remote_datasource.dart` | 290 | `BackendUserDataSyncRemoteDatasource` |
 | `lib/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_datasource_contracts.dart` | 25 | — |
 | `lib/app_versions/v2/features/cloud_sync/data/datasources/user_data_sync_tables.dart` | 436 | `UserDataSyncTables` |
 | `lib/app_versions/v2/features/cloud_sync/data/repositories/authenticated_user_data_sync_repository_impl.dart` | 135 | `AuthenticatedUserDataSyncRepositoryImpl` |
@@ -1423,7 +1423,7 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/app_versions/v3/features/premium_ai/premium_ai.dart` | 17 | `V3PremiumAiFeature` |
 | `lib/app_versions/v3/router/v3_route_paths.dart` | 4 | `V3RoutePaths` |
 | `lib/app_versions/v3/router/v3_router.dart` | 18 | — |
-| `lib/core/constants/api/supabase_constants.dart` | 6 | `SupabaseConstants` |
+| `lib/core/config/app_env.dart` | 168 | `AppEnv` |
 | `lib/core/constants/app/app_assets.dart` | 5 | `AppAssets` |
 | `lib/core/constants/app/app_constants.dart` | 5 | `AppConstants` |
 | `lib/core/constants/app/app_duration.dart` | 5 | `AppDuration` |
@@ -1552,7 +1552,7 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/app/bio_ai_app.dart` | 67 | `BioAIApp` |
 | `lib/main.dart` | 123 | — |
 | `lib/sale_referral/data/datasources/sale_remote_datasource.dart` | 34 | `SaleRemoteDatasource` |
-| `lib/sale_referral/data/datasources/supabase_sale_remote_datasource.dart` | 114 | `SupabaseSaleRemoteDatasource` |
+| `lib/sale_referral/data/datasources/backend_sale_remote_datasource.dart` | 86 | `BackendSaleRemoteDatasource` |
 | `lib/sale_referral/data/device/sale_device_hash_store.dart` | 32 | `SaleDeviceHashStore` |
 | `lib/sale_referral/data/repositories/sale_repository_impl.dart` | 116 | `SaleRepositoryImpl` |
 | `lib/sale_referral/domain/entities/sale_models.dart` | 367 | `SaleStatus`, `SaleState`, `SalePayoutProfile`, `SalePayoutProfileCommand`, `SaleDashboard`, `SaleDirectCustomer` |
@@ -1572,16 +1572,15 @@ All Dart source files under `lib/` are listed below so an Agent can locate the e
 | `lib/services/image_picker/image_picker.dart` | 9 | — |
 | `lib/services/image_picker/image_picker_provider.dart` | 9 | — |
 | `lib/services/image_picker/image_picker_service.dart` | 156 | `ImagePickerService` |
-| `lib/services/supabase/auth/account_security_provider.dart` | 43 | `AccountSecurityController` |
-| `lib/services/supabase/auth/account_security_service.dart` | 61 | `AccountSecurityService` |
-| `lib/services/supabase/auth/auth_profile_service.dart` | 30 | `AuthProfileService` |
-| `lib/services/supabase/auth/current_auth_user.dart` | 10 | — |
-| `lib/services/supabase/auth_service.dart` | 38 | `AuthService` |
-| `lib/services/supabase/cloud_sync/user_data_sync_outbox.dart` | 494 | `SyncOutboxMutation`, `UserDataSyncOutbox` |
-| `lib/services/supabase/cloud_sync/user_data_sync_outbox_refresher.dart` | 99 | `UserDataSyncOutboxRefresher` |
-| `lib/services/supabase/sale/sale_participation_service.dart` | 74 | `SaleParticipationService` |
-| `lib/services/supabase/sale/sale_terms.dart` | 67 | `SaleTerms`, `SaleTermsSection` |
-| `lib/services/supabase/supabase_service.dart` | 6 | `SupabaseService` |
+| `lib/services/backend/auth/account_security_provider.dart` | 43 | `AccountSecurityController` |
+| `lib/services/backend/auth/account_security_service.dart` | 61 | `AccountSecurityService` |
+| `lib/app_versions/v2/features/auth/data/datasources/backend_auth_remote_datasource.dart` | — | `BackendAuthRemoteDatasource` |
+| `lib/services/backend/auth/current_backend_user.dart` | — | `currentBackendUserIdOrNull` |
+| `lib/services/backend/cloud_sync/user_data_sync_outbox.dart` | 494 | `SyncOutboxMutation`, `UserDataSyncOutbox` |
+| `lib/services/backend/cloud_sync/user_data_sync_outbox_refresher.dart` | 99 | `UserDataSyncOutboxRefresher` |
+| `lib/services/backend/sale/sale_participation_service.dart` | 74 | `SaleParticipationService` |
+| `lib/services/backend/sale/sale_terms.dart` | 67 | `SaleTerms`, `SaleTermsSection` |
+| `lib/core/network/backend_api_client.dart` | — | `BackendApiClient`, `BackendAuthSession` |
 | `lib/shared/widgets/loading_gen_ai.dart` | 519 | `AIGeneratingPage`, `_AIGeneratingPageState`, `_ThoughtEntry` |
 
 ## Appendix C — test source index
@@ -1662,7 +1661,7 @@ Use the narrowest test that owns the page/contract. Architecture tests are espec
 | `test/services/notifications/notification_lifecycle_refresher_test.dart` | 80 | — |
 | `test/services/notifications/notification_startup_scheduler_test.dart` | 44 | — |
 | `test/services/notifications/reminder_schedule_service_test.dart` | 301 | `FakeReminderNotificationScheduler`, `ScheduledReminder` |
-| `test/services/supabase/cloud_sync/user_data_sync_outbox_test.dart` | 113 | — |
+| `test/services/backend/cloud_sync/user_data_sync_outbox_test.dart` | 112 | — |
 | `test/widget_test.dart` | 242 | — |
 
 ## Appendix D — DD documented view inventory

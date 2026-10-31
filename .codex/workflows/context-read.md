@@ -24,6 +24,6 @@ If the user says the context is for a specific work type, switch to that workflo
 - `.codex/history/RISK_HISTORY.md`
 - `.codex/MAP_TREE.md`
 - Entire `docs/DD/**`
-- Entire `docs/supabase/**`
+- Entire `docs/archive/legacy-supabase/sql/**`
 
 Open those only after a workflow or domain file requires them.

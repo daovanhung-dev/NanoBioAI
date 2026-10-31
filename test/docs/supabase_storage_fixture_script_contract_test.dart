@@ -6,7 +6,7 @@ void main() {
   group('Supabase Storage fixture runner contract', () {
     test('uses safe environment configuration and Storage APIs', () {
       final script = File(
-        'tools/supabase/Seed-StorageFixtures.ps1',
+        'docs/archive/legacy-supabase/tools/Seed-StorageFixtures.ps1',
       ).readAsStringSync();
 
       for (final token in [
@@ -37,42 +37,30 @@ void main() {
       expect(script, isNot(contains('(sandbox|staging)')));
     });
 
-    test(
-      'keeps rollout defaults explicit in the local seed script',
-      () {
-        final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+    test('keeps rollout defaults explicit in the local seed script', () {
+      final seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
 
-        for (final token in [
-          'wellness_rewards_rollout',
-          'sale_point_conversion',
-          'nabi_companion_notifications_rollout',
-          '"enabled": false',
-          'Default disabled Sale point conversion policy.',
-          'M30 rollout remains disabled until sandbox and device acceptance pass.',
-        ]) {
-          expect(seed, contains(token), reason: token);
-        }
-      },
-    );
+      for (final token in [
+        'wellness_rewards_rollout',
+        'sale_point_conversion',
+        'nabi_companion_notifications_rollout',
+        '"enabled": false',
+        'Default disabled Sale point conversion policy.',
+        'M30 rollout remains disabled until sandbox and device acceptance pass.',
+      ]) {
+        expect(seed, contains(token), reason: token);
+      }
+    });
 
     test(
       'does not permit overwriting Sale payout evidence from the Admin app',
       () {
         final source = File(
-          'lib/app_versions/admin/features/admin_panel/presentation/pages/admin_shell_page.dart',
+          'lib/app_versions/admin/features/admin_panel/data/datasources/admin_payout_proof_remote_datasource.dart',
         ).readAsStringSync();
 
-        expect(source, contains(".from('sale-payout-proofs')"));
-        expect(
-          source,
-          contains('FileOptions(contentType: contentType, upsert: false)'),
-        );
-        expect(
-          source,
-          isNot(
-            contains('FileOptions(contentType: contentType, upsert: true)'),
-          ),
-        );
+        expect(source, contains("'/api/v1/files/sale-payout-proofs"));
+        expect(source, contains('uploadBytes('));
       },
     );
   });

@@ -16,11 +16,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
-$requiredRuntimeKeys = @(
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY",
-  "AUTH_EMAIL_REDIRECT_URL"
-)
+$requiredRuntimeKeys = @("API_BASE_URL")
 
 function Resolve-RepoFile {
   param(
@@ -94,8 +90,8 @@ function Test-IsPlaceholder {
     '^(your|replace|change)[-_ ]',
     '^changeme$',
     'placeholder',
-    'your-project',
-    'your-supabase',
+    'your-backend',
+    'your-api',
     'example\.(com|org|net)'
   )
 

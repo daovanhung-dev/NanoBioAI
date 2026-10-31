@@ -1,27 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 import '../data/datasources/wellness_rank_local_datasource.dart';
-import '../data/datasources/wellness_rank_remote_datasource.dart';
-import '../data/repositories/supabase_wellness_rank_repository.dart';
+import '../data/datasources/backend_wellness_rank_remote_datasource.dart';
+import '../data/repositories/backend_wellness_rank_repository.dart';
 import '../domain/entities/wellness_rank_summary.dart';
 import '../domain/repositories/wellness_rank_repository.dart';
 
 final wellnessRankUserIdProvider = StreamProvider<String?>((ref) async* {
-  late final SupabaseClient client;
-  try {
-    client = Supabase.instance.client;
-  } catch (_) {
-    yield null;
-    return;
-  }
-  yield client.auth.currentUser?.id;
-  yield* client.auth.onAuthStateChange.map((state) => state.session?.user.id);
+  yield* BackendApiClient.shared.authChanges;
 });
 
 final wellnessRankRemoteDatasourceProvider =
     Provider<WellnessRankRemoteDatasource>(
-      (ref) => const SupabaseWellnessRankRemoteDatasource(),
+      (ref) => const BackendWellnessRankRemoteDatasource(),
     );
 
 final wellnessRankLocalDatasourceProvider =
@@ -30,15 +22,11 @@ final wellnessRankLocalDatasourceProvider =
     );
 
 final wellnessRankRepositoryProvider = Provider<WellnessRankRepository>((ref) {
-  return SupabaseWellnessRankRepository(
+  return BackendWellnessRankRepository(
     remoteDatasource: ref.watch(wellnessRankRemoteDatasourceProvider),
     localDatasource: ref.watch(wellnessRankLocalDatasourceProvider),
     currentUserId: () {
-      try {
-        return Supabase.instance.client.auth.currentUser?.id;
-      } catch (_) {
-        return null;
-      }
+      return BackendApiClient.shared.currentUserId;
     },
   );
 });

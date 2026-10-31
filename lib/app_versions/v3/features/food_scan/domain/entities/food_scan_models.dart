@@ -109,8 +109,7 @@ class NutritionEstimate {
     return NutritionEstimate(
       caloriesKcal: _double(json['calories_kcal']) ?? 0,
       proteinG: _double(json['protein_g']) ?? 0,
-      carbohydratesG:
-          _double(json['carbohydrates_g'] ?? json['carbs_g']) ?? 0,
+      carbohydratesG: _double(json['carbohydrates_g'] ?? json['carbs_g']) ?? 0,
       fatG: _double(json['fat_g']) ?? 0,
       fiberG: _double(json['fiber_g']),
       sugarG: _double(json['sugar_g']),
@@ -256,10 +255,14 @@ class NutritionEstimate {
       sugarG: addOptional(sugarG, other.sugarG),
       sodiumMg: addOptional(sodiumMg, other.sodiumMg),
       saturatedFatG: addOptional(saturatedFatG, other.saturatedFatG),
-      monounsaturatedFatG:
-          addOptional(monounsaturatedFatG, other.monounsaturatedFatG),
-      polyunsaturatedFatG:
-          addOptional(polyunsaturatedFatG, other.polyunsaturatedFatG),
+      monounsaturatedFatG: addOptional(
+        monounsaturatedFatG,
+        other.monounsaturatedFatG,
+      ),
+      polyunsaturatedFatG: addOptional(
+        polyunsaturatedFatG,
+        other.polyunsaturatedFatG,
+      ),
       transFatG: addOptional(transFatG, other.transFatG),
       cholesterolMg: addOptional(cholesterolMg, other.cholesterolMg),
       potassiumMg: addOptional(potassiumMg, other.potassiumMg),
@@ -371,10 +374,12 @@ class FoodScanItem {
     return FoodScanItem(
       id: _string(json['id']) ?? '',
       name: _string(json['name']) ?? 'Món chưa xác định',
-      normalizedName: _string(json['normalized_name'] ?? json['normalized_hint']) ?? '',
+      normalizedName:
+          _string(json['normalized_name'] ?? json['normalized_hint']) ?? '',
       estimatedWeightGrams: estimated,
-      confirmedWeightGrams:
-          (_double(json['confirmed_weight_g']) ?? estimated).clamp(0, 5000).toDouble(),
+      confirmedWeightGrams: (_double(json['confirmed_weight_g']) ?? estimated)
+          .clamp(0, 5000)
+          .toDouble(),
       portionDescription: _string(json['portion_description']) ?? '',
       cookingMethod: _string(json['cooking_method']) ?? '',
       ingredients: _strings(json['ingredients']),
@@ -477,33 +482,45 @@ class FoodHealthEvaluation {
     final conditions = json['conditions'];
     final dailyGoalReview = _map(json['daily_goal_review']);
     return FoodHealthEvaluation(
-      status: _normalizeHealthStatus(_string(overall['status']) ?? 'thieu_du_lieu'),
+      status: _normalizeHealthStatus(
+        _string(overall['status']) ?? 'thieu_du_lieu',
+      ),
       suitabilityScore: rawScore?.clamp(0, 100).toInt(),
       summary: _safeHealthText(
         _string(overall['summary_vi']) ??
             'Nabi chưa có đủ dữ liệu để đưa ra đánh giá chi tiết.',
       ),
       conditionReviews: conditions is List
-          ? conditions.whereType<Map>().map((item) {
-              final map = item.map(
-                (key, value) => MapEntry(key.toString(), value),
-              );
-              return <String, Object?>{
-                'condition_code': _string(map['condition_code']) ?? '',
-                'condition_name': _string(map['condition_name']) ?? 'Tình trạng sức khỏe',
-                'status': _normalizeHealthStatus(
-                  _string(map['status']) ?? 'thieu_du_lieu',
-                ),
-                'reasons': _strings(map['reasons']).map(_safeHealthText).toList(),
-                'nutrients_of_concern': map['nutrients_of_concern'] is List
-                    ? List<Object?>.from(map['nutrients_of_concern'] as List)
-                    : const <Object?>[],
-                'ingredients_of_concern': _strings(map['ingredients_of_concern']),
-                'suggested_adjustments': _strings(
-                  map['suggested_adjustments'],
-                ).map(_safeHealthText).toList(),
-              };
-            }).toList(growable: false)
+          ? conditions
+                .whereType<Map>()
+                .map((item) {
+                  final map = item.map(
+                    (key, value) => MapEntry(key.toString(), value),
+                  );
+                  return <String, Object?>{
+                    'condition_code': _string(map['condition_code']) ?? '',
+                    'condition_name':
+                        _string(map['condition_name']) ?? 'Tình trạng sức khỏe',
+                    'status': _normalizeHealthStatus(
+                      _string(map['status']) ?? 'thieu_du_lieu',
+                    ),
+                    'reasons': _strings(
+                      map['reasons'],
+                    ).map(_safeHealthText).toList(),
+                    'nutrients_of_concern': map['nutrients_of_concern'] is List
+                        ? List<Object?>.from(
+                            map['nutrients_of_concern'] as List,
+                          )
+                        : const <Object?>[],
+                    'ingredients_of_concern': _strings(
+                      map['ingredients_of_concern'],
+                    ),
+                    'suggested_adjustments': _strings(
+                      map['suggested_adjustments'],
+                    ).map(_safeHealthText).toList(),
+                  };
+                })
+                .toList(growable: false)
           : const [],
       allergyWarnings: _parseAllergyWarnings(json['allergy_review']),
       suggestions: _strings(
@@ -609,8 +626,9 @@ class FoodScanResult {
       imageLocalPath: _string(json['image_local_path']) ?? '',
       inputType: _string(json['input_type']) ?? 'unclear',
       isFoodImage: _bool(json['is_food_image'], fallback: true),
-      analysisConfidence:
-          (_double(json['analysis_confidence']) ?? 0).clamp(0, 1).toDouble(),
+      analysisConfidence: (_double(json['analysis_confidence']) ?? 0)
+          .clamp(0, 1)
+          .toDouble(),
       items: items is List
           ? items
                 .whereType<Map>()
@@ -637,7 +655,9 @@ class FoodScanResult {
   factory FoodScanResult.decode(String source) {
     final decoded = jsonDecode(source);
     if (decoded is! Map) {
-      throw const FormatException('Food scan history payload must be an object.');
+      throw const FormatException(
+        'Food scan history payload must be an object.',
+      );
     }
     return FoodScanResult.fromJson(
       decoded.map((key, value) => MapEntry(key.toString(), value)),
@@ -656,9 +676,8 @@ FoodHealthEvaluation _healthFromStoredJson(Object? value) {
         ? (map['condition_reviews'] as List)
               .whereType<Map>()
               .map(
-                (item) => item.map(
-                  (key, value) => MapEntry(key.toString(), value),
-                ),
+                (item) =>
+                    item.map((key, value) => MapEntry(key.toString(), value)),
               )
               .toList(growable: false)
         : const [],
@@ -714,8 +733,9 @@ List<String> _strings(Object? value) {
 String _normalizeHealthStatus(String raw) {
   return switch (raw.trim().toLowerCase()) {
     'phu_hop' || 'suitable' => 'suitable',
-    'tuong_doi_phu_hop' || 'mostly_suitable' || 'mostlysuitable' =>
-      'mostlySuitable',
+    'tuong_doi_phu_hop' ||
+    'mostly_suitable' ||
+    'mostlysuitable' => 'mostlySuitable',
     'can_nhac' || 'consider' => 'consider',
     'nen_han_che' || 'limit' => 'limit',
     'khong_phu_hop' || 'not_suitable' || 'notsuitable' => 'notSuitable',
@@ -760,7 +780,10 @@ List<String> _parseDailyGoalNotes(Object? value) {
     final target = _string(map['target'] ?? map['goal']);
     final unit = _string(map['unit']);
     final assessment = _string(
-      map['assessment_vi'] ?? map['reason'] ?? map['status'] ?? map['summary_vi'],
+      map['assessment_vi'] ??
+          map['reason'] ??
+          map['status'] ??
+          map['summary_vi'],
     );
     final buffer = <String>[];
     if (label != null) buffer.add(label);

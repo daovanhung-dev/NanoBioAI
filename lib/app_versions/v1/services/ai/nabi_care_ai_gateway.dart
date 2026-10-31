@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/features/nabi/domain/care/nabi_care_repository.dart';
 
 import 'ai_text_client.dart';
@@ -12,14 +12,14 @@ typedef NabiCareTextGenerator =
       required String systemInstruction,
     });
 
-class LocalNabiCareAiGateway implements NabiCareAiGateway {
+class BackendNabiCareAiGateway implements NabiCareAiGateway {
   final AiTextClient _client;
   final NabiCareTextGenerator? _textGenerator;
 
-  LocalNabiCareAiGateway({
+  BackendNabiCareAiGateway({
     AiTextClient? client,
     NabiCareTextGenerator? textGenerator,
-  }) : _client = client ?? const LocalAiTextClient(operation: 'nabi_care'),
+  }) : _client = client ?? const BackendAiTextClient(),
        _textGenerator = textGenerator;
 
   @override
@@ -39,14 +39,14 @@ ${jsonEncode(payload)}
       final generator = _textGenerator;
       if (generator != null) {
         return await generator(
-          model: LocalAiTextClient.modelId,
+          model: BackendAiTextClient.modelId,
           prompt: prompt,
           systemInstruction: systemInstruction,
         );
       }
       return await _client
           .generateText(
-            model: LocalAiTextClient.modelId,
+            model: BackendAiTextClient.modelId,
             messages: [AiMessage.user(prompt)],
             systemInstruction: systemInstruction,
             generationConfig: const AiGenerationConfig(
@@ -62,7 +62,7 @@ ${jsonEncode(payload)}
       rethrow;
     } catch (error) {
       throw NabiCareAiUnavailableException(
-        'Nabi chưa thể phân tích trên thiết bị lúc này (${error.runtimeType}).',
+        'Dịch vụ AI của Nabi tạm thời chưa khả dụng (${error.runtimeType}).',
       );
     }
   }

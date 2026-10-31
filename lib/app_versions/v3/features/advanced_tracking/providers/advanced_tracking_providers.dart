@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/domain/entities/effective_access.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../application/advanced_tracking_goals_fn01.dart';
 import '../application/advanced_tracking_goals_fn02.dart';
@@ -51,7 +51,7 @@ class AdvancedTrackingViewModel {
 }
 
 final advancedTrackingCurrentUserIdProvider = Provider<String?>((ref) {
-  return currentSupabaseUserIdOrNull();
+  return currentBackendUserIdOrNull();
 });
 
 final advancedTrackingNowProvider = Provider<DateTime Function()>((ref) {

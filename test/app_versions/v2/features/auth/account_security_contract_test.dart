@@ -4,29 +4,23 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Account security contract', () {
-    test(
-      'Flutter client uses Edge Function and never admin/service-role APIs',
-      () {
-        final source = File(
-          'lib/services/supabase/auth/account_security_service.dart',
-        ).readAsStringSync();
+    test('Flutter client uses backend account security endpoints', () {
+      final source = File(
+        'lib/services/backend/auth/account_security_service.dart',
+      ).readAsStringSync();
 
-        expect(source, contains('functions.invoke'));
-        expect(source, contains('AUTH_DELETE_ACCOUNT_FUNCTION'));
-        expect(source, contains('delete-account'));
-        expect(source, contains('DatabaseService.deleteDatabaseFile'));
-        expect(
-          source,
-          contains('NotificationBootstrap.clearGeneratedReminders'),
-        );
-        expect(source, contains('AppPrefs.clearAll'));
-        expect(source, contains('FlutterSecureStorage'));
-        expect(source, contains('client.auth.signOut'));
-        expect(source, isNot(contains('auth.admin')));
-        expect(source.toLowerCase(), isNot(contains('service_role')));
-        expect(source.toLowerCase(), isNot(contains('service-role')));
-      },
-    );
+      expect(source, contains("'/api/v1/account'"));
+      expect(source, contains('changePassword(newPassword)'));
+      expect(source, contains('DatabaseService.deleteDatabaseFile'));
+      expect(source, contains('NotificationBootstrap.clearGeneratedReminders'));
+      expect(source, contains('AppPrefs.clearAll'));
+      expect(source, contains('FlutterSecureStorage'));
+      expect(source, contains('client.signOut()'));
+      expect(source, isNot(contains('SupabaseClient')));
+      expect(source, isNot(contains('auth.admin')));
+      expect(source.toLowerCase(), isNot(contains('service_role')));
+      expect(source.toLowerCase(), isNot(contains('service-role')));
+    });
 
     test(
       'settings page wires password, logout, deletion, and auth route return',
@@ -35,15 +29,15 @@ void main() {
           'lib/app_versions/v1/features/settings/presentation/pages/settings_page.dart',
         ).readAsStringSync();
         final providerSource = File(
-          'lib/services/supabase/auth/account_security_provider.dart',
+          'lib/services/backend/auth/account_security_provider.dart',
         ).readAsStringSync();
         final serviceSource = File(
-          'lib/services/supabase/auth/account_security_service.dart',
+          'lib/services/backend/auth/account_security_service.dart',
         ).readAsStringSync();
 
         expect(source, contains('changePassword'));
-        expect(serviceSource, contains('member-change-password'));
-        expect(serviceSource, contains('new_password'));
+        expect(serviceSource, contains('changePassword(newPassword)'));
+        expect(serviceSource, contains("'/api/v1/account'"));
         expect(source, contains('signOut'));
         expect(source, contains('requestAccountDeletion'));
         expect(source, contains('accountSecurityControllerProvider.notifier'));

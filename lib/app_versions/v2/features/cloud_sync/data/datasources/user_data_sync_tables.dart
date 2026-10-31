@@ -12,7 +12,7 @@ class UserDataSyncTables {
     ...SyncOutboxSchema.serverOwnedReadOnlyTables,
   ];
 
-  /// Optional projection not present in every deployed Supabase environment.
+  /// Optional projection not present in every deployed backend environment.
   /// If it is absent remotely, a partial snapshot must preserve its local rows.
   static const optionalCloudPullTables = <String>{'fitness_training_programs'};
 
@@ -428,7 +428,7 @@ class UserDataSyncTables {
   };
 
   static const cloudColumnsByTable = <String, Set<String>>{
-    // Login identity comes from Supabase Auth and must never be pushed from a
+    // Login identity comes from backend Auth and must never be pushed from a
     // local profile snapshot.
     'users': {
       'full_name',

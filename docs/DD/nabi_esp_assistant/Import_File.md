@@ -1,5 +1,9 @@
 # Import / File Map — NABI_ESP_ASSISTANT
 
+> Runtime update 2026-10-30: the GGUF text runtime has been removed. Voice
+> recognition remains on-device; generated replies use authenticated backend
+> AI and require Internet.
+
 ## App source in NanoBio
 
 | Path | Current role |
@@ -8,8 +12,7 @@
 | `lib/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart` | Control page with readiness, server, pairing, ESP and listening states |
 | `lib/app_versions/v1/router/v1_route_paths.dart` | Preview route constant |
 | `lib/app_versions/v1/router/v1_router.dart` | Preview route registration without the AI Voice paid/auth gate |
-| `lib/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart` | Reuse after review for sanitized local text response |
-| `lib/core/ai_local/local_ai_runtime_service.dart` and platform implementation | Existing selected GGUF runtime; do not introduce a duplicate model manager |
+| `lib/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart` | Shared sanitized backend text response |
 | `android/app/src/main/AndroidManifest.xml` | Hotspot/Bluetooth permissions and connected-device service declaration |
 | `android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/` | LocalOnlyHotspot, foreground service, Espressif BLE Security 2 and secure pairing store |
 | `iot/nabi_esp_contract.json` and `iot/tools/generate_nabi_esp_contract.py` | Canonical contract source and Dart/Kotlin/ESP generators |

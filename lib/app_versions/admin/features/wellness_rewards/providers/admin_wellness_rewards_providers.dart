@@ -1,19 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 import '../data/datasources/admin_wellness_mutation_idempotency_store.dart';
-import '../data/datasources/admin_wellness_rewards_remote_datasource.dart';
-import '../data/repositories/supabase_admin_wellness_rewards_repository.dart';
+import '../data/datasources/backend_admin_wellness_rewards_remote_datasource.dart';
+import '../data/repositories/backend_admin_wellness_rewards_repository.dart';
 import '../domain/entities/admin_wellness_reward_models.dart';
 import '../domain/repositories/admin_wellness_rewards_repository.dart';
 
 final adminWellnessRewardsDatasourceProvider =
-    Provider<AdminWellnessRewardsRemoteDatasource>((ref) {
-      return const AdminWellnessRewardsRemoteDatasource();
+    Provider<BackendAdminWellnessRewardsRemoteDatasource>((ref) {
+      return const BackendAdminWellnessRewardsRemoteDatasource();
     });
 
 final adminWellnessRewardsUserIdProvider = Provider<String?>((ref) {
-  return Supabase.instance.client.auth.currentUser?.id;
+  return BackendApiClient.shared.currentUserId;
 });
 
 final adminWellnessMutationIdempotencyStoreProvider =
@@ -23,7 +23,7 @@ final adminWellnessMutationIdempotencyStoreProvider =
 
 final adminWellnessRewardsRepositoryProvider =
     Provider<AdminWellnessRewardsRepository>((ref) {
-      return SupabaseAdminWellnessRewardsRepository(
+      return BackendAdminWellnessRewardsRepository(
         datasource: ref.watch(adminWellnessRewardsDatasourceProvider),
       );
     });

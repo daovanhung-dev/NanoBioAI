@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 
-export 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart'
+export 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart'
     show
         TrustedBackendUsageQuotaGateway,
         UsageQuotaAuthRequiredException,
@@ -28,6 +28,6 @@ class V2UsageQuotaFeature {
     'Track Free AI chat usage with a daily limit of 3 questions.',
     'Track Free personal schedule generation with a monthly limit of 3 runs.',
     'Block quota-limited use cases before calling AI services.',
-    'Keep quota reads and writes behind trusted Supabase RPC contracts.',
+    'Keep quota reads and writes behind trusted backend API contracts.',
   ];
 }

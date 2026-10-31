@@ -1,5 +1,11 @@
 # Overall — NABI_ESP_ASSISTANT / Nabi - Siêu trợ lý AI kết nối ESP
 
+> Runtime update 2026-10-30: the app no longer uses a local GGUF model for
+> generated replies. It sends the recognized Vietnamese transcript and bounded
+> conversation history to the authenticated NanoBio backend over HTTPS.
+> Whisper STT, Android TTS, audio transport, and ESP firmware remain local and
+> unchanged. The user must sign in and have Internet access for AI replies.
+
 ## 0. Trạng thái tài liệu
 
 | Trường | Giá trị |
@@ -13,9 +19,9 @@
 
 ## 1. Mục tiêu và giới hạn
 
-Nabi dự kiến tạo mạng LAN-only trên Android, phục vụ giao thức XiaoZhi từ điện thoại, và dùng model GGUF đang chọn, Whisper tiếng Việt local cùng Android TTS offline. ESP OSTB 3ST ghi/đọc Opus và hiển thị; điện thoại xử lý STT → câu trả lời → TTS.
+Nabi tạo mạng LAN-only trên Android, phục vụ giao thức XiaoZhi từ điện thoại, dùng Whisper tiếng Việt local, câu trả lời từ NanoBio backend, và Android TTS offline. ESP OSTB 3ST ghi/đọc Opus và hiển thị; điện thoại xử lý STT → backend response → TTS.
 
-Mục tiêu MVP là một ESP trên Android. Không thêm quota hay yêu cầu đăng nhập cho tính năng này; quyết định này chỉ áp dụng cho ESP, không đổi quyền của AI Voice. iOS không có tile hoạt động trong MVP. Không lưu audio/transcript/hội thoại xuống ổ đĩa và không gửi hội thoại tới backend.
+Mục tiêu MVP là một ESP trên Android. Mỗi lượt thoại yêu cầu session đăng nhập và Internet vì transcript/lịch sử hội thoại được gửi tới backend AI. iOS không có tile hoạt động trong MVP. Không lưu audio/transcript/hội thoại xuống ổ đĩa.
 
 ### Không nằm trong MVP
 
@@ -28,17 +34,17 @@ Mục tiêu MVP là một ESP trên Android. Không thêm quota hay yêu cầu �
 
 | Actor | Quyền dự kiến | Giới hạn |
 |---|---|---|
-| Guest / Free / Plus / FamilyPlus | Dùng ESP khi model, Whisper và voice offline đã sẵn sàng | Không quota/đăng nhập riêng cho ESP; vẫn tuân theo khả năng thiết bị |
+| Signed-in user | Dùng ESP khi Whisper, backend AI session và voice offline đã sẵn sàng | Cần Internet/session để nhận câu trả lời; vẫn tuân theo khả năng thiết bị |
 | Nabi Android | Tạo LocalOnlyHotspot, server và provisioning BLE theo xác nhận hệ điều hành | Một thiết bị mỗi phiên; không ghi bí mật/log hội thoại |
 | ESP OSTB 3ST đã nạp đúng firmware | Gửi Opus, nhận cấu hình phiên, nhận lệnh điều khiển nghe | Firmware demo hiện tại không hỗ trợ luồng này |
 
 ## 3. Luồng đề xuất
 
-1. Người dùng cài/chọn model local, cài Whisper và chọn voice Android TTS ngoại tuyến. Lần tải model/Whisper cần Internet.
-2. Người dùng mở Feature Hub trên Android và bấm “Kết nối Nabi”. App chuẩn bị local model/Whisper/TTS, xin quyền hệ điều hành, mở LocalOnlyHotspot và foreground service. Release button vẫn khóa trong khi review chờ.
+1. Người dùng đăng nhập, cài Whisper và chọn voice Android TTS ngoại tuyến. Lần tải Whisper cần Internet.
+2. Người dùng mở Feature Hub trên Android và bấm “Kết nối Nabi”. App chuẩn bị Whisper/TTS, xin quyền hệ điều hành, mở LocalOnlyHotspot và foreground service. Release button vẫn khóa trong khi review chờ.
 3. App tự dò ESP qua BLE. Lần ghép đầu, ESP hiển thị mã 8 chữ số dùng làm Proof of Possession trong Security 2; app gửi SSID/mật khẩu hotspot hiện tại cùng hợp đồng cấu hình qua custom endpoint. App mã hóa khóa thiết bị bằng Android Keystore, ESP lưu khóa trong NVS. Các lần sau khóa đã ghép xác thực BLE rồi app gửi credential hotspot mới.
 4. Một nguồn `iot/nabi_esp_contract.json` sinh hằng Dart, Kotlin và ESP. Hợp đồng hiện dùng protocol v3, cổng `8386`, OTA `/nabi/ota/`, WebSocket `/nabi/v1/`, BLE UUID/endpoint và `X-Nabi-Device-Key`. ESP lấy gateway DHCP, gọi OTA bằng khóa thiết bị và nhận URL WebSocket cùng bearer token phiên; server chỉ giữ một socket.
-5. ESP gửi Opus mono 16 kHz theo lượt nghe. Điện thoại giải mã và nhận dạng bằng Whisper, gọi model local qua pipeline Nabi, giữ tối đa 6 lượt trong RAM, tổng hợp Android TTS offline và trả Opus mono 24 kHz. Payload hội thoại không được ghi log hay lưu xuống ổ đĩa.
+5. ESP gửi Opus mono 16 kHz theo lượt nghe. Điện thoại giải mã và nhận dạng bằng Whisper, gửi transcript cùng tối đa 6 lượt lịch sử trong RAM tới backend AI, tổng hợp câu trả lời bằng Android TTS offline và trả Opus mono 24 kHz. Payload hội thoại không được ghi log hoặc lưu xuống ổ đĩa.
 6. Trang điều khiển gửi `nabi.control` (`listen.start`, `listen.stop`); firmware chuyển yêu cầu vào event loop và trả `nabi.control_ack` có request id/trạng thái. Người dùng dừng server từ trang/notification; app đóng socket, server và hotspot.
 
 ```mermaid
@@ -46,17 +52,19 @@ sequenceDiagram
     actor U as Người dùng
     participant A as Nabi Android
     participant E as ESP OSTB 3ST
-    participant L as Local AI runtime
+    participant B as NanoBio backend
     U->>A: Kết nối Nabi
-    A->>A: Kiểm tra GGUF, Whisper, voice offline
+    A->>A: Chuẩn bị Whisper và voice offline
     A->>A: Xin quyền, mở LocalOnlyHotspot + foreground service
     U->>E: Bật ESP / nhập mã ghép lần đầu
     E->>A: BLE Security 2 + cấu hình Wi-Fi/custom endpoint
     E->>A: HTTP OTA qua gateway DHCP
     A-->>E: WebSocket URL, token phiên, protocol v3
     E->>A: WebSocket hello + Opus khi nghe
-    A->>L: Whisper STT → local LLM → Android TTS
-    L-->>A: Opus phản hồi
+    A->>A: Whisper STT
+    A->>B: Transcript + bounded history qua HTTPS
+    B-->>A: Câu trả lời AI
+    A->>A: Android TTS
     A-->>E: JSON trạng thái + Opus 24 kHz
     U->>A: Dừng phiên
     A-->>E: Đóng socket; giải phóng hotspot
@@ -67,22 +75,22 @@ sequenceDiagram
 | ID | Quy tắc |
 |---|---|
 | NABI-ESP-BR01 | Không mở runtime trước Tech, QA và Privacy sign-off; PO intent đã có từ yêu cầu người dùng. |
-| NABI-ESP-BR02 | Không lấy quyền AI Voice làm gate. ESP dùng được với mọi trạng thái tài khoản khi điều kiện model local sẵn sàng. |
+| NABI-ESP-BR02 | Generated AI replies require an authenticated backend session; guests can keep the local ESP connection but cannot receive AI replies until signing in. |
 | NABI-ESP-BR03 | Mỗi phiên tối đa một ESP và một kết nối WebSocket; từ chối kết nối thứ hai. |
 | NABI-ESP-BR04 | Audio, transcript và hội thoại chỉ ở RAM; history tối đa 6 lượt; log chỉ trạng thái/loại lỗi, không có payload hoặc bí mật. |
 | NABI-ESP-BR05 | OTA/WebSocket chỉ nhận thiết bị đã ghép; token phiên riêng; token, mật khẩu, mã ghép không xuất hiện trong UI log hoặc telemetry. |
 | NABI-ESP-BR06 | BLE provisioning dùng Security 2; mã ghép đầu tiên hết hạn sau 2 phút. Khóa pairing được mã hóa bằng Android Keystore và lưu NVS phía ESP; không tuyên bố giới hạn số lần sai khi firmware chưa thực thi cơ chế này. |
 | NABI-ESP-BR07 | LocalOnlyHotspot không có Internet; app không tự chuyển sang hotspot hệ thống nếu API không tạo được. |
 | NABI-ESP-BR08 | Thiết bị đang nối có Flash Encryption tắt; khóa NVS có thể bị đọc khi truy cập vật lý flash. |
-| NABI-ESP-BR09 | Không tuyên bố ngoại tuyến trước khi model, Whisper và voice đã tải/cài và đã qua thử nghiệm ngắt Internet. |
+| NABI-ESP-BR09 | Do not claim AI replies work offline; Whisper and TTS are local, but generated replies require backend connectivity. |
 
 ## 5. Phụ thuộc và blocker
 
-- Local runtime: `LocalAiRuntimeService`, `LocalAiTextClient`, `LocalVoiceChatTurnDatasource`.
-- Local STT/TTS/audio: Flutter Whisper, Android voice capability, resample PCM và Opus.
+- Backend text response: `BackendVoiceChatTurnDatasource` and `BackendAiTextClient`.
+- Local STT/TTS/audio: Flutter Whisper, Android voice capability, resample PCM and Opus.
 - Native Android: LocalOnlyHotspot, BLE permissions/provisioning, foreground service `connectedDevice`, notification action.
 - Firmware: Protocomm BLE + Security 2 + custom endpoint; dynamic OTA host from DHCP gateway; auth header; incoming control message/ack; display mã ghép; persistent paired key.
-- Thiết bị: OSTB 3ST chạy XiaoZhi 2.5.3 / ESP-IDF 6.1, partition OTA 16 MiB. BLE Security 2 pairing, hotspot provisioning, DHCP, OTA config `/nabi/ota/`, WebSocket v3 và ACK listen controls đã qua thử thật; firmware app readback khớp. Voice round trip chưa xác nhận vì inference local quá lâu và chưa có TTS phát loa. Xem [hồ sơ OSTB 3ST](../../../iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md) và [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md).
+- Thiết bị: OSTB 3ST chạy XiaoZhi 2.5.3 / ESP-IDF 6.1, partition OTA 16 MiB. BLE Security 2 pairing, hotspot provisioning, DHCP, OTA config `/nabi/ota/`, WebSocket v3 và ACK listen controls đã qua thử thật; firmware app readback khớp. Backend voice round trip and TTS speaker output still need live acceptance. Xem [hồ sơ OSTB 3ST](../../../iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md) và [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md).
 
 ## 6. Review / acceptance gate
 

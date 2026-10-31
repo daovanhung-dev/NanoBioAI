@@ -18,8 +18,8 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 - Independent embedded project snapshot: `iot/xiaozhi-esp32/` (ESP-IDF firmware and Android phone-local AI app)
 - Tests: `test/`
 - BD/DD docs: `docs/BD/`, `docs/DD/`
-- Supabase build/seed and draft docs: `docs/supabase/01_build_system.sql`,
-  `docs/supabase/02_seed_data.sql`, `docs/supabase/`
+- Legacy Supabase SQL archive (read-only): `docs/archive/legacy-supabase/sql/01_build_system.sql`,
+  `docs/archive/legacy-supabase/sql/02_seed_data.sql`, `docs/archive/legacy-supabase/sql/`
 - Issues/todo/worklog: `docs/issues/`, `docs/todo/`, `docs/worklog/`
 
 ## Workflow Routing
@@ -49,7 +49,7 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 | Dashboard / Health Score              | `.codex/domains/dashboard.md`                  | `lib/app_versions/v1/features/dashboard/`, `test/features/dashboard/`                          |
 | Onboarding                            | `.codex/domains/onboarding.md`                 | `lib/app_versions/v1/features/onboarding/`, `test/app_versions/v1/features/onboarding/`        |
 | AI / Meal / Exercise / Chat           | `.codex/domains/ai-service.md`                 | `lib/app_versions/v1/services/ai/`, meal/schedule/task/chat tests                              |
-| Access / Auth / Membership / Referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/supabase/` |
+| Access / Auth / Membership / Referral | `.codex/domains/access-membership-referral.md` | `lib/app_versions/v2/`, `lib/app_versions/v3/`, `lib/sale_referral/`, `lib/services/backend/`, `lib/core/network/backend_api_client.dart` |
 | Notification / Reminder               | `.codex/domains/notification.md`               | `lib/app_versions/v1/services/notifications/`, `test/services/notifications/`                  |
 | SQLite / DAO / Migration              | `.codex/domains/sqlite.md`                     | `lib/core/storage/localdb/`, `test/core/storage/localdb/`                                      |
 | UI / Theme / NabiCopy                 | `.codex/domains/ui-nami.md`                    | `lib/core/theme/`, feature presentation files                                                  |
@@ -62,8 +62,8 @@ Use this file to route work to source, docs, tests, workflow, and domain context
 
 Open only when relevant:
 
-- `docs/supabase/01_build_system.sql`
-- `docs/supabase/02_seed_data.sql`
+- `docs/archive/legacy-supabase/sql/01_build_system.sql`
+- `docs/archive/legacy-supabase/sql/02_seed_data.sql`
 - `lib/app_versions/v1/router/v1_router.dart`
 - `lib/app_versions/v1/router/v1_route_guards.dart`
 - `lib/app_versions/v2/router/v2_router.dart`
@@ -72,7 +72,7 @@ Open only when relevant:
 - `lib/app_versions/v1/services/ai/ai_service.dart`
 - `lib/app_versions/v1/services/ai/ai_chat_service.dart`
 - `lib/app_versions/v1/services/ai/ai_text_client.dart`
-- `lib/core/ai_local/`
+- `lib/core/network/backend_ai_text_client.dart`
 - `lib/app_versions/v1/services/ai/generated_plan_service.dart`
 - `lib/app_versions/v1/services/notifications/notification_bootstrap.dart`
 - `lib/app_versions/v1/services/notifications/notification_action_handler.dart`
@@ -104,14 +104,14 @@ executable tests over authored or historical docs.
 - DD module template: `docs/DD/DD_Module_Template/README.md`
 - Auth BD: not present in the current working tree; use M05 `docs/DD/auth_profile_sync/README.md` and the live product-flow BD unless a specific auth BD path is provided.
 - DD checklist: `docs/checklist/checklist_create_DD.md`
-- Supabase local/sandbox rebuild: `docs/supabase/01_build_system.sql` then
-  `docs/supabase/02_seed_data.sql`
-- Supabase context: `docs/supabase/README.md`
-- Admin Supabase contract: `docs/supabase/01_build_system.sql`
+- Supabase local/sandbox rebuild: `docs/archive/legacy-supabase/sql/01_build_system.sql` then
+  `docs/archive/legacy-supabase/sql/02_seed_data.sql`
+- Supabase context: `docs/archive/legacy-supabase/sql/README.md`
+- Admin Supabase contract: `docs/archive/legacy-supabase/sql/01_build_system.sql`
 
 For any Supabase database schema/RLS/RPC/seed/docs change, read
-`docs/supabase/README.md`, `docs/supabase/01_build_system.sql`,
-`docs/supabase/02_seed_data.sql`, and the directly related module file before
+`docs/archive/legacy-supabase/sql/README.md`, `docs/archive/legacy-supabase/sql/01_build_system.sql`,
+`docs/archive/legacy-supabase/sql/02_seed_data.sql`, and the directly related module file before
 editing. Update the owning build or seed script in the same change, or record a
 blocker and do not claim the Supabase rebuild path is current.
 

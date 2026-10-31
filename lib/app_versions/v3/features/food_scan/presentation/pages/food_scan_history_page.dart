@@ -181,10 +181,9 @@ class _HistoryBody extends ConsumerWidget {
       ),
     );
     if (confirmed != true) return;
-    await ref.read(foodScanServiceProvider).deleteHistory(
-          userId: userId,
-          result: result,
-        );
+    await ref
+        .read(foodScanServiceProvider)
+        .deleteHistory(userId: userId, result: result);
     ref.invalidate(foodScanHistoryProvider(userId));
   }
 }
@@ -218,7 +217,10 @@ class _HistoryCard extends StatelessWidget {
                   ? Image.file(file, fit: BoxFit.cover)
                   : ColoredBox(
                       color: colors.surfaceSoft,
-                      child: Icon(Icons.image_not_supported_outlined, color: colors.textMuted),
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: colors.textMuted,
+                      ),
                     ),
             ),
           ),
@@ -241,7 +243,9 @@ class _HistoryCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   _formatDate(result.createdAt),
-                  style: AppTextStyles.caption.copyWith(color: colors.textSecondary),
+                  style: AppTextStyles.caption.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
                 if (result.nutritionLogId != null) ...[
                   const SizedBox(height: AppSpacing.xs),

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 abstract interface class AdminPayoutProofRemoteDatasource {
   Future<String> uploadSalePayoutProof({
@@ -11,9 +11,11 @@ abstract interface class AdminPayoutProofRemoteDatasource {
   });
 }
 
-class SupabaseAdminPayoutProofRemoteDatasource
+class BackendAdminPayoutProofRemoteDatasource
     implements AdminPayoutProofRemoteDatasource {
-  const SupabaseAdminPayoutProofRemoteDatasource();
+  final BackendApiClient? clientOverride;
+
+  const BackendAdminPayoutProofRemoteDatasource({this.clientOverride});
 
   @override
   Future<String> uploadSalePayoutProof({
@@ -28,17 +30,18 @@ class SupabaseAdminPayoutProofRemoteDatasource
       '_',
     );
     final path =
-        'sale-point-conversions/$safeConversion/${DateTime.now().millisecondsSinceEpoch}-$safeName';
-    await Supabase.instance.client.storage
-        .from('sale-payout-proofs')
-        .uploadBinary(
+        '/api/v1/files/sale-payout-proofs?conversion_id=${Uri.encodeQueryComponent(safeConversion)}';
+    final result = await (clientOverride ?? BackendApiClient.shared)
+        .uploadBytes(
           path,
-          bytes,
-          fileOptions: FileOptions(
-            contentType: contentType,
-            upsert: false,
-          ),
+          bytes: bytes,
+          fileName: safeName,
+          contentType: contentType,
         );
-    return path;
+    final id = result['id']?.toString().trim();
+    if (id == null || id.isEmpty) {
+      throw const FormatException('File upload response has no identifier.');
+    }
+    return id;
   }
 }

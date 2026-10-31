@@ -57,8 +57,8 @@ Commit de xuat: feat(auth-sync): hoan thien Auth V2 Admin va dong bo M05 an toan
 
 ## SQL và tài liệu
 
-- Rebuild local/sandbox: `docs/supabase/01_schema_rebuild_local_sandbox.sql`.
-- Nội dung migration được đồng bộ vào `docs/supabase/config.sql` để rebuild local/sandbox.
+- Rebuild local/sandbox: `docs/archive/legacy-supabase/sql/01_schema_rebuild_local_sandbox.sql`.
+- Nội dung migration được đồng bộ vào `docs/archive/legacy-supabase/sql/config.sql` để rebuild local/sandbox.
 - Không chạy `config.sql` trên remote/production.
 
 ## Giới hạn

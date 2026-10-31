@@ -370,7 +370,7 @@ class NabiEspServer {
       _sendJson(socket, {
         'type': 'alert',
         'status': 'error',
-        'message': 'Không xử lý được lượt nói bằng AI local.',
+        'message': 'Không xử lý được lượt nói qua máy chủ AI NanoBio.',
         'emotion': 'sad',
       });
     } finally {

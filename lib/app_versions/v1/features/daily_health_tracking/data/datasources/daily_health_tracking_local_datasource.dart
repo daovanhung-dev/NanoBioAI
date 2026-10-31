@@ -2,7 +2,7 @@ import 'package:nano_app/core/storage/localdb/daos/health_tracking_logs_dao.dart
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/models/health_tracking_log_model.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:nano_app/core/storage/localdb/sync/local_user_data_sync_dispatcher.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -172,7 +172,7 @@ class DailyHealthTrackingLocalDatasource {
   Future<DailyHealthProfileEntity> _fetchLatestProfile(Database db) async {
     AppLogger.database(_tag, 'Fetching latest user profile');
 
-    final authUserId = currentSupabaseUserIdOrNull();
+    final authUserId = currentBackendUserIdOrNull();
     final users = authUserId == null
         ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
         : await db.query(

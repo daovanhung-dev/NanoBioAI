@@ -3,11 +3,11 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal_replacement_entities.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/repositories/meal_plan_repository.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
+import 'package:nano_app/services/backend/cloud_sync/user_data_sync_outbox.dart';
 
-typedef MealReplacementSyncCallback = Future<MealReplacementSyncStatus>
-    Function();
+typedef MealReplacementSyncCallback =
+    Future<MealReplacementSyncStatus> Function();
 typedef MealPlanSubjectIdResolver = Future<String> Function();
 
 class MealPlanRepositoryImpl implements MealPlanRepository {
@@ -28,17 +28,12 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
 
   @override
   Future<List<MealPlanEntity>> getMealByWeeks() async {
-    return datasource.getMealEntitiesByWeeks(
-      userId: await _subjectIdOrNull(),
-    );
+    return datasource.getMealEntitiesByWeeks(userId: await _subjectIdOrNull());
   }
 
   @override
   Future<void> completeMealById(String id) async {
-    return datasource.completeMealById(
-      id,
-      userId: await _subjectIdOrNull(),
-    );
+    return datasource.completeMealById(id, userId: await _subjectIdOrNull());
   }
 
   @override
@@ -107,13 +102,14 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
 
   static Future<MealReplacementSyncStatus>
   _syncPendingUserDataAfterReplacement() async {
-    final userId = currentSupabaseUserIdOrNull();
+    final userId = currentBackendUserIdOrNull();
     if (userId == null || userId.trim().isEmpty) {
       return MealReplacementSyncStatus.localOnly;
     }
 
     await UserDataSyncOutbox.drainForCurrentUser();
-    final pending = await UserDataSyncOutbox.shared.pendingCountForCurrentUser();
+    final pending = await UserDataSyncOutbox.shared
+        .pendingCountForCurrentUser();
     return pending == 0
         ? MealReplacementSyncStatus.synced
         : MealReplacementSyncStatus.pending;

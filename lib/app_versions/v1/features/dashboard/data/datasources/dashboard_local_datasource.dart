@@ -4,7 +4,7 @@ import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/daos/meal_plan_dao.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_model.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../../domain/entities/dashboard_entity.dart';
 
@@ -45,7 +45,7 @@ class DashboardLocalDatasource {
     final db = await _db();
 
     final subjectUserId =
-        subjectAccess?.resolveSubjectId() ?? currentSupabaseUserIdOrNull();
+        subjectAccess?.resolveSubjectId() ?? currentBackendUserIdOrNull();
     final users = subjectUserId == null
         ? await db.query('users', orderBy: 'created_at DESC', limit: 1)
         : await db.query(

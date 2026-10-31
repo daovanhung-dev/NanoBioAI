@@ -4,7 +4,7 @@ import 'ai_text_client.dart';
 
 class AIConfigurationUnavailableException implements Exception {
   static const userMessage =
-      'Bạn cần tải một model trên thiết bị trước khi dùng AI.';
+      'Dịch vụ AI của NanoBio chưa được cấu hình. Bạn thử lại sau nhé.';
 
   const AIConfigurationUnavailableException();
 
@@ -12,11 +12,11 @@ class AIConfigurationUnavailableException implements Exception {
   String toString() => userMessage;
 }
 
-class AILocalInferenceTimeoutException implements Exception {
+class AIInferenceTimeoutException implements Exception {
   static const userMessage =
       'Nabi cần thêm thời gian để trả lời. Bạn thử gửi lại nhé.';
 
-  const AILocalInferenceTimeoutException();
+  const AIInferenceTimeoutException();
 
   @override
   String toString() => userMessage;
@@ -34,12 +34,13 @@ class AIResponseInvalidException implements Exception {
 
 class AIAuthenticationException implements Exception {
   static const userMessage =
-      'Nabi chưa thể khởi động dịch vụ lúc này. Bạn thử mở lại ứng dụng nhé.';
+      'Đăng nhập vào NanoBio để sử dụng các tính năng AI.';
 
   const AIAuthenticationException();
 
   static bool matches(Object error) {
-    return error is AiInferenceException && error.isAuthenticationFailure;
+    return error is AIAuthenticationException ||
+        error is AiInferenceException && error.isAuthenticationFailure;
   }
 
   @override
@@ -123,8 +124,15 @@ class AIOverloadedException implements Exception {
       return true;
     }
 
-    if (error is AiInferenceException && error.isTransient) {
-      return true;
+    if (error is AiInferenceException) {
+      final status = error.status?.trim().toLowerCase();
+      final code = error.backendErrorCode?.trim().toUpperCase();
+      return error.isTransient ||
+          error.statusCode == 408 ||
+          error.statusCode == 429 ||
+          status == 'rate_limit_exceeded' ||
+          status == 'resource_exhausted' ||
+          code == 'RATE_LIMITED';
     }
 
     final normalized = error.toString().toLowerCase();
@@ -169,7 +177,7 @@ class AIRateLimitedException implements Exception {
 
 class AIPlatformUnsupportedException implements Exception {
   static const userMessage =
-      'AI trên thiết bị chưa hỗ trợ bản web. Hãy dùng NanoBioAI trên Android, iOS hoặc máy tính để sử dụng tính năng này.';
+      'Dịch vụ AI của NanoBio chưa được bật trên nền tảng này. Bạn thử lại sau nhé.';
 
   const AIPlatformUnsupportedException();
 

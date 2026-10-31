@@ -2,7 +2,10 @@ abstract final class AiVoiceCopy {
   const AiVoiceCopy._();
 
   static const unavailable =
-      'Nabi chưa thể bật trò chuyện giọng nói lúc này. Bạn hãy thử lại hoặc nhập bằng bàn phím nhé.';
+      'Dịch vụ giọng nói của Nabi tạm thời chưa khả dụng. Bạn hãy thử lại hoặc nhập bằng bàn phím nhé.';
+
+  static const authenticationRequired =
+      'Đăng nhập vào NanoBio để trò chuyện với Nabi bằng giọng nói.';
 
   static const unsupportedPlatform =
       'Trò chuyện AI chưa hỗ trợ bản web. Hãy dùng NanoBioAI trên Android, iOS hoặc máy tính để tiếp tục.';

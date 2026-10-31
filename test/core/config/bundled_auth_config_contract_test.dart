@@ -14,16 +14,7 @@ void main() {
         .map((line) => line.split('=').first.trim())
         .toSet();
 
-    expect(
-      keys,
-      equals({
-        'SUPABASE_URL',
-        'SUPABASE_ANON_KEY',
-        'AUTH_EMAIL_REDIRECT_URL',
-        'AUTH_CONFIRM_EMAIL_REQUIRED',
-      }),
-    );
-    expect(keys, isNot(contains('SUPABASE_SERVICE_ROLE_KEY')));
+    expect(keys, equals({'API_BASE_URL'}));
     expect(keys, isNot(contains('GEMINI_API_KEY')));
   });
 }

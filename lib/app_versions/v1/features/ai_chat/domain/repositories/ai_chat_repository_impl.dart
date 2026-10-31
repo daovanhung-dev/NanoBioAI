@@ -1,4 +1,4 @@
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 
 import '../../../../services/ai/ai_chat_service.dart';
 import '../../../../services/ai/ai_exceptions.dart';
@@ -173,7 +173,7 @@ class AIChatRepositoryImpl
 
   Never _throwKnownOrUnavailable(Object error, StackTrace stackTrace) {
     if (error is AIConfigurationUnavailableException ||
-        error is AILocalInferenceTimeoutException ||
+        error is AIInferenceTimeoutException ||
         error is AIAuthenticationException ||
         error is AINetworkException ||
         error is AIModelUnavailableException ||

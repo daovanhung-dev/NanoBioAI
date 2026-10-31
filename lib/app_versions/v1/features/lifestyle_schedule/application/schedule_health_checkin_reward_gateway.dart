@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 import '../domain/entities/daily_health_snapshot_entity.dart';
 import '../domain/entities/lifestyle_schedule_item_entity.dart';
@@ -31,24 +31,17 @@ abstract class ScheduleHealthCheckInRewardGateway {
   });
 }
 
-class SupabaseScheduleHealthCheckInRewardGateway
+class BackendScheduleHealthCheckInRewardGateway
     implements ScheduleHealthCheckInRewardGateway {
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
-  const SupabaseScheduleHealthCheckInRewardGateway({this.clientOverride});
+  const BackendScheduleHealthCheckInRewardGateway({this.clientOverride});
 
-  SupabaseClient? get _clientOrNull {
-    if (clientOverride != null) return clientOverride;
-    try {
-      return Supabase.instance.client;
-    } catch (_) {
-      return null;
-    }
-  }
+  BackendApiClient get _client => clientOverride ?? BackendApiClient.shared;
 
   @override
   bool get hasAuthenticatedUser =>
-      _clientOrNull?.auth.currentUser?.id.trim().isNotEmpty == true;
+      _client.currentUserId?.trim().isNotEmpty == true;
 
   @override
   Future<ScheduleHealthCheckInRewardResult> finalizeCheckIn({
@@ -57,16 +50,25 @@ class SupabaseScheduleHealthCheckInRewardGateway
     required DailyHealthCheckInInput input,
     required String idempotencyKey,
   }) async {
-    final response = await _rpc(
-      'finalize_my_schedule_health_checkin',
-      params: {
-        'p_item': _itemPayload(item),
-        'p_action_type': actionType.stableCode,
-        'p_checkin': input.toRewardPayload(),
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    return _result(response);
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/health-checkins',
+        body: {
+          'item': _itemPayload(item),
+          'action_type': actionType.stableCode,
+          'checkin': input.toRewardPayload(),
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      return _result(row);
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } on ScheduleRewardException {
+      rethrow;
+    } catch (_) {
+      throw ScheduleRewardException.network();
+    }
   }
 
   @override
@@ -74,33 +76,41 @@ class SupabaseScheduleHealthCheckInRewardGateway
     required String scheduleItemId,
     required String idempotencyKey,
   }) async {
-    final response = await _rpc(
-      'undo_my_schedule_health_checkin',
-      params: {
-        'p_schedule_item_id': scheduleItemId,
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    return _result(response);
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/health-checkins/undo',
+        body: {
+          'schedule_item_id': scheduleItemId,
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      return _result(row);
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } on ScheduleRewardException {
+      rethrow;
+    } catch (_) {
+      throw ScheduleRewardException.network();
+    }
   }
 
   Map<String, Object?> _itemPayload(LifestyleScheduleItemEntity item) => {
-        'schedule_item_id': item.id,
-        'schedule_date': item.scheduleDate,
-        'start_time': item.startTime,
-        'end_time': item.endTime,
-        'title': item.title,
-        'description': item.description,
-        'category': item.category,
-        'source_type': item.sourceType,
-        'source_id': item.sourceId,
-        'target_value': item.targetValue,
-        'unit': item.unit,
-        'ai_generated': item.aiGenerated,
-      };
+    'schedule_item_id': item.id,
+    'schedule_date': item.scheduleDate,
+    'start_time': item.startTime,
+    'end_time': item.endTime,
+    'title': item.title,
+    'description': item.description,
+    'category': item.category,
+    'source_type': item.sourceType,
+    'source_id': item.sourceId,
+    'target_value': item.targetValue,
+    'unit': item.unit,
+    'ai_generated': item.aiGenerated,
+  };
 
-  ScheduleHealthCheckInRewardResult _result(Object? response) {
-    final row = _firstMap(response);
+  ScheduleHealthCheckInRewardResult _result(Map<String, Object?> row) {
     final errorCode = _readString(row['error_code']);
     if (errorCode.isNotEmpty || row['success'] == false) {
       throw ScheduleRewardException.fromStableCode(errorCode);
@@ -111,89 +121,27 @@ class SupabaseScheduleHealthCheckInRewardGateway
     );
   }
 
-  Future<Object?> _rpc(
-    String functionName, {
-    required Map<String, Object?> params,
-  }) async {
-    try {
-      return await _requireClient().rpc(functionName, params: params);
-    } on PostgrestException catch (error) {
-      throw _safeError(error);
-    } on AuthException {
-      throw ScheduleRewardException.fromStableCode('auth_required');
-    } on ScheduleRewardException {
-      rethrow;
-    } catch (_) {
-      throw ScheduleRewardException.network();
-    }
-  }
-
-  SupabaseClient _requireClient() {
-    final client = _clientOrNull;
-    if (client == null || client.auth.currentUser == null) {
-      throw ScheduleRewardException.fromStableCode('auth_required');
-    }
-    return client;
-  }
-
-  ScheduleRewardException _safeError(PostgrestException error) {
-    final stableText = [
-      error.message,
-      error.code ?? '',
-      error.details?.toString() ?? '',
-      error.hint?.toString() ?? '',
-    ].join(' ').toLowerCase();
-    if (stableText.contains('eligibility_not_found')) {
+  ScheduleRewardException _safeError(BackendApiException error) {
+    final code = error.businessCode.toLowerCase();
+    if (code.contains('eligibility_not_found')) {
       return const ScheduleRewardException(
         ScheduleRewardErrorCode.networkUnavailable,
         'Điểm chăm sóc đang chờ xác nhận. Nabi sẽ tự thử lại khi dữ liệu lịch được đồng bộ.',
         canContinueWithoutReward: true,
       );
     }
-    if (stableText.contains('manual_reward_daily_limit')) {
+    if (code.contains('manual_reward_daily_limit')) {
       return const ScheduleRewardException(
         ScheduleRewardErrorCode.eligibilityUnavailable,
         'Bạn vẫn hoàn thành nhiệm vụ, nhưng hôm nay đã đạt giới hạn Điểm chăm sóc cho nhiệm vụ tự tạo.',
         canContinueWithoutReward: true,
       );
     }
-    if (stableText.contains('health_action_not_rewardable') ||
-        stableText.contains('health_action_mismatch') ||
-        stableText.contains('manual_health_task_invalid') ||
-        stableText.contains('health_checkin_invalid') ||
-        stableText.contains('photo_proof_required') ||
-        stableText.contains('health_checkin_not_found') ||
-        stableText.contains('eligibility_reward_already_awarded') ||
-        stableText.contains('idempotency_conflict')) {
-      return const ScheduleRewardException(
-        ScheduleRewardErrorCode.eligibilityUnavailable,
-        'Nhiệm vụ đã được lưu nhưng lần ghi nhận này chưa đủ điều kiện nhận Điểm chăm sóc.',
-        canContinueWithoutReward: true,
-      );
-    }
-    final candidates = <String>[
-      error.message,
-      error.code ?? '',
-      error.details?.toString() ?? '',
-      error.hint?.toString() ?? '',
-    ];
-    for (final candidate in candidates) {
-      final mapped = ScheduleRewardException.fromStableCode(candidate);
-      if (mapped.code != ScheduleRewardErrorCode.unknown) return mapped;
-    }
-    return ScheduleRewardException.network();
+    final mapped = ScheduleRewardException.fromStableCode(code);
+    return mapped.code == ScheduleRewardErrorCode.unknown
+        ? ScheduleRewardException.network()
+        : mapped;
   }
-}
-
-Map<String, Object?> _firstMap(Object? response) {
-  if (response is Map) {
-    return response.map((key, value) => MapEntry(key.toString(), value));
-  }
-  if (response is List && response.isNotEmpty && response.first is Map) {
-    final source = response.first as Map;
-    return source.map((key, value) => MapEntry(key.toString(), value));
-  }
-  return const {};
 }
 
 String _readString(Object? value, {String fallback = ''}) {

@@ -6,23 +6,23 @@ enum AuthBackendAvailability {
   bool get isReady => this == AuthBackendAvailability.ready;
 }
 
-typedef AuthBackendInitializer =
-    Future<void> Function(String url, String anonKey);
+typedef AuthBackendInitializer = Future<void> Function(String baseUrl);
 
 typedef AuthBackendInitializationErrorHandler =
     void Function(Object error, StackTrace stackTrace);
 
 Future<AuthBackendAvailability> initializeAuthBackendAvailability({
-  required ({String url, String anonKey})? config,
+  required String? baseUrl,
   required AuthBackendInitializer initialize,
   AuthBackendInitializationErrorHandler? onInitializationError,
 }) async {
-  if (config == null) {
+  final normalizedBaseUrl = baseUrl?.trim();
+  if (normalizedBaseUrl == null || normalizedBaseUrl.isEmpty) {
     return AuthBackendAvailability.missingConfiguration;
   }
 
   try {
-    await initialize(config.url, config.anonKey);
+    await initialize(normalizedBaseUrl);
     return AuthBackendAvailability.ready;
   } catch (error, stackTrace) {
     onInitializationError?.call(error, stackTrace);

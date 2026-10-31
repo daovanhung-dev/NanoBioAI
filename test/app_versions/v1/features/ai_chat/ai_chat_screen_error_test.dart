@@ -10,7 +10,7 @@ import 'package:nano_app/app_versions/v1/features/ai_chat/providers/ai_chat_prov
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -74,10 +74,7 @@ void main() {
     await _waitForChatSendToFinish(tester);
     await tester.pump();
 
-    expect(
-      find.text(AILocalInferenceTimeoutException.userMessage),
-      findsOneWidget,
-    );
+    expect(find.text(AIInferenceTimeoutException.userMessage), findsOneWidget);
     expect(find.text('Thử lại'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
@@ -104,10 +101,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(AIOverloadedException.userMessage), findsOneWidget);
-    expect(
-      find.text(AILocalInferenceTimeoutException.userMessage),
-      findsNothing,
-    );
+    expect(find.text(AIInferenceTimeoutException.userMessage), findsNothing);
     expect(find.text('Thử lại'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
   });
@@ -247,7 +241,7 @@ class _LocalInferenceTimeoutRepository implements AIChatRepository {
 
   @override
   Future<ChatMessageEntity> sendMessage(String message) {
-    throw const AILocalInferenceTimeoutException();
+    throw const AIInferenceTimeoutException();
   }
 }
 

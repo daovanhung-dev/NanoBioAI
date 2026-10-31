@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../../data/services/nabi_esp_assistant_runtime.dart';
 
@@ -246,7 +249,7 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
           FilledButton.icon(
             key: const Key('nabi-esp-connect-button'),
             onPressed: canStart && kDebugMode && !_runtime.isBusy
-                ? _runtime.start
+                ? _startAssistant
                 : null,
             icon: _runtime.isBusy
                 ? const SizedBox(
@@ -308,6 +311,14 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     );
   }
 
+  Future<void> _startAssistant() async {
+    if (currentBackendUserIdOrNull() == null) {
+      await context.push(AuthRoutePaths.login);
+      return;
+    }
+    await _runtime.start();
+  }
+
   Widget _setupNotes(BuildContext context) => Container(
     padding: const EdgeInsets.all(AppSpacing.md),
     decoration: BoxDecoration(
@@ -321,7 +332,8 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
         Text('Cần chuẩn bị ESP lần đầu', style: AppTextStyles.labelLarge),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Kết nối Nabi sẽ nạp model đang chọn, tải Whisper nếu chưa có, rồi mở hotspot và server trên điện thoại. '
+          'Kết nối Nabi có thể tải Whisper tiếng Việt để nhận dạng lời nói trên điện thoại, rồi mở hotspot và dịch vụ kết nối cho ESP. '
+          'Câu trả lời AI được tạo trên máy chủ NanoBio qua HTTPS nên cần Internet và đăng nhập; lời nói được nhận dạng trên điện thoại. '
           'Bật ESP để Nabi tìm thiết bị qua Bluetooth. Lần đầu, nhập mã 8 chữ số hiển thị trên màn hình ESP; '
           'Nabi sẽ lưu khóa ghép an toàn và tự gửi thông tin hotspot mới ở những lần sau.',
           style: AppTextStyles.bodySmall.copyWith(
@@ -443,27 +455,27 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
 
   String _statusDescription(NabiEspAssistantStatus status) => switch (status) {
     NabiEspAssistantStatus.idle =>
-      'AI hội thoại chạy trên Nabi; ESP gửi Opus qua mạng nội bộ.',
+      'ESP gửi âm thanh qua mạng nội bộ; câu trả lời AI được tạo trên máy chủ NanoBio.',
     NabiEspAssistantStatus.preparingAi =>
-      'Đang kiểm tra GGUF, Whisper tiếng Việt và giọng TTS ngoại tuyến.',
+      'Đang chuẩn bị nhận dạng tiếng Việt, kết nối máy chủ AI và giọng TTS ngoại tuyến.',
     NabiEspAssistantStatus.startingHotspot =>
       'Android đang tạo mạng LAN-only và giữ dịch vụ nền.',
     NabiEspAssistantStatus.selectingHost =>
       'Điện thoại có nhiều địa chỉ mạng phù hợp; chọn địa chỉ của hotspot.',
     NabiEspAssistantStatus.startingServer =>
-      'Đang mở dịch vụ AI Nabi theo giao thức WebSocket v3.',
+      'Đang mở dịch vụ kết nối Nabi theo giao thức WebSocket v3.',
     NabiEspAssistantStatus.scanningEsp =>
-      'Hotspot và AI local sẵn sàng; đang quét thiết bị OSTB 3ST qua Bluetooth.',
+      'Kết nối thoại cục bộ sẵn sàng; đang quét thiết bị OSTB 3ST qua Bluetooth. Cần Internet và đăng nhập để nhận câu trả lời AI.',
     NabiEspAssistantStatus.pairingRequired =>
       'Nhập mã ghép đôi đang hiển thị trên ESP. Khóa sẽ được lưu để tự ghép lần sau.',
     NabiEspAssistantStatus.provisioningEsp =>
       'Đang gửi thông tin hotspot qua phiên BLE được mã hóa.',
     NabiEspAssistantStatus.waitingForEsp =>
-      'Dịch vụ AI trên điện thoại sẵn sàng. Bật ESP hoặc chọn tìm lại để kết nối.',
+      'Kết nối điện thoại sẵn sàng. Bật ESP hoặc chọn tìm lại; cần Internet và đăng nhập để dùng AI.',
     NabiEspAssistantStatus.connected => 'ESP đã bắt tay với server Nabi.',
     NabiEspAssistantStatus.listening => 'ESP đang gửi âm thanh để nhận dạng.',
     NabiEspAssistantStatus.processing =>
-      'Whisper và model Nabi đang xử lý lượt nói.',
+      'Whisper nhận dạng lời nói trên điện thoại; máy chủ NanoBio tạo câu trả lời.',
     NabiEspAssistantStatus.speaking => 'Nabi đang gửi âm thanh trả lời về ESP.',
     NabiEspAssistantStatus.stopping => 'Đang đóng socket, server và hotspot.',
     NabiEspAssistantStatus.error => 'Không thể hoàn tất bước kết nối vừa rồi.',

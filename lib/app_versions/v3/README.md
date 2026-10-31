@@ -11,7 +11,7 @@ hoặc toàn bộ là “placeholder”.
 - `home`: `Placeholder`; route `/v3` hiển thị catalog “Sắp có”.
 - `advanced_tracking` (M10): `Partial`; có paid access gate, SQLite repository,
   hydration roadmap, provider và route `/v3/advanced-tracking`.
-- `familyplus` (M11): `Partial`; có trusted entitlement, Supabase repository,
+- `familyplus` (M11): `Partial`; có trusted entitlement, backend repository,
   group/member context UI và route `/v3/familyplus`.
 - `premium_ai`, `goal_roadmap`, `advanced_health_tracking`,
   `family_onboarding`, `family_members`, `family_schedule`: `Source-only`
@@ -29,5 +29,5 @@ catalog dưới `lib/shared/health_features/` với access UI ở V2.
 - Không import lower-version presentation/controller chỉ để tái sử dụng logic.
 - Route tồn tại không tự chứng minh paid access hoặc capability hoàn chỉnh.
 
-Verification: static source only; Flutter/device/Supabase sandbox là
+Verification: static source only; Flutter/device/backend runtime là
 `UNVERIFIED` nếu không có command evidence riêng.

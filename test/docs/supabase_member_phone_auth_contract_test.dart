@@ -7,15 +7,15 @@ void main() {
     'member login phone remains Auth-owned across profile and snapshots',
     () {
       final canonical = File(
-        'docs/supabase/01_build_system.sql',
+        'docs/archive/legacy-supabase/sql/01_build_system.sql',
       ).readAsStringSync();
       final migration = File(
-        'supabase/migrations/20261014090000_member_phone_auth_security.sql',
+        'docs/archive/legacy-supabase/project/migrations/20261014090000_member_phone_auth_security.sql',
       ).readAsStringSync();
       final loginMigration = File(
-        'supabase/migrations/20261014110000_member_phone_login_alias.sql',
+        'docs/archive/legacy-supabase/project/migrations/20261014110000_member_phone_login_alias.sql',
       ).readAsStringSync();
-      final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      final seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
       expect(
         canonical,
         isNot(contains("phone = coalesce(nullif(v_user ->> 'phone'")),

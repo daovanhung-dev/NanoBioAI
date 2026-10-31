@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 import '../application/load_wellness_rewards.dart';
 import '../application/redeem_wellness_reward.dart';
@@ -7,13 +7,13 @@ import '../data/datasources/wellness_rewards_remote_datasource.dart';
 import '../data/datasources/wellness_rewards_local_datasource.dart';
 import '../data/datasources/wellness_rewards_connectivity_gateway.dart';
 import '../data/datasources/wellness_voucher_secure_store.dart';
-import '../data/repositories/supabase_wellness_rewards_repository.dart';
+import '../data/repositories/backend_wellness_rewards_repository.dart';
 import '../domain/entities/wellness_reward_models.dart';
 import '../domain/repositories/wellness_rewards_repository.dart';
 
 final wellnessRewardsRemoteDatasourceProvider =
     Provider<WellnessRewardsRemoteDatasource>((ref) {
-      return const SupabaseWellnessRewardsRemoteDatasource();
+      return const BackendWellnessRewardsRemoteDatasource();
     });
 
 final wellnessVoucherSecureStoreProvider = Provider<WellnessVoucherSecureStore>(
@@ -34,14 +34,14 @@ final wellnessRewardsNetworkAvailableProvider = StreamProvider<bool>((ref) {
   return ref.watch(wellnessRewardsConnectivityGatewayProvider).networkAvailable;
 });
 
-final wellnessRewardsUserIdProvider = Provider<String?>((ref) {
-  return Supabase.instance.client.auth.currentUser?.id;
-});
+final wellnessRewardsUserIdProvider = Provider<String?>(
+  (ref) => BackendApiClient.shared.currentUserId,
+);
 
 final wellnessRewardsRepositoryProvider = Provider<WellnessRewardsRepository>((
   ref,
 ) {
-  return SupabaseWellnessRewardsRepository(
+  return BackendWellnessRewardsRepository(
     remoteDatasource: ref.watch(wellnessRewardsRemoteDatasourceProvider),
     localDatasource: ref.watch(wellnessRewardsLocalDatasourceProvider),
     currentUserId: () => ref.read(wellnessRewardsUserIdProvider),

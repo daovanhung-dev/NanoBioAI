@@ -9,10 +9,7 @@ class AppEnv {
 
   static const String _bundledAuthConfigAsset = 'assets/config/auth.env';
   static const Set<String> _publicAuthKeys = {
-    'SUPABASE_URL',
-    'SUPABASE_ANON_KEY',
-    'AUTH_EMAIL_REDIRECT_URL',
-    'AUTH_CONFIRM_EMAIL_REQUIRED',
+    'API_BASE_URL',
     'PRIVACY_POLICY_URL',
     'ACCOUNT_DELETION_URL',
   };
@@ -65,15 +62,6 @@ class AppEnv {
 
   static String? maybeStringWithLegacy(String key, String legacyKey) {
     return maybeString(key) ?? maybeString(legacyKey);
-  }
-
-  static ({String url, String anonKey})? maybeSupabaseConfig() {
-    final url = maybeString('SUPABASE_URL');
-    final anonKey = maybeString('SUPABASE_ANON_KEY');
-
-    if (url == null || anonKey == null) return null;
-
-    return (url: url, anonKey: anonKey);
   }
 
   static bool boolValue(String key, {required bool defaultValue}) {
@@ -145,18 +133,8 @@ class AppEnv {
 
   static String? _fromDartDefine(String key) {
     return switch (key) {
-      'SUPABASE_URL' => const String.fromEnvironment('SUPABASE_URL'),
-      'SUPABASE_ANON_KEY' => const String.fromEnvironment('SUPABASE_ANON_KEY'),
+      'API_BASE_URL' => const String.fromEnvironment('API_BASE_URL'),
       'OPENAI_BASE_URL' => const String.fromEnvironment('OPENAI_BASE_URL'),
-      'AUTH_DELETE_ACCOUNT_FUNCTION' => const String.fromEnvironment(
-        'AUTH_DELETE_ACCOUNT_FUNCTION',
-      ),
-      'AUTH_CONFIRM_EMAIL_REQUIRED' => const String.fromEnvironment(
-        'AUTH_CONFIRM_EMAIL_REQUIRED',
-      ),
-      'AUTH_EMAIL_REDIRECT_URL' => const String.fromEnvironment(
-        'AUTH_EMAIL_REDIRECT_URL',
-      ),
       'PRIVACY_POLICY_URL' => const String.fromEnvironment(
         'PRIVACY_POLICY_URL',
       ),

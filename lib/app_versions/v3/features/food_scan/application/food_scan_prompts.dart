@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'dart:convert';
-
 import '../domain/entities/food_scan_models.dart';
 
 class FoodScanPrompts {

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
-import 'package:nano_app/services/supabase/sale/sale_participation_service.dart';
-import 'package:nano_app/services/supabase/sale/sale_terms.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
+import 'package:nano_app/services/backend/sale/sale_participation_service.dart';
+import 'package:nano_app/services/backend/sale/sale_terms.dart';
 
 /// Bản sao nội dung hiển thị dành riêng cho giao diện.
 /// Giữ nguyên SaleTerms ở tầng dịch vụ để không tác động điều khoản/version nghiệp vụ.
@@ -35,7 +35,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
   @override
   Widget build(BuildContext context) {
     final saleState = ref.watch(saleStateProvider);
-    final authenticated = currentSupabaseUserIdOrNull() != null;
+    final authenticated = currentBackendUserIdOrNull() != null;
     final colors = context.semanticColors;
 
     return MedicalPageScaffold(
@@ -56,9 +56,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
             error: (_, __) => _SaleStateLoadError(
               key: const ValueKey<String>('sale-participation-error'),
               onRetry: () {
-                AppFeedbackService.instance.emit(
-                  AppFeedbackType.primaryAction,
-                );
+                AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(saleStateProvider);
               },
             ),
@@ -83,7 +81,7 @@ class _SaleParticipationPageState extends ConsumerState<SaleParticipationPage> {
   }
 
   Future<void> _submit() async {
-    final authenticated = currentSupabaseUserIdOrNull() != null;
+    final authenticated = currentBackendUserIdOrNull() != null;
     if (!authenticated) {
       if (!mounted) return;
       context.push(V2RoutePaths.login);
@@ -150,11 +148,7 @@ class _SaleStateLoadError extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.cloud_off_rounded,
-                  size: 48,
-                  color: colors.warning,
-                ),
+                Icon(Icons.cloud_off_rounded, size: 48, color: colors.warning),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   'Chưa kiểm tra được trạng thái cộng tác viên',

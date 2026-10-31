@@ -313,31 +313,27 @@ function Get-RegressionSha256Text {
   }
 }
 
-function Assert-RegressionSandboxProject {
+function Assert-RegressionBackendEndpoint {
   param(
     [Parameter(Mandatory = $true)][string]$EnvFile,
-    [Parameter(Mandatory = $true)][string]$ExpectedProjectRef
+    [Parameter(Mandatory = $true)][string]$ExpectedBackendHost
   )
 
-  if ($ExpectedProjectRef -notmatch '^[a-z0-9]{8,32}$') {
-    throw "Expected sandbox project ref has an invalid format."
+  if ($ExpectedBackendHost -notmatch '^[A-Za-z0-9.-]{1,253}$') {
+    throw "Expected backend host has an invalid format."
   }
   $settings = Read-RegressionDotEnv -Path $EnvFile
-  if (-not $settings.ContainsKey('SUPABASE_URL')) {
-    throw "SUPABASE_URL is missing."
+  if (-not $settings.ContainsKey('API_BASE_URL')) {
+    throw "API_BASE_URL is missing."
   }
   $uri = $null
-  if (-not [System.Uri]::TryCreate($settings['SUPABASE_URL'], [System.UriKind]::Absolute, [ref]$uri)) {
-    throw "SUPABASE_URL is invalid."
+  if (-not [System.Uri]::TryCreate($settings['API_BASE_URL'], [System.UriKind]::Absolute, [ref]$uri)) {
+    throw "API_BASE_URL is invalid."
   }
-  if ($uri.Scheme -ne 'https' -or $uri.Host -notmatch '^([a-z0-9]+)\.supabase\.co$') {
-    throw "Only a hosted HTTPS Supabase sandbox endpoint is accepted."
+  if ($uri.Scheme -ne 'https' -or -not $uri.Host.Equals($ExpectedBackendHost, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "The configured HTTPS backend does not match the expected host."
   }
-  $actualProjectRef = $Matches[1]
-  if (-not $actualProjectRef.Equals($ExpectedProjectRef, [System.StringComparison]::Ordinal)) {
-    throw "Supabase endpoint does not match the confirmed sandbox project ref."
-  }
-  return (Get-RegressionSha256Text -Value $actualProjectRef).Substring(0, 12)
+  return (Get-RegressionSha256Text -Value $uri.Host.ToLowerInvariant()).Substring(0, 12)
 }
 
 function Assert-RegressionDeviceOnline {

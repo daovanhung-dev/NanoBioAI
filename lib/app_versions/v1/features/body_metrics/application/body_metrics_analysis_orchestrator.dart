@@ -64,8 +64,11 @@ class BodyMetricsAnalysisOrchestrator {
       } on AiInferenceException catch (error) {
         result = BodyMetricsAiStageResult.failed(
           stageId,
-          error.status == 'unsupported_platform'
+          error.isAuthenticationFailure ||
+                  error.status == 'unsupported_platform'
               ? error.message
+              : error.isNetworkFailure || error.isTransient
+              ? 'Dịch vụ AI tạm thời chưa khả dụng. Hãy kiểm tra mạng rồi thử lại.'
               : 'Stage không đạt kiểm tra an toàn hoặc tạm thời không khả dụng.',
         );
       } catch (_) {

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 import '../domain/entities/basic_health_calculator_models.dart';
 import '../domain/entities/body_metrics_personal_context.dart';
@@ -20,7 +20,7 @@ class BodyMetricsAiService {
     if (textGenerator != null) {
       return textGenerator!(prompt).timeout(const Duration(seconds: 20));
     }
-    return _generateLocally(prompt).timeout(const Duration(seconds: 25));
+    return _generateWithBackend(prompt).timeout(const Duration(seconds: 25));
   }
 
   /// Compatibility path for the legacy M04 page/tests. New code uses the
@@ -55,16 +55,18 @@ Trả JSON: {"current_status":"...","after_thirty_days":"...","confidence":"thap
     try {
       final raw = await generateStage(prompt);
       return _parseLegacy(raw);
+    } on AiInferenceException catch (error) {
+      return BodyMetricsAiInsight.unavailable(currentStatus: error.message);
     } catch (_) {
       return const BodyMetricsAiInsight.unavailable();
     }
   }
 
-  Future<String> _generateLocally(String prompt) async {
-    const client = LocalAiTextClient(operation: 'body_metrics');
+  Future<String> _generateWithBackend(String prompt) async {
+    const client = BackendAiTextClient();
     return client
         .generateText(
-          model: LocalAiTextClient.modelId,
+          model: BackendAiTextClient.modelId,
           messages: [AiMessage.user(prompt)],
           systemInstruction:
               'Bạn là Nabi, trợ lý wellness. Chỉ dùng dữ liệu được cung cấp; không chẩn đoán, không kê thuốc, không đổi điều trị, không phát minh số.',

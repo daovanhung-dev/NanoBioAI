@@ -1,19 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
-import 'package:nano_app/core/ai_local/local_ai_runtime_service.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../application/food_scan_service.dart';
+import '../data/datasources/food_scan_ai_datasource.dart';
 import '../data/services/food_scan_image_service.dart';
 import '../domain/entities/food_scan_models.dart';
 import '../domain/food_scan_exception.dart';
 
 final foodScanAccessProvider = FutureProvider<FoodScanAccess>((ref) async {
-  final userId = currentSupabaseUserIdOrNull();
+  final userId = currentBackendUserIdOrNull();
   if (userId == null || userId.trim().isEmpty) {
     return const FoodScanAccess(
       userId: null,
@@ -22,8 +23,6 @@ final foodScanAccessProvider = FutureProvider<FoodScanAccess>((ref) async {
   }
   final access = await ref.watch(effectiveAccessProvider.future);
   // Food Scan is a paid capability for both individual Plus and FamilyPlus.
-  // Food Scan remains a paid capability for both individual Plus and
-  // FamilyPlus accounts even though image inference now runs locally.
   if (access == null || !access.hasPaidAccess) {
     return FoodScanAccess(
       userId: userId,
@@ -34,20 +33,17 @@ final foodScanAccessProvider = FutureProvider<FoodScanAccess>((ref) async {
 });
 
 final foodScanServiceProvider = Provider<FoodScanService>((ref) {
-  return FoodScanService();
+  return FoodScanService(
+    aiDatasource: const FoodScanAiDatasource(
+      clientOverride: BackendAiTextClient(),
+      modelOverride: BackendAiTextClient.modelId,
+    ),
+  );
 });
 
 final foodScanImageServiceProvider = Provider<FoodScanImageService>((ref) {
   return FoodScanImageService();
 });
-
-typedef FoodScanRunWithModelUnloaded =
-    Future<T> Function<T>(Future<T> Function() action);
-
-final foodScanWithLocalModelUnloadedProvider =
-    Provider<FoodScanRunWithModelUnloaded>((ref) {
-      return LocalAiRuntimeService.instance.withModelUnloaded;
-    });
 
 final foodScanConsentProvider = FutureProvider.family<bool, String>((
   ref,
@@ -143,13 +139,9 @@ class FoodScanController extends Notifier<FoodScanState> {
       errorMessage: null,
     );
     try {
-      // Keep the model unloaded and prevent queued AI work from reloading it
-      // while the system picker is foregrounded on low-memory devices.
-      final prepared = await ref.read(foodScanWithLocalModelUnloadedProvider)(
-        () => camera
-            ? _images.pickCamera(userId: userId)
-            : _images.pickGallery(userId: userId),
-      );
+      final prepared = camera
+          ? await _images.pickCamera(userId: userId)
+          : await _images.pickGallery(userId: userId);
       if (prepared == null) {
         state = state.copyWith(phase: FoodScanPhase.idle);
         return;

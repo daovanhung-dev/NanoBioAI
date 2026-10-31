@@ -4,7 +4,7 @@ import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai
 import 'package:nano_app/app_versions/v1/features/ai_chat/domain/repositories/ai_chat_repository_impl.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 
 void main() {
   group('AIChatRepository quota gate', () {
@@ -105,7 +105,7 @@ void main() {
       'preserves timeout, model, runtime, and invalid-response failures without an answer',
       () async {
         for (final failure in <Object>[
-          const AILocalInferenceTimeoutException(),
+          const AIInferenceTimeoutException(),
           const AIModelUnavailableException(),
           const AIOverloadedException(),
           const AIResponseInvalidException(),

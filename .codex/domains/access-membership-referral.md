@@ -9,8 +9,9 @@
 - `lib/app_versions/v2/features/health_scoring/`
 - `lib/app_versions/v3/`
 - `lib/sale_referral/`
-- `lib/services/supabase/`
-- `docs/supabase/`
+- `lib/services/backend/`
+- `lib/core/network/backend_api_client.dart`
+- `docs/archive/legacy-supabase/sql/`
 
 ## Access Map
 
@@ -27,7 +28,7 @@ presence alone does not prove paid access or feature completeness.
 
 ## Rules
 
-- Membership tier, sale status, referral tree, payment success, commission, and quota counters must come from Supabase/trusted backend.
+- Membership tier, sale status, referral tree, payment success, commission, and quota counters must come from the trusted backend.
 - Do not trust route params, local SQLite, SharedPreferences, hidden UI state, or client metadata for paid/sale access.
 - Flutter must not contain service-role keys or hard-coded payment success.
 - User-facing copy must not say `tier`, `entitlement`, `gate`, `commission tree`, `database`, or `webhook`.

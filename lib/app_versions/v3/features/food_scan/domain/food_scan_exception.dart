@@ -10,24 +10,24 @@ class FoodScanException implements Exception {
   });
 
   const FoodScanException.authRequired()
-      : this(
-          code: 'AUTH_REQUIRED',
-          userMessage: 'Bạn cần đăng nhập để sử dụng quét món ăn.',
-        );
+    : this(
+        code: 'AUTH_REQUIRED',
+        userMessage: 'Bạn cần đăng nhập để sử dụng quét món ăn.',
+      );
 
   const FoodScanException.plusRequired()
-      : this(
-          code: 'PLUS_REQUIRED',
-          userMessage:
-              'Quét món ăn là quyền lợi dành riêng cho gói Plus hoặc FamilyPlus.',
-        );
+    : this(
+        code: 'PLUS_REQUIRED',
+        userMessage:
+            'Quét món ăn là quyền lợi dành riêng cho gói Plus hoặc FamilyPlus.',
+      );
 
   const FoodScanException.notFood()
-      : this(
-          code: 'NOT_FOOD',
-          userMessage:
-              'Nabi chưa nhận thấy món ăn trong ảnh. Bạn thử chụp rõ toàn bộ phần ăn nhé.',
-        );
+    : this(
+        code: 'NOT_FOOD',
+        userMessage:
+            'Nabi chưa nhận thấy món ăn trong ảnh. Bạn thử chụp rõ toàn bộ phần ăn nhé.',
+      );
 
   @override
   String toString() => 'FoodScanException($code): $userMessage';

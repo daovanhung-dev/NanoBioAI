@@ -271,6 +271,8 @@ class AiVoiceController extends Notifier<AiVoiceState> {
       VoiceChatFailure.invalidResponse => AiVoiceCopy.invalidResponse,
       VoiceChatFailure.invalidRequest => AiVoiceCopy.temporarilyUnavailable,
       VoiceChatFailure.unavailable => AiVoiceCopy.unavailable,
+      VoiceChatFailure.authenticationRequired =>
+        AiVoiceCopy.authenticationRequired,
       VoiceChatFailure.unsupportedPlatform => AiVoiceCopy.unsupportedPlatform,
     };
   }

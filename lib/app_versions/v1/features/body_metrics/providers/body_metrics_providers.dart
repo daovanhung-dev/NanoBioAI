@@ -4,7 +4,7 @@ import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/access/product_access_level.dart';
 import 'package:nano_app/services/access/product_access_reader.dart';
 import 'package:nano_app/services/access/trusted_product_access_reader.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../application/body_metrics_ai_service.dart';
 import '../application/body_metrics_analysis_orchestrator.dart';
@@ -23,9 +23,11 @@ final bodyMetricsLocalDatasourceProvider = Provider<BodyMetricsLocalDatasource>(
   (ref) => BodyMetricsLocalDatasource(),
 );
 
-final bodyMetricsSubjectResolverProvider = Provider<LocalSubjectResolver>((ref) {
+final bodyMetricsSubjectResolverProvider = Provider<LocalSubjectResolver>((
+  ref,
+) {
   return LocalSubjectResolver(
-    currentActorId: currentSupabaseUserIdOrNull,
+    currentActorId: currentBackendUserIdOrNull,
     pendingGuestUserId: AppPrefs.pendingGuestUserId,
   );
 });
@@ -40,8 +42,8 @@ final bodyMetricsRepositoryProvider = Provider<BodyMetricsRepository>((ref) {
 
 final bodyMetricsPersonalContextProvider =
     FutureProvider<BodyMetricsPersonalContext?>((ref) {
-  return ref.watch(bodyMetricsRepositoryProvider).loadPersonalContext();
-});
+      return ref.watch(bodyMetricsRepositoryProvider).loadPersonalContext();
+    });
 
 final bodyMetricsAiServiceProvider = Provider<BodyMetricsAiService>(
   (ref) => const BodyMetricsAiService(),
@@ -53,11 +55,11 @@ final bodyMetricsProductAccessReaderProvider = Provider<ProductAccessReader>(
 
 final bodyMetricsAnalysisOrchestratorProvider =
     Provider<BodyMetricsAnalysisOrchestrator>((ref) {
-  return BodyMetricsAnalysisOrchestrator(
-    aiService: ref.read(bodyMetricsAiServiceProvider),
-    accessReader: ref.read(bodyMetricsProductAccessReaderProvider),
-  );
-});
+      return BodyMetricsAnalysisOrchestrator(
+        aiService: ref.read(bodyMetricsAiServiceProvider),
+        accessReader: ref.read(bodyMetricsProductAccessReaderProvider),
+      );
+    });
 
 enum BodyMetricsStatus {
   loadingData,
@@ -93,7 +95,7 @@ class BodyMetricsState {
   });
 
   const BodyMetricsState.initial()
-      : this(status: BodyMetricsStatus.loadingData);
+    : this(status: BodyMetricsStatus.loadingData);
 
   BodyMetricsState copyWith({
     BodyMetricsStatus? status,
@@ -128,8 +130,9 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
   Future<void> load() async {
     state = const BodyMetricsState.initial();
     try {
-      final snapshot =
-          await ref.read(bodyMetricsRepositoryProvider).loadHealthSnapshot();
+      final snapshot = await ref
+          .read(bodyMetricsRepositoryProvider)
+          .loadHealthSnapshot();
       if (snapshot == null) {
         state = const BodyMetricsState(
           status: BodyMetricsStatus.error,
@@ -148,8 +151,9 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
       );
       var aiStages = 5;
       try {
-        final access =
-            await ref.read(bodyMetricsProductAccessReaderProvider).read();
+        final access = await ref
+            .read(bodyMetricsProductAccessReaderProvider)
+            .read();
         aiStages = access.bodyMetricsAiStages;
       } catch (_) {
         // Health assessment is local/deterministic. Access lookup only affects
@@ -186,19 +190,20 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
       clearError: true,
     );
     try {
-      final bundle =
-          await ref.read(bodyMetricsAnalysisOrchestratorProvider).analyze(
-        snapshot: snapshot,
-        report: report,
-        onProgress: (completed, total, stageId) {
-          state = state.copyWith(
-            status: BodyMetricsStatus.analyzing,
-            currentAiStage: completed,
-            totalAiStages: total,
-            currentStageId: stageId,
+      final bundle = await ref
+          .read(bodyMetricsAnalysisOrchestratorProvider)
+          .analyze(
+            snapshot: snapshot,
+            report: report,
+            onProgress: (completed, total, stageId) {
+              state = state.copyWith(
+                status: BodyMetricsStatus.analyzing,
+                currentAiStage: completed,
+                totalAiStages: total,
+                currentStageId: stageId,
+              );
+            },
           );
-        },
-      );
       state = state.copyWith(
         status: bundle.isPartial
             ? BodyMetricsStatus.partial
@@ -219,5 +224,5 @@ class BodyMetricsController extends Notifier<BodyMetricsState> {
 
 final bodyMetricsControllerProvider =
     NotifierProvider<BodyMetricsController, BodyMetricsState>(
-  BodyMetricsController.new,
-);
+      BodyMetricsController.new,
+    );

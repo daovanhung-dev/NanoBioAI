@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 class V1RouteGuards {
   static const Set<String> registeredV1Paths = {
@@ -76,13 +76,13 @@ class V1RouteGuards {
   };
 
   static String? authGuard(BuildContext context, GoRouterState state) {
-    final user = currentSupabaseUserIdOrNull();
+    final user = currentBackendUserIdOrNull();
     if (user == null) return AuthRoutePaths.login;
     return null;
   }
 
   static String? guestGuard(BuildContext context, GoRouterState state) {
-    final user = currentSupabaseUserIdOrNull();
+    final user = currentBackendUserIdOrNull();
     if (user != null) return AuthRoutePaths.authGate;
     return null;
   }
@@ -91,7 +91,7 @@ class V1RouteGuards {
     BuildContext context,
     GoRouterState state,
   ) {
-    final user = currentSupabaseUserIdOrNull();
+    final user = currentBackendUserIdOrNull();
     if (user != null) return null;
     return guestRedirectForPath(state.uri.path);
   }

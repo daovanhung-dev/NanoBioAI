@@ -6,7 +6,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_whisper_ggml/flutter_whisper.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/domain/entities/voice_chat_message.dart';
-import 'package:nano_app/core/ai_local/local_ai_runtime_service.dart';
 import 'package:opus_codec_dart/opus_codec_dart.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -26,14 +25,14 @@ class NabiEspAssistantReply {
   final List<Uint8List> opusPackets;
 }
 
-/// Local STT → the app's existing safe local LLM turn path → offline TTS.
+/// Local speech recognition → authenticated backend AI response → offline TTS.
 /// Audio and transcript are held only in memory except for a temporary WAV
 /// created by Android TTS and deleted immediately after it is read.
 class NabiEspVoicePipeline {
   NabiEspVoicePipeline({
     VoiceChatTurnDatasource? turnDatasource,
     FlutterTts? tts,
-  }) : _turnDatasource = turnDatasource ?? LocalVoiceChatTurnDatasource(),
+  }) : _turnDatasource = turnDatasource ?? BackendVoiceChatTurnDatasource(),
        _tts = tts ?? FlutterTts();
 
   static const _maxHistoryMessages = 12;
@@ -53,14 +52,6 @@ class NabiEspVoicePipeline {
   bool get isReady => _whisper != null && _voiceName != null;
 
   Future<void> prepare({NabiEspProgressCallback? onWhisperProgress}) async {
-    final runtime = LocalAiRuntimeService.instance;
-    if (!await runtime.hasInstalledSelectedTextModel()) {
-      throw StateError('Chưa cài model AI local trong Nabi.');
-    }
-    if (!await runtime.loadSelectedTextModel()) {
-      throw StateError('Không nạp được model AI local đã chọn.');
-    }
-
     if (_whisper == null) {
       final support = await getApplicationSupportDirectory();
       final modelDirectory = Directory(
@@ -114,7 +105,7 @@ class NabiEspVoicePipeline {
 
   Future<NabiEspAssistantReply?> process(Int16List pcm16) async {
     if (!isReady || _disposed) {
-      throw StateError('AI local chưa sẵn sàng.');
+      throw StateError('Nhận diện giọng nói chưa sẵn sàng.');
     }
     if (pcm16.isEmpty || pcm16.length > _maxTranscriptSamples) {
       throw const FormatException('Audio đầu vào vượt giới hạn phiên.');

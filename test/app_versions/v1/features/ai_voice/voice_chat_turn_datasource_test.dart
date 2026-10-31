@@ -5,13 +5,13 @@ import 'package:nano_app/app_versions/v1/features/ai_voice/data/datasources/voic
 import 'package:nano_app/app_versions/v1/features/ai_voice/domain/entities/voice_chat_message.dart';
 import 'package:nano_app/app_versions/v1/features/ai_voice/domain/voice_chat_exception.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 void main() {
-  group('LocalVoiceChatTurnDatasource', () {
-    test('sends a bounded turn through the local AI contract', () async {
+  group('BackendVoiceChatTurnDatasource', () {
+    test('sends a bounded turn through the backend AI contract', () async {
       _AiRequest? captured;
-      final datasource = LocalVoiceChatTurnDatasource(
+      final datasource = BackendVoiceChatTurnDatasource(
         client: _FakeAiTextClient((request) async {
           captured = request;
           return '  Nabi trả lời ngắn gọn.  ';
@@ -27,7 +27,7 @@ void main() {
       );
 
       expect(result, 'Nabi trả lời ngắn gọn.');
-      expect(captured?.model, LocalAiTextClient.modelId);
+      expect(captured?.model, BackendAiTextClient.modelId);
       expect(captured?.messages.map((item) => item.text), [
         'Xin chào',
         'Nabi chào bạn.',
@@ -38,7 +38,7 @@ void main() {
 
     test('rejects oversized history before invoking the local model', () async {
       var calls = 0;
-      final datasource = LocalVoiceChatTurnDatasource(
+      final datasource = BackendVoiceChatTurnDatasource(
         client: _FakeAiTextClient((_) async {
           calls++;
           return 'Đã rõ.';
@@ -49,7 +49,7 @@ void main() {
         datasource.sendTurn(
           message: 'Xin chào',
           history: List.generate(
-            LocalVoiceChatTurnDatasource.maxHistoryMessages + 1,
+            BackendVoiceChatTurnDatasource.maxHistoryMessages + 1,
             (index) => VoiceChatMessage(
               role: VoiceChatRole.user,
               text: 'Tin nhắn $index',
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('maps unsupported platform to a clear voice failure', () async {
-      final datasource = LocalVoiceChatTurnDatasource(
+      final datasource = BackendVoiceChatTurnDatasource(
         client: _FakeAiTextClient(
           (_) async => throw const AiInferenceException(
             status: 'unsupported_platform',
@@ -91,7 +91,7 @@ void main() {
 
     test('maps local model timeout and invalid output safely', () async {
       final pending = Completer<String>();
-      final timeoutDatasource = LocalVoiceChatTurnDatasource(
+      final timeoutDatasource = BackendVoiceChatTurnDatasource(
         client: _FakeAiTextClient((_) => pending.future),
         requestTimeout: const Duration(milliseconds: 2),
       );
@@ -106,7 +106,7 @@ void main() {
         ),
       );
 
-      final invalidDatasource = LocalVoiceChatTurnDatasource(
+      final invalidDatasource = BackendVoiceChatTurnDatasource(
         client: _FakeAiTextClient((_) async => ''),
       );
       await expectLater(

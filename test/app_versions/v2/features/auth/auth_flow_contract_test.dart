@@ -72,7 +72,7 @@ void main() {
     test('auth callback and signup use the completed V2 contracts', () {
       final datasourceSource = File(
         'lib/app_versions/v2/features/auth/data/datasources/'
-        'supabase_auth_remote_datasource.dart',
+        'backend_auth_remote_datasource.dart',
       ).readAsStringSync();
       final routerSource = File(
         'lib/app_versions/v2/router/v2_router.dart',
@@ -86,14 +86,14 @@ void main() {
       ).readAsStringSync();
       final repositorySource = File(
         'lib/app_versions/v2/features/auth/data/repositories/'
-        'supabase_auth_repository.dart',
+        'backend_auth_repository.dart',
       ).readAsStringSync();
 
-      expect(datasourceSource, contains("'referral_code': referralCode"));
       expect(
         datasourceSource,
-        contains("'device_fingerprint': deviceFingerprint"),
+        contains("'referral_code': command.referralCode!.trim().toUpperCase()"),
       );
+      expect(datasourceSource, contains("'device_fingerprint': fingerprint"));
       expect(datasourceSource, contains('authCallbackTypeFromUri'));
       expect(routerSource, contains('v2RouterProvider'));
       expect(routerSource, contains('exactProtectedPaths'));
@@ -105,8 +105,7 @@ void main() {
       expect(mainSource, contains('nanobio_user_auth_session'));
       expect(manifestSource, contains('flutter_deeplinking_enabled'));
       expect(manifestSource, contains('android:value="false"'));
-      expect(repositorySource, contains('_mapSignUpException'));
-      expect(repositorySource, contains('_safeUserMessageFor'));
+      expect(repositorySource, contains('_mapBackendException'));
       expect(
         repositorySource,
         isNot(contains('userMessage: details.fullMessage')),
@@ -115,13 +114,10 @@ void main() {
 
     test('Flutter auth client does not insert baseline profile rows', () {
       final authDatasourceSource = File(
-        'lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart',
+        'lib/app_versions/v2/features/auth/data/datasources/backend_auth_remote_datasource.dart',
       ).readAsStringSync();
-      final profileServiceSource = File(
-        'lib/services/supabase/auth/auth_profile_service.dart',
-      ).readAsStringSync();
-
-      expect(authDatasourceSource, contains('subscription_tier'));
+      expect(authDatasourceSource, contains("'/api/v1/profile/me'"));
+      expect(authDatasourceSource, contains("'/api/v1/auth/phone-signup'"));
       expect(authDatasourceSource, isNot(contains(".from('users').insert")));
       expect(
         authDatasourceSource,
@@ -129,15 +125,6 @@ void main() {
       );
       expect(
         authDatasourceSource,
-        isNot(contains(".from('lifestyle_habits').insert")),
-      );
-      expect(profileServiceSource, isNot(contains(".from('users').insert")));
-      expect(
-        profileServiceSource,
-        isNot(contains(".from('health_profiles').insert")),
-      );
-      expect(
-        profileServiceSource,
         isNot(contains(".from('lifestyle_habits').insert")),
       );
     });

@@ -94,7 +94,7 @@ class ConsentStep extends ConsumerWidget {
             icon: Icons.lock_person_rounded,
             title: 'Dữ liệu của bạn',
             description:
-                'Thông tin được lưu trữ an toàn trên thiết bị của bạn. Bạn có thể xem, xuất hoặc xóa bất cứ lúc nào.',
+                'Thông tin được lưu trữ trong ứng dụng. Khi bạn dùng AI văn bản hoặc phân tích ảnh, dữ liệu tối thiểu cần cho tác vụ sẽ được gửi qua HTTPS tới máy chủ NanoBio; ứng dụng không dùng model văn bản/ảnh cục bộ thay thế. Riêng trợ lý ESP32 có thể tải Whisper để nhận dạng lời nói trên điện thoại. Cần đăng nhập để dùng AI của máy chủ.',
             accent: NabiPalette.greenPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),

@@ -28,7 +28,7 @@ Before changing status to `Implemented`:
 
 1. Add a reachable provider/controller consumer.
 2. Define whether the biometric protects local UI only or participates in auth.
-3. Keep Supabase session/identity as the trusted account source.
+3. Keep the backend session/identity as the trusted account source.
 4. Add unit/widget tests and real-device Android/iOS verification.
 
 Device behavior is `UNVERIFIED` by static inspection.

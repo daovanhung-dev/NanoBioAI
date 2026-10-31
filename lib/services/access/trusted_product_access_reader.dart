@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
-import 'package:nano_app/services/supabase/supabase_service.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import 'product_access_level.dart';
 import 'product_access_reader.dart';
@@ -16,16 +16,18 @@ class TrustedProductAccessReader implements ProductAccessReader {
 
   @override
   Future<ProductAccessLevel> read() async {
-    final userId = currentSupabaseUserIdOrNull();
-    if (userId == null || userId.trim().isEmpty) return ProductAccessLevel.guest;
+    final userId = currentBackendUserIdOrNull();
+    if (userId == null || userId.trim().isEmpty) {
+      return ProductAccessLevel.guest;
+    }
     try {
-      final row = await SupabaseService.client
-          .from('effective_user_access')
-          .select('user_id, product_access')
-          .eq('user_id', userId)
-          .maybeSingle()
+      final row = await BackendApiClient.shared
+          .requestMap('GET', '/api/v1/membership/me')
           .timeout(timeout);
-      final value = row?['product_access']?.toString().trim().toLowerCase();
+      final value = (row['product_access'] ?? row['membership_plan'])
+          ?.toString()
+          .trim()
+          .toLowerCase();
       return switch (value) {
         'plus' => ProductAccessLevel.plus,
         'family_plus' || 'familyplus' => ProductAccessLevel.familyPlus,

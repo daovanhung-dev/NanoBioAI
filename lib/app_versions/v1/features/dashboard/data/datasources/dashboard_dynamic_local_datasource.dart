@@ -5,7 +5,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/serv
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/data/datasources/schedule_horizon_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/repositories/schedule_horizon_reader.dart';
 import 'package:nano_app/core/access/subject_access_context.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 class DashboardDynamicLocalDatasource {
   final Database db;
@@ -108,7 +108,7 @@ class DashboardDynamicLocalDatasource {
 
   String? _subjectUserIdOrNull(SubjectAccessContext? subjectAccess) {
     if (subjectAccess != null) return subjectAccess.resolveSubjectId();
-    return currentSupabaseUserIdOrNull();
+    return currentBackendUserIdOrNull();
   }
 
   Future<Map<String, Object?>?> _todayHealthLog({

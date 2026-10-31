@@ -120,8 +120,8 @@ class _SleepNightAnalysisPageState
       builder: (context) => AlertDialog(
         title: const Text('Phân tích với AI'),
         content: const Text(
-          'NanoBio chỉ gửi các chỉ số tổng hợp, phân bố sự kiện và xu hướng. '
-          'Bản ghi âm, bản chép lời và số điện thoại người thân được giữ riêng tư; AI xử lý ngay trên thiết bị.',
+          'NanoBio gửi các chỉ số tổng hợp, phân bố sự kiện và xu hướng qua HTTPS tới máy chủ để phân tích. '
+          'Bản ghi âm, bản chép lời và số điện thoại người thân không được gửi.',
         ),
         actions: [
           TextButton(

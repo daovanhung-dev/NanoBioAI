@@ -5,7 +5,7 @@ import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 import 'package:nano_app/services/image_picker/image_picker_provider.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../application/schedule_health_checkin_reward_gateway.dart';
 import '../application/schedule_proof_image_service.dart';
@@ -34,31 +34,33 @@ final lifestyleScheduleClockProvider = Provider<DateTime Function()>((ref) {
 
 final lifestyleScheduleLocalDatasourceProvider =
     Provider<LifestyleScheduleLocalDatasource>((ref) {
-  return LifestyleScheduleLocalDatasource();
-});
+      return LifestyleScheduleLocalDatasource();
+    });
 
-final lifestyleScheduleSubjectResolverProvider = Provider<LocalSubjectResolver>((
-  ref,
-) {
-  return LocalSubjectResolver(
-    currentActorId: currentSupabaseUserIdOrNull,
-    pendingGuestUserId: AppPrefs.pendingGuestUserId,
-  );
-});
+final lifestyleScheduleSubjectResolverProvider = Provider<LocalSubjectResolver>(
+  (ref) {
+    return LocalSubjectResolver(
+      currentActorId: currentBackendUserIdOrNull,
+      pendingGuestUserId: AppPrefs.pendingGuestUserId,
+    );
+  },
+);
 
 final lifestyleScheduleRepositoryProvider =
     Provider<LifestyleScheduleRepository>((ref) {
-  final subjectResolver = ref.read(lifestyleScheduleSubjectResolverProvider);
-  final baseRepository = LifestyleScheduleRepositoryImpl(
-    datasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
-    resolveSubjectId: subjectResolver.resolve,
-  );
-  return HealthEventLifestyleScheduleRepository(
-    delegate: baseRepository,
-    eventSink: ref.read(healthDomainEventSinkProvider),
-    resolveSubjectId: resolveActiveNotificationSubject,
-  );
-});
+      final subjectResolver = ref.read(
+        lifestyleScheduleSubjectResolverProvider,
+      );
+      final baseRepository = LifestyleScheduleRepositoryImpl(
+        datasource: ref.read(lifestyleScheduleLocalDatasourceProvider),
+        resolveSubjectId: subjectResolver.resolve,
+      );
+      return HealthEventLifestyleScheduleRepository(
+        delegate: baseRepository,
+        eventSink: ref.read(healthDomainEventSinkProvider),
+        resolveSubjectId: resolveActiveNotificationSubject,
+      );
+    });
 
 final scheduleHorizonReaderProvider = Provider<ScheduleHorizonReader>((ref) {
   return const ScheduleHorizonLocalDatasource();
@@ -85,35 +87,35 @@ final scheduleProofImageServiceProvider = Provider<ScheduleProofImageService>((
 
 final scheduleRewardOnlineGatewayProvider =
     Provider<ScheduleRewardOnlineGateway>((ref) {
-  return const SupabaseScheduleRewardOnlineGateway();
-});
+      return const BackendScheduleRewardOnlineGateway();
+    });
 
 final scheduleRewardEligibilityProjectionStoreProvider =
     Provider<ScheduleRewardEligibilityProjectionStore>((ref) {
-  return const SqliteScheduleRewardEligibilityProjectionStore();
-});
+      return const SqliteScheduleRewardEligibilityProjectionStore();
+    });
 
 final scheduleRewardEligibilityReconcilerProvider =
     Provider<ScheduleRewardEligibilityReconciler>((ref) {
-  return ScheduleRewardEligibilityReconciler(
-    gateway: ref.watch(scheduleRewardOnlineGatewayProvider),
-    projectionStore: ref.watch(
-      scheduleRewardEligibilityProjectionStoreProvider,
-    ),
-  );
-});
+      return ScheduleRewardEligibilityReconciler(
+        gateway: ref.watch(scheduleRewardOnlineGatewayProvider),
+        projectionStore: ref.watch(
+          scheduleRewardEligibilityProjectionStoreProvider,
+        ),
+      );
+    });
 
 final lifestyleScheduleControllerProvider =
     AsyncNotifierProvider<LifestyleScheduleController, LifestyleScheduleState>(
-  LifestyleScheduleController.new,
-);
+      LifestyleScheduleController.new,
+    );
 
 final dailyHealthHubLocalDatasourceProvider =
     Provider<DailyHealthHubLocalDatasource>((ref) {
-  return DailyHealthHubLocalDatasource(
-    now: ref.watch(lifestyleScheduleClockProvider),
-  );
-});
+      return DailyHealthHubLocalDatasource(
+        now: ref.watch(lifestyleScheduleClockProvider),
+      );
+    });
 
 final dailyHealthHubRepositoryProvider = Provider<DailyHealthHubRepository>((
   ref,
@@ -125,16 +127,13 @@ final dailyHealthHubRepositoryProvider = Provider<DailyHealthHubRepository>((
 
 final scheduleHealthCheckInRewardGatewayProvider =
     Provider<ScheduleHealthCheckInRewardGateway>((ref) {
-  return const SupabaseScheduleHealthCheckInRewardGateway();
-});
+      return const BackendScheduleHealthCheckInRewardGateway();
+    });
 
-final dailyHealthSnapshotProvider =
-    FutureProvider.autoDispose.family<DailyHealthSnapshotEntity, DateTime>((
-  ref,
-  date,
-) {
-  return ref.watch(dailyHealthHubRepositoryProvider).getSnapshot(date);
-});
+final dailyHealthSnapshotProvider = FutureProvider.autoDispose
+    .family<DailyHealthSnapshotEntity, DateTime>((ref, date) {
+      return ref.watch(dailyHealthHubRepositoryProvider).getSnapshot(date);
+    });
 
 final dailyHealthHubControllerProvider = Provider<DailyHealthHubController>((
   ref,

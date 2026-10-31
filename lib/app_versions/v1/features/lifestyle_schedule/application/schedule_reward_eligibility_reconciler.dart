@@ -2,7 +2,7 @@ import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/serv
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/storage/localdb/tables/personal_schedule_ai_requests_table.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'schedule_reward_eligibility_projection_store.dart';
@@ -31,7 +31,7 @@ class ScheduleRewardEligibilityReconciler {
     this.databaseOverride,
     String? Function()? currentUserId,
     DateTime Function()? now,
-  }) : currentUserId = currentUserId ?? currentSupabaseUserIdOrNull,
+  }) : currentUserId = currentUserId ?? currentBackendUserIdOrNull,
        now = now ?? LifestyleScheduleWindowPolicy.vietnamNow;
 
   Future<Database> _db() async => databaseOverride ?? DatabaseService.database;

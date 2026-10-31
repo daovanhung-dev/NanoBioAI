@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../data/datasources/daily_routine_preferences_local_datasource.dart';
 import '../domain/entities/daily_routine_preferences.dart';
@@ -13,9 +13,11 @@ final dailyRoutinePreferencesDatasourceProvider =
       return const DailyRoutinePreferencesLocalDatasource();
     });
 
-final dailyRoutineSubjectResolverProvider = Provider<LocalSubjectResolver>((ref) {
+final dailyRoutineSubjectResolverProvider = Provider<LocalSubjectResolver>((
+  ref,
+) {
   return LocalSubjectResolver(
-    currentActorId: currentSupabaseUserIdOrNull,
+    currentActorId: currentBackendUserIdOrNull,
     pendingGuestUserId: AppPrefs.pendingGuestUserId,
   );
 });

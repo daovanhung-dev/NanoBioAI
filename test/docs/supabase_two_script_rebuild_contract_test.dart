@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _buildPath = 'docs/supabase/01_build_system.sql';
-const _seedPath = 'docs/supabase/02_seed_data.sql';
-const _aiRuntimePath = 'docs/supabase/03_ai_runtime_enablement.sql';
+const _buildPath = 'docs/archive/legacy-supabase/sql/01_build_system.sql';
+const _seedPath = 'docs/archive/legacy-supabase/sql/02_seed_data.sql';
+const _aiRuntimePath = 'docs/archive/legacy-supabase/sql/03_ai_runtime_enablement.sql';
 
 void main() {
   group('Supabase rebuild and AI preflight contract', () {
@@ -41,7 +41,7 @@ void main() {
     test(
       'documents the destructive rebuild followed by the optional preflight',
       () {
-        final readme = File('docs/supabase/README.md').readAsStringSync();
+        final readme = File('docs/archive/legacy-supabase/sql/README.md').readAsStringSync();
         final buildIndex = readme.indexOf('01_build_system.sql');
         final seedIndex = readme.indexOf('02_seed_data.sql');
         final aiRuntimeIndex = readme.indexOf('03_ai_runtime_enablement.sql');

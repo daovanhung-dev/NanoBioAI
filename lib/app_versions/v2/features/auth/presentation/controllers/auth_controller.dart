@@ -12,7 +12,7 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_dependencies.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
+import 'package:nano_app/services/backend/cloud_sync/user_data_sync_outbox.dart';
 
 class AuthController extends AsyncNotifier<AuthRouteState> {
   AuthRepository get _repository => ref.read(v2AuthRepositoryProvider);

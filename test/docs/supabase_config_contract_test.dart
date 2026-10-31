@@ -7,8 +7,8 @@ void main() {
     late String sql;
 
     setUpAll(() {
-      final build = File('docs/supabase/01_build_system.sql').readAsStringSync();
-      final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      final build = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
+      final seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
       sql = '$build\n$seed';
     });
 
@@ -486,23 +486,22 @@ void main() {
     });
   });
 
-  group('Codex Supabase context rules', () {
+  group('legacy Supabase archive context', () {
     test(
-      'requires the two Supabase scripts for DB changes',
+      'routes current schema changes to the backend and marks old SQL read-only',
       () {
         final sources = [
           File('.codex/AGENTS.md').readAsStringSync(),
           File('.codex/PROJECT_MAP.md').readAsStringSync(),
           File('.codex/workflows/supabase-schema.md').readAsStringSync(),
+          File('docs/archive/legacy-supabase/README.md').readAsStringSync(),
         ].join('\n');
 
         for (final token in [
-          'docs/supabase/README.md',
-          'docs/supabase/01_build_system.sql',
-          'docs/supabase/02_seed_data.sql',
-          'directly related',
-          'schema/RLS/RPC/seed',
-          'rebuild-ready',
+          'read-only',
+          'backend/alembic/',
+          'docs/archive/legacy-supabase/',
+          'Do not deploy or run these scripts',
         ]) {
           expect(sources, contains(token), reason: token);
         }

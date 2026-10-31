@@ -9,12 +9,12 @@ thay thế V1. `v2RouterProvider` compose `v1Routes`, `v2Routes` và `v3Routes`.
 
 | Feature folder | Implementation | Ghi chú |
 | --- | --- | --- |
-| `auth` | `Implemented` | Login, register, verify, recovery/reset, callback, controller, repository và Supabase datasource có route runtime. |
+| `auth` | `Implemented` | Login, đăng ký bằng điện thoại, đổi mật khẩu bắt buộc, refresh/logout, controller và backend datasource có route runtime. |
 | `cloud_sync` | `Implemented/Partial` | Local/remote datasource, merge repository và sync controller có consumer; E2E cần backend. |
 | `health_modules` | `Placeholder` | Access resolver + coming-soon UI cho catalog M20-M29; chưa có business implementation từng module. |
 | `health_scoring` | `Implemented` | SQLite data, calculator, providers và route `/v2/health-score`. |
 | `home` | `Implemented` shell | Route `/v2`; shell không chứng minh mọi child feature hoàn chỉnh. |
-| `membership_entitlement` | `Implemented` | Effective access đọc trusted Supabase contract. |
+| `membership_entitlement` | `Implemented` | Effective access đọc dữ liệu backend có kiểm tra quyền. |
 | `payments` | `Partial` | Google Play consumer membership checkout; entitlement chỉ sau server verification. Manual reconciliation remains backend/Admin-only. |
 | `personal_schedule_quota` | `Source-only` marker | Marker class vẫn `planned`; guard thật nằm ở `GeneratedPlanService` và trusted quota gateway. |
 | `usage_quota` | `Implemented` contract | Trusted check/commit quota gateway được AI chat/plan runtime dùng. |
@@ -23,11 +23,11 @@ thay thế V1. `v2RouterProvider` compose `v1Routes`, `v2Routes` và `v3Routes`.
 ## Guardrails
 
 - Feature mới đặt trong `lib/app_versions/v2/features/<feature_name>/`.
-- Presentation gọi provider/controller, không gọi SQLite/Supabase trực tiếp.
+- Presentation gọi provider/controller, không gọi SQLite hoặc API trực tiếp.
 - V2 không import trực tiếp V1 presentation/controller để tái sử dụng logic.
 - Auth, entitlement, quota, payment và reward state phải fail closed khi
-  Supabase chưa sẵn sàng.
+  backend chưa sẵn sàng.
 - Một folder hoặc route tồn tại không đủ để gắn trạng thái `Implemented`.
 
-Verification: static source only; Flutter/device/Supabase sandbox là
+Verification: static source only; Flutter/device/backend runtime là
 `UNVERIFIED` nếu không có command evidence riêng.

@@ -1,7 +1,7 @@
 class LogRedactor {
   const LogRedactor._();
 
-  static const _safeLocalAiTelemetryKeys = <String>{
+  static const _safeAiTelemetryKeys = <String>{
     'availableTokens',
     'candidateCount',
     'candidateGroups',
@@ -68,7 +68,7 @@ class LogRedactor {
   }
 
   static Object? value(String key, Object? raw, {int depth = 0}) {
-    if (_safeLocalAiTelemetryKeys.contains(key)) {
+    if (_safeAiTelemetryKeys.contains(key)) {
       if (raw == null || raw is bool || raw is num) return raw;
       if (raw is String) return text(raw, maxLength: 120);
       return '[INVALID_TELEMETRY_VALUE]';

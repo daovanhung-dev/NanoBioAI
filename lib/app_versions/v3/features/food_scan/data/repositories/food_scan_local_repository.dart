@@ -14,10 +14,8 @@ class FoodScanLocalRepository {
   final Database? databaseOverride;
   final DateTime Function() now;
 
-  FoodScanLocalRepository({
-    this.databaseOverride,
-    DateTime Function()? now,
-  }) : now = now ?? DateTime.now;
+  FoodScanLocalRepository({this.databaseOverride, DateTime Function()? now})
+    : now = now ?? DateTime.now;
 
   Future<Database> _db() async => databaseOverride ?? DatabaseService.database;
 
@@ -79,8 +77,11 @@ class FoodScanLocalRepository {
           .toSet();
       final rawConfidence = updated.items.isEmpty
           ? updated.analysisConfidence
-          : updated.items.fold<double>(0, (sum, item) => sum + item.confidence) /
-              updated.items.length;
+          : updated.items.fold<double>(
+                  0,
+                  (sum, item) => sum + item.confidence,
+                ) /
+                updated.items.length;
       final confidence = rawConfidence.isFinite
           ? rawConfidence.clamp(0.0, 1.0).toDouble()
           : 0.0;
@@ -101,8 +102,8 @@ class FoodScanLocalRepository {
         nutritionSource: sources.isEmpty
             ? 'food_scan'
             : sources.length == 1
-                ? sources.first
-                : 'food_scan_mixed',
+            ? sources.first
+            : 'food_scan_mixed',
         nutritionConfidence: confidence,
         notes: 'nutrition_log_from_food_scan',
         createdAt: timestamp,
@@ -235,24 +236,20 @@ class FoodScanLocalRepository {
     required FoodScanResult result,
   }) async {
     final timestamp = now().toUtc().toIso8601String();
-    await db.insert(
-      'food_scan_analyses',
-      {
-        'id': result.id,
-        'user_id': userId,
-        'image_local_path': result.imageLocalPath,
-        'input_type': result.inputType,
-        'analysis_confidence': result.analysisConfidence,
-        'total_calories': result.displayedCalories,
-        'health_status': result.healthEvaluation.status,
-        'health_score': result.healthEvaluation.suitabilityScore,
-        'result_json': result.encode(),
-        'nutrition_log_id': result.nutritionLogId,
-        'created_at': result.createdAt.toUtc().toIso8601String(),
-        'updated_at': timestamp,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert('food_scan_analyses', {
+      'id': result.id,
+      'user_id': userId,
+      'image_local_path': result.imageLocalPath,
+      'input_type': result.inputType,
+      'analysis_confidence': result.analysisConfidence,
+      'total_calories': result.displayedCalories,
+      'health_status': result.healthEvaluation.status,
+      'health_score': result.healthEvaluation.suitabilityScore,
+      'result_json': result.encode(),
+      'nutrition_log_id': result.nutritionLogId,
+      'created_at': result.createdAt.toUtc().toIso8601String(),
+      'updated_at': timestamp,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> _replaceItems(

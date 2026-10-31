@@ -119,6 +119,18 @@ describe('Admin API backend transport', () => {
     expect(JSON.parse(String(calls[1]?.init.body))).toEqual({ new_password: 'PersonalPass456' });
   });
 
+  it('reports a network failure separately from rejected credentials', async () => {
+    const { api } = harness(() => {
+      throw new TypeError('Failed to fetch');
+    });
+
+    await expect(api.signIn('admin', 'TemporaryPass123')).rejects.toMatchObject({
+      message: 'Chưa kết nối được máy chủ. Hãy kiểm tra kết nối rồi thử lại.',
+      retryable: true,
+      businessCode: 'NETWORK_UNAVAILABLE',
+    });
+  });
+
   it('loads a bounded early access page and sends an audited status update', async () => {
     const { api, calls } = harness((url) => url.pathname.endsWith('/early-access/leads')
       ? envelope({

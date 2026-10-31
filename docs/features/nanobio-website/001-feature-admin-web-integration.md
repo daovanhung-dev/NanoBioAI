@@ -29,7 +29,7 @@ hai và không tạo bảng lead song song.
 
 ## Contract dữ liệu và bảo mật
 
-Migration `supabase/migrations/20261007000000_nanobio_early_access.sql` tạo
+Migration `docs/archive/legacy-supabase/project/migrations/20261007000000_nanobio_early_access.sql` tạo
 `early_access_leads` cùng các metadata lead, giữ `vip_grant_status` tách khỏi
 `status`, khóa direct client grants và tạo schema riêng cho rate state HMAC.
 RPC atomic giới hạn 10 request mỗi IP mỗi giờ; cron dọn state hết hạn dưới 24
@@ -60,6 +60,6 @@ thái bucket trên môi trường an toàn.
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS; Vite báo chunk JavaScript lớn hơn 500 kB do website
   content/assets được đóng cùng bundle.
-- `deno fmt --check supabase/functions/register-early-access`: PASS.
-- `deno test supabase/functions/register-early-access`: PASS, 8 tests.
-- `deno check supabase/functions/register-early-access/index.ts`: PASS.
+- `deno fmt --check docs/archive/legacy-supabase/project/functions/register-early-access`: PASS.
+- `deno test docs/archive/legacy-supabase/project/functions/register-early-access`: PASS, 8 tests.
+- `deno check docs/archive/legacy-supabase/project/functions/register-early-access/index.ts`: PASS.

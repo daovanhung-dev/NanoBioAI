@@ -18,7 +18,7 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_json_parser.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_json_prompt_builder.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_trace_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_vietnamese_text_validator.dart';
 import 'package:nano_app/app_versions/v1/services/ai/prompts/exercise_tasks_prompt.dart';
@@ -28,19 +28,22 @@ import 'package:nano_app/core/utils/logger/terminal_log_sink.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('local runtime failures do not require AI authentication', () {
-    const error = AiInferenceException(
-      status: 'local_model_load_failed',
-      message: 'Không mở được model local.',
-    );
+  test(
+    'generic backend inference failures are not treated as auth failures',
+    () {
+      const error = AiInferenceException(
+        status: 'model_unavailable',
+        message: 'Dịch vụ AI chưa khả dụng.',
+      );
 
-    expect(AIAuthenticationException.matches(error), isFalse);
-  });
+      expect(AIAuthenticationException.matches(error), isFalse);
+    },
+  );
 
   test('model token limit failures map to a clear user-facing error', () {
     const error = AiInferenceException(
       status: 'model_context_limit_exceeded',
-      message: 'Nội dung vượt quá model local.',
+      message: 'Nội dung vượt quá giới hạn model.',
     );
     expect(AIModelContextLimitException.matches(error), isTrue);
     expect(
@@ -68,7 +71,7 @@ void main() {
   );
 
   group('AIOverloadedException', () {
-    test('matches local runtime capacity errors and timeouts', () {
+    test('matches backend capacity errors and timeouts', () {
       expect(
         AIOverloadedException.matches(
           const AiInferenceException(
@@ -82,14 +85,14 @@ void main() {
         AIOverloadedException.matches(
           const AiInferenceException(
             status: 'runtime_error',
-            message: 'Local runtime is temporarily unavailable.',
+            message: 'Backend inference is temporarily unavailable.',
           ),
         ),
         isTrue,
       );
       expect(
         AIOverloadedException.matches(
-          TimeoutException('Local inference timed out'),
+          TimeoutException('Backend inference timed out'),
         ),
         isTrue,
       );
@@ -97,10 +100,37 @@ void main() {
         AIOverloadedException.matches(
           const AiInferenceException(
             status: 'runtime_error',
-            message: 'Local backend error.',
+            message: 'Backend inference error.',
           ),
         ),
         isTrue,
+      );
+      expect(
+        AIOverloadedException.matches(
+          const AiInferenceException(
+            status: 'model_unavailable',
+            message: 'Backend model is unavailable.',
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        AIOverloadedException.matches(
+          const AiInferenceException(
+            status: 'network_error',
+            message: 'Network unavailable.',
+          ),
+        ),
+        isFalse,
+      );
+      expect(
+        AIOverloadedException.matches(
+          const AiInferenceException(
+            status: 'membership_required',
+            message: 'Membership quota is unavailable.',
+          ),
+        ),
+        isFalse,
       );
     });
 
@@ -317,7 +347,6 @@ void main() {
           catalog: catalog,
           usedCodeCounts: const {},
           eligibleFallbackCodesByType: eligibleCodesByType,
-          allowLocalFallback: false,
           onBackendInvocation: () async {},
         );
         final firstDayCodes = firstDay.value
@@ -329,7 +358,6 @@ void main() {
           catalog: catalog,
           usedCodeCounts: {for (final code in firstDayCodes) code: 1},
           eligibleFallbackCodesByType: eligibleCodesByType,
-          allowLocalFallback: false,
           onBackendInvocation: () async {},
         );
 
@@ -478,7 +506,6 @@ void main() {
           catalog: candidateCatalog,
           usedCodeCounts: const {},
           eligibleFallbackCodesByType: eligibleCodesByType,
-          allowLocalFallback: false,
           onBackendInvocation: () async {},
         );
 
@@ -494,7 +521,7 @@ void main() {
     );
 
     test(
-      'local fallback can use only explicitly eligible wellness candidates',
+      'invalid backend output is not replaced with local catalog choices',
       () async {
         final candidates = [
           for (var index = 1; index <= 5; index++)
@@ -516,26 +543,16 @@ void main() {
           textGenerator: ({required modelName, required prompt}) async => '[]',
         );
 
-        final result = await service.generateMealDayCodeItemsWithSource(
-          startDate: DateTime(2026, 6, 18),
-          day: 1,
-          catalog: candidateCatalog,
-          usedCodeCounts: const {},
-          eligibleFallbackCodesByType: eligibleCodesByType,
-          onBackendInvocation: () async {},
-        );
-
-        expect(result.source, PlanGenerationSource.localFallback);
-        expect(result.value, hasLength(5));
-        expect(
-          result.value.map((item) => item['meal_code']).toSet(),
-          hasLength(5),
-        );
-        expect(
-          result.value.every(
-            (item) => item['meal_code'].toString().startsWith('nabi_vn_'),
+        await expectLater(
+          service.generateMealDayCodeItemsWithSource(
+            startDate: DateTime(2026, 6, 18),
+            day: 1,
+            catalog: candidateCatalog,
+            usedCodeCounts: const {},
+            eligibleFallbackCodesByType: eligibleCodesByType,
+            onBackendInvocation: () async {},
           ),
-          isTrue,
+          throwsA(isA<AIResponseInvalidException>()),
         );
       },
     );
@@ -850,21 +867,20 @@ void main() {
       );
 
       expect(result.success, isFalse);
-      expect(result.message, contains('Nabi chưa thể mở model'));
+      expect(result.message, contains('Dịch vụ AI của Nabi'));
       expect(result.modelName, 'fake-model');
     });
 
-    test('fails safely when the local model runtime is unavailable', () async {
+    test('fails safely when the backend model is unavailable', () async {
       late AIConnectionCheckResult result;
 
       final logs = await _captureDebugPrint(() async {
         final service = AIService(
-          modelNames: const [LocalAiTextClient.modelId],
+          modelNames: const [BackendAiTextClient.modelId],
           textGenerator: ({required modelName, required prompt}) async =>
               throw const AiInferenceException(
-                status: 'local_model_not_ready',
-                message:
-                    'Bạn cần tải một model trên thiết bị trước khi dùng AI.',
+                status: 'model_unavailable',
+                message: 'Dịch vụ AI của NanoBio chưa sẵn sàng.',
               ),
         );
 
@@ -874,11 +890,8 @@ void main() {
       });
 
       expect(result.success, isFalse);
-      expect(
-        result.message,
-        'Bạn cần tải một model trên thiết bị trước khi dùng AI.',
-      );
-      expect(result.modelName, LocalAiTextClient.modelId);
+      expect(result.message, 'Dịch vụ AI của NanoBio chưa sẵn sàng.');
+      expect(result.modelName, BackendAiTextClient.modelId);
       expect(logs.join('\n'), isNot(contains('API_KEY')));
       expect(logs.join('\n'), isNot(contains('AIza')));
     });
@@ -954,32 +967,31 @@ void main() {
       final result = await service.sendMessage('Tôi hơi mệt');
 
       expect(result, contains('Mình sẽ giúp'));
-      expect(modelCalls, [LocalAiTextClient.modelId]);
+      expect(modelCalls, [BackendAiTextClient.modelId]);
     });
 
-    test('fails over to the next cheap model after transient errors', () async {
+    test('does not use another model after a backend timeout', () async {
       final modelCalls = <String>[];
       final delays = <Duration>[];
       final service = AIChatService(
-        modelNames: const ['primary-model', 'fallback-model'],
+        modelNames: const [BackendAiTextClient.modelId],
         random: Random(0),
         delay: (duration) async {
           delays.add(duration);
         },
         textGenerator: ({required modelName, required message}) async {
           modelCalls.add(modelName);
-          if (modelName == 'primary-model') {
-            throw TimeoutException('temporary overload');
-          }
-          return 'Mình gợi ý bạn nghỉ một chút, uống nước và theo dõi cơ thể nhé.';
+          throw TimeoutException('backend timeout');
         },
       );
 
-      final result = await service.sendMessage('Tôi căng thẳng');
+      await expectLater(
+        service.sendMessage('Tôi căng thẳng'),
+        throwsA(isA<AIInferenceTimeoutException>()),
+      );
 
-      expect(result, contains('Mình gợi ý'));
-      expect(modelCalls, ['primary-model', 'fallback-model']);
-      expect(delays, hasLength(1));
+      expect(modelCalls, [BackendAiTextClient.modelId]);
+      expect(delays, isEmpty);
     });
 
     test('throws typed failure when all transient attempts fail', () async {
@@ -1053,15 +1065,35 @@ void main() {
       },
     );
 
-    test('local model failure stops chat without remote retry', () async {
+    test('backend model failure stops chat without local fallback', () async {
       var attempts = 0;
       final service = AIChatService(
-        modelNames: const [LocalAiTextClient.modelId],
+        modelNames: const [BackendAiTextClient.modelId],
         textGenerator: ({required modelName, required message}) async {
           attempts++;
           throw const AiInferenceException(
-            status: 'local_model_not_ready',
-            message: 'Chưa nạp model local.',
+            status: 'model_unavailable',
+            message: 'Dịch vụ AI chưa sẵn sàng.',
+          );
+        },
+      );
+
+      await expectLater(
+        service.sendMessage('Xin chào'),
+        throwsA(isA<AIModelUnavailableException>()),
+      );
+      expect(attempts, 1);
+    });
+
+    test('backend failure is safe without environment configuration', () async {
+      var attempts = 0;
+      final service = AIChatService(
+        delay: (_) async {},
+        textGenerator: ({required modelName, required message}) async {
+          attempts++;
+          throw const AiInferenceException(
+            status: 'model_unavailable',
+            message: 'Dịch vụ AI chưa sẵn sàng.',
           );
         },
       );
@@ -1074,71 +1106,48 @@ void main() {
     });
 
     test(
-      'local model failure is safe without environment configuration',
+      'sendMessageStream surfaces a backend timeout without model fallback',
+      () async {
+        final modelCalls = <String>[];
+        final service = AIChatService(
+          modelNames: const [BackendAiTextClient.modelId],
+          delay: (_) async {},
+          textGenerator: ({required modelName, required message}) async {
+            modelCalls.add(modelName);
+            throw TimeoutException('backend timeout');
+          },
+        );
+
+        await expectLater(
+          service.sendMessageStream('Tôi cần hỗ trợ'),
+          throwsA(isA<AIInferenceTimeoutException>()),
+        );
+        expect(modelCalls, [BackendAiTextClient.modelId]);
+      },
+    );
+
+    test(
+      'sendMessageStream stops when the backend model is unavailable',
       () async {
         var attempts = 0;
         final service = AIChatService(
-          delay: (_) async {},
+          modelNames: const [BackendAiTextClient.modelId],
           textGenerator: ({required modelName, required message}) async {
             attempts++;
             throw const AiInferenceException(
-              status: 'local_model_not_ready',
-              message: 'Chưa nạp model local.',
+              status: 'model_unavailable',
+              message: 'Dịch vụ AI chưa sẵn sàng.',
             );
           },
         );
 
         await expectLater(
-          service.sendMessage('Xin chào'),
+          service.sendMessageStream('Xin chào'),
           throwsA(isA<AIModelUnavailableException>()),
         );
         expect(attempts, 1);
       },
     );
-
-    test(
-      'sendMessageStream uses the same retry and fallback behavior',
-      () async {
-        final modelCalls = <String>[];
-        final service = AIChatService(
-          modelNames: const ['primary-model', 'fallback-model'],
-          delay: (_) async {},
-          textGenerator: ({required modelName, required message}) async {
-            modelCalls.add(modelName);
-            if (modelName == 'primary-model') {
-              throw TimeoutException('temporary overload');
-            }
-            return 'Mình đang ở đây để hỗ trợ bạn từng bước nhỏ nhé.';
-          },
-        );
-
-        final stream = await service.sendMessageStream('Tôi cần hỗ trợ');
-        final result = await stream.join();
-
-        expect(result, contains('Mình đang ở đây'));
-        expect(modelCalls, ['primary-model', 'fallback-model']);
-      },
-    );
-
-    test('sendMessageStream stops when the local model is not ready', () async {
-      var attempts = 0;
-      final service = AIChatService(
-        modelNames: const [LocalAiTextClient.modelId],
-        textGenerator: ({required modelName, required message}) async {
-          attempts++;
-          throw const AiInferenceException(
-            status: 'local_model_not_ready',
-            message: 'Chưa nạp model local.',
-          );
-        },
-      );
-
-      await expectLater(
-        service.sendMessageStream('Xin chào'),
-        throwsA(isA<AIModelUnavailableException>()),
-      );
-      expect(attempts, 1);
-    });
   });
 
   group('AIService chunked generation', () {
@@ -1181,7 +1190,6 @@ void main() {
         catalog: catalog,
         usedCodeCounts: const {},
         eligibleFallbackCodesByType: eligibleCodesByType,
-        allowLocalFallback: false,
         onBackendInvocation: () async {},
       );
 
@@ -1286,34 +1294,37 @@ void main() {
       },
     );
 
-    test('custom meal proposal rejects incomplete or extra fields', () async {
-      var backendInvocations = 0;
-      final service = AIService(
-        modelNames: const ['fake-model'],
-        textGenerator: ({required modelName, required prompt}) async =>
-            jsonEncode([
-              {
-                'meal_type': 'breakfast',
-                'meal_name': 'Cháo yến mạch',
-                'description': 'Món nóng dễ chuẩn bị.',
-                'ingredients': ['yến mạch', 'nước'],
-                'serving_size': '1 bát',
-                'cooking_steps': ['Nấu chín', 'Dọn ra bát'],
-                'calories': 0,
-              },
-            ]),
-      );
+    test(
+      'custom meal proposal reports incomplete or extra fields safely',
+      () async {
+        var backendInvocations = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          textGenerator: ({required modelName, required prompt}) async =>
+              jsonEncode([
+                {
+                  'meal_type': 'breakfast',
+                  'meal_name': 'Cháo yến mạch',
+                  'description': 'Món nóng dễ chuẩn bị.',
+                  'ingredients': ['yến mạch', 'nước'],
+                  'serving_size': '1 bát',
+                  'cooking_steps': ['Nấu chín', 'Dọn ra bát'],
+                  'calories': 0,
+                },
+              ]),
+        );
 
-      await expectLater(
-        service.generateCustomMealProposalWithSource(
-          day: 1,
-          mealType: 'breakfast',
-          onBackendInvocation: () async => backendInvocations++,
-        ),
-        throwsFormatException,
-      );
-      expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
-    });
+        await expectLater(
+          service.generateCustomMealProposalWithSource(
+            day: 1,
+            mealType: 'breakfast',
+            onBackendInvocation: () async => backendInvocations++,
+          ),
+          throwsA(isA<AIResponseInvalidException>()),
+        );
+        expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
+      },
+    );
 
     test('meal day API requests exactly one five-meal code list', () async {
       final prompts = <String>[];
@@ -1389,7 +1400,7 @@ void main() {
     });
 
     test(
-      'meal day returns a validated local fallback for invalid AI output',
+      'meal day reports invalid backend output without local fallback',
       () async {
         var backendInvocations = 0;
         final service = AIService(
@@ -1398,29 +1409,17 @@ void main() {
           textGenerator: ({required modelName, required prompt}) async => '[]',
         );
 
-        final result = await service.generateMealDayCodeItemsWithSource(
-          startDate: DateTime(2026, 6, 18),
-          day: 3,
-          catalog: catalog,
-          usedCodeCounts: const {},
-          onBackendInvocation: () async => backendInvocations++,
+        await expectLater(
+          service.generateMealDayCodeItemsWithSource(
+            startDate: DateTime(2026, 6, 18),
+            day: 3,
+            catalog: catalog,
+            usedCodeCounts: const {},
+            onBackendInvocation: () async => backendInvocations++,
+          ),
+          throwsA(isA<AIResponseInvalidException>()),
         );
-
-        expect(result.source, PlanGenerationSource.localFallback);
         expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
-        expect(result.value, hasLength(MealPlanAiNormalizer.mealsPerDay));
-        expect(
-          result.value.map((item) => item['meal_code']).toSet(),
-          hasLength(5),
-        );
-        expect(result.value.every((item) => item['day'] == 3), isTrue);
-        const MealPlanAiNormalizer().validateCodeItems(
-          items: result.value,
-          catalog: catalog,
-          startDay: 3,
-          days: 1,
-          usedCodeCounts: const {},
-        );
       },
     );
 
@@ -1442,7 +1441,6 @@ void main() {
         day: 3,
         catalog: catalog,
         usedCodeCounts: const {},
-        allowLocalFallback: false,
         onBackendInvocation: () async {},
       );
 
@@ -1513,7 +1511,7 @@ void main() {
     });
 
     test(
-      'active unreviewed candidate is rejected and excluded from fallback',
+      'active unreviewed candidate is rejected without local fallback',
       () async {
         final safeMeal = catalog.meals.firstWhere(
           (meal) => meal.mealType == 'breakfast',
@@ -1535,27 +1533,26 @@ void main() {
           },
         );
 
-        final result = await service.generateMealSlotCodeItemWithSource(
-          startDate: DateTime(2026, 6, 18),
-          day: 2,
-          mealType: 'breakfast',
-          catalog: candidateCatalog,
-          usedCodeCounts: const {},
-          dayMealCodes: const {},
-          eligibleFallbackCodesByType: {
-            'breakfast': {candidate.code, safeMeal.code},
-          },
-          onBackendInvocation: () async {},
+        await expectLater(
+          service.generateMealSlotCodeItemWithSource(
+            startDate: DateTime(2026, 6, 18),
+            day: 2,
+            mealType: 'breakfast',
+            catalog: candidateCatalog,
+            usedCodeCounts: const {},
+            dayMealCodes: const {},
+            eligibleFallbackCodesByType: {
+              'breakfast': {safeMeal.code},
+            },
+            onBackendInvocation: () async {},
+          ),
+          throwsA(isA<AIResponseInvalidException>()),
         );
-
-        expect(result.source, PlanGenerationSource.localFallback);
-        expect(result.value.single['meal_code'], safeMeal.code);
-        expect(result.value.single['meal_code'], isNot(candidate.code));
       },
     );
 
     test(
-      'split meal generation uses local choice after six failed AI calls',
+      'split meal generation reports backend failure without local choice',
       () async {
         var backendInvocations = 0;
         final service = AIService(
@@ -1564,25 +1561,24 @@ void main() {
           textGenerator: ({required modelName, required prompt}) async => '[]',
         );
 
-        final result = await service.generateMealSlotCodeItemWithSource(
-          startDate: DateTime(2026, 6, 18),
-          day: 2,
-          mealType: 'breakfast',
-          catalog: catalog,
-          usedCodeCounts: const {},
-          dayMealCodes: const {},
-          onBackendInvocation: () async => backendInvocations++,
+        await expectLater(
+          service.generateMealSlotCodeItemWithSource(
+            startDate: DateTime(2026, 6, 18),
+            day: 2,
+            mealType: 'breakfast',
+            catalog: catalog,
+            usedCodeCounts: const {},
+            dayMealCodes: const {},
+            onBackendInvocation: () async => backendInvocations++,
+          ),
+          throwsA(isA<AIResponseInvalidException>()),
         );
-
         expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
-        expect(result.source, PlanGenerationSource.localFallback);
-        expect(result.value, hasLength(1));
-        expect(result.value.single['meal_type'], 'breakfast');
       },
     );
 
     test(
-      'meal fallback fails when the eligible catalog has no unused meals',
+      'invalid meal output does not create a local catalog fallback',
       () async {
         final eligibleByType = {
           for (final slot in MealPlanAiNormalizer.mealSlots)
@@ -1611,85 +1607,64 @@ void main() {
             eligibleFallbackCodesByType: eligibleByType,
             onBackendInvocation: () async {},
           ),
-          throwsStateError,
+          throwsA(isA<AIResponseInvalidException>()),
         );
       },
     );
 
-    test(
-      'exercise day returns a validated local fallback after backend error',
-      () async {
-        final service = AIService(
-          modelNames: const ['fake-model'],
-          catalogLoader: () async => catalog,
-          textGenerator: ({required modelName, required prompt}) async {
-            throw const AiInferenceException(
-              status: 'runtime_error',
-              message: 'Local runtime unavailable.',
-            );
-          },
-        );
+    test('exercise day reports backend error without local fallback', () async {
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          throw const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Backend service unavailable.',
+          );
+        },
+      );
 
-        final result = await service.generateExerciseDayCodeItemsWithSource(
+      await expectLater(
+        service.generateExerciseDayCodeItemsWithSource(
           startDate: DateTime(2026, 6, 18),
           day: 4,
           catalog: catalog,
           usedCodeCounts: const {},
           onBackendInvocation: () async {},
-        );
+        ),
+        throwsA(isA<AIOverloadedException>()),
+      );
+    });
 
-        expect(result.source, PlanGenerationSource.localFallback);
-        expect(result.value, hasLength(2));
-        expect(
-          result.value.map((item) => item['exercise_code']).toSet(),
-          hasLength(2),
-        );
-        expect(result.value.every((item) => item['day'] == 4), isTrue);
-        const ExerciseTasksAiNormalizer().validateCodeItems(
-          items: result.value,
-          catalog: catalog,
-          startDay: 4,
-          days: 1,
-          usedCodeCounts: const {},
-        );
-      },
-    );
+    test('exercise backend failure does not generate a local plan', () async {
+      final eligibleCodes = AiCatalogSeedData.exercises
+          .take(2)
+          .map((exercise) => exercise.code)
+          .toSet();
+      final usedCodeCounts = {for (final code in eligibleCodes) code: 2};
+      final service = AIService(
+        modelNames: const ['fake-model'],
+        catalogLoader: () async => catalog,
+        textGenerator: ({required modelName, required prompt}) async {
+          throw const AiInferenceException(
+            status: 'runtime_error',
+            message: 'Backend service unavailable.',
+          );
+        },
+      );
 
-    test(
-      'exercise fallback applies repeat limits only to eligible exercises',
-      () async {
-        final eligibleCodes = AiCatalogSeedData.exercises
-            .take(2)
-            .map((exercise) => exercise.code)
-            .toSet();
-        final usedCodeCounts = {for (final code in eligibleCodes) code: 2};
-        final service = AIService(
-          modelNames: const ['fake-model'],
-          catalogLoader: () async => catalog,
-          textGenerator: ({required modelName, required prompt}) async {
-            throw const AiInferenceException(
-              status: 'runtime_error',
-              message: 'Local runtime unavailable.',
-            );
-          },
-        );
-
-        final result = await service.generateExerciseDayCodeItemsWithSource(
+      await expectLater(
+        service.generateExerciseDayCodeItemsWithSource(
           startDate: DateTime(2026, 6, 18),
           day: 5,
           catalog: catalog,
           usedCodeCounts: usedCodeCounts,
           eligibleFallbackCodes: eligibleCodes,
           onBackendInvocation: () async {},
-        );
-
-        expect(result.source, PlanGenerationSource.localFallback);
-        expect(
-          result.value.map((item) => item['exercise_code']).toSet(),
-          eligibleCodes,
-        );
-      },
-    );
+        ),
+        throwsA(isA<AIOverloadedException>()),
+      );
+    });
 
     test('local runtime errors retry within the selected model', () async {
       final modelCalls = <String>[];
@@ -1817,37 +1792,44 @@ void main() {
       },
     );
 
-    test('meal generation stops when a chunk exhausts local retries', () async {
-      var call = 0;
-      final service = AIService(
-        modelNames: const ['fake-model'],
-        catalogLoader: () async => catalog,
-        textGenerator: ({required modelName, required prompt}) async {
-          call++;
-          if (call >= 2) {
-            return jsonEncode([
-              {'day': 8, 'meal_type': 'breakfast', 'meal_code': 'unknown_meal'},
-            ]);
-          }
-          return jsonEncode(
-            call == 1
-                ? _mealItemsForRange(startDay: 1, days: 7)
-                : _mealItemsForRange(startDay: 8, days: 1),
-          );
-        },
-      );
+    test(
+      'meal generation stops when a backend chunk exhausts retries',
+      () async {
+        var call = 0;
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            call++;
+            if (call >= 2) {
+              return jsonEncode([
+                {
+                  'day': 8,
+                  'meal_type': 'breakfast',
+                  'meal_code': 'unknown_meal',
+                },
+              ]);
+            }
+            return jsonEncode(
+              call == 1
+                  ? _mealItemsForRange(startDay: 1, days: 7)
+                  : _mealItemsForRange(startDay: 8, days: 1),
+            );
+          },
+        );
 
-      await expectLater(
-        service.generateMealPlanWithSource(
-          healthData: const _FakeHealthData(),
-          userId: 'u1',
-          startDate: DateTime(2026, 6, 18),
-          days: 8,
-        ),
-        throwsFormatException,
-      );
-      expect(call, 1 + AIRetryPolicy.maxAttemptsPerRequest);
-    });
+        await expectLater(
+          service.generateMealPlanWithSource(
+            healthData: const _FakeHealthData(),
+            userId: 'u1',
+            startDate: DateTime(2026, 6, 18),
+            days: 8,
+          ),
+          throwsA(isA<AIResponseInvalidException>()),
+        );
+        expect(call, 1 + AIRetryPolicy.maxAttemptsPerRequest);
+      },
+    );
 
     test('invalid meal code fails without a local substitute', () async {
       final service = AIService(
@@ -1868,14 +1850,14 @@ void main() {
             startDate: DateTime(2026, 6, 18),
             days: 1,
           ),
-          throwsFormatException,
+          throwsA(isA<AIResponseInvalidException>()),
         );
       });
       final joined = logs.join('\n');
 
       expect(joined, contains('MEAL_CHUNK_FAILED'));
       expect(joined, contains('errorType'));
-      expect(joined, contains('FormatException'));
+      expect(joined, contains('AIResponseInvalidException'));
       expect(joined, isNot(contains('MEAL_CHUNK_LOCAL_FALLBACK')));
       expect(joined, isNot(contains(AITraceLogger.localGen)));
       expect(joined, isNot(contains('Unknown meal_code')));
@@ -1992,18 +1974,18 @@ void main() {
     });
 
     test(
-      'local model failure never routes a plan to a remote AI service',
+      'backend model failure never falls back to local AI for a plan',
       () async {
         var attempts = 0;
         final service = AIService(
-          modelNames: const [LocalAiTextClient.modelId],
+          modelNames: const [BackendAiTextClient.modelId],
           catalogLoader: () async => catalog,
           delay: (_) async {},
           textGenerator: ({required modelName, required prompt}) async {
             attempts++;
             throw const AiInferenceException(
-              status: 'local_model_not_ready',
-              message: 'Chưa nạp model local.',
+              status: 'model_unavailable',
+              message: 'Dịch vụ AI chưa sẵn sàng.',
             );
           },
         );
@@ -2062,7 +2044,7 @@ void main() {
             primaryModel: null,
             fallbackModelsCsv: null,
           ),
-          [LocalAiTextClient.modelId],
+          [BackendAiTextClient.modelId],
         );
       },
     );
@@ -2080,7 +2062,7 @@ void main() {
           'local-medium',
           'local-large',
           'local-very-large',
-          LocalAiTextClient.modelId,
+          BackendAiTextClient.modelId,
         ],
       );
     });
@@ -2091,19 +2073,19 @@ void main() {
           primaryModel: 'local-custom',
           fallbackModelsCsv: ' , ',
         ),
-        ['local-custom', LocalAiTextClient.modelId],
+        ['local-custom', BackendAiTextClient.modelId],
       );
     });
   });
 
   group('AIChatModelCandidates', () {
-    test('uses the selected on-device model when chat env is absent', () {
+    test('uses the backend model identifier when chat config is absent', () {
       expect(
         AIChatModelCandidates.resolve(
           primaryModel: null,
           fallbackModelsCsv: null,
         ),
-        [LocalAiTextClient.modelId],
+        [BackendAiTextClient.modelId],
       );
     });
 

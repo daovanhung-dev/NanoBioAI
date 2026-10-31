@@ -1,5 +1,5 @@
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 typedef ActiveNotificationSubjectReader = Future<String?> Function();
 
@@ -14,7 +14,7 @@ Future<String?> resolveActiveNotificationSubject({
   final requested = _nonEmpty(requestedSubjectUserId);
   if (requested != null) return requested;
 
-  final authenticated = _nonEmpty(currentSupabaseUserIdOrNull());
+  final authenticated = _nonEmpty(currentBackendUserIdOrNull());
   if (authenticated != null) return authenticated;
 
   return _nonEmpty(await AppPrefs.pendingGuestUserId());

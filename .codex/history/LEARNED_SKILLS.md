@@ -4,11 +4,11 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 94 worklog(s)
-- coding - Coding: 45 worklog(s)
-- supabase-schema - Supabase schema and RLS: 42 worklog(s)
+- docs-context - Context and docs update: 96 worklog(s)
+- coding - Coding: 46 worklog(s)
+- supabase-schema - Supabase schema and RLS: 44 worklog(s)
 - bugfix - Direct bugfix: 38 worklog(s)
-- test - Test and verification: 28 worklog(s)
+- test - Test and verification: 29 worklog(s)
 - find-issues - Review and find issues: 10 worklog(s)
 - docs-dd - Design docs: 6 worklog(s)
 - fix-issues - Fix documented issue: 3 worklog(s)
@@ -17,7 +17,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Frequent Modules
 
-- unknown: 55
+- unknown: 56
 - catalog nabi_3000_mon_viet_moi.json.: 6
 - M32 FITNESS_TRAINING: 5
 - M31 SLEEP_SAFETY_MONITORING: 3

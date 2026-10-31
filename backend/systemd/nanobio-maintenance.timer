@@ -1,0 +1,11 @@
+[Unit]
+Description=Run NanoBioAI membership and reward maintenance hourly
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=180
+Unit=nanobio-maintenance.service
+
+[Install]
+WantedBy=timers.target

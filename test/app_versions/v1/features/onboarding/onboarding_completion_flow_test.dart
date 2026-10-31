@@ -13,6 +13,7 @@ import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboardin
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/repository_providers.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/services/meal_catalog_prefilter.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
@@ -27,18 +28,14 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test(
-      'single entrypoint generates initial guest plan without auth early return',
-      () {
-        final source = File('lib/main.dart').readAsStringSync();
+    test('guest onboarding requires sign-in before asking for an AI plan', () {
+      final source = File('lib/main.dart').readAsStringSync();
 
-        expect(source, contains('generateInitialGuestPlan'));
-        expect(
-          source,
-          isNot(contains('currentSupabaseUserIdOrNull() == null) return')),
-        );
-      },
-    );
+      expect(source, contains('currentBackendUserIdOrNull() == null'));
+      expect(source, contains('throw const AIAuthenticationException()'));
+      expect(source, contains('generateInitialGuestPlan'));
+      expect(source, isNot(contains('currentSupabaseUserIdOrNull')));
+    });
 
     test(
       'persists onboarding locally before any authenticated snapshot drain',
@@ -50,7 +47,7 @@ void main() {
 
         expect(source, contains('localDatasource.saveOnboarding'));
         expect(source, isNot(contains('saveCompletedOnboarding(')));
-        expect(source, contains('currentSupabaseUserIdOrNull'));
+        expect(source, contains('currentBackendUserIdOrNull'));
         expect(source, isNot(contains('AuthProfileService')));
       },
     );
@@ -184,6 +181,36 @@ void main() {
       expect(
         container.read(onboardingProvider).savedLog,
         OnboardingInitialPlanException.userMessage,
+      );
+    });
+
+    test('guest can complete onboarding after AI requires sign-in', () async {
+      final repository = _FakeOnboardingRepository();
+      final container = ProviderContainer(
+        overrides: [
+          onboardingRepositoryProvider.overrideWithValue(repository),
+          dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+            _FakeRoutinePreferencesRepository(),
+          ),
+          onboardingCompletionCallbackProvider.overrideWith((ref) {
+            return ({GeneratedPlanProgressCallback? onProgress}) async =>
+                throw const AIAuthenticationException();
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final controller = container.read(onboardingProvider.notifier);
+      _seedValidState(controller);
+
+      await controller.saveOnboarding();
+
+      expect(repository.saveCalls, 1);
+      expect(repository.markCompletedCalls, 1);
+      expect(await AppPrefs.isOnboardingCompleted(), isTrue);
+      expect(
+        container.read(onboardingProvider).savedLog,
+        contains('Đăng nhập để tạo lịch'),
       );
     });
 

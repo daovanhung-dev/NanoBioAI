@@ -37,9 +37,12 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 - Dart SDK constraint `^3.9.2`; the Flutter SDK version is not pinned in
   `pubspec.yaml`.
 - Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`.
-- Supabase `2.12.4`; app AI uses the on-device runtime in `lib/core/ai_local/`
-  with `llamadart`. Supabase AI Edge Functions remain server-side source only;
-  NanoBioAI no longer calls them.
+- Supabase `2.12.4` remains for retained data contracts. App text, JSON,
+  streaming, health analysis, voice responses and Food Scan AI use the
+  authenticated self-hosted NanoBio backend through `BackendAiTextClient`.
+  The app does not download or run a local text/vision model. Nabi ESP speech
+  recognition and offline TTS remain device-side; its generated reply uses the
+  backend.
 - Local notifications `19.5.0`, timezone `0.10.1`, flutter_timezone `5.1.0`.
 - SQLite database version: `DatabaseVersion.currentVersion = 34`.
 - Product access map: `v1` guest/basic, `v2` authenticated capabilities, `v3`

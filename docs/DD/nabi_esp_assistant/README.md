@@ -1,5 +1,11 @@
 # DD — Nabi - Siêu trợ lý AI kết nối ESP OSTB 3ST
 
+> Runtime update 2026-10-30: Nabi ESP no longer checks or loads the app's
+> local GGUF text model. It keeps local Whisper speech recognition, local
+> audio/ESP transport, and offline TTS; each generated reply goes through the
+> authenticated NanoBio backend. ESP AI replies therefore require sign-in and
+> Internet access. Firmware protocol and firmware source are unchanged.
+
 | Thuộc tính | Giá trị |
 |---|---|
 | Module Code | `NABI_ESP_ASSISTANT` |
@@ -14,7 +20,7 @@
 
 ## Phạm vi
 
-Định nghĩa luồng Android dùng model local trong Nabi để phục vụ một ESP OSTB 3ST qua mạng LAN riêng. PO đã chốt ý tưởng và quyền dùng cho Guest/Free; Tech, QA và Privacy chưa duyệt. Source giữ tile Android trong nhóm “Sắp ra mắt” và trang điều khiển theo release gate. Build/cài đặt, BLE pairing, cấp Wi-Fi, OTA config và WebSocket control đã được thử thật; hội thoại giọng nói, lifecycle nền và thử offline vẫn cần nghiệm thu.
+Định nghĩa luồng Android phục vụ một ESP OSTB 3ST qua mạng LAN riêng. Runtime dùng Whisper local cho nhận dạng, backend NanoBio cho câu trả lời AI, và Android TTS offline. Tech, QA và Privacy chưa duyệt. Source giữ tile Android trong nhóm “Sắp ra mắt” và trang điều khiển theo release gate. Build/cài đặt, BLE pairing, cấp Wi-Fi, OTA config và WebSocket control đã được thử thật; backend voice round trip, lifecycle nền và phát tiếng qua ESP vẫn cần nghiệm thu.
 
 ## Tài liệu
 

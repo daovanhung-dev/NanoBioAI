@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _buildPath = 'docs/supabase/01_build_system.sql';
-const _seedPath = 'docs/supabase/02_seed_data.sql';
+const _buildPath = 'docs/archive/legacy-supabase/sql/01_build_system.sql';
+const _seedPath = 'docs/archive/legacy-supabase/sql/02_seed_data.sql';
 
 void main() {
   group('Supabase Admin SQL contract', () {
@@ -32,13 +32,13 @@ void main() {
       }
 
       final source = File(
-        'lib/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart',
+        'lib/app_versions/v2/features/auth/data/datasources/backend_auth_remote_datasource.dart',
       ).readAsStringSync();
       final registerPage = File(
         'lib/app_versions/v2/features/auth/presentation/pages/auth_pages.dart',
       ).readAsStringSync();
-      expect(source, contains("'referral_code': referralCode"));
-      expect(source, contains("'device_fingerprint': deviceFingerprint"));
+      expect(source, contains("'referral_code': command.referralCode"));
+      expect(source, contains("'device_fingerprint': fingerprint"));
       expect(registerPage, isNot(contains('attach_my_referral_code')));
     });
 
@@ -116,104 +116,112 @@ void main() {
       }
     });
 
-    test('keeps unified role access and Admin financial policies server-owned', () {
-      for (final token in [
-        'add column if not exists app_access_mode',
-        'users_app_access_mode_check',
-        'alter column app_access_mode set not null',
-        "app_access_mode = 'both'",
-        'revoke update (app_access_mode)',
-        'create or replace function public.get_my_admin_session()',
-        'grant execute on function public.get_my_admin_session()',
-        'record_trusted_payment_event',
-        'p_auto_approve boolean default false',
-        'p_list_price_cents integer default null',
-        'p_commission_base_cents integer default null',
-        "'manual_approval_required'",
-        "('super_admin', '*')",
-        "('finance_admin', '*')",
-        "('support_admin', '*')",
-        "('content_admin', '*')",
-        "('operations_admin', '*')",
-        "'reconciliation.write'",
-        "'points.write'",
-        "when p_config_key ilike 'plan%' then 'plans.write'",
-        "perform public.admin_assert_permission('config.write')",
-        'PAYMENT_ALREADY_REVIEWED',
-        'PAYMENT_REVERSAL_WINDOW_EXPIRED',
-        'create_sale_point_reversal_for_payment',
-        'negative_adjustment_without_overwriting_commission',
-        "'chargeback'",
-        "'approval_count_required'",
-      ]) {
-        expect(build, contains(token), reason: token);
-      }
-      expect(build, contains('from public, anon, authenticated'));
-    });
+    test(
+      'keeps unified role access and Admin financial policies server-owned',
+      () {
+        for (final token in [
+          'add column if not exists app_access_mode',
+          'users_app_access_mode_check',
+          'alter column app_access_mode set not null',
+          "app_access_mode = 'both'",
+          'revoke update (app_access_mode)',
+          'create or replace function public.get_my_admin_session()',
+          'grant execute on function public.get_my_admin_session()',
+          'record_trusted_payment_event',
+          'p_auto_approve boolean default false',
+          'p_list_price_cents integer default null',
+          'p_commission_base_cents integer default null',
+          "'manual_approval_required'",
+          "('super_admin', '*')",
+          "('finance_admin', '*')",
+          "('support_admin', '*')",
+          "('content_admin', '*')",
+          "('operations_admin', '*')",
+          "'reconciliation.write'",
+          "'points.write'",
+          "when p_config_key ilike 'plan%' then 'plans.write'",
+          "perform public.admin_assert_permission('config.write')",
+          'PAYMENT_ALREADY_REVIEWED',
+          'PAYMENT_REVERSAL_WINDOW_EXPIRED',
+          'create_sale_point_reversal_for_payment',
+          'negative_adjustment_without_overwriting_commission',
+          "'chargeback'",
+          "'approval_count_required'",
+        ]) {
+          expect(build, contains(token), reason: token);
+        }
+        expect(build, contains('from public, anon, authenticated'));
+      },
+    );
 
-    test('qualifies Admin dashboard filters and keeps audits privacy-limited', () {
-      final dashboard = _adminDashboardSummaryBlock(build);
-      for (final token in [
-        'from public.payment_events pe',
-        "where pe.status = 'pending'",
-        'and pe.created_at between p_from and p_to',
-        'from public.sale_profiles sp',
-        "where sp.status = 'active'",
-        "'onboarding_completed'",
-        "'packages_active'",
-        "'payments_succeeded'",
-        "'revenue_succeeded'",
-        "'familyplus_active'",
-        "'admin_alerts'",
-        'coalesce(sum(cr.amount_cents), 0)::integer',
-        'from public.commission_records cr',
-        "where cr.status in ('pending', 'approved')",
-        'and cr.available_at <= now()',
-        'and cr.created_at between p_from and p_to',
-      ]) {
-        expect(dashboard, contains(token), reason: token);
-      }
-      expect(_hasUnqualifiedDashboardStatusFilter(dashboard), isFalse);
+    test(
+      'qualifies Admin dashboard filters and keeps audits privacy-limited',
+      () {
+        final dashboard = _adminDashboardSummaryBlock(build);
+        for (final token in [
+          'from public.payment_events pe',
+          "where pe.status = 'pending'",
+          'and pe.created_at between p_from and p_to',
+          'from public.sale_profiles sp',
+          "where sp.status = 'active'",
+          "'onboarding_completed'",
+          "'packages_active'",
+          "'payments_succeeded'",
+          "'revenue_succeeded'",
+          "'familyplus_active'",
+          "'admin_alerts'",
+          'coalesce(sum(cr.amount_cents), 0)::integer',
+          'from public.commission_records cr',
+          "where cr.status in ('pending', 'approved')",
+          'and cr.available_at <= now()',
+          'and cr.created_at between p_from and p_to',
+        ]) {
+          expect(dashboard, contains(token), reason: token);
+        }
+        expect(_hasUnqualifiedDashboardStatusFilter(dashboard), isFalse);
 
-      final users = _functionBlock(build, 'admin_search_users');
-      expect(
-        build,
-        contains('drop function if exists public.admin_search_users(text, integer);'),
-      );
-      for (final token in [
-        'subscription_id text',
-        'membership_starts_at timestamptz',
-        'membership_ends_at timestamptz',
-        'public.current_plan_for_user(u.id)',
-        'ms.source',
-        "ms.ends_at is null or ms.ends_at > now()",
-      ]) {
-        expect(users, contains(token), reason: token);
-      }
+        final users = _functionBlock(build, 'admin_search_users');
+        expect(
+          build,
+          contains(
+            'drop function if exists public.admin_search_users(text, integer);',
+          ),
+        );
+        for (final token in [
+          'subscription_id text',
+          'membership_starts_at timestamptz',
+          'membership_ends_at timestamptz',
+          'public.current_plan_for_user(u.id)',
+          'ms.source',
+          "ms.ends_at is null or ms.ends_at > now()",
+        ]) {
+          expect(users, contains(token), reason: token);
+        }
 
-      for (final token in [
-        'admin_list_report_catalog',
-        'membership_summary',
-        'sale_points_summary',
-        'admin_audit_summary',
-        'INVALID_REPORT_TYPE',
-        "'privacy', 'no_raw_payloads'",
-        "coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh')",
-        'grant execute on function public.admin_list_report_catalog',
-      ]) {
-        expect(build, contains(token), reason: token);
-      }
-      final audit = _functionBlock(build, 'admin_list_audit_events');
-      expect(audit, contains('returns table'));
-      for (final forbidden in [
-        'metadata jsonb',
-        'raw_event',
-        'payment_proof',
-        'health_payload',
-      ]) {
-        expect(audit, isNot(contains(forbidden)), reason: forbidden);
-      }
-    });
+        for (final token in [
+          'admin_list_report_catalog',
+          'membership_summary',
+          'sale_points_summary',
+          'admin_audit_summary',
+          'INVALID_REPORT_TYPE',
+          "'privacy', 'no_raw_payloads'",
+          "coalesce(p_filters ->> 'time_zone', 'Asia/Ho_Chi_Minh')",
+          'grant execute on function public.admin_list_report_catalog',
+        ]) {
+          expect(build, contains(token), reason: token);
+        }
+        final audit = _functionBlock(build, 'admin_list_audit_events');
+        expect(audit, contains('returns table'));
+        for (final forbidden in [
+          'metadata jsonb',
+          'raw_event',
+          'payment_proof',
+          'health_payload',
+        ]) {
+          expect(audit, isNot(contains(forbidden)), reason: forbidden);
+        }
+      },
+    );
   });
 
   group('Sale direct-only contract', () {
@@ -254,25 +262,28 @@ void main() {
       expect(build, contains("public.admin_has_permission('sales.write')"));
     });
 
-    test('keeps referral attach registration-only and anti-fraud constrained', () {
-      final block = _functionBlock(build, 'attach_my_referral_code');
-      for (final token in [
-        "and sp.status = 'active'",
-        'if v_referrer_id = v_user_id then',
-        'where referred_user_id = v_user_id',
-        'rr.device_hash = v_device_hash',
-        'participation_device_hash = v_device_hash',
-        'lower(v_user_email) = lower(coalesce(v_referrer_email',
-        'v_user_phone = coalesce(v_referrer_phone',
-        'from public.payment_events',
-        "status in ('pending', 'succeeded', 'refunded', 'chargeback')",
-        "'signup'",
-        "'account_registration'",
-        "jsonb_build_array('self', 'existing_referral', 'payment_history', 'email', 'phone', 'device')",
-      ]) {
-        expect(block, contains(token), reason: token);
-      }
-    });
+    test(
+      'keeps referral attach registration-only and anti-fraud constrained',
+      () {
+        final block = _functionBlock(build, 'attach_my_referral_code');
+        for (final token in [
+          "and sp.status = 'active'",
+          'if v_referrer_id = v_user_id then',
+          'where referred_user_id = v_user_id',
+          'rr.device_hash = v_device_hash',
+          'participation_device_hash = v_device_hash',
+          'lower(v_user_email) = lower(coalesce(v_referrer_email',
+          'v_user_phone = coalesce(v_referrer_phone',
+          'from public.payment_events',
+          "status in ('pending', 'succeeded', 'refunded', 'chargeback')",
+          "'signup'",
+          "'account_registration'",
+          "jsonb_build_array('self', 'existing_referral', 'payment_history', 'email', 'phone', 'device')",
+        ]) {
+          expect(block, contains(token), reason: token);
+        }
+      },
+    );
 
     test('revokes direct client writes to Sale financial tables', () {
       for (final table in [
@@ -287,54 +298,58 @@ void main() {
       }
       expect(build, contains('revoke insert, update, delete on'));
       expect(build, contains('from anon, authenticated'));
-      expect(build, contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"));
+      expect(
+        build,
+        contains("coalesce(v_payment.paid_at, now()) + interval '24 hours'"),
+      );
       expect(build, contains('commission_base_cents'));
       expect(build, contains('list_price_cents'));
     });
 
-    test('documents the two-script run order and removes second-level markers', () {
-      final readme = File('docs/supabase/README.md').readAsStringSync();
-      final buildIndex = readme.indexOf('01_build_system.sql');
-      final seedIndex = readme.indexOf('02_seed_data.sql');
-      expect(buildIndex, greaterThanOrEqualTo(0));
-      expect(seedIndex, greaterThan(buildIndex));
-      expect(build, contains('sale-payout-proofs'));
+    test(
+      'documents the two-script run order and removes second-level markers',
+      () {
+        final readme = File('docs/archive/legacy-supabase/sql/README.md').readAsStringSync();
+        final buildIndex = readme.indexOf('01_build_system.sql');
+        final seedIndex = readme.indexOf('02_seed_data.sql');
+        expect(buildIndex, greaterThanOrEqualTo(0));
+        expect(seedIndex, greaterThan(buildIndex));
+        expect(build, contains('sale-payout-proofs'));
 
-      final roots = [
-        Directory('docs/supabase'),
-        Directory('lib/sale_referral'),
-        Directory('lib/services/supabase/sale'),
-        Directory('test/sale_referral'),
-      ];
-      final forbidden = <String>[
-        'secondLevel',
-        'second-level',
-        'second_level',
-        '0.0500',
-        'level = 2',
-        '5% tang 2',
-        '5% tầng 2',
-      ];
-      final violations = <String>[];
-      for (final root in roots) {
-        for (final file in root
-            .listSync(recursive: true)
-            .whereType<File>()
-            .where((file) {
-              return file.path.endsWith('.sql') ||
-                  file.path.endsWith('.md') ||
-                  file.path.endsWith('.dart');
-            })) {
-          final content = file.readAsStringSync();
-          for (final token in forbidden) {
-            if (content.contains(token)) {
-              violations.add('${file.path}: $token');
+        final roots = [
+          Directory('docs/supabase'),
+          Directory('lib/sale_referral'),
+          Directory('lib/services/backend/sale'),
+          Directory('test/sale_referral'),
+        ];
+        final forbidden = <String>[
+          'secondLevel',
+          'second-level',
+          'second_level',
+          '0.0500',
+          'level = 2',
+          '5% tang 2',
+          '5% tầng 2',
+        ];
+        final violations = <String>[];
+        for (final root in roots) {
+          for (final file
+              in root.listSync(recursive: true).whereType<File>().where((file) {
+                return file.path.endsWith('.sql') ||
+                    file.path.endsWith('.md') ||
+                    file.path.endsWith('.dart');
+              })) {
+            final content = file.readAsStringSync();
+            for (final token in forbidden) {
+              if (content.contains(token)) {
+                violations.add('${file.path}: $token');
+              }
             }
           }
         }
-      }
-      expect(violations, isEmpty);
-    });
+        expect(violations, isEmpty);
+      },
+    );
   });
 
   group('Admin membership period adjustment contract', () {
@@ -378,7 +393,9 @@ void main() {
           'revoke all on function public.admin_adjust_membership_period',
         ),
       );
-      final manifestStart = build.indexOf('foreach v_function_name in array array[');
+      final manifestStart = build.indexOf(
+        'foreach v_function_name in array array[',
+      );
       final manifestEnd = build.indexOf('  ] loop', manifestStart);
       expect(manifestStart, greaterThanOrEqualTo(0));
       expect(manifestEnd, greaterThan(manifestStart));
@@ -400,7 +417,8 @@ void main() {
 }
 
 String _adminDashboardSummaryBlock(String sql) {
-  const startToken = 'create or replace function public.get_admin_dashboard_summary';
+  const startToken =
+      'create or replace function public.get_admin_dashboard_summary';
   const endToken = 'create or replace function public.admin_search_users';
   final start = sql.indexOf(startToken);
   final end = sql.indexOf(endToken, start);

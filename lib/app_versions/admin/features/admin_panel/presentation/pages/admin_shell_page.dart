@@ -8,13 +8,13 @@ import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/presentation/controllers/admin_controller.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_providers.dart';
+import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin_payout_proof_provider.dart';
 import 'package:nano_app/app_versions/admin/features/wellness_rewards/wellness_rewards_admin.dart';
 import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 import 'package:nano_app/core/localization/vietnam_time.dart';
 import 'package:nano_app/core/payments/viet_qr_payload_builder.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 const _desktopBreakpoint = 920.0;
 const _wideBreakpoint = 1180.0;
@@ -375,21 +375,18 @@ class _AdminShellPageState extends ConsumerState<AdminShellPage>
       if (image == null) return null;
 
       final bytes = await image.readAsBytes();
-      final safeName = image.name.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
-      final path =
-          'sale-point-conversions/$conversionId/${DateTime.now().millisecondsSinceEpoch}-$safeName';
       final contentType = image.mimeType ?? 'image/jpeg';
-
-      await Supabase.instance.client.storage
-          .from('sale-payout-proofs')
-          .uploadBinary(
-            path,
-            bytes,
-            fileOptions: FileOptions(contentType: contentType, upsert: false),
+      final fileId = await ref
+          .read(adminPayoutProofRepositoryProvider)
+          .uploadSalePayoutProof(
+            conversionId: conversionId,
+            fileName: image.name,
+            contentType: contentType,
+            bytes: bytes,
           );
 
       AppFeedbackService.instance.emit(AppFeedbackType.success);
-      return path;
+      return fileId;
     } catch (_) {
       if (mounted) {
         AppFeedbackService.instance.emit(AppFeedbackType.error);

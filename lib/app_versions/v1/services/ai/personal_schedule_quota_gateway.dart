@@ -1,5 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:nano_app/core/network/backend_api_client.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
 class PersonalScheduleQuotaDecision {
@@ -65,18 +64,11 @@ class TrustedBackendPersonalScheduleQuotaGateway
   static const _checkRpc = 'check_personal_schedule_generation_quota';
   static const _commitRpc = 'commit_personal_schedule_generation_quota';
 
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
   const TrustedBackendPersonalScheduleQuotaGateway({this.clientOverride});
 
-  SupabaseClient? get _client {
-    if (clientOverride != null) return clientOverride;
-    try {
-      return Supabase.instance.client;
-    } on AssertionError {
-      return null;
-    }
-  }
+  BackendApiClient? get _client => clientOverride ?? BackendApiClient.shared;
 
   @override
   Future<PersonalScheduleQuotaDecision> checkGeneration({
@@ -91,14 +83,13 @@ class TrustedBackendPersonalScheduleQuotaGateway
 
     try {
       _logRpc(rpcName: _checkRpc, stage: 'REQUEST', status: 'started');
-      final response = await client.rpc(
-        _checkRpc,
-        params: {
-          'p_user_id': userId,
-          'p_request_id': requestId,
-          'p_feature_key': featureKey,
-          'p_reset_timezone': resetTimezone,
-          'p_requested_at': at.toUtc().toIso8601String(),
+      final response = await client.requestMap(
+        'POST',
+        '/api/v1/usage-quota/check',
+        body: {
+          'feature_key': featureKey,
+          'request_id': requestId,
+          'requested_at': at.toUtc().toIso8601String(),
         },
       );
       final decision = _decisionFromResponse(response);
@@ -140,14 +131,13 @@ class TrustedBackendPersonalScheduleQuotaGateway
 
     try {
       _logRpc(rpcName: _commitRpc, stage: 'REQUEST', status: 'started');
-      final response = await client.rpc(
-        _commitRpc,
-        params: {
-          'p_user_id': userId,
-          'p_request_id': requestId,
-          'p_feature_key': featureKey,
-          'p_reset_timezone': resetTimezone,
-          'p_committed_at': at.toUtc().toIso8601String(),
+      final response = await client.requestMap(
+        'POST',
+        '/api/v1/usage-quota/commit',
+        body: {
+          'feature_key': featureKey,
+          'request_id': requestId,
+          'requested_at': at.toUtc().toIso8601String(),
         },
       );
       final decision = _decisionFromResponse(response);

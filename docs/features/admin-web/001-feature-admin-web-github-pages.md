@@ -24,7 +24,7 @@ Commit đề xuất: feat(admin-web): tạo workspace vận hành NanoBio trên 
 
 ## Backend contract
 
-Đã đối chiếu chữ ký RPC trong canonical `docs/supabase/01_build_system.sql`,
+Đã đối chiếu chữ ký RPC trong canonical `docs/archive/legacy-supabase/sql/01_build_system.sql`,
 đặc biệt payment reviewer có `p_transfer_verified`, danh sách wellness trả
 shape riêng, và policy bucket chỉ cho insert/đọc trong path conversion. Không
 thay đổi schema hoặc mở CRUD trực tiếp từ frontend.

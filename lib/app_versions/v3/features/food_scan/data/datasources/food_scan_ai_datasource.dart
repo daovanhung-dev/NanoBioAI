@@ -5,7 +5,7 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as image_codec;
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 import '../../application/food_scan_prompts.dart';
 import '../../domain/entities/food_scan_models.dart';
@@ -44,7 +44,7 @@ class FoodScanAiDatasource {
   const FoodScanAiDatasource({this.clientOverride, this.modelOverride});
 
   Future<FoodVisionAnalysis> analyzeImage(String imagePath) async {
-    final client = _client(operation: 'vision');
+    final client = _client;
     final file = File(imagePath);
     if (!await file.exists()) {
       throw const FoodScanException(
@@ -113,7 +113,7 @@ class FoodScanAiDatasource {
       throw FoodScanException(
         code: 'AI_VISION_FAILED',
         userMessage:
-            'Nabi chưa thể phân tích ảnh món ăn lúc này. Bạn thử lại sau khi model đã sẵn sàng nhé.',
+            'Dịch vụ AI chưa thể phân tích ảnh món ăn lúc này. Bạn kiểm tra kết nối rồi thử lại nhé.',
         cause: error,
       );
     }
@@ -158,7 +158,7 @@ class FoodScanAiDatasource {
     }
 
     try {
-      final text = await _client(operation: 'health').generateText(
+      final text = await _client.generateText(
         model: _model(),
         messages: [
           AiMessage.user(
@@ -207,16 +207,16 @@ class FoodScanAiDatasource {
     }
   }
 
-  AiTextClient _client({required String operation}) {
+  AiTextClient get _client {
     final override = clientOverride;
     if (override != null) return override;
-    return LocalAiTextClient(operation: operation);
+    return const BackendAiTextClient();
   }
 
   String _model() {
     final model = modelOverride?.trim();
     if (model != null && model.isNotEmpty) return model;
-    return LocalAiTextClient.modelId;
+    return BackendAiTextClient.modelId;
   }
 
   FoodVisionAnalysis _parseVision(String source) {
@@ -234,9 +234,7 @@ class FoodScanAiDatasource {
           ...row,
           'id': _uuidV4(),
           'normalized_name': row['normalized_hint'] ?? row['normalized_name'],
-          // Some local vision models follow the same fields under `nutrition`
-          // even when the prompt asks for `fallback_nutrition`. Preserve that
-          // estimate instead of replacing it with null.
+          // Preserve an estimate returned under either accepted nutrition key.
           'nutrition': nutrition,
           'nutrition_source': 'ai_fallback',
         });
@@ -420,45 +418,19 @@ class FoodScanAiDatasource {
         cause: error,
       );
     }
-    if (error.status == 'vision_model_unsupported') {
-      return FoodScanException(
-        code: 'VISION_MODEL_UNSUPPORTED',
-        userMessage:
-            'Thiết bị chưa đủ tài nguyên để chạy model ảnh. Ảnh vẫn ở trên thiết bị và không được gửi đi nơi khác.',
-        cause: error,
-      );
-    }
-    if (error.status == 'insufficient_storage') {
-      return FoodScanException(
-        code: 'VISION_MODEL_STORAGE_UNAVAILABLE',
-        userMessage:
-            'Thiết bị không đủ dung lượng để tải model ảnh. Hãy giải phóng bộ nhớ rồi thử lại; ảnh không được gửi đi nơi khác.',
-        cause: error,
-      );
-    }
-    if (error.status == 'model_download_failed' ||
-        error.status == 'model_checksum_failed') {
-      return FoodScanException(
-        code: 'VISION_MODEL_DOWNLOAD_FAILED',
-        userMessage:
-            'Model ảnh chưa tải xong hoặc không khớp checksum. Kiểm tra kết nối rồi thử lại; ảnh vẫn ở trên thiết bị.',
-        cause: error,
-      );
-    }
     if (error.isAuthenticationFailure) {
       return FoodScanException(
         code: 'AI_AUTHENTICATION',
-        userMessage:
-            'Model AI trên thiết bị chưa sẵn sàng. Bạn thử lại sau nhé.',
+        userMessage: error.message,
         cause: error,
       );
     }
-    if (error.isTransient) {
+    if (error.isTransient || error.isNetworkFailure) {
       return FoodScanException(
         code: 'AI_TEMPORARILY_UNAVAILABLE',
         userMessage: healthEvaluation
-            ? 'Nabi chưa đánh giá được sức khỏe lúc này. Phần dinh dưỡng vẫn được giữ để bạn thử lại.'
-            : 'Model trên thiết bị đang bận. Ảnh vẫn ở trên máy, bạn thử lại nhé.',
+            ? 'Dịch vụ AI chưa đánh giá được sức khỏe lúc này. Phần dinh dưỡng vẫn được giữ để bạn thử lại.'
+            : 'Dịch vụ AI tạm thời chưa khả dụng. Bạn kiểm tra mạng rồi thử lại nhé.',
         cause: error,
       );
     }

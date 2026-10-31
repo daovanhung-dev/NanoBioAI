@@ -720,7 +720,7 @@ class _FitnessTrainingPageState extends ConsumerState<FitnessTrainingPage> {
       controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Đồng ý tạo gợi ý bằng AI'),
       subtitle: Text(
-        'Model AI trên thiết bị xử lý mục tiêu, nơi tập, thiết bị, lịch tập và giới hạn vận động đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'}. Không gửi ngày sinh, tên, ghi chú hồ sơ, dị ứng, thực đơn hoặc giờ ngủ tới dịch vụ AI từ xa.',
+        'Các mục tiêu, thiết bị, lịch tập, giới hạn vận động đã chọn${metrics == null ? '' : ', cùng BMI/BMR/TDEE tham khảo'} được gửi qua HTTPS tới máy chủ NanoBio để tạo lịch. Không gửi ngày sinh, tên hoặc ghi chú hồ sơ.',
       ),
     ),
   );

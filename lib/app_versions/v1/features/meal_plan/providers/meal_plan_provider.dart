@@ -4,7 +4,7 @@ import 'package:nano_app/app_versions/v1/features/meal_plan/domain/entities/meal
 import 'package:nano_app/app_versions/v1/features/meal_plan/domain/repositories/meal_plan_repository.dart';
 import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../domain/repositories/meal_plan_repository_impl.dart';
 
@@ -16,7 +16,7 @@ final mealPlanLocalDatasourceProvider = Provider<MealPlanLocalDatasource>((
 
 final mealPlanSubjectResolverProvider = Provider<LocalSubjectResolver>((ref) {
   return LocalSubjectResolver(
-    currentActorId: currentSupabaseUserIdOrNull,
+    currentActorId: currentBackendUserIdOrNull,
     pendingGuestUserId: AppPrefs.pendingGuestUserId,
   );
 });

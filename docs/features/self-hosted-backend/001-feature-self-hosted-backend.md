@@ -44,6 +44,6 @@ Khong goi Gemini tu server. Sau thu muc function empty khong co source nen khong
 ## Nguon tham chieu
 
 - `docs/context/Backend_Agent_Context_Reusable/README.md`
-- `docs/supabase/README.md`
-- `docs/supabase/01_build_system.sql`
+- `docs/archive/legacy-supabase/sql/README.md`
+- `docs/archive/legacy-supabase/sql/01_build_system.sql`
 - `Study2Work/apps/study-server/` chi la tham chieu phan tang; khong copy domain, schema hay secret.

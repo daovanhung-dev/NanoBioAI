@@ -1,14 +1,14 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 abstract interface class MembershipPaymentPayerProfileRemoteDatasource {
   Future<String?> readFullName(String userId);
 }
 
-class SupabaseMembershipPaymentPayerProfileRemoteDatasource
+class BackendMembershipPaymentPayerProfileRemoteDatasource
     implements MembershipPaymentPayerProfileRemoteDatasource {
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
-  const SupabaseMembershipPaymentPayerProfileRemoteDatasource({
+  const BackendMembershipPaymentPayerProfileRemoteDatasource({
     this.clientOverride,
   });
 
@@ -16,33 +16,14 @@ class SupabaseMembershipPaymentPayerProfileRemoteDatasource
   Future<String?> readFullName(String userId) async {
     final normalizedUserId = userId.trim();
     if (normalizedUserId.isEmpty) return null;
-
-    final client = clientOverride ?? Supabase.instance.client;
-    final currentUser = client.auth.currentUser;
-    if (currentUser == null || currentUser.id != normalizedUserId) {
-      return null;
-    }
-
-    // The public profile is preferred because it is the server-side business
-    // profile used by the payment flow. Profile lookup must never prevent QR
-    // creation, so auth metadata/email remain safe display-only fallbacks.
+    final client = clientOverride ?? BackendApiClient.shared;
+    if (client.currentUserId != normalizedUserId) return null;
     try {
-      final row = await client
-          .from('users')
-          .select('full_name')
-          .eq('id', normalizedUserId)
-          .maybeSingle();
-      final fullName = _readText(row?['full_name']);
-      if (fullName != null) return fullName;
-    } catch (_) {
-      // Payment reference/amount/bank details are created by the trusted RPC.
-      // A profile read failure is not a valid reason to suppress that request.
+      final profile = await client.requestMap('GET', '/api/v1/profile/me');
+      return _readText(profile['full_name']);
+    } on BackendApiException {
+      rethrow;
     }
-
-    final metadata = currentUser.userMetadata;
-    return _readText(metadata?['full_name']) ??
-        _readText(metadata?['name']) ??
-        _readText(currentUser.email);
   }
 }
 

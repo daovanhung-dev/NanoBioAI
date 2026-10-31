@@ -55,7 +55,7 @@ class NabiHealthAnalysisCard extends StatelessWidget {
               color: AppColors.primary,
               title: 'Phân tích sâu theo dữ liệu của bạn',
               subtitle:
-                  'Nabi sẽ giải thích các điểm nổi bật và gợi ý việc nên ưu tiên. AI không thay thế đánh giá y khoa.',
+                  'Khi bạn chọn phân tích, các chỉ số sức khỏe liên quan sẽ được gửi qua HTTPS tới máy chủ NanoBio. Nabi giải thích điểm nổi bật và gợi ý việc nên ưu tiên; kết quả không thay thế đánh giá y khoa.',
             ),
           ] else ...[
             NamiCareInfoTile(
@@ -89,8 +89,8 @@ class NabiHealthAnalysisCard extends StatelessWidget {
               analyzing
                   ? 'Nabi đang phân tích...'
                   : bundle == null
-                      ? 'Phân tích sâu với Nabi'
-                      : 'Phân tích lại',
+                  ? 'Phân tích sâu với Nabi'
+                  : 'Phân tích lại',
             ),
           ),
         ],

@@ -27,7 +27,7 @@ import 'package:nano_app/core/membership/membership_display_info.dart';
 import 'package:nano_app/core/membership/membership_upgrade_route.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/nabi.dart';
-import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/services/backend/cloud_sync/cloud_sync.dart';
 import 'package:nano_app/shared/membership/presentation/membership_upgrade_navigation.dart';
 import 'package:nano_app/shared/wellness_rank/providers/wellness_rank_providers.dart';
 

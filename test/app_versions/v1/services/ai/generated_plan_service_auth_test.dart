@@ -313,7 +313,7 @@ void main() {
   );
 
   test(
-    'uses the filtered local meal fallback after a failed daily meal call',
+    'retries meal generation through backend slots after a failed day call',
     () async {
       final requestStore = _RecordingRequestStore();
       final aiService = _RecordingAIService()..failuresRemainingByDay[1] = 1;
@@ -345,12 +345,14 @@ void main() {
       expect(result.exerciseCount, 4);
       expect(aiService.callOrder, [
         'meal:1',
+        for (final slot in MealPlanAiNormalizer.mealSlots)
+          'meal_slot:1:${slot.type}',
         'exercise:1',
         'meal:2',
         'exercise:2',
       ]);
-      expect(result.generationSource, PlanGenerationSource.localFallback);
-      expect(aiService.mealCalls, 2);
+      expect(result.generationSource, PlanGenerationSource.ai);
+      expect(aiService.mealCalls, 7);
       expect(requestStore.dailyCommitCalls, 2);
       expect(requestStore.commitCalls, 1);
     },
@@ -1089,7 +1091,7 @@ void main() {
   );
 
   test(
-    'generateNextPlan falls back locally after AI failure without quota commit',
+    'generateNextPlan stops after AI failure without committing a local plan',
     () async {
       final requestStore = _RecordingRequestStore();
       final quotaGateway = _RecordingQuotaGateway();
@@ -1117,25 +1119,27 @@ void main() {
         scheduleReminders: () async {},
       );
 
-      final result = await service.generateNextPlan(
-        requestId: 'member-request-1',
-        days: 1,
-        startDate: DateTime(2026, 1, 2),
+      await expectLater(
+        service.generateNextPlan(
+          requestId: 'member-request-1',
+          days: 1,
+          startDate: DateTime(2026, 1, 2),
+        ),
+        throwsA(isA<StateError>()),
       );
-
-      expect(result.generationSource, PlanGenerationSource.localFallback);
       expect(quotaGateway.checkCalls, 1);
       expect(quotaGateway.commitCalls, 0);
       expect(requestStore.generatingCalls, 1);
-      expect(requestStore.failedCalls, 0);
-      expect(requestStore.commitCalls, 1);
+      expect(requestStore.failedCalls, 1);
+      expect(requestStore.dailyCommitCalls, 0);
+      expect(requestStore.commitCalls, 0);
       expect(aiService.mealCalls, 1);
       expect(aiService.exerciseCalls, 1);
     },
   );
 
   test(
-    'AI daily-call failure falls back and persists a complete day',
+    'AI failure does not create a local plan and a user retry can resume',
     () async {
       final requestStore = _RecordingRequestStore();
       final aiService = _FailOnceExerciseAIService();
@@ -1159,6 +1163,19 @@ void main() {
       );
       final startDate = DateTime(2026, 1, 2);
 
+      await expectLater(
+        service.generateInitialGuestPlan(
+          requestId: 'resume-guest-plan',
+          days: 1,
+          startDate: startDate,
+        ),
+        throwsA(isA<AIRateLimitedException>()),
+      );
+
+      expect(requestStore.dailyCommitCalls, 0);
+      expect(requestStore.commitCalls, 0);
+      expect(requestStore.failedCalls, 1);
+
       final result = await service.generateInitialGuestPlan(
         requestId: 'resume-guest-plan',
         days: 1,
@@ -1167,9 +1184,9 @@ void main() {
 
       expect(result.mealCount, 5);
       expect(result.exerciseCount, 2);
-      expect(result.generationSource, PlanGenerationSource.localFallback);
+      expect(result.generationSource, PlanGenerationSource.ai);
       expect(aiService.mealCalls, 1);
-      expect(aiService.exerciseCalls, 1);
+      expect(aiService.exerciseCalls, 2);
       expect(requestStore.dailyCommitCalls, 1);
       expect(requestStore.committedDays, [1]);
       expect(requestStore.commitCalls, 1);
@@ -1180,48 +1197,62 @@ void main() {
     },
   );
 
-  test('member plan skips AI quota for local fallback', () async {
-    final requestStore = _RecordingRequestStore();
-    final aiService = _FailOnceExerciseAIService();
-    final quotaGateway = _RecordingQuotaGateway();
-    final horizon = _MutableScheduleHorizonReader(
-      nextStartDate: DateTime(2026, 1, 2),
-    );
-    final service = GeneratedPlanService(
-      minimumMealCandidatesPerPeriod: 1,
-      dashboardRepository: _RecordingDashboardRepository(userId: 'auth-user-1'),
-      dailyHealthDatasource: _RecordingDailyHealthDatasource(
-        userId: 'auth-user-1',
-      ),
-      scheduleDatasource: _RecordingScheduleDatasource(),
-      aiService: aiService,
-      nutritionProfileDatasource: const _FakeNutritionProfileLocalDatasource(),
-      exercisePreferencesDatasource:
-          const _FakeExercisePlanningPreferencesDatasource(),
-      catalogDatasource: const _FakeCatalogDatasource(),
-      requestStore: requestStore,
-      quotaGateway: quotaGateway,
-      routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
-      scheduleHorizonReader: horizon,
-      currentUserId: () => 'auth-user-1',
-      scheduleReminders: () async {},
-    );
+  test(
+    'member plan skips quota commit after backend failure and can retry',
+    () async {
+      final requestStore = _RecordingRequestStore();
+      final aiService = _FailOnceExerciseAIService();
+      final quotaGateway = _RecordingQuotaGateway();
+      final horizon = _MutableScheduleHorizonReader(
+        nextStartDate: DateTime(2026, 1, 2),
+      );
+      final service = GeneratedPlanService(
+        minimumMealCandidatesPerPeriod: 1,
+        dashboardRepository: _RecordingDashboardRepository(
+          userId: 'auth-user-1',
+        ),
+        dailyHealthDatasource: _RecordingDailyHealthDatasource(
+          userId: 'auth-user-1',
+        ),
+        scheduleDatasource: _RecordingScheduleDatasource(),
+        aiService: aiService,
+        nutritionProfileDatasource:
+            const _FakeNutritionProfileLocalDatasource(),
+        exercisePreferencesDatasource:
+            const _FakeExercisePlanningPreferencesDatasource(),
+        catalogDatasource: const _FakeCatalogDatasource(),
+        requestStore: requestStore,
+        quotaGateway: quotaGateway,
+        routinePreferencesRepository: _FakeRoutinePreferencesRepository(),
+        scheduleHorizonReader: horizon,
+        currentUserId: () => 'auth-user-1',
+        scheduleReminders: () async {},
+      );
 
-    final result = await service.generateNextPlan(
-      requestId: 'member-attempt-1',
-      days: 1,
-    );
+      await expectLater(
+        service.generateNextPlan(requestId: 'member-attempt-1', days: 1),
+        throwsA(isA<AIRateLimitedException>()),
+      );
+      expect(quotaGateway.commitCalls, 0);
+      expect(requestStore.dailyCommitCalls, 0);
+      expect(requestStore.failedCalls, 1);
 
-    expect(result.requestId, 'member-attempt-1');
-    expect(result.startDate, DateTime(2026, 1, 2));
-    expect(result.generationSource, PlanGenerationSource.localFallback);
-    expect(aiService.mealCalls, 1);
-    expect(aiService.exerciseCalls, 1);
-    expect(quotaGateway.checkCalls, 1);
-    expect(quotaGateway.commitCalls, 0);
-    expect(requestStore.dailyCommitCalls, 1);
-    expect(requestStore.commitCalls, 1);
-  });
+      final result = await service.generateNextPlan(
+        requestId: 'member-attempt-1',
+        days: 1,
+      );
+
+      expect(result.requestId, 'member-attempt-1');
+      expect(result.startDate, DateTime(2026, 1, 2));
+      expect(result.generationSource, PlanGenerationSource.ai);
+      expect(aiService.mealCalls, 1);
+      expect(aiService.exerciseCalls, 2);
+      expect(quotaGateway.checkCalls, 2);
+      expect(quotaGateway.commitCalls, 1);
+      expect(requestStore.dailyCommitCalls, 1);
+      expect(requestStore.commitCalls, 1);
+    },
+  );
 
   test('generateNextPlan blocks active horizon before quota and AI', () async {
     final quotaGateway = _RecordingQuotaGateway();

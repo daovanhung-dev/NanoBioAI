@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _buildPath = 'docs/supabase/01_build_system.sql';
-const _seedPath = 'docs/supabase/02_seed_data.sql';
+const _buildPath = 'docs/archive/legacy-supabase/sql/01_build_system.sql';
+const _seedPath = 'docs/archive/legacy-supabase/sql/02_seed_data.sql';
 const _smokeFixturePath =
     'test/docs/fixtures/supabase_comprehensive_seed_smoke.sql';
 const _fixtureMarker = 'dev-sandbox-comprehensive-v1';
@@ -168,7 +168,7 @@ void main() {
     test(
       'documents the comprehensive seed and supplies a rollback-only smoke fixture',
       () {
-        final readme = File('docs/supabase/README.md').readAsStringSync();
+        final readme = File('docs/archive/legacy-supabase/sql/README.md').readAsStringSync();
         final smoke = File(_smokeFixturePath).readAsStringSync();
 
         for (final token in ['01_build_system.sql', '02_seed_data.sql']) {

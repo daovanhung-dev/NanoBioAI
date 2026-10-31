@@ -2,9 +2,16 @@ Commit de xuat: feat(ai): tao lich theo su kien va cho duyet mon rieng
 
 # Tạo lịch theo sự kiện, lưu nháp theo ngày và duyệt món riêng
 
+> Runtime update 2026-10-30: this note originally described local inference.
+> Current Flutter runtime sends plan-generation prompts through the
+> authenticated NanoBio backend; local text-model inference is removed. Guests
+> can finish onboarding without an AI-generated initial plan, and AI requires
+> sign-in. Deterministic catalog filtering/validation remains on-device and is
+> not an AI fallback.
+
 ## Mục tiêu
 
-Tạo lịch 7 ngày bằng AI cục bộ theo từng ngày. Người dùng thấy tiến độ theo từng sự kiện đã được ghi vào nháp; mỗi ngày chỉ xuất hiện trong lịch chính sau khi toàn bộ sự kiện của ngày hợp lệ. Nếu bộ lọc cá nhân không còn món cho một suất, Nabi tạo món riêng ở trạng thái chờ duyệt.
+Tạo lịch 7 ngày bằng AI backend theo từng ngày. Người dùng thấy tiến độ theo từng sự kiện đã được ghi vào nháp; mỗi ngày chỉ xuất hiện trong lịch chính sau khi toàn bộ sự kiện của ngày hợp lệ. Nếu bộ lọc cá nhân không còn món cho một suất, Nabi yêu cầu backend đề xuất món riêng ở trạng thái chờ duyệt.
 
 ## Kiểm tra danh mục trước khi tạo
 

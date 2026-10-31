@@ -7,7 +7,7 @@ import 'package:nano_app/app_versions/v2/features/cloud_sync/data/repositories/a
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/cloud_sync_result.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/domain/entities/user_data_snapshot.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
+import 'package:nano_app/services/backend/cloud_sync/user_data_sync_outbox.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 

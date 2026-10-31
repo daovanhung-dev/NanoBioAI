@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 ///
 /// The local transaction and SQLite outbox remain durable even when no handler
 /// is registered. The application entrypoint registers its cloud-sync handler
-/// once Supabase has initialized.
+/// after the backend session has been restored.
 typedef LocalUserDataSyncRequest = void Function({Database? database});
 
 class LocalUserDataSyncDispatcher {

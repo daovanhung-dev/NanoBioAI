@@ -46,7 +46,7 @@ class AiGenerationConfig {
   final Map<String, dynamic>? responseJsonSchema;
 }
 
-/// Provider-neutral failure information for local model inference.
+/// Provider-neutral failure information for AI inference.
 class AiInferenceException implements Exception {
   const AiInferenceException({
     required this.message,
@@ -62,10 +62,7 @@ class AiInferenceException implements Exception {
 
   bool get isAuthenticationFailure => false;
 
-  bool get isModelUnavailable =>
-      status == 'local_model_not_ready' ||
-      status == 'local_model_load_failed' ||
-      status == 'model_unavailable';
+  bool get isModelUnavailable => status == 'model_unavailable';
 
   bool get isNetworkFailure => status == 'network_error';
 
@@ -94,7 +91,7 @@ abstract interface class AiTextClient {
   });
 }
 
-/// Optional capability exposed by local clients for prompt budgeting.
+/// Optional capability exposed by clients for prompt budgeting.
 abstract interface class AiContextAwareClient {
   Future<int> selectedContextSize();
 

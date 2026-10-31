@@ -1,22 +1,16 @@
 type SearchRow = {
   id?: string;
+  user_id?: string;
+  email?: string;
   subtitle?: string;
 };
 
-type AccountResponse = {
-  success?: boolean;
-  user_id?: string;
-  message?: string;
-};
+type ApiEnvelope<T> = { data?: T; success?: boolean; message?: string } & T;
 
-type GrantResponse = {
-  success?: boolean;
-  skipped?: boolean;
-  message?: string;
-};
+type AccountResponse = { user_id?: string; success?: boolean; message?: string };
+type GrantResponse = { success?: boolean; skipped?: boolean; message?: string };
 
-const supabaseUrl = requiredEnvironment("SUPABASE_URL").replace(/\/$/, "");
-const anonKey = requiredEnvironment("SUPABASE_ANON_KEY");
+const apiBaseUrl = requiredEnvironment("API_BASE_URL").replace(/\/$/, "");
 const targets = await readInput();
 const startsAt = new Date();
 const endsAt = new Date(startsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -24,24 +18,29 @@ const endsAt = new Date(startsAt.getTime() + 30 * 24 * 60 * 60 * 1000);
 let completed = 0;
 let granted = 0;
 let skipped = 0;
-for (let index = 0; index < targets.emails.length; index++) {
-  const email = targets.emails[index];
+for (let index = 0; index < targets.accounts.length; index++) {
+  const target = targets.accounts[index];
   try {
-    let userId = await findExistingUser(email, targets.jwt);
+    let userId = await findExistingUser(target.email, targets.jwt);
     let created = false;
     if (!userId) {
+      if (!target.phone) {
+        throw new Error("Tài khoản mới cần số điện thoại trong dòng email,phone.");
+      }
       const createdAccount = await createAccount(
-        email,
+        target.email,
+        target.phone,
         targets.password,
         targets.jwt,
       );
-      userId = createdAccount.userId;
+      userId = createdAccount.user_id ?? "";
+      if (!userId) throw new Error("Backend không trả về ID tài khoản.");
       created = true;
     }
 
     const result = await grantPlus(
       userId,
-      email,
+      target.email,
       targets.jwt,
       startsAt,
       endsAt,
@@ -50,22 +49,20 @@ for (let index = 0; index < targets.emails.length; index++) {
     if (result.skipped) {
       skipped++;
       console.log(
-        `[${index + 1}/${targets.emails.length}] ${
+        `[${index + 1}/${targets.accounts.length}] ${
           created ? "đã tạo" : "đã kiểm tra"
         }; giữ nguyên gói đang hoạt động`,
       );
     } else {
       granted++;
       console.log(
-        `[${index + 1}/${targets.emails.length}] ${
+        `[${index + 1}/${targets.accounts.length}] ${
           created ? "đã tạo và cấp Plus" : "đã cấp Plus"
         }`,
       );
     }
   } catch {
-    console.error(
-      `[${index + 1}/${targets.emails.length}] thất bại`,
-    );
+    console.error(`[${index + 1}/${targets.accounts.length}] thất bại`);
     console.error(
       "Đã dừng batch. Có thể chạy lại với cùng input; idempotency key sẽ không cấp trùng.",
     );
@@ -74,42 +71,46 @@ for (let index = 0; index < targets.emails.length; index++) {
 }
 
 console.log(
-  `Hoàn tất ${completed}/${targets.emails.length} tài khoản (${granted} cấp mới, ${skipped} giữ nguyên).`,
+  `Hoàn tất ${completed}/${targets.accounts.length} tài khoản (${granted} cấp mới, ${skipped} giữ nguyên).`,
 );
-console.log(
-  `Thời hạn Plus: ${startsAt.toISOString()} đến ${endsAt.toISOString()}`,
-);
+console.log(`Thời hạn Plus: ${startsAt.toISOString()} đến ${endsAt.toISOString()}`);
 
-async function findExistingUser(
-  email: string,
-  jwt: string,
-): Promise<string | null> {
-  const rows = await rest<SearchRow[]>("/rest/v1/rpc/admin_search_users", {
-    p_query: email,
-    p_limit: 10,
-  }, jwt);
+async function findExistingUser(email: string, jwt: string): Promise<string | null> {
+  const rows = unwrap(await api<SearchRow[]>(
+    `/api/v1/admin/users/search?q=${encodeURIComponent(email)}&limit=10`,
+    { method: "GET" },
+    jwt,
+  ));
   const exact = rows.find((row) => {
-    if (typeof row.id !== "string" || typeof row.subtitle !== "string") {
-      return false;
-    }
-    const listedEmail = row.subtitle.split(" - ", 1)[0]?.trim().toLowerCase();
-    return listedEmail === email;
+    const listedEmail = row.email ?? row.subtitle?.split(" - ", 1)[0]?.trim();
+    return listedEmail?.toLowerCase() === email;
   });
-  return exact?.id ?? null;
+  return exact?.user_id ?? exact?.id ?? null;
 }
 
-async function createAccount(email: string, password: string, jwt: string) {
-  const response = await edge<AccountResponse>("admin-create-account", {
-    email,
-    password,
-    full_name: displayNameFromEmail(email),
-    reason: "Tạo tài khoản Plus theo danh sách Admin đã phê duyệt.",
-    idempotency_key: `admin-create-plus-${await shortHash(email)}`,
-  }, jwt);
-  if (!response.success || !response.user_id) {
-    throw new Error(response.message ?? "Không thể tạo tài khoản.");
-  }
-  return { userId: response.user_id };
+async function createAccount(
+  email: string,
+  phone: string,
+  password: string,
+  jwt: string,
+): Promise<AccountResponse> {
+  const response = unwrap(await api<AccountResponse>(
+    "/api/v1/admin/accounts",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        phone,
+        password,
+        full_name: displayNameFromEmail(email),
+        reason: "Tạo tài khoản Plus theo danh sách Admin đã phê duyệt.",
+        idempotency_key: `admin-create-plus-${await shortHash(email)}`,
+      }),
+    },
+    jwt,
+  ));
+  if (!response.user_id) throw new Error(response.message ?? "Không thể tạo tài khoản.");
+  return response;
 }
 
 async function grantPlus(
@@ -118,98 +119,88 @@ async function grantPlus(
   jwt: string,
   startsAt: Date,
   endsAt: Date,
-): Promise<{ skipped: boolean }> {
-  const response = await edge<GrantResponse>("admin-grant-membership", {
-    user_id: userId,
-    plan_code: "plus",
-    starts_at: startsAt.toISOString(),
-    ends_at: endsAt.toISOString(),
-    preserve_existing_paid_plan: true,
-    reason: "Cấp gói Plus 30 ngày theo danh sách Admin đã phê duyệt.",
-    idempotency_key: `admin-grant-plus-${await shortHash(email)}`,
-  }, jwt);
-  if (!response.success) {
-    throw new Error(response.message ?? "Không thể cấp gói Plus.");
-  }
-  return { skipped: response.skipped === true };
+): Promise<GrantResponse> {
+  const response = unwrap(await api<GrantResponse>(
+    "/api/v1/admin/memberships/grant",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        user_id: userId,
+        plan_code: "plus",
+        starts_at: startsAt.toISOString(),
+        ends_at: endsAt.toISOString(),
+        preserve_existing_paid_plan: true,
+        reason: "Cấp gói Plus 30 ngày theo danh sách Admin đã phê duyệt.",
+        idempotency_key: `admin-grant-plus-${await shortHash(email)}`,
+      }),
+    },
+    jwt,
+  ));
+  if (response.success === false) throw new Error(response.message ?? "Không thể cấp gói Plus.");
+  return response;
 }
 
-async function rest<T>(
+async function api<T>(
   path: string,
-  body: Record<string, unknown>,
+  options: { method: "GET" | "POST"; body?: string },
   jwt: string,
 ): Promise<T> {
-  const response = await fetch(`${supabaseUrl}${path}`, {
-    method: "POST",
-    headers: authHeaders(jwt),
-    body: JSON.stringify(body),
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: options.method,
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      Accept: "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: options.body,
   });
+  const result = await response.json().catch(() => null) as unknown;
   if (!response.ok) {
-    throw new Error(`Tra cứu tài khoản thất bại (HTTP ${response.status}).`);
+    throw new Error(`Backend từ chối thao tác (HTTP ${response.status}).`);
   }
-  return await response.json() as T;
-}
-
-async function edge<T>(
-  functionName: string,
-  body: Record<string, unknown>,
-  jwt: string,
-): Promise<T> {
-  const response = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: "POST",
-    headers: authHeaders(jwt),
-    body: JSON.stringify(body),
-  });
-  let result: T;
-  try {
-    result = await response.json() as T;
-  } catch {
-    throw new Error(
-      `Edge Function phản hồi không hợp lệ (HTTP ${response.status}).`,
-    );
+  if (!result || typeof result !== "object") {
+    throw new Error("Backend phản hồi không hợp lệ.");
   }
-  return result;
+  return result as T;
 }
 
-function authHeaders(jwt: string): HeadersInit {
-  return {
-    Authorization: `Bearer ${jwt}`,
-    apikey: anonKey,
-    "Content-Type": "application/json",
-  };
+function unwrap<T>(response: ApiEnvelope<T>): T {
+  return (response.data ?? response) as T;
 }
 
-async function readInput(): Promise<
-  { jwt: string; password: string; emails: string[] }
-> {
+async function readInput(): Promise<{
+  jwt: string;
+  password: string;
+  accounts: Array<{ email: string; phone: string }>;
+}> {
   const lines = new TextDecoder().decode(await readAll(Deno.stdin.readable))
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
   const jwt = lines.shift() ?? "";
   const password = lines.shift() ?? "";
-  const emails = lines.map((email) => email.toLowerCase());
-  if (!jwt) throw new Error("Dòng đầu tiên phải là session JWT Admin.");
-  if (password.length < 8) {
-    throw new Error("Dòng thứ hai phải là mật khẩu tối thiểu 8 ký tự.");
-  }
-  if (emails.length === 0 || emails.length > 100) {
-    throw new Error("Danh sách email không hợp lệ.");
-  }
-  if (new Set(emails).size !== emails.length) {
+  const accounts = lines.map((line) => {
+    const [emailValue = "", phoneValue = ""] = line.split(",", 2);
+    return { email: emailValue.trim().toLowerCase(), phone: phoneValue.trim() };
+  });
+  if (!jwt) throw new Error("Dòng đầu tiên phải là phiên đăng nhập Admin của backend.");
+  if (password.length < 8) throw new Error("Dòng thứ hai phải là mật khẩu tối thiểu 8 ký tự.");
+  if (accounts.length === 0 || accounts.length > 100) throw new Error("Danh sách email không hợp lệ.");
+  if (new Set(accounts.map((account) => account.email)).size !== accounts.length) {
     throw new Error("Danh sách email có phần tử trùng.");
   }
-  for (const email of emails) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  for (const account of accounts) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.email)) {
       throw new Error("Danh sách có email không đúng định dạng.");
     }
+    if (account.phone && !/^\+?[0-9]{8,15}$/.test(account.phone)) {
+      throw new Error("Số điện thoại phải có 8-15 chữ số.");
+    }
   }
-  return { jwt, password, emails };
+  return { jwt, password, accounts };
 }
 
-async function readAll(
-  readable: ReadableStream<Uint8Array>,
-): Promise<Uint8Array> {
+async function readAll(readable: ReadableStream<Uint8Array>): Promise<Uint8Array> {
   const reader = readable.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -241,10 +232,7 @@ function displayNameFromEmail(email: string): string {
 }
 
 async function shortHash(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(digest)]
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("")

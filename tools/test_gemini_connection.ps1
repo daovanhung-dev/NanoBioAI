@@ -34,49 +34,37 @@ foreach ($rawLine in [System.IO.File]::ReadAllLines($EnvPath)) {
     $values[$key] = $value
 }
 
-$supabaseUrl = [string]$values["SUPABASE_URL"]
-$anonKey = [string]$values["SUPABASE_ANON_KEY"]
-if ([string]::IsNullOrWhiteSpace($supabaseUrl) -or
-    [string]::IsNullOrWhiteSpace($anonKey)) {
-    throw "SUPABASE_URL và SUPABASE_ANON_KEY là bắt buộc để kiểm tra AI backend."
+$apiBaseUrl = [string]$values["API_BASE_URL"]
+$accessToken = [string]$env:NANOBIO_API_ACCESS_TOKEN
+if ([string]::IsNullOrWhiteSpace($apiBaseUrl)) {
+    throw "API_BASE_URL là bắt buộc để kiểm tra AI backend."
 }
-
-$model = [string]$values["GEMINI_MODEL"]
-if ([string]::IsNullOrWhiteSpace($model)) {
-    $model = "gemini-2.5-flash"
+if ([string]::IsNullOrWhiteSpace($accessToken)) {
+    throw "Hãy đặt NANOBIO_API_ACCESS_TOKEN trong môi trường chạy để xác thực với backend."
 }
 
 $headers = @{
-    "Authorization" = "Bearer $anonKey"
-    "apikey" = $anonKey
+    "Authorization" = "Bearer $accessToken"
     "Content-Type" = "application/json"
     "Accept" = "application/json"
 }
 
 $body = @{
-    model = $model
-    contents = @(
-        @{
-            role = "user"
-            parts = @(@{ text = "Hãy trả lời đúng một câu tiếng Việt chào người dùng." })
-        }
-    )
-    generation_config = @{
-        candidateCount = 1
-        temperature = 0.2
-        topP = 0.8
-    }
+    messages = @(@{ role = "user"; content = "Hãy trả lời đúng một câu tiếng Việt chào người dùng." })
+    max_output_tokens = 128
+    temperature = 0.2
 } | ConvertTo-Json -Depth 8 -Compress
 
-$endpoint = "$($supabaseUrl.TrimEnd('/'))/functions/v1/nabi-ai-generate"
+$endpoint = "$($apiBaseUrl.TrimEnd('/'))/api/v1/ai/generate"
 try {
     $response = Invoke-RestMethod -Method Post -Uri $endpoint -Headers $headers -Body $body -TimeoutSec 30
-    $text = [string]$response.text
+    $data = if ($response.data) { $response.data } else { $response }
+    $text = [string]$data.text
     if ([string]::IsNullOrWhiteSpace($text)) {
         throw "AI backend trả về response rỗng."
     }
 
-    Write-Host "Kết nối AI backend thành công."
+    Write-Host "Kết nối AI server thành công."
     Write-Host "Độ dài phản hồi: $($text.Trim().Length) ký tự."
     exit 0
 } catch {
@@ -86,5 +74,5 @@ try {
     } catch {
         $statusCode = $null
     }
-    throw "AI backend chưa sẵn sàng (HTTP $statusCode). Lỗi chi tiết không được in để tránh lộ dữ liệu."
+    throw "AI server chưa sẵn sàng (HTTP $statusCode). Lỗi chi tiết không được in để tránh lộ dữ liệu."
 }

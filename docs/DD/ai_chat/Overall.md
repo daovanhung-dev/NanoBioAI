@@ -1,5 +1,12 @@
 # Overall — AI_CHAT / AI Chat
 
+> Runtime update 2026-10-30: the current Flutter runtime sends generated text,
+> JSON and voice replies through the authenticated NanoBio API. Local text-model
+> setup/inference and direct Gemini calls are removed from this runtime. Device
+> speech recognition and TTS remain platform-side; Nabi ESP separately retains
+> Whisper transcription. The historical design below records the earlier
+> contract and is superseded where it names a provider or client-side model.
+
 ## 1. Document Information
 
 | Attribute | Value |

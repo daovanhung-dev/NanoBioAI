@@ -9,8 +9,8 @@ void main() {
         var initializerCalled = false;
 
         final availability = await initializeAuthBackendAvailability(
-          config: null,
-          initialize: (_, __) async {
+          baseUrl: null,
+          initialize: (_) async {
             initializerCalled = true;
           },
         );
@@ -24,8 +24,8 @@ void main() {
       var initializerCalled = false;
 
       final availability = await initializeAuthBackendAvailability(
-        config: (url: 'https://example.test', anonKey: 'test-key'),
-        initialize: (_, __) async {
+        baseUrl: 'https://example.test',
+        initialize: (_) async {
           initializerCalled = true;
         },
       );
@@ -40,8 +40,8 @@ void main() {
         Object? reportedError;
 
         final availability = await initializeAuthBackendAvailability(
-          config: (url: 'https://example.test', anonKey: 'test-key'),
-          initialize: (_, __) async {
+          baseUrl: 'https://example.test',
+          initialize: (_) async {
             throw StateError('initialization failed');
           },
           onInitializationError: (error, _) {

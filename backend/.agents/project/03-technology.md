@@ -14,4 +14,4 @@
 | Runtime | systemd service; native PostgreSQL service |
 | Server text inference | Ollama `/api/chat` over loopback only; `qwen3:4b-instruct`, feature-gated |
 
-Do not copy Study Server's hard-coded connection/JWT constants. Do not add Gemini, Redis, containers, or a worker queue without a concrete approved use case. Flutter inference remains local; the backend Ollama endpoint is separate and is not a fallback. Use UTC for persisted timestamps.
+Do not copy Study Server's hard-coded connection/JWT constants. Do not add Gemini, Redis, containers, or a worker queue without a concrete approved use case. NanoBio Flutter AI requests use authenticated backend Ollama; local text/vision inference is not a fallback. Nabi ESP keeps local Whisper only for speech recognition and offline TTS. Use UTC for persisted timestamps.

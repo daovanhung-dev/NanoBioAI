@@ -178,13 +178,18 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
     }
   }
 
-  String _retryFailureMessage(Object error) => switch (error) {
-    ScheduleMealClassificationException(:final userMessage) => userMessage,
-    ScheduleCandidatesUnavailableException(:final userMessage) => userMessage,
-    OnboardingInitialPlanException(:final message) => message,
-    AIOverloadedException() => AIOverloadedException.userMessage,
-    _ => 'Hồ sơ vẫn được lưu. Chưa tạo được lịch; bạn có thể thử lại sau.',
-  };
+  String _retryFailureMessage(Object error) {
+    if (AIAuthenticationException.matches(error)) {
+      return AIAuthenticationException.userMessage;
+    }
+    return switch (error) {
+      ScheduleMealClassificationException(:final userMessage) => userMessage,
+      ScheduleCandidatesUnavailableException(:final userMessage) => userMessage,
+      OnboardingInitialPlanException(:final message) => message,
+      AIOverloadedException() => AIOverloadedException.userMessage,
+      _ => 'Hồ sơ vẫn được lưu. Chưa tạo được lịch; bạn có thể thử lại sau.',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {

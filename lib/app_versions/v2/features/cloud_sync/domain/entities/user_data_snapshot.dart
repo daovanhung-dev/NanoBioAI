@@ -1,8 +1,13 @@
 class UserDataSnapshot {
   final Map<String, Object?>? user;
   final Map<String, List<Map<String, Object?>>> tables;
+  final int? revision;
 
-  const UserDataSnapshot({required this.user, required this.tables});
+  const UserDataSnapshot({
+    required this.user,
+    required this.tables,
+    this.revision,
+  });
 
   bool get hasUser => user != null && user!.isNotEmpty;
 

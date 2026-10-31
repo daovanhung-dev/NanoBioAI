@@ -27,7 +27,7 @@ void main() {
     ).readAsStringSync();
     final remoteSource = File(
       'lib/app_versions/v2/features/cloud_sync/data/datasources/'
-      'supabase_user_data_sync_remote_datasource.dart',
+      'backend_user_data_sync_remote_datasource.dart',
     ).readAsStringSync();
 
     expect(localSource, contains('mealPlanNutritionSyncColumns'));

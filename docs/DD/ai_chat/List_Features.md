@@ -1,5 +1,9 @@
 # List Features — AI_CHAT / AI Chat
 
+> Runtime update 2026-10-30: generated text and voice replies use the
+> authenticated NanoBio backend. Direct Gemini REST and local text-model
+> inference described below are historical contracts, not current app runtime.
+
 ## 0. Document Information
 
 | Field | Value |

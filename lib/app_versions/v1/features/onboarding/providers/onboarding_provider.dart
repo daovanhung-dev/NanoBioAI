@@ -39,17 +39,13 @@ String _sanitizeAiDevCheckError(Object error) {
       .replaceAll(RegExp(r'AIza[0-9A-Za-z\-_]{20,}'), '***')
       .replaceAll(RegExp(r'sk-[A-Za-z0-9_\-]{20,}'), '***');
 
-  if (text.contains('unsupported_platform')) {
-    return 'AI trên thiết bị chưa hỗ trợ bản web.';
-  }
-
-  if (text.contains('local_model') || text.contains('model')) {
-    return 'Model AI trên thiết bị chưa sẵn sàng. Hãy tải hoặc mở lại model.';
+  if (text.contains('authentication_required') || text.contains('401')) {
+    return 'Đăng nhập vào NanoBio để kiểm tra dịch vụ AI.';
   }
 
   if (text.length > 180) {
-    return 'Không thể kiểm tra model AI trên thiết bị lúc này.';
+    return 'Không thể kiểm tra dịch vụ AI của NanoBio lúc này.';
   }
 
-  return 'Không thể kiểm tra kết nối AI: $text';
+  return 'Không thể kiểm tra dịch vụ AI: $text';
 }

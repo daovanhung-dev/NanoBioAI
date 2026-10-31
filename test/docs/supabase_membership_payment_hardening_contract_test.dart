@@ -9,8 +9,8 @@ void main() {
     late String smoke;
 
     setUpAll(() {
-      build = File('docs/supabase/01_build_system.sql').readAsStringSync();
-      seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      build = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
+      seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
       smoke = File(
         'test/docs/fixtures/supabase_membership_payment_hardening_smoke.sql',
       ).readAsStringSync();
@@ -95,7 +95,7 @@ void main() {
 
     test('documents the only acceptance case that needs two SQL sessions', () {
       expect(smoke, contains('True two-session concurrency'));
-      expect(smoke, contains('docs/supabase/README.md'));
+      expect(smoke, contains('docs/archive/legacy-supabase/sql/README.md'));
     });
   });
 }

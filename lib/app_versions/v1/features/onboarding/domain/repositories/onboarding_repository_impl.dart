@@ -1,7 +1,7 @@
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/core/access/subject_access_context.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../../data/datasource/onboarding_local_datasource.dart';
 import '../entities/onboarding_entity.dart';
@@ -21,7 +21,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     required this.localDatasource,
     CurrentUserIdReader? currentUserId,
     SubjectAccessContextReader? subjectAccessContext,
-  }) : currentUserId = currentUserId ?? currentSupabaseUserIdOrNull,
+  }) : currentUserId = currentUserId ?? currentBackendUserIdOrNull,
        subjectAccessContext = subjectAccessContext ?? (() => null);
 
   @override

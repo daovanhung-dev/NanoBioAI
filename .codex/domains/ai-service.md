@@ -2,46 +2,57 @@
 
 ## Source
 
-- `lib/app_versions/v1/services/ai/`
-- `lib/app_versions/v1/features/meal_plan/`
-- `lib/app_versions/v1/features/ai_chat/`
-- Normalizers in `lifestyle_schedule` and `daily_health_tracking`.
-- Tests: `test/services/ai/`, meal/schedule/task tests.
+- Shared client: `lib/core/network/backend_ai_text_client.dart`
+- Core contract and orchestration: `lib/app_versions/v1/services/ai/`
+- Specialized callers: body metrics, nutrition, sleep, fitness, Nabi Care,
+  AI Voice, and Food Scan.
+- Tests: `test/core/network/backend_ai_text_client_test.dart`,
+  `test/services/ai/`, and feature-specific AI tests.
 
-## Rules
+## Runtime rules
 
-- Flutter production AI uses the provider-neutral `AiTextClient` contract with
-  `LocalAiTextClient` backed by the app-owned `lib/core/ai_local/` runtime. Do
-  not add provider keys or route Flutter prompts/images to a remote AI service.
-- Native user builds require an explicitly selected and downloaded text model.
-  Food Scan downloads its local vision model and projector on first use. Web AI
-  must fail with a clear unsupported-platform message.
-- Plan generation may use the validated local catalog fallback when local
-  inference fails. AI Chat must not fabricate a fallback response.
-- Budget prompts using the selected model's context and tokenizer. Keep recent
-  chat history only; shortlist schedule candidates while preserving the full
-  local catalog for normalization and safety validation.
-- Supabase remains in use for auth, sync, data, and existing quota flows. Do not
-  edit or deploy the retained AI Edge Functions as part of app-local inference.
-- Never trust AI output blindly; validate schema, type, range, and Vietnamese user-facing text.
-- Flutter AI tests must not call a remote AI service or download large model assets.
-- Handle download resume/cancel, checksum mismatch, storage errors, unsupported
-  platform, timeout, quota, invalid JSON, context overflow, and model load
-  failure safely.
-- Do not let AI chat history/context grow without bounds.
-- Log only safe summaries: stage, status, counts, error type; no raw prompt/response or secrets.
-- Guest/free/Plus generation and chat quota must follow access rules.
+- All generative text, JSON plans, streaming chat, health analysis, voice
+  responses, and Food Scan vision go through `BackendAiTextClient` to the
+  authenticated NanoBio API. The app does not load, download, or run a local
+  text/vision model.
+- AI requests require a backend session. Guests can use non-AI app features;
+  their AI actions must ask them to sign in and must not send anonymous API
+  requests.
+- Never fall back to local model inference when the API is unavailable, times
+  out, rejects quota/membership, or returns malformed output. Show a typed
+  unavailable/auth/quota result and keep retry available.
+- Client API base URL is configured with `API_BASE_URL`; the release target is
+  `https://42.118.174.147`. Do not use HTTP as a fallback.
+- Food Scan sends its sanitized JPEG and the minimum context required for the
+  requested analysis over HTTPS. User consent copy must disclose this before
+  analysis. Sleep analysis sends a sanitized metric summary, not recordings,
+  transcripts, or contact numbers. Fitness prompts exclude names and birth
+  dates. Update feature notices when payload scope changes.
+- Nabi ESP keeps local audio capture, Whisper speech recognition, ESP32
+  transport, and offline TTS. Only generated assistant replies use the backend.
+  This speech-recognition path is separate from the removed local text/vision
+  model runtime.
+- Keep deterministic calculations, local catalogs, schema validation, and
+  safety normalizers local. They are not AI inference fallbacks.
+- Validate model output schema, ranges, catalog IDs, and Vietnamese user-facing
+  text. Do not log raw prompts, images, health payloads, responses, or tokens.
+- AI tests use fake `BackendApiClient` transports and must not download model
+  assets or make real AI requests.
 
-## Backend boundary
+## Backend contract
 
-- The separate self-hosted FastAPI backend has a text-only `/api/v1/ai/generate`
-  route to loopback Ollama behind a default-off feature flag. Flutter does not
-  call this route and must not use it as an inference fallback. Backend access
-  does not change the app-local model, quota, or privacy behavior.
+- Text and JSON generation: `POST /api/v1/ai/generate`.
+- Streaming chat: `POST /api/v1/ai/generate/stream`.
+- Image Food Scan: `POST /api/v1/food/scan/analyze`.
+- Backend owns Ollama model selection, auth, membership/quota checks, rate
+  limits, and safe provider error mapping. Current configured models are
+  `qwen3:4b-instruct` for text and `qwen3-vl:4b` for vision.
+- HTTPS API readiness is required for live acceptance. Source tests or a
+  successful HTTP `:8080` health check do not prove the HTTPS route works.
 
 ## Search
 
 ```powershell
-rg "LocalAiTextClient|AiTextClient|context|timeout|retry|fallback|AIService|AIChatService|quota" lib/app_versions/v1/services/ai lib/app_versions/v1/features test
+rg "BackendAiTextClient|AiTextClient|context|timeout|retry|AIService|AIChatService|quota" lib/app_versions/v1/services/ai lib/app_versions/v1/features test
 rg "validator|normalizer|catalog|Vietnamese|json|schema|trace" lib/app_versions/v1/services/ai lib/app_versions/v1/features test
 ```

@@ -36,20 +36,19 @@ void main() {
     );
   });
 
-  test('app runtime no longer refreshes meal catalog from Supabase', () {
+  test('app runtime seeds the meal catalog from bundled data', () {
     final mainSource = File('lib/main.dart').readAsStringSync();
     final controllerSource = File(
       'lib/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart',
     ).readAsStringSync();
+    final loader = File(
+      'lib/core/storage/localdb/seeders/source_meal_catalog_loader.dart',
+    ).readAsStringSync();
 
     expect(mainSource, isNot(contains('MealCatalogCacheRefreshService')));
     expect(controllerSource, isNot(contains('MealCatalogCacheRefreshService')));
-    expect(
-      File(
-        'lib/services/supabase/meal_catalog/meal_catalog_cache_refresh_service.dart',
-      ).existsSync(),
-      isFalse,
-    );
+    expect(loader, contains('rootBundle.loadString'));
+    expect(loader, isNot(contains('BackendApiClient')));
     expect(mainSource, contains('_startCloudSync()'));
   });
 }

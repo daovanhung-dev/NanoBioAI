@@ -7,10 +7,10 @@ void main() {
     'rank migration records server-owned EXP and private summary contract',
     () {
       final migration = File(
-        'supabase/migrations/20261015090000_wellness_rank_experience.sql',
+        'docs/archive/legacy-supabase/project/migrations/20261015090000_wellness_rank_experience.sql',
       ).readAsStringSync();
       final canonical = File(
-        'docs/supabase/01_build_system.sql',
+        'docs/archive/legacy-supabase/sql/01_build_system.sql',
       ).readAsStringSync();
 
       expect(canonical, contains(migration.trim()));

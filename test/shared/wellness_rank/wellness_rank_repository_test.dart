@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/shared/wellness_rank/data/datasources/wellness_rank_local_store.dart';
-import 'package:nano_app/shared/wellness_rank/data/datasources/wellness_rank_remote_datasource.dart';
-import 'package:nano_app/shared/wellness_rank/data/repositories/supabase_wellness_rank_repository.dart';
+import 'package:nano_app/shared/wellness_rank/data/datasources/backend_wellness_rank_remote_datasource.dart';
+import 'package:nano_app/shared/wellness_rank/data/repositories/backend_wellness_rank_repository.dart';
 import 'package:nano_app/shared/wellness_rank/domain/entities/wellness_rank_summary.dart';
 
 void main() {
@@ -10,7 +10,7 @@ void main() {
     () async {
       final local = _FakeRankLocalStore();
       final remote = _FakeRankRemote(_summary(600));
-      final repository = SupabaseWellnessRankRepository(
+      final repository = BackendWellnessRankRepository(
         remoteDatasource: remote,
         localDatasource: local,
         currentUserId: () => 'user-a',
@@ -33,7 +33,7 @@ void main() {
     final remote = _FakeRankRemote(_summary(600));
     var activeUserId = 'user-a';
     remote.beforeReturn = () => activeUserId = 'user-b';
-    final repository = SupabaseWellnessRankRepository(
+    final repository = BackendWellnessRankRepository(
       remoteDatasource: remote,
       localDatasource: local,
       currentUserId: () => activeUserId,

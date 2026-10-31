@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 
 import '../../../services/ai/ai_chat_service.dart';
 import '../domain/repositories/ai_chat_repository.dart';

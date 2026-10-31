@@ -10,6 +10,7 @@ class AppPrefs {
   static const String _pendingGuestUserIdKey = 'pending_guest_user_id';
   static const String _lastCloudSyncAtKey = 'last_cloud_sync_at';
   static const String _cloudPullRetryPendingKey = 'cloud_pull_retry_pending';
+  static const String _cloudRevisionKeyPrefix = 'cloud_revision_v1_';
   static const String _pendingGuestSyncAuthUserIdKey =
       'pending_guest_sync_auth_user_id';
   static const String _pendingGuestSyncActionKey = 'pending_guest_sync_action';
@@ -185,6 +186,17 @@ class AppPrefs {
   static Future<bool> isCloudPullRetryPending() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_cloudPullRetryPendingKey) ?? false;
+  }
+
+  static Future<int?> cloudRevisionFor(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('$_cloudRevisionKeyPrefix$userId');
+  }
+
+  static Future<void> setCloudRevisionFor(String userId, int revision) async {
+    if (userId.trim().isEmpty || revision < 0) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('$_cloudRevisionKeyPrefix$userId', revision);
   }
 
   /// Removes every locally persisted preference after an account deletion.

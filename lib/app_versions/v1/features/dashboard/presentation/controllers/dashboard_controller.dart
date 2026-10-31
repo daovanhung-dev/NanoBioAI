@@ -17,7 +17,7 @@ import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 final generatedPlanServiceProvider = Provider<GeneratedPlanService>((ref) {
   return GeneratedPlanService(
@@ -47,7 +47,7 @@ class DashboardController extends AsyncNotifier<void> {
     int days = 7,
   }) async {
     AppLogger.action(_tag, 'Generate weekly meal plan');
-    requireAuthenticatedGeneratedPlanUser(currentSupabaseUserIdOrNull());
+    requireAuthenticatedGeneratedPlanUser(currentBackendUserIdOrNull());
 
     final repository = ref.read(dashboardRepositoryProvider);
     final resolvedStartDate = startDate ?? _tomorrow();
@@ -93,7 +93,7 @@ class DashboardController extends AsyncNotifier<void> {
   }
 
   Future<GeneratedPlanResult> generateAdditionalPlan() async {
-    final authUserId = currentSupabaseUserIdOrNull();
+    final authUserId = currentBackendUserIdOrNull();
     requireAuthenticatedGeneratedPlanUser(authUserId);
 
     state = const AsyncLoading<void>();
@@ -145,7 +145,7 @@ class DashboardController extends AsyncNotifier<void> {
     required GeneratedCustomMealProposal proposal,
     required bool approve,
   }) async {
-    final authUserId = currentSupabaseUserIdOrNull();
+    final authUserId = currentBackendUserIdOrNull();
     requireAuthenticatedGeneratedPlanUser(authUserId);
     state = const AsyncLoading<void>();
     try {

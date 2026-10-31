@@ -6,7 +6,7 @@ void main() {
   late String sql;
 
   setUpAll(() {
-    sql = File('docs/supabase/01_build_system.sql').readAsStringSync();
+    sql = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
   });
 
   test('daily health rewards stay server-authoritative and weighted', () {

@@ -98,7 +98,7 @@ bool _isUserFacingSource(String path) {
         '/features/wellness_rewards/presentation/admin_wellness_rewards_panel.dart',
       ) ||
       path.contains('/app/bio_ai_') ||
-      path.endsWith('/services/supabase/sale/sale_terms.dart') ||
+      path.endsWith('/services/backend/sale/sale_terms.dart') ||
       path.endsWith('/services/image_picker/image_picker_service.dart') ||
       path.endsWith('/core/membership/membership_display_info.dart');
 }
@@ -114,7 +114,7 @@ bool _isIgnoredLine(String line) {
 }
 
 bool _isLongCopyExemptPath(String path) {
-  return path.endsWith('/services/supabase/sale/sale_terms.dart');
+  return path.endsWith('/services/backend/sale/sale_terms.dart');
 }
 
 bool _isLongCopyExemptLine(String path, String line) {

@@ -4,15 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('ships the required authenticated delete-account Edge Function', () {
-    final config = File('supabase/config.toml').readAsStringSync();
+    final config = File('docs/archive/legacy-supabase/project/config.toml').readAsStringSync();
     final handler = File(
-      'supabase/functions/delete-account/handler.ts',
+      'docs/archive/legacy-supabase/project/functions/delete-account/handler.ts',
     ).readAsStringSync();
     final index = File(
-      'supabase/functions/delete-account/index.ts',
+      'docs/archive/legacy-supabase/project/functions/delete-account/index.ts',
     ).readAsStringSync();
     final client = File(
-      'lib/services/supabase/auth/account_security_service.dart',
+      'lib/services/backend/auth/account_security_service.dart',
     ).readAsStringSync();
 
     expect(config, contains('[functions.delete-account]'));

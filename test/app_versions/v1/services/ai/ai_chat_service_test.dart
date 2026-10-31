@@ -4,17 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_chat_service.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/core/utils/logger/terminal_log_sink.dart';
 
 void main() {
-  group('AIChatService local client', () {
+  group('AIChatService backend client', () {
     test(
-      'uses the selected local model contract for text generation',
+      'uses the selected backend model contract for text generation',
       () async {
         final client = _FakeAiTextClient(
           generate: (request) async {
-            expect(request.model, LocalAiTextClient.modelId);
+            expect(request.model, BackendAiTextClient.modelId);
             expect(request.messages.single.text, 'Làm sao để ngủ sâu hơn?');
             return 'Mình khuyên bạn giữ giờ ngủ ổn định.';
           },
@@ -28,24 +28,21 @@ void main() {
       },
     );
 
-    test(
-      'preserves the local unsupported-platform error without fallback',
-      () async {
-        final client = _FakeAiTextClient(
-          generate: (_) async => throw const AiInferenceException(
-            status: 'unsupported_platform',
-            message: 'AI trên thiết bị chưa hỗ trợ bản web.',
-          ),
-        );
-        final service = AIChatService(aiClient: client);
+    test('preserves inference failures without fallback', () async {
+      final client = _FakeAiTextClient(
+        generate: (_) async => throw const AiInferenceException(
+          status: 'unsupported_platform',
+          message: 'AI trên thiết bị chưa hỗ trợ bản web.',
+        ),
+      );
+      final service = AIChatService(aiClient: client);
 
-        await expectLater(
-          service.sendMessage('Xin chào'),
-          throwsA(isA<AIPlatformUnsupportedException>()),
-        );
-        expect(client.generateCalls, 1);
-      },
-    );
+      await expectLater(
+        service.sendMessage('Xin chào'),
+        throwsA(isA<AIPlatformUnsupportedException>()),
+      );
+      expect(client.generateCalls, 1);
+    });
 
     test(
       'allows local inference to continue while tokens keep arriving',
@@ -94,14 +91,14 @@ void main() {
 
       await expectLater(
         service.sendMessage(testPrompt),
-        throwsA(isA<AILocalInferenceTimeoutException>()),
+        throwsA(isA<AIInferenceTimeoutException>()),
       );
 
       final failureLog = logLines
           .where((line) => line.contains('RETRY_ATTEMPT_FAILED'))
           .join('\n');
-      expect(failureLog, contains('model=${LocalAiTextClient.modelId}'));
-      expect(failureLog, contains('status=local_inference_timeout'));
+      expect(failureLog, contains('model=${BackendAiTextClient.modelId}'));
+      expect(failureLog, contains('status=backend_inference_timeout'));
       expect(failureLog, contains('durationMs='));
       expect(failureLog, contains('errorType=TimeoutException'));
       expect(failureLog, isNot(contains(testPrompt)));
@@ -151,12 +148,12 @@ void main() {
     });
 
     test(
-      'separates model load failures from transient runtime errors',
+      'separates backend model availability from transient runtime errors',
       () async {
         final modelClient = _FakeAiTextClient(
           generate: (_) async => throw const AiInferenceException(
-            status: 'local_model_load_failed',
-            message: 'Synthetic local model load failure.',
+            status: 'model_unavailable',
+            message: 'Synthetic backend model unavailable.',
           ),
         );
         final runtimeClient = _FakeAiTextClient(

@@ -9,7 +9,7 @@ export 'data/datasources/membership_payment_remote_datasource.dart';
 export 'data/datasources/google_play_billing_datasource.dart';
 export 'data/datasources/membership_store_purchase_remote_datasource.dart';
 export 'data/repositories/sqlite_membership_payment_payer_profile_repository.dart';
-export 'data/repositories/supabase_membership_payment_repository.dart';
+export 'data/repositories/backend_membership_payment_repository.dart';
 export 'data/repositories/membership_store_billing_repository_impl.dart';
 export 'domain/entities/membership_payment_models.dart';
 export 'domain/entities/store_membership_purchase.dart';

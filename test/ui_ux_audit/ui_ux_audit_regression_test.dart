@@ -196,7 +196,7 @@ void main() {
       expect(content, contains("'/health-insights'"));
     });
 
-    test('Admin dialogs scroll and presentation does not upload to Supabase', () {
+    test('Admin dialogs scroll and uploads go through the backend datasource', () {
       final dialogs = source(
         'lib/app_versions/admin/features/admin_panel/presentation/pages/admin_workspace_dialogs.dart',
       );
@@ -209,7 +209,8 @@ void main() {
       expect(dialogs, contains('SingleChildScrollView'));
       expect(page, isNot(contains('supabase_flutter')));
       expect(page, isNot(contains('Supabase.instance.client.storage')));
-      expect(datasource, contains('Supabase.instance.client.storage'));
+      expect(datasource, contains('uploadBytes('));
+      expect(datasource, isNot(contains('supabase')));
     });
 
     test('Health module keeps return stack and Health Score keeps stale data', () {

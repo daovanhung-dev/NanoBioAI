@@ -9,7 +9,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/utils/profile_validator.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -305,7 +305,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
       return;
     }
-    final authUserId = currentSupabaseUserIdOrNull();
+    final authUserId = currentBackendUserIdOrNull();
     if (authUserId == null) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
       _showMessage(

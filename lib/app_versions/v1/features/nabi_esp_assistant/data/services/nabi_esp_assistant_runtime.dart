@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'nabi_esp_android_bridge.dart';
@@ -79,6 +80,11 @@ class NabiEspAssistantRuntime extends ChangeNotifier {
 
   Future<void> start() async {
     if (isBusy || isRunning || hasHotspot) return;
+    if (currentBackendUserIdOrNull() == null) {
+      throw StateError(
+        'Đăng nhập để dùng câu trả lời AI trên máy chủ NanoBio.',
+      );
+    }
     errorMessage = null;
     hostCandidates = const [];
     hostAddress = null;
@@ -204,7 +210,8 @@ class NabiEspAssistantRuntime extends ChangeNotifier {
     status = NabiEspAssistantStatus.waitingForEsp;
     await NabiEspAndroidBridge.updateForegroundNotification(
       title: 'Nabi đang chờ ESP',
-      message: 'AI local sẵn sàng; đang tìm ESP qua Bluetooth.',
+      message:
+          'Đang tìm ESP qua Bluetooth; câu trả lời AI dùng máy chủ NanoBio.',
     );
     notifyListeners();
     unawaited(_attemptBleProvisioning());
@@ -243,7 +250,7 @@ class NabiEspAssistantRuntime extends ChangeNotifier {
       status = NabiEspAssistantStatus.waitingForEsp;
       await NabiEspAndroidBridge.updateForegroundNotification(
         title: 'Nabi sẵn sàng',
-        message: 'Hotspot và AI local đang chờ ESP kết nối.',
+        message: 'Hotspot đang chờ ESP; cần Internet và đăng nhập để dùng AI.',
       );
       notifyListeners();
     } on PlatformException catch (exception) {
@@ -303,7 +310,8 @@ class NabiEspAssistantRuntime extends ChangeNotifier {
     _hotspot = null;
     hostAddress = null;
     hostCandidates = const [];
-    errorMessage = 'Android đã dừng hotspot Nabi. Hãy bấm Kết nối Nabi để thử lại.';
+    errorMessage =
+        'Android đã dừng hotspot Nabi. Hãy bấm Kết nối Nabi để thử lại.';
     status = NabiEspAssistantStatus.error;
     notifyListeners();
   }
@@ -443,7 +451,7 @@ class NabiEspAssistantRuntime extends ChangeNotifier {
   String _safeStartError(Object exception) {
     if (exception is _NabiEspStartFailure) return exception.message;
     if (exception is StateError) return exception.message.toString();
-    return 'Không thể chuẩn bị AI local hoặc khởi tạo server.';
+    return 'Không thể chuẩn bị nhận dạng giọng nói hoặc khởi tạo kết nối.';
   }
 }
 

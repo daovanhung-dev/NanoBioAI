@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
+import 'package:nano_app/services/backend/cloud_sync/user_data_sync_outbox.dart';
 
 import '../../domain/entities/cloud_sync_result.dart';
 import '../../domain/entities/user_data_snapshot.dart';

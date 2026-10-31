@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_sanitizer.dart';
 
 import '../../domain/entities/voice_chat_message.dart';
@@ -14,8 +14,8 @@ abstract class VoiceChatTurnDatasource {
   });
 }
 
-class LocalVoiceChatTurnDatasource implements VoiceChatTurnDatasource {
-  static const defaultModel = LocalAiTextClient.modelId;
+class BackendVoiceChatTurnDatasource implements VoiceChatTurnDatasource {
+  static const defaultModel = BackendAiTextClient.modelId;
   static const maxInputCharacters = 6000;
   static const maxHistoryMessageCharacters = 6000;
   static const maxResponseCharacters = 2000;
@@ -31,10 +31,10 @@ Nếu người dùng mô tả dấu hiệu nguy hiểm tức thời hoặc tình
 hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu gần nhất.
 ''';
 
-  LocalVoiceChatTurnDatasource({
+  BackendVoiceChatTurnDatasource({
     AiTextClient? client,
     this.requestTimeout = defaultRequestTimeout,
-  }) : _client = client ?? const LocalAiTextClient(operation: 'voice_chat');
+  }) : _client = client ?? const BackendAiTextClient();
 
   final AiTextClient _client;
   final Duration requestTimeout;
@@ -80,6 +80,9 @@ hãy khuyên họ gọi 115 tại Việt Nam hoặc đến cơ sở cấp cứu 
     } on TimeoutException {
       throw const VoiceChatException(VoiceChatFailure.temporarilyUnavailable);
     } on AiInferenceException catch (error) {
+      if (error.isAuthenticationFailure) {
+        throw const VoiceChatException(VoiceChatFailure.authenticationRequired);
+      }
       if (error.status == 'unsupported_platform') {
         throw const VoiceChatException(VoiceChatFailure.unsupportedPlatform);
       }

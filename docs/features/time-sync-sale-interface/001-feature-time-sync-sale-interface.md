@@ -66,7 +66,7 @@ Commit de xuat: feat(sync): them time gate, sync outbox va giao dien Sale
 - `lib/services/supabase/sale/` - Sale terms, Supabase service, providers.
 - `lib/sale_referral/presentation/pages/sale_shell_page.dart` - Sale shell UI.
 - `lib/core/storage/localdb/tables/sync_outbox_table.dart` - SQLite outbox table.
-- `docs/supabase/01_schema_rebuild_local_sandbox.sql` - `server_time_check` và Sale terms/RPC contracts.
+- `docs/archive/legacy-supabase/sql/01_schema_rebuild_local_sandbox.sql` - `server_time_check` và Sale terms/RPC contracts.
 
 ## Kiem chung
 

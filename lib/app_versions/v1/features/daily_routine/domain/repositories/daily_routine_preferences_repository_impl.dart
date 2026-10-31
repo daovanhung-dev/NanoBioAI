@@ -1,6 +1,6 @@
 import 'package:nano_app/core/access/local_subject_resolver.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../../data/datasources/daily_routine_preferences_local_datasource.dart';
 import '../entities/daily_routine_preferences.dart';
@@ -20,7 +20,7 @@ class DailyRoutinePreferencesRepositoryImpl
 
   static Future<String> _defaultResolveSubjectId() {
     return LocalSubjectResolver(
-      currentActorId: currentSupabaseUserIdOrNull,
+      currentActorId: currentBackendUserIdOrNull,
       pendingGuestUserId: AppPrefs.pendingGuestUserId,
     ).resolve();
   }

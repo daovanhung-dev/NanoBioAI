@@ -145,9 +145,13 @@ class SleepNightAnalysisController
     } on AiInferenceException catch (error) {
       state = state.copyWith(
         generatingAi: false,
-        errorMessage: error.status == 'unsupported_platform'
+        errorMessage:
+            error.isAuthenticationFailure ||
+                error.status == 'unsupported_platform'
             ? error.message
-            : 'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
+            : error.isNetworkFailure || error.isTransient
+            ? 'Dịch vụ AI tạm thời chưa khả dụng. Bạn kiểm tra mạng rồi thử lại nhé.'
+            : 'Phân tích AI chưa hoàn tất. Các chỉ số đã tính vẫn được giữ lại.',
       );
     } catch (_) {
       state = state.copyWith(
@@ -171,7 +175,7 @@ class SleepNightAnalysisController
     if (!ai.isConfigured) {
       state = state.copyWith(
         errorMessage:
-            'Dịch vụ AI chưa sẵn sàng nên Nabi chỉ hiển thị phân tích cục bộ.',
+            'Dịch vụ AI của NanoBio hiện chưa sẵn sàng. Bạn thử lại sau nhé.',
       );
       return;
     }
@@ -191,11 +195,19 @@ class SleepNightAnalysisController
         generatingAi: false,
         clearError: true,
       );
+    } on AiInferenceException catch (error) {
+      state = state.copyWith(
+        generatingAi: false,
+        errorMessage: error.isAuthenticationFailure
+            ? error.message
+            : error.isNetworkFailure || error.isTransient
+            ? 'Dịch vụ AI tạm thời chưa khả dụng. Bạn kiểm tra mạng rồi thử lại nhé.'
+            : 'Phân tích AI chưa hoàn tất. Bạn thử lại sau nhé.',
+      );
     } catch (_) {
       state = state.copyWith(
         generatingAi: false,
-        errorMessage:
-            'Phân tích AI chưa hoàn tất. Phần chỉ số cục bộ vẫn dùng bình thường.',
+        errorMessage: 'Phân tích AI chưa hoàn tất. Bạn thử lại sau nhé.',
       );
     }
   }

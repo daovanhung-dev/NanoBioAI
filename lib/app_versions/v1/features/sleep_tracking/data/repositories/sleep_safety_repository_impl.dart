@@ -139,7 +139,7 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     try {
       await local.cacheContact(saved);
     } catch (_) {
-      // Supabase is authoritative; the next refresh can rebuild local cache.
+      // The backend is authoritative; the next refresh can rebuild local cache.
     }
     return saved;
   }
@@ -153,7 +153,7 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
     try {
       await local.deleteCachedContact(id);
     } catch (_) {
-      // Supabase is authoritative; a later refresh can rebuild local cache.
+      // The backend is authoritative; a later refresh can rebuild local cache.
     }
   }
 
@@ -177,7 +177,7 @@ class SleepSafetyRepositoryImpl implements SleepSafetyRepository {
       throw StateError('sleep_safety_session_missing');
     }
 
-    // The dispatch Edge Function reads these rows from Supabase. Local writes
+    // The dispatch API reads these rows from the backend. Local writes
     // are therefore not enough, even when the native alert is still visible.
     await _syncForDispatch('sleep_safety_sessions', _sessionCloudMap(session));
     await _syncForDispatch('sleep_safety_events', _eventCloudMap(event));

@@ -63,30 +63,26 @@ class SqliteNabiNotificationStateRepository
     final db = await _database;
     final timestamp = now().toUtc().toIso8601String();
     final id = NabiIdGenerator.uuidV4();
-    await db.insert(
-      NabiNotificationTables.occurrences,
-      {
-        'id': id,
-        'actor_key': snapshot.actorKey,
-        'user_id': snapshot.actorKind == 'guest' ? null : snapshot.actorKey,
-        'notification_id': definition.id,
-        'content_version': definition.contentVersion,
-        'source_event_id': snapshot.sourceEventId,
-        'source_type': definition.policyKey,
-        'category': definition.category.name,
-        'priority': definition.priority,
-        'status': NabiNotificationStatus.queued.name,
-        'eligible_at': snapshot.occurredAt.toUtc().toIso8601String(),
-        'session_id': uiContext.sessionId,
-        'screen_instance_id': uiContext.screenInstanceId,
-        'membership_plan': snapshot.membershipPlan,
-        'billing_cycle': snapshot.billingCycle,
-        'snapshot_json': jsonEncode(snapshot.variables),
-        'created_at': timestamp,
-        'updated_at': timestamp,
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    await db.insert(NabiNotificationTables.occurrences, {
+      'id': id,
+      'actor_key': snapshot.actorKey,
+      'user_id': snapshot.actorKind == 'guest' ? null : snapshot.actorKey,
+      'notification_id': definition.id,
+      'content_version': definition.contentVersion,
+      'source_event_id': snapshot.sourceEventId,
+      'source_type': definition.policyKey,
+      'category': definition.category.name,
+      'priority': definition.priority,
+      'status': NabiNotificationStatus.queued.name,
+      'eligible_at': snapshot.occurredAt.toUtc().toIso8601String(),
+      'session_id': uiContext.sessionId,
+      'screen_instance_id': uiContext.screenInstanceId,
+      'membership_plan': snapshot.membershipPlan,
+      'billing_cycle': snapshot.billingCycle,
+      'snapshot_json': jsonEncode(snapshot.variables),
+      'created_at': timestamp,
+      'updated_at': timestamp,
+    }, conflictAlgorithm: ConflictAlgorithm.ignore);
     final rows = await db.query(
       NabiNotificationTables.occurrences,
       where:
@@ -273,7 +269,7 @@ class SqliteNabiNotificationAnalyticsRepository
   @override
   Future<int> drainPending() async {
     // Remote upload is intentionally opt-in and is wired by the authenticated
-    // Supabase adapter. Local analytics remains durable without network access.
+    // Remote adapter. Local analytics remains durable without network access.
     return 0;
   }
 }

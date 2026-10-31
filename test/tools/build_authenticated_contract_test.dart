@@ -3,12 +3,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('authenticated build helper validates and forwards auth config', () {
+  test('authenticated build helper validates and forwards backend config', () {
     final script = File('tools/build_authenticated.ps1').readAsStringSync();
 
-    expect(script, contains('SUPABASE_URL'));
-    expect(script, contains('SUPABASE_ANON_KEY'));
-    expect(script, contains('AUTH_EMAIL_REDIRECT_URL'));
+    expect(script, contains('API_BASE_URL'));
+    expect(script, isNot(contains('SUPABASE_')));
     expect(script, isNot(contains('GEMINI_API_KEY')));
     expect(script, contains('trusted backend'));
     expect(script, contains('prepare_dart_defines.ps1'));

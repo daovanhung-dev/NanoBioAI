@@ -22,8 +22,10 @@ class NabiCarePanel extends ConsumerWidget {
     final state = ref.watch(nabiCareControllerProvider);
     final result = state.result;
     if (result == null) {
-      final message = state.errorCode == 'unsupported_platform'
-          ? 'Nabi Care cần model AI trên thiết bị và hiện chưa dùng được trên bản web.'
+      final message = state.errorCode == 'auth_required'
+          ? 'Đăng nhập vào NanoBio để sử dụng phân tích AI của Nabi Care.'
+          : state.errorCode == 'unsupported_platform'
+          ? 'Dịch vụ AI của NanoBio hiện chưa khả dụng.'
           : state.status == NabiCareLoadStatus.error
           ? 'Nabi Care chưa thể tạo phân tích lúc này. Bạn thử lại sau nhé.'
           : 'NaBi đang chuẩn bị dữ liệu chăm sóc cho bạn.';

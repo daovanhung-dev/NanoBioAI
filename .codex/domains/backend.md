@@ -7,7 +7,7 @@
 - `backend/src/nanobio_backend/`
 - `backend/alembic/`
 - `backend/tests/`
-- `supabase/functions/` and `docs/supabase/` for source-backed contracts
+- `docs/archive/legacy-supabase/project/functions/` and `docs/archive/legacy-supabase/sql/` for source-backed contracts
 
 ## Rules
 

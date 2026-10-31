@@ -63,10 +63,7 @@ function Read-DotEnvFile {
 }
 
 $allowedKeys = @(
-    "SUPABASE_URL",
-    "SUPABASE_ANON_KEY",
-    "AUTH_EMAIL_REDIRECT_URL",
-    "AUTH_CONFIRM_EMAIL_REQUIRED",
+    "API_BASE_URL",
     "ONBOARDING_AI_DEV_CHECK_ENABLED"
 )
 

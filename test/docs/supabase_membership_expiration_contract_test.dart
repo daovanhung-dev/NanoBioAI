@@ -9,8 +9,8 @@ void main() {
     late String smoke;
 
     setUpAll(() {
-      build = File('docs/supabase/01_build_system.sql').readAsStringSync();
-      readme = File('docs/supabase/README.md').readAsStringSync();
+      build = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
+      readme = File('docs/archive/legacy-supabase/sql/README.md').readAsStringSync();
       smoke = File(
         'test/docs/fixtures/supabase_membership_expiration_smoke.sql',
       ).readAsStringSync();

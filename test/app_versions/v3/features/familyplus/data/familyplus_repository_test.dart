@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v3/features/familyplus/data/datasources/familyplus_remote_datasource.dart';
-import 'package:nano_app/app_versions/v3/features/familyplus/data/repositories/supabase_familyplus_repository.dart';
+import 'package:nano_app/app_versions/v3/features/familyplus/data/repositories/backend_familyplus_repository.dart';
 import 'package:nano_app/app_versions/v3/features/familyplus/familyplus.dart';
 
 void main() {
-  group('SupabaseFamilyPlusRepository', () {
+  group('BackendFamilyPlusRepository', () {
     test('upsert group trims payload and requires idempotency key', () async {
       final datasource = _FakeFamilyPlusDatasource();
-      final repository = SupabaseFamilyPlusRepository(datasource: datasource);
+      final repository = BackendFamilyPlusRepository(datasource: datasource);
 
       await repository.upsertGroup(
         const FamilyPlusUpsertGroupCommand(
@@ -31,7 +31,7 @@ void main() {
 
     test('upsert member forwards role, permissions and idempotency', () async {
       final datasource = _FakeFamilyPlusDatasource();
-      final repository = SupabaseFamilyPlusRepository(datasource: datasource);
+      final repository = BackendFamilyPlusRepository(datasource: datasource);
 
       await repository.upsertMember(
         const FamilyPlusUpsertMemberCommand(
@@ -51,7 +51,7 @@ void main() {
     });
 
     test('switch subject allows self and viewable active members only', () {
-      final repository = SupabaseFamilyPlusRepository(
+      final repository = BackendFamilyPlusRepository(
         datasource: _FakeFamilyPlusDatasource(),
       );
       final context = _context();

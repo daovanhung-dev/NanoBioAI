@@ -4,7 +4,7 @@ import 'package:nano_app/app_versions/v2/features/membership_entitlement/domain/
 import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 
 import '../data/datasources/familyplus_remote_datasource.dart';
-import '../data/repositories/supabase_familyplus_repository.dart';
+import '../data/repositories/backend_familyplus_repository.dart';
 import '../domain/entities/familyplus_models.dart';
 import '../domain/repositories/familyplus_repository.dart';
 
@@ -28,12 +28,12 @@ final familyPlusEffectiveAccessProvider =
 
 final familyPlusRemoteDatasourceProvider = Provider<FamilyPlusRemoteDatasource>(
   (ref) {
-    return const SupabaseFamilyPlusRemoteDatasource();
+    return const BackendFamilyPlusRemoteDatasource();
   },
 );
 
 final familyPlusRepositoryProvider = Provider<FamilyPlusRepository>((ref) {
-  return SupabaseFamilyPlusRepository(
+  return BackendFamilyPlusRepository(
     datasource: ref.watch(familyPlusRemoteDatasourceProvider),
   );
 });

@@ -1,6 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
-abstract class FamilyPlusRemoteDatasource {
+abstract interface class FamilyPlusRemoteDatasource {
   Future<Map<String, Object?>> getContext();
 
   Future<Map<String, Object?>> upsertGroup({
@@ -23,33 +23,26 @@ abstract class FamilyPlusRemoteDatasource {
   });
 }
 
-class SupabaseFamilyPlusRemoteDatasource implements FamilyPlusRemoteDatasource {
-  final SupabaseClient? clientOverride;
+class BackendFamilyPlusRemoteDatasource implements FamilyPlusRemoteDatasource {
+  final BackendApiClient? clientOverride;
 
-  const SupabaseFamilyPlusRemoteDatasource({this.clientOverride});
+  const BackendFamilyPlusRemoteDatasource({this.clientOverride});
 
-  SupabaseClient _client() => clientOverride ?? Supabase.instance.client;
+  BackendApiClient get _client => clientOverride ?? BackendApiClient.shared;
 
   @override
-  Future<Map<String, Object?>> getContext() async {
-    return _map(await _client().rpc('get_my_familyplus_context'));
-  }
+  Future<Map<String, Object?>> getContext() =>
+      _client.requestMap('GET', '/api/v1/family-plus/context');
 
   @override
   Future<Map<String, Object?>> upsertGroup({
     required String displayName,
     required String idempotencyKey,
-  }) async {
-    return _map(
-      await _client().rpc(
-        'upsert_my_familyplus_group',
-        params: {
-          'p_display_name': displayName,
-          'p_idempotency_key': idempotencyKey,
-        },
-      ),
-    );
-  }
+  }) => _client.requestMap(
+    'PUT',
+    '/api/v1/family-plus/group',
+    body: {'display_name': displayName, 'idempotency_key': idempotencyKey},
+  );
 
   @override
   Future<Map<String, Object?>> upsertMember({
@@ -59,44 +52,26 @@ class SupabaseFamilyPlusRemoteDatasource implements FamilyPlusRemoteDatasource {
     required bool canView,
     required bool canEdit,
     required String idempotencyKey,
-  }) async {
-    return _map(
-      await _client().rpc(
-        'upsert_my_familyplus_member',
-        params: {
-          'p_subject_id': subjectId,
-          'p_display_name': displayName,
-          'p_role': role,
-          'p_can_view': canView,
-          'p_can_edit': canEdit,
-          'p_idempotency_key': idempotencyKey,
-        },
-      ),
-    );
-  }
+  }) => _client.requestMap(
+    'PUT',
+    '/api/v1/family-plus/members',
+    body: {
+      'subject_id': subjectId,
+      'display_name': displayName,
+      'role': role,
+      'can_view': canView,
+      'can_edit': canEdit,
+      'idempotency_key': idempotencyKey,
+    },
+  );
 
   @override
   Future<Map<String, Object?>> removeMember({
     required String memberId,
     required String idempotencyKey,
-  }) async {
-    return _map(
-      await _client().rpc(
-        'remove_my_familyplus_member',
-        params: {'p_member_id': memberId, 'p_idempotency_key': idempotencyKey},
-      ),
-    );
-  }
-
-  Map<String, Object?> _map(Object? response) {
-    if (response is Map) return _copyMap(response);
-    if (response is List && response.isNotEmpty && response.first is Map) {
-      return _copyMap(response.first as Map);
-    }
-    return const {};
-  }
-
-  Map<String, Object?> _copyMap(Map<dynamic, dynamic> row) {
-    return row.map((key, value) => MapEntry(key.toString(), value));
-  }
+  }) => _client.requestMap(
+    'DELETE',
+    '/api/v1/family-plus/members/$memberId',
+    body: {'idempotency_key': idempotencyKey},
+  );
 }

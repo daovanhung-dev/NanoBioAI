@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/meal_plan/data/models/meal_plan_ai_normalizer.dart';
-import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_service.dart';
 import 'package:nano_app/core/storage/localdb/models/ai_catalog_models.dart';
 
@@ -101,7 +101,7 @@ void main() {
   });
 
   test(
-    'local fallback can build a day using only unclassified Supabase meals',
+    'backend failure does not synthesize a local plan from catalog meals',
     () async {
       final catalog = AiCatalogBundle(
         meals: List<MealCatalogItemModel>.generate(
@@ -117,18 +117,15 @@ void main() {
         textGenerator: ({required modelName, required prompt}) async => '[]',
       );
 
-      final fallback = await ai.generateMealDayCodeItemsWithSource(
-        startDate: DateTime(2026, 8, 16),
-        day: 1,
-        catalog: catalog,
-        usedCodeCounts: const {},
-        onBackendInvocation: () async {},
-      );
-      expect(fallback.source, PlanGenerationSource.localFallback);
-      expect(fallback.value, hasLength(5));
-      expect(
-        fallback.value.map((item) => item['meal_code']).toSet(),
-        hasLength(5),
+      await expectLater(
+        ai.generateMealDayCodeItemsWithSource(
+          startDate: DateTime(2026, 8, 16),
+          day: 1,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          onBackendInvocation: () async {},
+        ),
+        throwsA(isA<AIResponseInvalidException>()),
       );
     },
   );

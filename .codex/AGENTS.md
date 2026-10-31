@@ -7,7 +7,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - App: NanoBio / NamiAI - tro ly suc khoe AI bang Flutter.
 - Persona UI: Nabi- am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo code hien co.
-- Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4`, app-owned `ai_local` + `llamadart` on-device AI runtime, local notifications `19.5.0`.
+- Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4` for retained non-AI contracts, self-hosted NanoBio AI API, local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 36`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
 - Embedded project: `iot/xiaozhi-esp32/` is an independent XiaoZhi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
@@ -141,18 +141,18 @@ Critical flow to preserve:
 ```text
 Guest opens app
 -> onboarding saves local profile data
--> AI creates the initial personal schedule once
+-> guest can finish onboarding without an AI-generated schedule
 -> meal/task/schedule data saves to SQLite
 -> notifications are scheduled with complete/skip actions
--> guest uses only v1 basic modules
--> login/sign-up reads membership from Supabase
+-> guest uses v1 basic modules; AI actions ask for sign-in
+-> login/sign-up reads membership from the configured backend
 -> access gate enables free/Plus/FamilyPlus features
 -> dashboard reads real data and recalculates progress
 ```
 
 Access rules:
 
-- v1 guest/basic: onboarding, basic health modules, first AI personal schedule, local notifications.
+- v1 guest/basic: onboarding, basic health modules, local notifications; AI generation requires sign-in.
 - v2 free: authenticated flow, AI chat 3/day, schedule generation 3/month, health score from schedule completion history.
 - v3 Plus/FamilyPlus: M10 advanced tracking and M11 FamilyPlus have partial,
   paid-gated runtime paths; `premium_ai`, `goal_roadmap`,
@@ -165,9 +165,9 @@ Access rules:
 
 - Before any task that changes Supabase database behavior, schema, RLS, RPC,
   seed data, payment/membership/Sale/Admin contracts, or Supabase docs, read
-  `docs/supabase/README.md`, `docs/supabase/01_build_system.sql`,
-  `docs/supabase/02_seed_data.sql`, and the directly related SQL/MD files
-  under `docs/supabase/`.
+  `docs/archive/legacy-supabase/sql/README.md`, `docs/archive/legacy-supabase/sql/01_build_system.sql`,
+  `docs/archive/legacy-supabase/sql/02_seed_data.sql`, and the directly related SQL/MD files
+  under `docs/archive/legacy-supabase/sql/`.
 - Any module or feature change that modifies Supabase schema/RLS/RPC/seed/docs
   must update the owning canonical script in the same change:
   `01_build_system.sql` for system objects and runtime contracts, or

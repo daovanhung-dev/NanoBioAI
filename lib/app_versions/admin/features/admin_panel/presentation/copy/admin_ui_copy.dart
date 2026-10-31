@@ -37,10 +37,8 @@ abstract final class AdminUiCopy {
         'Quản lý ưu đãi và kho mã dành cho người dùng.',
       AdminPanelSection.reconciliation =>
         'Theo dõi sai lệch và ghi nhận kết quả đối soát.',
-      AdminPanelSection.plans =>
-        'Quản lý các gói dịch vụ đang áp dụng.',
-      AdminPanelSection.reports =>
-        'Tạo và theo dõi yêu cầu xuất báo cáo.',
+      AdminPanelSection.plans => 'Quản lý các gói dịch vụ đang áp dụng.',
+      AdminPanelSection.reports => 'Tạo và theo dõi yêu cầu xuất báo cáo.',
       AdminPanelSection.audit =>
         'Xem lại các thao tác quan trọng đã được ghi nhận.',
       AdminPanelSection.config =>
@@ -196,7 +194,7 @@ abstract final class AdminUiCopy {
       'http',
       'sql',
       'json',
-      'supabase',
+      'server',
       'permission code',
       'action key',
       'status code',

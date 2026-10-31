@@ -47,11 +47,11 @@ Commit de xuat: feat(m31): cho phép gọi cảnh báo theo consent chưa xác m
 - Flutter: `lib/app_versions/v1/features/sleep_tracking/`.
 - SQLite: `lib/core/storage/localdb/migrations/migration_v27.dart`.
 - Supabase canonical source:
-  `docs/supabase/01_build_system.sql`.
+  `docs/archive/legacy-supabase/sql/01_build_system.sql`.
 - Additive migration:
-  `supabase/migrations/20261006110000_m31_unverified_voice_alert.sql`.
-- Edge Functions: `supabase/functions/sleep-safety-dispatch/` and
-  `supabase/functions/sleep-safety-provider-webhook/`.
+  `docs/archive/legacy-supabase/project/migrations/20261006110000_m31_unverified_voice_alert.sql`.
+- Edge Functions: `docs/archive/legacy-supabase/project/functions/sleep-safety-dispatch/` and
+  `docs/archive/legacy-supabase/project/functions/sleep-safety-provider-webhook/`.
 
 ## Chấp nhận
 

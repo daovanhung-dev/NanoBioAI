@@ -41,7 +41,7 @@ import 'package:nano_app/app_versions/v1/services/ai/schedule_ai_personalization
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_request_store.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 class DashboardGenerationAuthRequiredException implements Exception {
   static const userMessage =
@@ -362,7 +362,7 @@ class GeneratedPlanService {
   }) : scheduleReminders =
            scheduleReminders ??
            NotificationBootstrap.scheduleGeneratedReminders,
-       currentUserId = currentUserId ?? currentSupabaseUserIdOrNull,
+       currentUserId = currentUserId ?? currentBackendUserIdOrNull,
        requestStore = requestStore ?? LocalPersonalScheduleAiRequestStore(),
        quotaGateway =
            quotaGateway ?? const TrustedBackendPersonalScheduleQuotaGateway(),
@@ -374,7 +374,7 @@ class GeneratedPlanService {
              datasource: DailyRoutinePreferencesLocalDatasource(),
            ),
        rewardGateway =
-           rewardGateway ?? const SupabaseScheduleRewardOnlineGateway(),
+           rewardGateway ?? const BackendScheduleRewardOnlineGateway(),
        rewardProjectionStore =
            rewardProjectionStore ??
            const SqliteScheduleRewardEligibilityProjectionStore(),
@@ -680,7 +680,7 @@ class GeneratedPlanService {
   }
 
   /// Applies the user's decision to a request-scoped proposal and resumes the
-  /// same stable request. Rejecting it asks local AI for a replacement on the
+  /// same stable request. Rejecting it asks the backend AI for a replacement on the
   /// next run; no schedule event is committed while a proposal is pending.
   Future<GeneratedPlanResult> respondToCustomMealProposal({
     required String requestId,

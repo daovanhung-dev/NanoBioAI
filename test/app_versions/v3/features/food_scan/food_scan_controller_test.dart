@@ -5,20 +5,12 @@ import 'package:nano_app/app_versions/v3/features/food_scan/domain/entities/food
 import 'package:nano_app/app_versions/v3/features/food_scan/providers/food_scan_providers.dart';
 
 void main() {
-  test('keeps the local model unloaded through image picker completion', () async {
+  test('picks an image without loading any local AI model', () async {
     final calls = <String>[];
     final container = ProviderContainer(
       overrides: [
         foodScanImageServiceProvider.overrideWith(
           (ref) => _FakeFoodScanImageService(calls),
-        ),
-        foodScanWithLocalModelUnloadedProvider.overrideWith(
-          (ref) => <T>(action) async {
-            calls.add('unload');
-            final value = await action();
-            calls.add('release');
-            return value;
-          },
         ),
       ],
     );
@@ -27,7 +19,7 @@ void main() {
     final controller = container.read(foodScanControllerProvider.notifier);
     await controller.pickGallery('test-user');
 
-    expect(calls, ['unload', 'gallery', 'release']);
+    expect(calls, ['gallery']);
     expect(
       container.read(foodScanControllerProvider).imagePath,
       '/picked/meal.jpg',

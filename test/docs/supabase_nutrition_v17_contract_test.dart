@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('build script keeps base and V18 nutrition contracts', () {
-    final build = File('docs/supabase/01_build_system.sql').readAsStringSync();
+    final build = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
 
     for (final token in [
       'create table if not exists public.nutrition_profiles',
@@ -29,7 +29,7 @@ void main() {
   });
 
   test('seed script contains exactly 163 catalog upserts', () {
-    final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+    final seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
 
     expect(
       RegExp(r'insert into public\.meal_catalog', caseSensitive: false)

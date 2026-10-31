@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/app_versions/admin/features/admin_panel/data/datasources/admin_supabase_datasource.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
-import 'package:nano_app/app_versions/admin/router/admin_route_paths.dart';
 
 void main() {
   group('AdminSession', () {
@@ -217,220 +215,18 @@ void main() {
   });
 
   group('AdminMutationCommand', () {
-    test('uses Vietnam timezone for Admin dashboard defaults', () {
-      expect(AdminTimeDefaults.vietnamTimeZone, 'Asia/Ho_Chi_Minh');
-    });
-
-    test('keeps reason and idempotency key explicit', () {
+    test('preserves audit context for backend mutations', () {
       const command = AdminMutationCommand(
-        section: AdminPanelSection.payments,
+        section: AdminPanelSection.sales,
         action: 'approve',
-        targetId: 'payment-id',
-        reason: 'Verified provider payment.',
-        idempotencyKey: 'payments-payment-id-1',
+        targetId: 'sale-user-1',
+        reason: 'Đã đối chiếu thông tin.',
+        idempotencyKey: 'sale-user-1-approve-1',
       );
 
-      expect(command.reason, isNotEmpty);
-      expect(command.idempotencyKey, startsWith('payments-'));
-    });
-
-    test('maps Sale conversion queue to review RPC and params', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.saleConversions,
-        action: 'mark_paid',
-        targetId: 'conversion-id',
-        reason: 'Finance confirmed payout.',
-        idempotencyKey: 'sale-conversions-conversion-id-1',
-        payload: {
-          'payment_proof_path':
-              'sale-point-conversions/conversion-id/proof.jpg',
-        },
-      );
-
-      expect(
-        adminListRpcForSection(AdminPanelSection.saleConversions),
-        'admin_list_sale_point_conversions',
-      );
-      expect(
-        adminRpcFunctionFor(command),
-        'admin_review_sale_point_conversion',
-      );
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Finance confirmed payout.',
-        'p_idempotency_key': 'sale-conversions-conversion-id-1',
-        'p_conversion_id': 'conversion-id',
-        'p_decision': 'mark_paid',
-        'p_payment_proof_path':
-            'sale-point-conversions/conversion-id/proof.jpg',
-      });
-      expect(AdminRoutePaths.saleConversions, '/admin/sale-conversions');
-    });
-
-    test('maps reconciliation queue to status RPC and route', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.reconciliation,
-        action: 'resolved',
-        targetId: 'discrepancy-id',
-        reason: 'Matched payment and point ledger.',
-        idempotencyKey: 'reconciliation-discrepancy-id-1',
-      );
-
-      expect(
-        adminListRpcForSection(AdminPanelSection.reconciliation),
-        'admin_list_reconciliation_discrepancies',
-      );
-      expect(
-        adminRpcFunctionFor(command),
-        'admin_update_reconciliation_discrepancy_status',
-      );
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Matched payment and point ledger.',
-        'p_idempotency_key': 'reconciliation-discrepancy-id-1',
-        'p_discrepancy_id': 'discrepancy-id',
-        'p_status': 'resolved',
-      });
-      expect(AdminRoutePaths.reconciliation, '/admin/reconciliation');
-    });
-
-    test('maps reconciliation run creation to section-level RPC', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.reconciliation,
-        action: 'create_run',
-        targetId: 'payments_monthly',
-        reason: 'Create month-end reconciliation.',
-        idempotencyKey: 'reconciliation-create-run-1',
-      );
-
-      expect(adminRpcFunctionFor(command), 'admin_create_reconciliation_run');
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Create month-end reconciliation.',
-        'p_idempotency_key': 'reconciliation-create-run-1',
-        'p_scope': 'payments_monthly',
-      });
-    });
-
-    test('maps payment reversal actions to refund/cancel RPC', () {
-      for (final action in ['refund', 'cancel', 'chargeback']) {
-        final command = AdminMutationCommand(
-          section: AdminPanelSection.payments,
-          action: action,
-          targetId: 'payment-id',
-          reason: 'Finance reversal.',
-          idempotencyKey: 'payments-$action-1',
-        );
-
-        expect(
-          adminRpcFunctionFor(command),
-          'admin_refund_or_cancel_payment',
-          reason: action,
-        );
-        expect(adminRpcParamsFor(command), {
-          'p_reason': 'Finance reversal.',
-          'p_idempotency_key': 'payments-$action-1',
-          'p_payment_event_id': 'payment-id',
-          'p_decision': action,
-        });
-      }
-    });
-
-    test('keeps payment approval on review RPC', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.payments,
-        action: 'approve',
-        targetId: 'payment-id',
-        reason: 'Provider payment verified.',
-        idempotencyKey: 'payments-approve-1',
-        payload: {'transfer_verified': true},
-      );
-
-      expect(adminRpcFunctionFor(command), 'admin_review_payment');
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Provider payment verified.',
-        'p_idempotency_key': 'payments-approve-1',
-        'p_payment_event_id': 'payment-id',
-        'p_decision': 'approve',
-        'p_transfer_verified': true,
-      });
-    });
-
-    test('maps manual Sale point adjustment to audited RPC', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.saleConversions,
-        action: 'adjust_points',
-        targetId: 'sale-user-id',
-        reason: 'Manual one-admin correction.',
-        idempotencyKey: 'points-sale-user-id-1',
-        payload: {'point_delta_cents': 1000},
-      );
-
-      expect(adminPermissionForMutation(command), AdminPermissions.pointsWrite);
-      expect(adminRpcFunctionFor(command), 'admin_adjust_sale_points');
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Manual one-admin correction.',
-        'p_idempotency_key': 'points-sale-user-id-1',
-        'p_sale_user_id': 'sale-user-id',
-        'p_point_delta_cents': 1000,
-      });
-    });
-
-    test('maps plan section to plan-scoped config RPC', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.plans,
-        action: 'upsert',
-        targetId: 'plan_plus',
-        reason: 'Update package config.',
-        idempotencyKey: 'plans-plan-plus-1',
-      );
-
-      expect(
-        adminListRpcForSection(AdminPanelSection.plans),
-        'admin_list_plan_config_versions',
-      );
-      expect(adminRpcFunctionFor(command), 'admin_upsert_config_version');
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Update package config.',
-        'p_idempotency_key': 'plans-plan-plus-1',
-        'p_config_key': 'plan_plus',
-        'p_config_value': {'action': 'upsert'},
-      });
-    });
-
-    test('maps report catalog list and export payload safely', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.reports,
-        action: 'export',
-        targetId: 'membership_summary',
-        reason: 'Monthly management report.',
-        idempotencyKey: 'reports-membership-summary-1',
-      );
-
-      expect(
-        adminListRpcForSection(AdminPanelSection.reports),
-        'admin_list_report_catalog',
-      );
-      expect(adminRpcFunctionFor(command), 'admin_request_report_export');
-      expect(adminRpcParamsFor(command), {
-        'p_reason': 'Monthly management report.',
-        'p_idempotency_key': 'reports-membership-summary-1',
-        'p_report_type': 'membership_summary',
-        'p_filters': {
-          'report_type': 'membership_summary',
-          'time_zone': 'Asia/Ho_Chi_Minh',
-        },
-      });
-    });
-
-    test('rejects read-only sections as mutation RPCs', () {
-      const command = AdminMutationCommand(
-        section: AdminPanelSection.audit,
-        action: 'export',
-        targetId: 'audit',
-        reason: 'Invalid write.',
-        idempotencyKey: 'audit-1',
-      );
-
-      expect(() => adminRpcFunctionFor(command), throwsUnsupportedError);
-      expect(() => adminRpcParamsFor(command), throwsUnsupportedError);
+      expect(command.reason, 'Đã đối chiếu thông tin.');
+      expect(command.idempotencyKey, 'sale-user-1-approve-1');
+      expect(command.targetId, 'sale-user-1');
     });
   });
 

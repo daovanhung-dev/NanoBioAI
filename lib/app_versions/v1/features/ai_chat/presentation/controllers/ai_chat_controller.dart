@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/providers/nabi_provider.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
-import 'package:nano_app/services/supabase/usage_quota/usage_quota_gateway.dart';
+import 'package:nano_app/services/backend/usage_quota/usage_quota_gateway.dart';
 
 import '../../domain/entities/ai_chat_stream_event.dart';
 import '../../domain/entities/chat_message_entity.dart';
@@ -253,8 +253,8 @@ String _messageForSendError(Object error) {
   if (error is AIConfigurationUnavailableException) {
     return AIConfigurationUnavailableException.userMessage;
   }
-  if (error is AILocalInferenceTimeoutException) {
-    return AILocalInferenceTimeoutException.userMessage;
+  if (error is AIInferenceTimeoutException) {
+    return AIInferenceTimeoutException.userMessage;
   }
   if (error is AIAuthenticationException) {
     return AIAuthenticationException.userMessage;

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 import '../../domain/entities/sleep_night_analysis.dart';
 import '../models/sleep_analysis_ai_models.dart';
@@ -17,11 +17,11 @@ class SleepAnalysisAIService {
     String? modelOverride,
     AiTextClient? client,
     SleepAiTextGenerator? textGenerator,
-  }) : _model = _clean(modelOverride) ?? LocalAiTextClient.modelId,
+  }) : _model = _clean(modelOverride) ?? BackendAiTextClient.modelId,
        _textGenerator = textGenerator,
        _client = textGenerator != null
            ? client
-           : client ?? const LocalAiTextClient(operation: 'sleep_analysis');
+           : client ?? const BackendAiTextClient();
 
   final String _model;
   final AiTextClient? _client;

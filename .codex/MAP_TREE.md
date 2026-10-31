@@ -98,7 +98,7 @@ Canonical task-skill files are: `coding.md`, `bugfix.md`, `fix-issues.md`,
 - Core shared code: `lib/core/`
 - Shared services/widgets: `lib/services/`, `lib/shared/widgets/`
 - Tests: `test/`
-- Product/design docs: `docs/BD/`, `docs/DD/`, `docs/supabase/`
+- Product/design docs: `docs/BD/`, `docs/DD/`, `docs/archive/legacy-supabase/sql/`
 - Current docs entrypoint and source audit: `docs/README.md`, `docs/audit/`
 - UI design source: `.codex/design/`
 - Work tracking docs: `docs/issues/`, `docs/todo/`, `docs/worklog/`

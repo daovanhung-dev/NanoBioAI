@@ -2,11 +2,11 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 94 worklog(s).
+- Generated from 96 worklog(s).
 
 ## When To Read
 
-- Historical task type: unknown (40)
+- Historical task type: unknown (41)
 - Historical task type: docs-context (12)
 - Historical task type: Tạo lô ảnh, rà soát trực quan, cập nhật tiến độ. (6)
 - Historical task type: docs (5)
@@ -36,10 +36,11 @@
 - Historical task type: tính năng giao diện và trạng thái AI Chat (1)
 - Historical task type: Nap context, dieu tra bug, fix va QA tren Android that. (1)
 - Historical task type: triển khai app Android, profile firmware ESP và tài liệu nghiệm thu (1)
+- Historical task type: bugfix va trien khai Admin Web (1)
 
 ## Common Modules
 
-- unknown: 43
+- unknown: 44
 - catalog nabi_3000_mon_viet_moi.json.: 6
 - catalog nabi_3000_mon_viet_moi.json và meal-plan UI.: 3
 - catalog nabi_3000_mon_viet_moi.json và asset thực đơn.: 3

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/sale_referral/data/datasources/sale_remote_datasource.dart';
-import 'package:nano_app/sale_referral/data/datasources/supabase_sale_remote_datasource.dart';
+import 'package:nano_app/sale_referral/data/datasources/backend_sale_remote_datasource.dart';
 import 'package:nano_app/sale_referral/data/device/sale_device_hash_store.dart';
 import 'package:nano_app/sale_referral/data/repositories/sale_repository_impl.dart';
 import 'package:nano_app/sale_referral/domain/entities/sale_models.dart';
@@ -15,7 +15,7 @@ final saleDeviceHashProvider = FutureProvider<String>((ref) {
 });
 
 final saleRemoteDatasourceProvider = Provider<SaleRemoteDatasource>((ref) {
-  return const SupabaseSaleRemoteDatasource();
+  return const BackendSaleRemoteDatasource();
 });
 
 final saleRepositoryProvider = Provider<SaleRepository>((ref) {

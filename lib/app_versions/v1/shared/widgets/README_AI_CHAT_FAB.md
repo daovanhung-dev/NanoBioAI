@@ -31,8 +31,8 @@ const AIChatFAB(
 Có thể truyền `onPressed` để caller kiểm soát navigation. Motion policy đến từ
 `AppMotionScope`; feedback đến từ `AppFeedbackService`.
 
-Không xem status dot là bằng chứng model local đã được cài hoặc sẵn sàng: widget
-không đọc trạng thái model hoặc runtime.
+Không xem status dot là bằng chứng dịch vụ AI sẵn sàng: widget không gọi API
+hoặc đọc trạng thái backend.
 
 Verification: static reachability; visual/device behavior `UNVERIFIED` nếu
 không có test/device evidence riêng.

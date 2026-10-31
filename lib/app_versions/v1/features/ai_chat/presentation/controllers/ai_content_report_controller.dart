@@ -21,7 +21,7 @@ class AiContentReportState {
 
 final aiContentReportRemoteDatasourceProvider =
     Provider<AiContentReportRemoteDatasource>((ref) {
-      return const SupabaseAiContentReportRemoteDatasource();
+      return const BackendAiContentReportRemoteDatasource();
     });
 
 final aiContentReportRepositoryProvider = Provider<AiContentReportRepository>((

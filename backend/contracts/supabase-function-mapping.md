@@ -1,6 +1,6 @@
-# Supabase replacement API inventory
+# Legacy Supabase Function to Backend API Map
 
-Source inventory is `supabase/config.toml` plus each current `supabase/functions/<name>/index.ts` and handler. This contract maps configured routes. The backend source/tests are the runtime evidence; this inventory alone is not a verification claim.
+The former project inventory is archived under `docs/archive/legacy-supabase/project/`. This table is a historical mapping aid; the backend source and tests define current behavior. Nothing in the archive is deployed by the runtime or release workflow.
 
 | Edge Function | Backend API |
 |---|---|
@@ -21,7 +21,7 @@ Source inventory is `supabase/config.toml` plus each current `supabase/functions
 | `sleep-safety-contact-verification` | `POST /api/v1/sleep-safety/contacts/verification` |
 | `sleep-safety-dispatch` | `POST /api/v1/sleep-safety/dispatch` |
 | `sleep-safety-provider-webhook` | `POST /api/v1/webhooks/sleep-safety/generic_http` |
-| `nabi-ai-generate` | `POST /api/v1/ai/generate` (503 `FEATURE_NOT_ENABLED`) |
-| `food-scan-analyze` | `POST /api/v1/food/scan/analyze` (503 `FEATURE_NOT_ENABLED`) |
+| `nabi-ai-generate` | `POST /api/v1/ai/generate` and `/api/v1/ai/generate/stream` (requires authenticated session and enabled Ollama service) |
+| `food-scan-analyze` | `POST /api/v1/food/scan/analyze` (requires authenticated eligible membership and enabled Ollama vision service) |
 
-There are 25 function directories including `_shared`; 19 are configured. Six unconfigured, empty directories are intentionally `NOT_FOUND` and receive no route: `admin-backup-control`, `admin-purge-gmail-accounts`, `member-password-change-request`, `nutrition-food-composition`, `voice-chat-turn`, `voice-live-token`.
+The historical tree has 25 function directories including `_shared`; 19 were configured. Empty or unconfigured functions have no active client caller and are not part of the server API. Local XiaoZhi voice remains a separate device contract.

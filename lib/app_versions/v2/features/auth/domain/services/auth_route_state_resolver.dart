@@ -15,16 +15,16 @@ class AuthRouteStateResolver {
 
     final subscriptionTier = profile?.subscriptionTier ?? 'free';
 
-    if (profileLoadFailed || profile == null) {
-      return AuthRouteState.profileBootstrapUnavailable(
+    if (session.mustChangePassword) {
+      return AuthRouteState.passwordChangeRequired(
         userId: session.userId,
         email: session.email,
         subscriptionTier: subscriptionTier,
       );
     }
 
-    if (session.mustChangePassword) {
-      return AuthRouteState.passwordChangeRequired(
+    if (profileLoadFailed || profile == null) {
+      return AuthRouteState.profileBootstrapUnavailable(
         userId: session.userId,
         email: session.email,
         subscriptionTier: subscriptionTier,

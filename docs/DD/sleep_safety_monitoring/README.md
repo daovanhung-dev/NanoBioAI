@@ -1,9 +1,11 @@
 # M31 — SLEEP_SAFETY_MONITORING
 
 > Runtime update 2026-10-18: optional sleep analysis now uses the selected
-> on-device model through `LocalAiTextClient`. Gemini references in older M31
-> design material are historical; app analysis does not send sleep context to
-> an AI service.
+> Runtime update 2026-10-30: optional sleep analysis sends a sanitized summary
+> of health metrics and trends through the authenticated NanoBio backend over
+> HTTPS. Raw recordings, transcripts, and contact numbers are not included.
+> Local text-model inference was removed; deterministic sleep metrics remain
+> available on-device if AI is unavailable.
 
 > **Source BD:** `docs/BD/sleep_safety/BD_NanoBio_Sleep_Safety_M31_v1.3.md`
 > **BD ID:** `BD-NANOBIO-SLEEP-SAFETY-001`
@@ -19,8 +21,9 @@
 
 Implementation contract for NanoBio M31 Sleep Safety Monitoring. M31 keeps the
 user-started on-device microphone safety detector, a persistent Android safety
-alarm, and post-session analysis that works offline. AI analysis is optional and
-user-triggered; local analysis never depends on a network response.
+alarm, and post-session deterministic analysis that works offline. AI
+interpretation is optional and user-triggered; it requires the backend and has
+no local-model fallback.
 
 The `Tôi cần hỗ trợ` action calls the highest-priority active contact that
 allows phone calling. After 15 seconds without a response, M31 uses the same
@@ -58,7 +61,7 @@ dialer handoff, never a connected call.
 - M09 notification bootstrap is reused only for scheduled arming navigation;
   sleep-safety alert actions do not mutate M09 task state.
 - Sleep analysis uses `lib/app_versions/v1/services/ai/ai_text_client.dart`
-  with the local runtime implementation.
+  with `BackendAiTextClient`; the app sends only the sanitized analysis summary.
 
 ## Direct help-call behavior
 

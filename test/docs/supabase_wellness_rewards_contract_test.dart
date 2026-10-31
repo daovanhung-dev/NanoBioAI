@@ -9,8 +9,8 @@ void main() {
     late String runtime;
 
     setUpAll(() {
-      schema = File('docs/supabase/01_build_system.sql').readAsStringSync();
-      seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+      schema = File('docs/archive/legacy-supabase/sql/01_build_system.sql').readAsStringSync();
+      seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
       runtime = schema;
     });
 
@@ -306,7 +306,7 @@ void main() {
     );
 
     test('documents Storage, RLS and sandbox acceptance', () {
-      final readme = File('docs/supabase/README.md').readAsStringSync();
+      final readme = File('docs/archive/legacy-supabase/sql/README.md').readAsStringSync();
       final runtimeSmoke = schema.substring(
         schema.indexOf('-- BEGIN FAIL-FAST SYSTEM VALIDATION'),
       );

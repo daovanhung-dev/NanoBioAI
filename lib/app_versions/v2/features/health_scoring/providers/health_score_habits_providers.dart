@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../application/health_score_habits_fn01.dart';
 import '../application/health_score_habits_fn02.dart';
@@ -42,7 +42,7 @@ class HealthScoreHabitsViewModel {
 }
 
 final healthScoreHabitsCurrentUserIdProvider = Provider<String?>((ref) {
-  return currentSupabaseUserIdOrNull();
+  return currentBackendUserIdOrNull();
 });
 
 final healthScoreHabitsNowProvider = Provider<DateTime Function()>((ref) {

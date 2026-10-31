@@ -9,7 +9,7 @@ class V2MembershipEntitlementFeature {
   static const accessLayer = 'v2/free-authenticated';
 
   static const responsibilities = <String>[
-    'Read effective access from trusted Supabase membership state.',
+    'Read effective access from trusted backend membership state.',
     'Keep package decisions separate from local route or UI state.',
     'Expose Plus and FamilyPlus access as read-only app state.',
   ];

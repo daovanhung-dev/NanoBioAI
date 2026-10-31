@@ -1,6 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
-abstract class MembershipPaymentRemoteDatasource {
+abstract interface class MembershipPaymentRemoteDatasource {
   Future<Object?> createMembershipPaymentRequest({
     required String planCode,
     required String billingCycle,
@@ -19,11 +19,13 @@ abstract class MembershipPaymentRemoteDatasource {
   });
 }
 
-class SupabaseMembershipPaymentRemoteDatasource
+class BackendMembershipPaymentRemoteDatasource
     implements MembershipPaymentRemoteDatasource {
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
-  const SupabaseMembershipPaymentRemoteDatasource({this.clientOverride});
+  const BackendMembershipPaymentRemoteDatasource({this.clientOverride});
+
+  BackendApiClient get _client => clientOverride ?? BackendApiClient.shared;
 
   @override
   Future<Object?> createMembershipPaymentRequest({
@@ -31,79 +33,34 @@ class SupabaseMembershipPaymentRemoteDatasource
     required String billingCycle,
     required String idempotencyKey,
     required String payerFullName,
-  }) async {
-    final client = _client();
-
-    // The current rebuild contract in
-    // docs/supabase/01_schema_rebuild_local_sandbox.sql exposes the
-    // four-argument RPC. Calling it first avoids a guaranteed PGRST202 round
-    // trip on every QR request. Keep the three-argument call as rollout
-    // compatibility for environments that already moved payer lookup fully
-    // server-side.
-    try {
-      return await client.rpc(
-        'create_membership_payment_request',
-        params: {
-          'p_plan_code': planCode,
-          'p_billing_cycle': billingCycle,
-          'p_idempotency_key': idempotencyKey,
-          'p_payer_full_name': payerFullName,
-        },
-      );
-    } on PostgrestException catch (error) {
-      if (!_isCreateRpcSignatureUnavailable(error)) rethrow;
-
-      return client.rpc(
-        'create_membership_payment_request',
-        params: {
-          'p_plan_code': planCode,
-          'p_billing_cycle': billingCycle,
-          'p_idempotency_key': idempotencyKey,
-        },
-      );
-    }
-  }
+  }) => _client.requestMap(
+    'POST',
+    '/api/v1/payments/membership-requests',
+    body: {
+      'plan_code': planCode,
+      'billing_cycle': billingCycle,
+      'idempotency_key': idempotencyKey,
+      'payer_full_name': payerFullName,
+    },
+  );
 
   @override
-  Future<Object?> getMyMembershipPaymentRequest() {
-    return _client().rpc('get_my_membership_payment_request');
-  }
+  Future<Object?> getMyMembershipPaymentRequest() =>
+      _client.requestMap('GET', '/api/v1/payments/membership-requests/me');
 
   @override
   Future<Object?> confirmMyMembershipPaymentTransfer({
     required String paymentEventId,
-  }) {
-    return _client().rpc(
-      'confirm_my_membership_payment_transfer',
-      params: {'p_payment_event_id': paymentEventId},
-    );
-  }
+  }) => _client.requestMap(
+    'POST',
+    '/api/v1/payments/membership-requests/$paymentEventId/confirm',
+  );
 
   @override
   Future<Object?> cancelMyMembershipPaymentRequest({
     required String paymentEventId,
-  }) {
-    return _client().rpc(
-      'cancel_my_membership_payment_request',
-      params: {'p_payment_event_id': paymentEventId},
-    );
-  }
-
-  SupabaseClient _client() {
-    final client = clientOverride ?? Supabase.instance.client;
-    if (client.auth.currentUser == null) {
-      throw const AuthException('Missing authenticated session.');
-    }
-    return client;
-  }
-}
-
-bool _isCreateRpcSignatureUnavailable(PostgrestException error) {
-  if (error.code == 'PGRST202') return true;
-  final text = '${error.message} ${error.details ?? ''} ${error.hint ?? ''}'
-      .toLowerCase();
-  return text.contains('create_membership_payment_request') &&
-      (text.contains('could not find the function') ||
-          text.contains('schema cache') ||
-          text.contains('function') && text.contains('does not exist'));
+  }) => _client.requestMap(
+    'POST',
+    '/api/v1/payments/membership-requests/$paymentEventId/cancel',
+  );
 }

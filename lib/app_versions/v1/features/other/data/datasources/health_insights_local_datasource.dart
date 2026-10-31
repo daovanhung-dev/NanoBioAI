@@ -1,5 +1,5 @@
 import 'package:nano_app/core/storage/localdb/database_service.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/entities/health_insights_entity.dart';
@@ -86,8 +86,7 @@ class HealthInsightsLocalDatasource {
     final adherenceDates = <String>{
       ...taskTotals.keys,
       ...mealTotals.keys,
-    }.toList()
-      ..sort();
+    }.toList()..sort();
 
     final adherence = <HealthDailyAdherenceEntry>[];
     for (final key in adherenceDates) {
@@ -115,7 +114,7 @@ class HealthInsightsLocalDatasource {
   }
 
   Future<String> _resolveUserId(Database db) async {
-    final authUserId = currentSupabaseUserIdOrNull();
+    final authUserId = currentBackendUserIdOrNull();
     if (authUserId != null && authUserId.trim().isNotEmpty) {
       final rows = await db.query(
         'users',
@@ -149,7 +148,8 @@ class HealthInsightsLocalDatasource {
     final date = dateText == null ? null : DateTime.tryParse(dateText);
     if (date == null) return null;
 
-    final updatedAt = _readDateTime(row['updated_at']) ??
+    final updatedAt =
+        _readDateTime(row['updated_at']) ??
         _readDateTime(row['created_at']) ??
         date;
 

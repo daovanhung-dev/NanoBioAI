@@ -1,40 +1,19 @@
-# NanoBioAI local inference
+# NanoBioAI inference routing
 
-## Runtime contract
+Every in-app generative AI capability uses the authenticated NanoBio backend:
+text/JSON generation, streaming chat, personalized health analysis, voice
+responses, and Food Scan vision. `BackendAiTextClient` calls
+`/api/v1/ai/generate`, `/api/v1/ai/generate/stream`, and
+`/api/v1/food/scan/analyze`. The server owns Ollama model selection and
+enforces authentication, membership, quota, and rate limits.
 
-Production feature services depend on the provider-neutral `AiTextClient` in
-`ai_text_client.dart`. The production implementation is `LocalAiTextClient`,
-backed by the app-owned runtime in `lib/core/ai_local/`; it does not import or
-depend on the standalone `ai_local` application.
+Guests can use app features that do not require AI. AI calls without a backend
+session fail locally with a sign-in message and do not send anonymous requests.
+Network/server failures never fall back to a local text or vision model.
+Deterministic calculations, catalogs, validators, and local persistence remain
+on-device.
 
-Native user builds require a selected and installed text model before entering
-the user app. The selection is persisted locally and loaded on the next start.
-Food Scan installs its vision model and projector on first use. Downloaded
-assets are resumed when possible and SHA-256 checked before installation.
-Inference failures stay local and do not fall through to a remote AI service.
-
-The web implementation reports `unsupported_platform`. Web routes that do not
-need AI remain available. AI features must show this state instead of sending
-requests to an Edge Function.
-
-## Supabase boundary
-
-Supabase remains in use for authentication, data, cloud sync, and existing
-quota workflows. The NanoBioAI app no longer invokes the
-`nabi-ai-generate` or `food-scan-analyze` AI functions. Their source, deployed
-secrets, and deployment state are outside this app migration and remain
-untouched.
-
-## Model and prompt limits
-
-Prompt construction uses the selected local model's context size and tokenizer
-when the client exposes context estimation. Chat history is pruned to the
-recent messages that fit. Meal and exercise catalog prompts use eligible code
-shortlists; the existing catalog normalizers remain authoritative and reject
-unknown codes, duplicates, or unsafe structure. A context failure never
-triggers remote inference.
-
-## Configuration
-
-The app uses public Supabase configuration for existing account and data flows.
-No AI API key or `GEMINI_*` setting is required by NanoBioAI.
+Nabi ESP retains local microphone capture, Whisper speech recognition, ESP32
+transport, and offline TTS; its generated reply now uses the authenticated
+backend. The release API base is `https://42.118.174.147`; do not downgrade to
+HTTP. Live acceptance depends on HTTPS readiness.

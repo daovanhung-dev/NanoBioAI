@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nano_app/app_versions/admin/features/wellness_rewards/data/datasources/admin_wellness_rewards_remote_datasource.dart';
-import 'package:nano_app/app_versions/admin/features/wellness_rewards/data/repositories/supabase_admin_wellness_rewards_repository.dart';
+import 'package:nano_app/app_versions/admin/features/wellness_rewards/data/datasources/backend_admin_wellness_rewards_remote_datasource.dart';
+import 'package:nano_app/app_versions/admin/features/wellness_rewards/data/repositories/backend_admin_wellness_rewards_repository.dart';
 import 'package:nano_app/app_versions/admin/features/wellness_rewards/domain/entities/admin_wellness_reward_models.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 void main() {
   group('Admin wellness reward models', () {
@@ -84,35 +84,41 @@ void main() {
     });
   });
 
-  group('SupabaseAdminWellnessRewardsRepository', () {
-    test('splits wrapped offer and redemption results safely', () async {
+  group('BackendAdminWellnessRewardsRepository', () {
+    test('parses server offer and redemption rows safely', () async {
       final datasource = _FakeAdminDatasource(
-        listResponse: const {
-          'offers': [
-            {
-              'id': 'offer-1',
-              'title': 'Ưu đãi một',
-              'cost_points': 20,
-              'available_codes': 4,
-              'issued_codes': 1,
-              'eligible_plan_codes': ['free'],
-              'is_active': true,
-            },
-            {'id': '', 'title': 'Dòng không hợp lệ'},
-          ],
-          'redemptions': [
-            {
-              'id': 'redemption-1',
-              'title': 'Voucher một',
-              'points_spent': 20,
-              'status': 'issued',
-              'masked_code': '••••1234',
-            },
-            {'id': '', 'title': 'Dòng không hợp lệ'},
-          ],
-        },
+        listResponse: const [
+          {
+            'item_type': 'offer',
+            'id': 'offer-1',
+            'title': 'Ưu đãi một',
+            'cost_points': 20,
+            'available_codes': 4,
+            'issued_codes': 1,
+            'eligible_plan_codes': ['free'],
+            'is_active': true,
+          },
+          {
+            'item_type': 'redemption',
+            'id': 'redemption-1',
+            'title': 'Voucher một',
+            'points_spent': 20,
+            'status': 'issued',
+            'masked_code': '••••1234',
+          },
+          {
+            'item_type': 'offer',
+            'id': '',
+            'title': 'Dòng không hợp lệ',
+          },
+          {
+            'item_type': 'redemption',
+            'id': '',
+            'title': 'Dòng không hợp lệ',
+          },
+        ],
       );
-      final repository = SupabaseAdminWellnessRewardsRepository(
+      final repository = BackendAdminWellnessRewardsRepository(
         datasource: datasource,
       );
 
@@ -131,7 +137,7 @@ void main() {
           'accepted_count': 1,
         },
       );
-      final repository = SupabaseAdminWellnessRewardsRepository(
+      final repository = BackendAdminWellnessRewardsRepository(
         datasource: datasource,
       );
       final command = AdminRewardOfferCommand(
@@ -156,12 +162,13 @@ void main() {
 
     test('maps Vietnamese copy validation failure to a safe message', () async {
       final datasource = _FakeAdminDatasource(
-        mutationError: const PostgrestException(
-          message: 'invalid_vietnamese_copy',
-          code: 'P0001',
+        mutationError: const BackendApiException(
+          statusCode: 400,
+          businessCode: 'INVALID_VIETNAMESE_COPY',
+          message: 'Tên và mô tả ưu đãi phải là tiếng Việt có dấu.',
         ),
       );
-      final repository = SupabaseAdminWellnessRewardsRepository(
+      final repository = BackendAdminWellnessRewardsRepository(
         datasource: datasource,
       );
 
@@ -195,7 +202,7 @@ void main() {
     });
 
     test('rejects a server mutation result that is not successful', () async {
-      final repository = SupabaseAdminWellnessRewardsRepository(
+      final repository = BackendAdminWellnessRewardsRepository(
         datasource: _FakeAdminDatasource(
           mutationResponse: const {
             'success': false,
@@ -221,22 +228,19 @@ void main() {
     });
   });
 
-  test('admin datasource keeps RPC names and external revocation guard', () {
+  test('admin datasource uses backend routes and external revocation guard', () {
     final source = File(
       'lib/app_versions/admin/features/wellness_rewards/data/datasources/'
-      'admin_wellness_rewards_remote_datasource.dart',
-    ).readAsStringSync();
+      'backend_admin_wellness_rewards_remote_datasource.dart',
+        ).readAsStringSync();
 
-    expect(source, contains("'admin_list_wellness_rewards_v2'"));
-    expect(source, contains("'admin_upsert_reward_offer_v2'"));
-    expect(source, contains("'admin_mark_reward_redemption_received'"));
-    expect(source, contains("'admin_import_reward_codes'"));
-    expect(source, contains("'admin_cancel_reward_redemption'"));
-    expect(source, contains("'p_external_revocation_confirmed': true"));
+    expect(source, contains("'/api/v1/admin/business/wellness-rewards'"));
+    expect(source, contains("'external_revocation_confirmed': true"));
+    expect(source, isNot(contains('Supabase')));
   });
 }
 
-class _FakeAdminDatasource extends AdminWellnessRewardsRemoteDatasource {
+class _FakeAdminDatasource extends BackendAdminWellnessRewardsRemoteDatasource {
   final Object? listResponse;
   final Object? mutationResponse;
   final Object? mutationError;

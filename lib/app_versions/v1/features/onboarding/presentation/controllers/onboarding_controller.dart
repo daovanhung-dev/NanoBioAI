@@ -689,6 +689,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         onboardingCompletionCallbackProvider,
       );
       var generatedPlan = false;
+      var aiLoginRequired = false;
       var generationSource = PlanGenerationSource.unknown;
       failureStage = 'initial_plan_generation';
       try {
@@ -730,36 +731,33 @@ class OnboardingController extends Notifier<OnboardingState> {
             error,
             stackTrace,
           );
-          throw const OnboardingInitialPlanException(
-            AIAuthenticationException.userMessage,
-          );
-        }
-        if (AIModelContextLimitException.matches(error)) {
+          aiLoginRequired = true;
+          generatedPlan = false;
+          planGenerated = false;
+        } else if (AIModelContextLimitException.matches(error)) {
           throw const OnboardingInitialPlanException(
             AIModelContextLimitException.userMessage,
           );
-        }
-        if (AIRequestTooLargeException.matches(error)) {
+        } else if (AIRequestTooLargeException.matches(error)) {
           throw const OnboardingInitialPlanException(
             AIRequestTooLargeException.userMessage,
           );
-        }
-        if (error is ScheduleCandidatesUnavailableException) {
+        } else if (error is ScheduleCandidatesUnavailableException) {
           throw OnboardingInitialPlanException(error.userMessage);
-        }
-        if (error is ScheduleMealClassificationException) {
+        } else if (error is ScheduleMealClassificationException) {
           throw OnboardingInitialPlanException(error.userMessage);
+        } else {
+          AppLogger.error(
+            _tag,
+            'Initial plan generation failed at stage=$failureStage',
+            error,
+            stackTrace,
+          );
+          throw const OnboardingInitialPlanException();
         }
-        AppLogger.error(
-          _tag,
-          'Initial plan generation failed at stage=$failureStage',
-          error,
-          stackTrace,
-        );
-        throw const OnboardingInitialPlanException();
       }
 
-      if (!generatedPlan) {
+      if (!generatedPlan && !aiLoginRequired) {
         AppLogger.warning(_tag, 'Initial plan generation was not completed');
         throw const OnboardingInitialPlanException();
       }
@@ -786,7 +784,9 @@ class OnboardingController extends Notifier<OnboardingState> {
         }
       }
 
-      final savedLog = generationSource.isBasicSuggestion
+      final savedLog = aiLoginRequired
+          ? 'Đã lưu hồ sơ của bạn. Đăng nhập để tạo lịch gợi ý bằng AI khi bạn muốn.'
+          : generationSource.isBasicSuggestion
           ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi dịch vụ sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'
           : 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.';
       state = state.copyWith(

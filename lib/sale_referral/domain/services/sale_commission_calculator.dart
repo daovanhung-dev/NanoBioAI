@@ -1,7 +1,7 @@
 /// Pure estimator for the Sale screen.
 ///
 /// This never creates commission records or grants payout rights. Actual
-/// commission is calculated only by trusted Supabase payment-event logic.
+/// commission is calculated only by trusted server-side payment-event logic.
 class SaleCommissionCalculator {
   const SaleCommissionCalculator._();
 

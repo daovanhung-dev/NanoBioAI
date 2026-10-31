@@ -44,7 +44,7 @@ final nabiCareRepositoryProvider = Provider<NabiCareRepository>(
 );
 
 final nabiCareAiGatewayProvider = Provider<NabiCareAiGateway>(
-  (_) => LocalNabiCareAiGateway(),
+  (_) => BackendNabiCareAiGateway(),
 );
 
 final nabiCareOrchestratorProvider = Provider<NabiCareOrchestrator>((ref) {
@@ -88,7 +88,9 @@ class NabiCareController extends Notifier<NabiCareState> {
     } on NabiCareAiUnavailableException catch (error) {
       state = state.copyWith(
         status: NabiCareLoadStatus.error,
-        errorCode: error.status == 'unsupported_platform'
+        errorCode: error.status == 'authentication_required'
+            ? 'auth_required'
+            : error.status == 'unsupported_platform'
             ? 'unsupported_platform'
             : 'care_analysis_failed',
       );

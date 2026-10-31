@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../application/fitness_training_controller.dart';
 import '../application/fitness_training_service.dart';
@@ -18,6 +18,6 @@ final fitnessTrainingControllerProvider = Provider<FitnessTrainingController>((
       repository: const FitnessTrainingLocalDatasource(),
     ),
     profileRepository: profileRepository,
-    currentUserId: currentSupabaseUserIdOrNull,
+    currentUserId: currentBackendUserIdOrNull,
   );
 });

@@ -16,7 +16,7 @@ import 'package:nano_app/app_versions/v3/router/v3_router.dart';
 import 'package:nano_app/core/constants/routes/health_module_route_paths.dart';
 import 'package:nano_app/core/utils/logger/route_log_observer.dart';
 import 'package:nano_app/sale_referral/presentation/pages/sale_shell_page.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 final v2Routes = <RouteBase>[
   GoRoute(
@@ -121,7 +121,7 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
       }
 
       final isSignedIn =
-          currentSupabaseUserIdOrNull() != null ||
+          currentBackendUserIdOrNull() != null ||
           routeState?.status == AuthRouteStatus.authenticatedReady;
       final v1GuestRedirect = V2RouteGuards.redirectForV1Guest(
         path,

@@ -69,7 +69,18 @@ export class AdminApi {
       if (error instanceof BackendRequestError) {
         throw new AdminApiError(error.message, error.statusCode >= 500, error.businessCode);
       }
-      throw new AdminApiError("Thông tin đăng nhập chưa đúng hoặc tài khoản chưa thể sử dụng.");
+      if (error instanceof TypeError) {
+        throw new AdminApiError(
+          "Chưa kết nối được máy chủ. Hãy kiểm tra kết nối rồi thử lại.",
+          true,
+          "NETWORK_UNAVAILABLE",
+        );
+      }
+      throw new AdminApiError(
+        "Chưa thể hoàn tất đăng nhập lúc này. Bạn thử lại nhé.",
+        true,
+        "AUTH_REQUEST_FAILED",
+      );
     }
   }
 

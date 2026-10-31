@@ -9,7 +9,6 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v2/app/bio_ai_v2_app.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
-import 'package:nano_app/core/ai_local/presentation/local_ai_setup_gate.dart';
 import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
@@ -88,7 +87,7 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
     });
 
     // Root surface identity follows the resolved AuthController state instead
-    // of the timing of Supabase.onAuthStateChange. During the first release
+    // of backend auth-state timing. During the first release
     // login, keep a neutral resolving surface while AuthController finalizes
     // the authenticated route rather than remounting the login app.
     if (ref.watch(authBackendAvailabilityProvider).isReady &&
@@ -109,7 +108,7 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
 
     if (currentUserId == null) {
       return _withPermissionNotice(
-        const LocalAiSetupGate(child: BioAIV2App(key: ValueKey('user-app'))),
+        const BioAIV2App(key: ValueKey('user-app')),
         themeMode,
       );
     }
@@ -145,7 +144,7 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
     }
 
     return _withPermissionNotice(
-      const LocalAiSetupGate(child: BioAIV2App(key: ValueKey('user-app'))),
+      const BioAIV2App(key: ValueKey('user-app')),
       themeMode,
     );
   }

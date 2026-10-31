@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/app_versions/v2/features/auth/data/datasources/supabase_auth_remote_datasource.dart';
-import 'package:nano_app/app_versions/v2/features/auth/data/repositories/supabase_auth_repository.dart';
+import 'package:nano_app/app_versions/v2/features/auth/data/datasources/backend_auth_remote_datasource.dart';
+import 'package:nano_app/app_versions/v2/features/auth/data/repositories/backend_auth_repository.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/entities/auth_failure.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_repository.dart';
 import 'package:nano_app/core/config/auth_backend_availability.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 final authBackendAvailabilityProvider = Provider<AuthBackendAvailability>((
   ref,
@@ -12,16 +12,16 @@ final authBackendAvailabilityProvider = Provider<AuthBackendAvailability>((
   return AuthBackendAvailability.missingConfiguration;
 });
 
-final v2AuthRemoteDatasourceProvider = Provider<SupabaseAuthRemoteDatasource>((
+final v2AuthRemoteDatasourceProvider = Provider<BackendAuthRemoteDatasource>((
   ref,
 ) {
   _requireAuthBackendReady(ref);
-  return SupabaseAuthRemoteDatasource(client: Supabase.instance.client);
+  return BackendAuthRemoteDatasource(client: BackendApiClient.shared);
 });
 
 final v2AuthRepositoryProvider = Provider<AuthRepository>((ref) {
   _requireAuthBackendReady(ref);
-  return SupabaseAuthRepository(
+  return BackendAuthRepository(
     datasource: ref.watch(v2AuthRemoteDatasourceProvider),
   );
 });

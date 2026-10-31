@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
-import 'package:nano_app/services/supabase/cloud_sync/user_data_sync_outbox.dart';
+import 'package:nano_app/services/backend/cloud_sync/user_data_sync_outbox.dart';
 
 import '../../domain/entities/cloud_sync_result.dart';
 import '../../providers/cloud_sync_providers.dart';
@@ -63,7 +63,8 @@ class UserDataSyncController extends Notifier<UserDataSyncState> {
   }
 
   Future<void> refreshLocalStatus() async {
-    final pending = await UserDataSyncOutbox.shared.pendingCountForCurrentUser();
+    final pending = await UserDataSyncOutbox.shared
+        .pendingCountForCurrentUser();
     final lastSuccess = await AppPrefs.lastCloudSyncAt();
     final pullRetryPending = await AppPrefs.isCloudPullRetryPending();
     state = UserDataSyncState(

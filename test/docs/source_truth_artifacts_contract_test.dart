@@ -18,8 +18,8 @@ void main() {
       '`Source-only`',
       '`Runtime-unverified`',
       '`Sandbox-unverified`',
-      'docs/supabase/01_build_system.sql',
-      'docs/supabase/02_seed_data.sql',
+      'docs/archive/legacy-supabase/sql/01_build_system.sql',
+      'docs/archive/legacy-supabase/sql/02_seed_data.sql',
     ]) {
       expect(docsReadme, contains(token), reason: token);
     }

@@ -16,26 +16,23 @@ void main() {
   });
 
   group('AppEnv', () {
-    test('reads optional values from dotenv fallback', () {
+    test('reads optional app values from dotenv fallback', () {
       dotenv.loadFromString(
         envString: [
-          'AUTH_DELETE_ACCOUNT_FUNCTION=delete-account-dev',
-          'AUTH_CONFIRM_EMAIL_REQUIRED=false',
+          'ACCOUNT_DELETION_URL=https://example.test/delete',
+          'FEATURE_FLAG=false',
         ].join('\n'),
       );
 
       expect(
-        AppEnv.maybeString('AUTH_DELETE_ACCOUNT_FUNCTION'),
-        'delete-account-dev',
+        AppEnv.maybeString('ACCOUNT_DELETION_URL'),
+        'https://example.test/delete',
       );
       expect(
-        AppEnv.valueSource('AUTH_DELETE_ACCOUNT_FUNCTION'),
+        AppEnv.valueSource('ACCOUNT_DELETION_URL'),
         AppEnvValueSource.dotEnv,
       );
-      expect(
-        AppEnv.boolValue('AUTH_CONFIRM_EMAIL_REQUIRED', defaultValue: true),
-        isFalse,
-      );
+      expect(AppEnv.boolValue('FEATURE_FLAG', defaultValue: true), isFalse);
     });
 
     test('keeps optional loading safe when both files are missing', () async {
@@ -46,54 +43,40 @@ void main() {
 
       expect(AppEnv.maybeString('UNKNOWN_KEY'), isNull);
       expect(AppEnv.valueSource('UNKNOWN_KEY'), AppEnvValueSource.missing);
-      expect(AppEnv.maybeSupabaseConfig(), isNull);
+      expect(AppEnv.maybeString('API_BASE_URL'), isNull);
     });
 
-    test(
-      'loads bundled public Supabase config for a plain app build',
-      () async {
-        await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+    test('loads bundled backend origin for a plain app build', () async {
+      await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
 
-        final config = AppEnv.maybeSupabaseConfig();
-        expect(config, isNotNull);
-        final resolvedConfig = config!;
-        expect(Uri.parse(resolvedConfig.url).scheme, 'https');
-        expect(Uri.parse(resolvedConfig.url).host, endsWith('.supabase.co'));
-        expect(resolvedConfig.anonKey, isNotEmpty);
-        expect(AppEnv.maybeString('AUTH_EMAIL_REDIRECT_URL'), isNotEmpty);
-        expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
-        expect(AppEnv.valueSource('GEMINI_API_KEY'), AppEnvValueSource.missing);
-      },
-    );
-
-    test('returns no Supabase config when url or anon key is missing', () {
-      dotenv.loadFromString(envString: 'SUPABASE_URL=https://example.test');
-
-      expect(AppEnv.maybeSupabaseConfig(), isNull);
+      final apiBaseUrl = AppEnv.maybeString('API_BASE_URL');
+      expect(apiBaseUrl, isNotNull);
+      expect(Uri.parse(apiBaseUrl!).scheme, 'https');
+      expect(Uri.parse(apiBaseUrl).host, '42.118.174.147');
+      expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
+      expect(AppEnv.valueSource('GEMINI_API_KEY'), AppEnvValueSource.missing);
     });
 
-    test('returns Supabase config when both values are present', () {
-      dotenv.loadFromString(
-        envString: [
-          'SUPABASE_URL=https://example.test',
-          'SUPABASE_ANON_KEY=anon-key',
-        ].join('\n'),
-      );
+    test('returns no backend origin when it is missing', () {
+      dotenv.loadFromString(envString: 'UNRELATED=https://example.test');
 
-      expect(AppEnv.maybeSupabaseConfig(), (
-        url: 'https://example.test',
-        anonKey: 'anon-key',
-      ));
+      expect(AppEnv.maybeString('API_BASE_URL'), isNull);
+    });
+
+    test('reads backend origin from dotenv', () {
+      dotenv.loadFromString(envString: 'API_BASE_URL=https://api.example.test');
+
+      expect(AppEnv.maybeString('API_BASE_URL'), 'https://api.example.test');
     });
 
     test('throws a safe message for missing required config', () {
       expect(
-        () => AppEnv.requiredString('SUPABASE_URL'),
+        () => AppEnv.requiredString('API_BASE_URL'),
         throwsA(
           isA<StateError>().having(
             (error) => error.message,
             'message',
-            contains('SUPABASE_URL'),
+            contains('API_BASE_URL'),
           ),
         ),
       );

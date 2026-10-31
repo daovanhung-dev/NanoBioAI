@@ -21,8 +21,8 @@
 | `sleep-safety-contact-verification` | `/api/v1/sleep-safety/contacts/verification` | SOURCE_BACKED; SMS provider required |
 | `sleep-safety-dispatch` | `POST /api/v1/sleep-safety/dispatch` | SOURCE_BACKED; rollout/provider required |
 | `sleep-safety-provider-webhook` | `/api/v1/webhooks/sleep-safety/{provider}` | SOURCE_BACKED; signature required |
-| `nabi-ai-generate` | `POST /api/v1/ai/generate` | IMPLEMENTED; Ollama feature flag defaults off; live backend deployment not verified |
-| `food-scan-analyze` | `POST /api/v1/food/scan/analyze` | DECLARED_NOT_ENABLED; 503 by decision |
+| `nabi-ai-generate` | `POST /api/v1/ai/generate`, `/api/v1/ai/generate/stream` | IMPLEMENTED; Ollama feature flag and server model configuration required; live deployment not verified |
+| `food-scan-analyze` | `POST /api/v1/food/scan/analyze` | IMPLEMENTED; requires eligible session, vision flag and configured Qwen3-VL model; live deployment not verified |
 | `admin-backup-control` | none | NOT_FOUND (empty source directory) |
 | `admin-purge-gmail-accounts` | none | NOT_FOUND (empty source directory) |
 | `member-password-change-request` | none | NOT_FOUND (empty source directory) |
@@ -30,7 +30,10 @@
 | `voice-chat-turn` | none | NOT_FOUND (empty source directory) |
 | `voice-live-token` | none | NOT_FOUND (empty source directory) |
 
-The currently called RPC inventory (38 function names) and direct PostgREST/Storage access are part of the migration contract. See root `docs/supabase/README.md`, source call sites, and the backend API routers. This table records route mapping, not proof that every contract is runtime verified.
+The complete 38-function RPC and direct PostgREST/Storage map is in
+[`../../contracts/supabase-rpc-mapping.md`](../../contracts/supabase-rpc-mapping.md).
+It records local source coverage and remaining parity limits, not proof of
+production deployment or cutover.
 
 ## Runtime module map
 
@@ -43,6 +46,9 @@ The currently called RPC inventory (38 function names) and direct PostgREST/Stor
 | `family_plus` | Paid-plan group, owner-managed health subjects, member limits and membership context | `models.py`, `query.py`, `view.py`, `router.py` |
 | `cloud_sync` | Versioned per-user snapshot with SQL-source column allowlists | `models.py`, `contract.py`, `validate.py`, `query.py`, `view.py`, `router.py` |
 | `payments` | Google Play verification and local manual bank-transfer request lifecycle | `models.py`, `validate.py`, `query.py`, `view.py`, `router.py` |
+| `business` | Sale/referral, commissions, point conversions, wellness rewards/rank and Admin business operations | `models.py`, `view.py`, `router.py` |
+| `schedule_rewards` | Schedule completion eligibility, proof upload/download, finalization and wellness ledger effects | `models.py`, `view.py`, `router.py` |
+| `usage_quota` | Server-owned quota check/commit with idempotency | `models.py`, `view.py`, `router.py` |
 | `admin` | Local roles, account/membership operations, audit, early-access lead management | `models.py`, `query.py`, `view.py`, `router.py` |
 | `edge_api` | Early Access, food evidence, AI-content reports, Google Play route orchestration, feature-gated Ollama text generation | `models.py`, `view.py`, `router.py` |
 | `sleep_safety` | Contacts, verification, dispatch, provider webhook | `models.py`, `validate.py`, `query.py`, `view.py`, `router.py` |

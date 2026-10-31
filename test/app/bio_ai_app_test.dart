@@ -13,6 +13,39 @@ import 'package:nano_app/app_versions/v2/features/auth/presentation/controllers/
 import 'package:nano_app/core/config/auth_backend_availability.dart';
 
 void main() {
+  testWidgets('guest cold start opens the app without local AI setup', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          androidRuntimePermissionCoordinatorProvider.overrideWithValue(
+            AndroidRuntimePermissionCoordinator(
+              gateway: const _GrantedAndroidRuntimePermissionGateway(),
+              isAndroid: false,
+            ),
+          ),
+          authBackendAvailabilityProvider.overrideWithValue(
+            AuthBackendAvailability.ready,
+          ),
+          v2AuthControllerProvider.overrideWith(
+            _UnauthenticatedAuthController.new,
+          ),
+        ],
+        child: const BioAIApp(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    for (var frame = 0; frame < 6; frame++) {
+      await tester.pump();
+    }
+
+    expect(find.byKey(const ValueKey('user-app')), findsOneWidget);
+    expect(find.textContaining('tải model AI'), findsNothing);
+    expect(find.textContaining('model trên thiết bị'), findsNothing);
+  });
+
   testWidgets(
     'does not mount the user app while the authenticated identity is unresolved',
     (tester) async {
@@ -188,6 +221,12 @@ class _ResolvedAdminAuthController extends AuthController {
   @override
   Future<AuthRouteState> build() async =>
       const AuthRouteState.authenticatedReady(userId: 'admin-1');
+}
+
+class _UnauthenticatedAuthController extends AuthController {
+  @override
+  Future<AuthRouteState> build() async =>
+      const AuthRouteState.unauthenticated();
 }
 
 class _GrantedAndroidRuntimePermissionGateway

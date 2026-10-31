@@ -3,9 +3,9 @@ import 'dart:math';
 
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/personal_schedule_quota_gateway.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../data/datasources/fitness_training_catalog_asset_datasource.dart';
 import '../domain/entities/fitness_training_catalog.dart';
@@ -27,11 +27,11 @@ class FitnessTrainingService {
   }) : quotaGateway =
            quotaGateway ?? const TrustedBackendPersonalScheduleQuotaGateway(),
        aiClientFactory = aiClientFactory ?? _defaultClient,
-       currentUserId = currentUserId ?? currentSupabaseUserIdOrNull,
+       currentUserId = currentUserId ?? currentBackendUserIdOrNull,
        now = now ?? DateTime.now,
        idGenerator = idGenerator ?? _uuidV4;
 
-  static const model = LocalAiTextClient.modelId;
+  static const model = BackendAiTextClient.modelId;
   static const _generateOperation = 'fitness_training_generate';
   static const _replanOperation = 'fitness_training_replan';
   static final Map<String, Future<FitnessTrainingProgram>> _inFlight = {};
@@ -582,7 +582,7 @@ DATA=${jsonEncode(payload)}
     }
     final decoded = jsonDecode(text);
     if (decoded is! Map || decoded['days'] is! List) {
-      throw const FormatException('Local model returned invalid workout JSON.');
+      throw const FormatException('AI backend returned invalid workout JSON.');
     }
     return (decoded['days'] as List).cast<Object?>();
   }
@@ -611,7 +611,7 @@ DATA=${jsonEncode(payload)}
       '${value.day.toString().padLeft(2, '0')}';
 
   static AiTextClient _defaultClient(String operation) =>
-      LocalAiTextClient(operation: operation);
+      const BackendAiTextClient();
 
   static String _uuidV4() {
     final random = Random.secure();

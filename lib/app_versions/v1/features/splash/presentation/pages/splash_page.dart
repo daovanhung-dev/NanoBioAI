@@ -6,7 +6,7 @@ import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/features/nabi/domain/nabi_animation_type.dart';
 import 'package:nano_app/features/nabi/presentation/widgets/nabi_animation_player.dart';
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 import '../../domain/services/splash_route_decision.dart';
 import '../../providers/splash_provider.dart';
@@ -91,7 +91,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     _setStage(_BootStage.ready);
 
     final target = const SplashRouteDecision().resolve(
-      hasAuthenticatedSession: currentSupabaseUserIdOrNull() != null,
+      hasAuthenticatedSession: currentBackendUserIdOrNull() != null,
       onboardingCompleted: onboardingCompleted,
     );
 

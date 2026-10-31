@@ -39,9 +39,8 @@ Future<String?> showAdminReasonDialog(
 
 String adminSafeError(Object error) {
   final message = error.toString().replaceFirst('Bad state: ', '').trim();
-  if (message.contains('FunctionsHttpError') ||
-      message.contains('PostgrestException') ||
-      message.contains('AuthException')) {
+  if (message.contains('BackendApiException') ||
+      message.contains('DioException')) {
     return 'Thao tác chưa hoàn tất. Vui lòng kiểm tra kết nối và thử lại.';
   }
   return message.isEmpty
@@ -49,7 +48,11 @@ String adminSafeError(Object error) {
       : message;
 }
 
-void showAdminNotice(BuildContext context, String message, {bool error = false}) {
+void showAdminNotice(
+  BuildContext context,
+  String message, {
+  bool error = false,
+}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
@@ -193,7 +196,9 @@ class AdminStatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(color: foreground),
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: foreground),
       ),
     );
   }

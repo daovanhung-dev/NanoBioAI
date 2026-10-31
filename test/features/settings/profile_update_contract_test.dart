@@ -31,7 +31,7 @@ void main() {
 
     test('auth profile service is read-only for profile/onboarding sync', () {
       final source = File(
-        'lib/services/supabase/auth/auth_profile_service.dart',
+        'lib/services/backend/auth/auth_profile_service.dart',
       ).readAsStringSync();
 
       expect(source, contains('String? get currentUserId'));

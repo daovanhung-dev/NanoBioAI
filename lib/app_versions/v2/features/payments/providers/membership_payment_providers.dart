@@ -14,7 +14,7 @@ import '../application/read_membership_payment_payer_name.dart';
 import '../data/datasources/membership_payment_payer_profile_local_datasource.dart';
 import '../data/datasources/membership_payment_remote_datasource.dart';
 import '../data/repositories/sqlite_membership_payment_payer_profile_repository.dart';
-import '../data/repositories/supabase_membership_payment_repository.dart';
+import '../data/repositories/backend_membership_payment_repository.dart';
 import '../domain/entities/membership_payment_models.dart';
 import '../domain/repositories/membership_payment_payer_profile_repository.dart';
 import '../domain/repositories/membership_payment_repository.dart';
@@ -25,12 +25,12 @@ final membershipPaymentCurrentUserIdProvider = Provider<String?>((ref) {
 
 final membershipPaymentRemoteDatasourceProvider =
     Provider<MembershipPaymentRemoteDatasource>((ref) {
-      return const SupabaseMembershipPaymentRemoteDatasource();
+      return const BackendMembershipPaymentRemoteDatasource();
     });
 
 final membershipPaymentRepositoryProvider =
     Provider<MembershipPaymentRepository>((ref) {
-      return SupabaseMembershipPaymentRepository(
+      return BackendMembershipPaymentRepository(
         datasource: ref.watch(membershipPaymentRemoteDatasourceProvider),
       );
     });
@@ -112,7 +112,7 @@ class MembershipPaymentViewState {
   bool get hasPayerFullName => payerFullName?.trim().isNotEmpty == true;
 
   /// The payer name is display-only. QR creation never depends on this value;
-  /// Supabase reads the authenticated profile and snapshots it server-side.
+  /// the backend reads and snapshots the authenticated profile server-side.
   String? get payerFullNameForDisplay {
     final snapshot = request?.payerFullName?.trim();
     if (snapshot != null && snapshot.isNotEmpty) return snapshot;
@@ -294,7 +294,6 @@ class MembershipPaymentController
     _idempotencyBillingCycle = null;
   }
 
-
   Future<MembershipPaymentRequest> _loadExistingOpenRequestOrRethrow({
     required Object error,
     required StackTrace stackTrace,
@@ -336,7 +335,6 @@ class MembershipPaymentController
     }
   }
 }
-
 
 bool _isOpenMembershipPaymentRequestError(Object error) {
   return error.toString().toUpperCase().contains(

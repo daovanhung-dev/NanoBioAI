@@ -4,7 +4,7 @@ import '../tables/meal_catalog_table.dart';
 
 /// Removes meal rows that were bundled by older app versions.
 ///
-/// Meal catalog rows are now a mirror of Supabase only. Existing generated
+/// Meal catalog rows are now a server-synced mirror. Existing generated
 /// meal plans retain their own catalog snapshots and are not affected.
 class MigrationV24 {
   const MigrationV24._();

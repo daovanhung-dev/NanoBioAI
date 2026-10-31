@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 class ScheduleRewardEligibilityItem {
   final String scheduleItemId;
@@ -219,27 +219,20 @@ abstract class ScheduleRewardOnlineGateway {
   Future<Uint8List> downloadProof(String storagePath);
 }
 
-class SupabaseScheduleRewardOnlineGateway
+class BackendScheduleRewardOnlineGateway
     implements ScheduleRewardOnlineGateway {
   static const bucketName = 'schedule-completion-proofs';
   static const maxProofBytes = 5 * 1024 * 1024;
 
-  final SupabaseClient? clientOverride;
+  final BackendApiClient? clientOverride;
 
-  const SupabaseScheduleRewardOnlineGateway({this.clientOverride});
+  const BackendScheduleRewardOnlineGateway({this.clientOverride});
 
-  SupabaseClient? get _clientOrNull {
-    if (clientOverride != null) return clientOverride;
-    try {
-      return Supabase.instance.client;
-    } on AssertionError {
-      return null;
-    }
-  }
+  BackendApiClient get _client => clientOverride ?? BackendApiClient.shared;
 
   @override
   bool get hasAuthenticatedUser =>
-      _clientOrNull?.auth.currentUser?.id.trim().isNotEmpty == true;
+      _client.currentUserId?.trim().isNotEmpty == true;
 
   @override
   Future<ScheduleRewardRegistrationResult> registerEligibilities({
@@ -252,21 +245,25 @@ class SupabaseScheduleRewardOnlineGateway
         items.isEmpty) {
       throw ScheduleRewardException.fromStableCode('eligibility_unavailable');
     }
-    final response = await _rpc(
-      'register_my_schedule_reward_eligibilities',
-      params: {
-        'p_request_id': requestId,
-        'p_items': items.map((item) => item.toMap()).toList(growable: false),
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    final row = _firstMap(response);
-    return ScheduleRewardRegistrationResult(
-      registeredCount: _readInt(
-        row['registered_count'] ?? row['created_count'] ?? row['count'],
-      ),
-      existingCount: _readInt(row['existing_count']),
-    );
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/eligibilities',
+        body: {
+          'request_id': requestId,
+          'items': items.map((item) => item.toMap()).toList(growable: false),
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      return ScheduleRewardRegistrationResult(
+        registeredCount: _readInt(row['registered_count'] ?? row['count']),
+        existingCount: _readInt(row['existing_count']),
+      );
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } catch (_) {
+      throw ScheduleRewardException.network();
+    }
   }
 
   @override
@@ -274,29 +271,39 @@ class SupabaseScheduleRewardOnlineGateway
     required String scheduleItemId,
     required String idempotencyKey,
   }) async {
-    final response = await _rpc(
-      'begin_my_schedule_completion',
-      params: {
-        'p_schedule_item_id': scheduleItemId,
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    final row = _firstMap(response);
-    final eligibilityId = _readString(row['eligibility_id']);
-    final attemptId = _readString(row['attempt_id']);
-    final storagePath = _readString(row['storage_path'] ?? row['object_path']);
-    if (eligibilityId.isEmpty || attemptId.isEmpty || storagePath.isEmpty) {
-      throw ScheduleRewardException.fromStableCode(
-        row['error_code'] ?? 'eligibility_unavailable',
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/completions/begin',
+        body: {
+          'schedule_item_id': scheduleItemId,
+          'idempotency_key': idempotencyKey,
+        },
       );
+      final eligibilityId = _readString(row['eligibility_id']);
+      final attemptId = _readString(row['attempt_id']);
+      final storagePath = _readString(
+        row['storage_path'] ?? row['object_path'],
+      );
+      if (eligibilityId.isEmpty || attemptId.isEmpty || storagePath.isEmpty) {
+        throw ScheduleRewardException.fromStableCode(
+          row['error_code'] ?? 'eligibility_unavailable',
+        );
+      }
+      _validateOwnerPath(storagePath);
+      return ScheduleRewardCompletionAttempt(
+        eligibilityId: eligibilityId,
+        attemptId: attemptId,
+        storagePath: storagePath,
+        windowEnd: DateTime.tryParse(row['window_end']?.toString() ?? ''),
+      );
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } on ScheduleRewardException {
+      rethrow;
+    } catch (_) {
+      throw ScheduleRewardException.network();
     }
-    _validateOwnerPath(storagePath);
-    return ScheduleRewardCompletionAttempt(
-      eligibilityId: eligibilityId,
-      attemptId: attemptId,
-      storagePath: storagePath,
-      windowEnd: DateTime.tryParse(row['window_end']?.toString() ?? ''),
-    );
   }
 
   @override
@@ -310,25 +317,40 @@ class SupabaseScheduleRewardOnlineGateway
       throw ScheduleRewardException.fromStableCode('file_too_large');
     }
     try {
-      final bytes = await file.readAsBytes();
-      await _requireClient().storage
-          .from(bucketName)
-          .uploadBinary(
-            attempt.storagePath,
-            bytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/jpeg',
-              cacheControl: '3600',
-              upsert: false,
-            ),
-          );
-    } on StorageException catch (error) {
-      final normalized = error.message.toLowerCase();
-      if (normalized.contains('already exists') ||
-          normalized.contains('duplicate')) {
-        // Retry an toàn: object của attempt là bất biến và finalize sẽ xác minh.
-        return;
-      }
+      await _client.uploadBytes(
+        '/api/v1/schedule-rewards/completions/${Uri.encodeComponent(attempt.attemptId)}/proof',
+        bytes: await file.readAsBytes(),
+        fileName: 'completion.jpg',
+        contentType: 'image/jpeg',
+      );
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } catch (_) {
+      throw const ScheduleRewardException(
+        ScheduleRewardErrorCode.uploadFailed,
+        'Nabi chưa tải được ảnh minh chứng lên vùng lưu trữ riêng tư.',
+        canContinueWithoutReward: true,
+      );
+    }
+  }
+
+  @override
+  Future<ScheduleRewardFinalizeResult> finalizeCompletion({
+    required ScheduleRewardCompletionAttempt attempt,
+    required String idempotencyKey,
+  }) async {
+    _validateOwnerPath(attempt.storagePath);
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/completions/${Uri.encodeComponent(attempt.attemptId)}/finalize',
+        body: {
+          'storage_path': attempt.storagePath,
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      return _finalizeResult(row);
+    } on BackendApiException catch (error) {
       throw _safeError(error);
     } on ScheduleRewardException {
       rethrow;
@@ -338,52 +360,45 @@ class SupabaseScheduleRewardOnlineGateway
   }
 
   @override
-  Future<ScheduleRewardFinalizeResult> finalizeCompletion({
-    required ScheduleRewardCompletionAttempt attempt,
-    required String idempotencyKey,
-  }) async {
-    final response = await _rpc(
-      'finalize_my_schedule_completion',
-      params: {
-        'p_attempt_id': attempt.attemptId,
-        'p_storage_path': attempt.storagePath,
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    return _finalizeResult(response);
-  }
-
-  @override
   Future<ScheduleRewardFinalizeResult> undoCompletion({
     required String scheduleItemId,
     required String idempotencyKey,
   }) async {
-    final response = await _rpc(
-      'undo_my_schedule_completion',
-      params: {
-        'p_schedule_item_id': scheduleItemId,
-        'p_idempotency_key': idempotencyKey,
-      },
-    );
-    return _finalizeResult(response);
+    try {
+      final row = await _client.requestMap(
+        'POST',
+        '/api/v1/schedule-rewards/completions/undo',
+        body: {
+          'schedule_item_id': scheduleItemId,
+          'idempotency_key': idempotencyKey,
+        },
+      );
+      return _finalizeResult(row);
+    } on BackendApiException catch (error) {
+      throw _safeError(error);
+    } on ScheduleRewardException {
+      rethrow;
+    } catch (_) {
+      throw ScheduleRewardException.network();
+    }
   }
 
   @override
   Future<Uint8List> downloadProof(String storagePath) async {
     _validateOwnerPath(storagePath);
+    final attemptId = _attemptIdFromPath(storagePath);
     try {
-      return await _requireClient().storage
-          .from(bucketName)
-          .download(storagePath);
-    } on StorageException catch (error) {
+      return await _client.downloadBytes(
+        '/api/v1/schedule-rewards/completions/${Uri.encodeComponent(attemptId)}/proof',
+      );
+    } on BackendApiException catch (error) {
       throw _safeError(error);
     } catch (_) {
       throw ScheduleRewardException.network();
     }
   }
 
-  ScheduleRewardFinalizeResult _finalizeResult(Object? response) {
-    final row = _firstMap(response);
+  ScheduleRewardFinalizeResult _finalizeResult(Map<String, Object?> row) {
     final errorCode = _readString(row['error_code']);
     if (errorCode.isNotEmpty || row['success'] == false) {
       throw ScheduleRewardException.fromStableCode(errorCode);
@@ -394,77 +409,63 @@ class SupabaseScheduleRewardOnlineGateway
     );
   }
 
-  Future<Object?> _rpc(
-    String functionName, {
-    required Map<String, Object?> params,
-  }) async {
-    try {
-      return await _requireClient().rpc(functionName, params: params);
-    } on PostgrestException catch (error) {
-      throw _safeError(error);
-    } on AuthException {
-      throw ScheduleRewardException.fromStableCode('auth_required');
-    } on ScheduleRewardException {
-      rethrow;
-    } catch (_) {
-      throw ScheduleRewardException.network();
-    }
-  }
-
-  SupabaseClient _requireClient() {
-    final client = _clientOrNull;
-    if (client == null || client.auth.currentUser == null) {
-      throw ScheduleRewardException.fromStableCode('auth_required');
-    }
-    return client;
-  }
-
   void _validateOwnerPath(String storagePath) {
-    final userId = _requireClient().auth.currentUser!.id;
+    final userId = _client.currentUserId;
     final normalized = storagePath.trim();
+    if (userId == null || userId.isEmpty) {
+      throw ScheduleRewardException.fromStableCode('auth_required');
+    }
     if (!normalized.startsWith('$userId/') ||
         normalized.contains('..') ||
         !normalized.toLowerCase().endsWith('.jpg')) {
       throw ScheduleRewardException.fromStableCode('invalid_storage_path');
     }
+    _attemptIdFromPath(normalized);
   }
 
-  ScheduleRewardException _safeError(Object error) {
-    final candidates = <String>[];
-    if (error is PostgrestException) {
-      candidates.addAll([
-        error.message,
-        error.code ?? '',
-        error.details?.toString() ?? '',
-        error.hint?.toString() ?? '',
-      ]);
-    } else if (error is StorageException) {
-      candidates.addAll([error.message, error.statusCode ?? '']);
+  String _attemptIdFromPath(String path) {
+    final segments = path.split('/');
+    if (segments.length != 3 || !segments.last.toLowerCase().endsWith('.jpg')) {
+      throw ScheduleRewardException.fromStableCode('invalid_storage_path');
     }
-    for (final candidate in candidates) {
-      final mapped = ScheduleRewardException.fromStableCode(candidate);
-      if (mapped.code != ScheduleRewardErrorCode.unknown) return mapped;
-    }
-    if (error is StorageException) {
+    return segments.last.substring(0, segments.last.length - 4);
+  }
+
+  ScheduleRewardException _safeError(BackendApiException error) {
+    final code = error.businessCode.toLowerCase();
+    if (code.contains('eligibility_not_found')) {
       return const ScheduleRewardException(
-        ScheduleRewardErrorCode.uploadFailed,
-        'Nabi chưa tải được ảnh minh chứng lên vùng lưu trữ riêng tư.',
+        ScheduleRewardErrorCode.networkUnavailable,
+        'Điểm chăm sóc đang chờ xác nhận. Nabi sẽ tự thử lại khi dữ liệu lịch được đồng bộ.',
         canContinueWithoutReward: true,
       );
     }
-    return ScheduleRewardException.network();
+    if (code.contains('manual_reward_daily_limit')) {
+      return const ScheduleRewardException(
+        ScheduleRewardErrorCode.eligibilityUnavailable,
+        'Bạn vẫn hoàn thành nhiệm vụ, nhưng hôm nay đã đạt giới hạn Điểm chăm sóc cho nhiệm vụ tự tạo.',
+        canContinueWithoutReward: true,
+      );
+    }
+    if (code.contains('health_action_not_rewardable') ||
+        code.contains('health_action_mismatch') ||
+        code.contains('manual_health_task_invalid') ||
+        code.contains('health_checkin_invalid') ||
+        code.contains('photo_proof_required') ||
+        code.contains('health_checkin_not_found') ||
+        code.contains('eligibility_reward_already_awarded') ||
+        code.contains('idempotency_conflict')) {
+      return const ScheduleRewardException(
+        ScheduleRewardErrorCode.eligibilityUnavailable,
+        'Nhiệm vụ đã được lưu nhưng lần ghi nhận này chưa đủ điều kiện nhận Điểm chăm sóc.',
+        canContinueWithoutReward: true,
+      );
+    }
+    final mapped = ScheduleRewardException.fromStableCode(code);
+    return mapped.code == ScheduleRewardErrorCode.unknown
+        ? ScheduleRewardException.network()
+        : mapped;
   }
-}
-
-Map<String, Object?> _firstMap(Object? response) {
-  if (response is Map) {
-    return response.map((key, value) => MapEntry(key.toString(), value));
-  }
-  if (response is List && response.isNotEmpty && response.first is Map) {
-    final source = response.first as Map;
-    return source.map((key, value) => MapEntry(key.toString(), value));
-  }
-  return const {};
 }
 
 String _readString(Object? value, {String fallback = ''}) {

@@ -4,7 +4,7 @@ class CreateMembershipPaymentRequestCommand {
   final String idempotencyKey;
 
   /// Legacy/display-only compatibility field. The M13 v2 remote datasource
-  /// does not send this value to Supabase; the backend reads the authenticated
+  /// does not send this value to the backend; the server reads the authenticated
   /// user's profile itself.
   final String payerFullName;
 
@@ -98,10 +98,8 @@ class MembershipPaymentRequest {
 
   bool get isPendingReview => normalizedStatus == 'pending_review';
 
-  bool get isLegacyPending => const {
-    'pending',
-    'requested',
-  }.contains(normalizedStatus);
+  bool get isLegacyPending =>
+      const {'pending', 'requested'}.contains(normalizedStatus);
 
   bool get isSucceeded => normalizedStatus == 'succeeded';
 

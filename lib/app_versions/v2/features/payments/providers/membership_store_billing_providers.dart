@@ -16,7 +16,7 @@ final membershipStoreBillingDatasourceProvider =
 
 final membershipStorePurchaseRemoteDatasourceProvider =
     Provider<MembershipStorePurchaseRemoteDatasource>((ref) {
-      return const SupabaseMembershipStorePurchaseRemoteDatasource();
+      return const BackendMembershipStorePurchaseRemoteDatasource();
     });
 
 final membershipStoreBillingRepositoryProvider =

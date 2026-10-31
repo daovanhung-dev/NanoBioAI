@@ -174,7 +174,7 @@ abstract class SettingsRepository {
   /// Changes the user's password.
   ///
   /// Requires the [currentPassword] for verification and the [newPassword]
-  /// to set. This operation communicates with Supabase authentication service.
+  /// to set. This operation communicates with the backend authentication service.
   ///
   /// Throws an [AuthException] if:
   /// - Current password is incorrect
@@ -243,7 +243,7 @@ abstract class SettingsRepository {
 
   /// Logs out the current user and optionally clears local data.
   ///
-  /// Always clears the Supabase authentication session.
+  /// Always clears the backend authentication session.
   ///
   /// If [clearLocalData] is true, also:
   /// - Deletes all records from the local database (users, health profiles,

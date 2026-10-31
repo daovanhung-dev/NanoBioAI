@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('seed script owns the local membership account contract', () {
-    final seed = File('docs/supabase/02_seed_data.sql').readAsStringSync();
+    final seed = File('docs/archive/legacy-supabase/sql/02_seed_data.sql').readAsStringSync();
 
     for (final token in [
       'DEV/SANDBOX ONLY',

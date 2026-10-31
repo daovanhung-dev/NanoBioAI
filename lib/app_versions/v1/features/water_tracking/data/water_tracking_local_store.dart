@@ -1,4 +1,4 @@
-import 'package:nano_app/services/supabase/auth/current_auth_user.dart';
+import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/water_tracking_snapshot.dart';
@@ -24,7 +24,7 @@ final class SharedPreferencesWaterTrackingLocalStore
 
   const SharedPreferencesWaterTrackingLocalStore({
     String? Function()? currentUserId,
-  }) : _currentUserId = currentUserId ?? currentSupabaseUserIdOrNull;
+  }) : _currentUserId = currentUserId ?? currentBackendUserIdOrNull;
 
   static const _keyPrefix = 'wellness.water.v2';
   static const _guestNamespace = 'guest:install';

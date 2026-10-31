@@ -11,9 +11,9 @@ final v2AuthRouteStateProvider = v2AuthControllerProvider;
 
 /// Canonical authenticated identity for app-surface and feature routing.
 ///
-/// The raw Supabase auth stream remains an invalidation trigger inside
-/// [AuthController], but root identity must follow the controller's resolved
-/// route state. This prevents a transient/delayed auth-stream value from
+/// The backend auth stream remains an invalidation trigger inside
+/// [AuthController], but root identity follows the controller's resolved
+/// route state. This prevents a transient/delayed auth value from
 /// remounting the app as signed out after a successful first login.
 final currentAuthUserIdProvider = Provider<String?>((ref) {
   final routeState = ref.watch(v2AuthControllerProvider).value;

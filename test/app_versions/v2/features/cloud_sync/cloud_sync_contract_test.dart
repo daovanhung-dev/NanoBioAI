@@ -10,7 +10,7 @@ void main() {
     test('remote datasource remaps local IDs and source_id references', () {
       final source = File(
         'lib/app_versions/v2/features/cloud_sync/data/datasources/'
-        'supabase_user_data_sync_remote_datasource.dart',
+        'backend_user_data_sync_remote_datasource.dart',
       ).readAsStringSync();
 
       expect(source, contains('_buildCloudIdMap'));
@@ -93,7 +93,7 @@ void main() {
       () {
         final source = File(
           'lib/app_versions/v2/features/cloud_sync/data/datasources/'
-          'supabase_user_data_sync_remote_datasource.dart',
+          'backend_user_data_sync_remote_datasource.dart',
         ).readAsStringSync();
 
         expect(

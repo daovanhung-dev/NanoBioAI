@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nano_app/core/ai_local/local_ai_text_client.dart';
+import 'package:nano_app/core/network/backend_ai_text_client.dart';
 
 import 'ai_exceptions.dart';
 import 'ai_text_sanitizer.dart';
@@ -51,7 +51,10 @@ class AIChatPreparedStream {
 }
 
 final aiChatServiceProvider = Provider<AIChatService>((ref) {
-  return AIChatService();
+  return AIChatService(
+    aiClient: const BackendAiTextClient(),
+    modelNames: const [BackendAiTextClient.modelId],
+  );
 });
 
 class AIChatService {
@@ -86,10 +89,10 @@ class AIChatService {
         perAttemptTimeout ?? AIChatRetryPolicy.perAttemptTimeout;
 
     _aiClient = _textGenerator == null
-        ? aiClient ?? const LocalAiTextClient()
+        ? aiClient ?? const BackendAiTextClient()
         : null;
 
-    final resolvedModelNames = modelNames ?? [LocalAiTextClient.modelId];
+    final resolvedModelNames = modelNames ?? [BackendAiTextClient.modelId];
 
     AITraceLogger.info(
       _tag,
@@ -125,7 +128,7 @@ class AIChatService {
     );
 
     if (!_hasRuntimeTextSource) {
-      _throwMissingConfiguration(traceId: traceId, method: method);
+      _throwMissingBackendClient(traceId: traceId, method: method);
     }
 
     try {
@@ -161,11 +164,11 @@ class AIChatService {
     }
   }
 
-  /// Prepares a streaming local model turn without adding it to conversation
+  /// Prepares a streaming backend model turn without adding it to conversation
   /// history until [AIChatPreparedStream.accept] is called by the repository.
   Future<AIChatPreparedStream> prepareMessageStream(String message) async {
     if (!_hasRuntimeTextSource) {
-      _throwMissingConfiguration(
+      _throwMissingBackendClient(
         traceId: AITraceLogger.nextTraceId('ai-chat-stream'),
         method: 'prepareMessageStream',
       );
@@ -182,7 +185,7 @@ class AIChatService {
 
     final pending = _PendingStreamTurn(userMessage: message);
     return AIChatPreparedStream(
-      stream: _streamLocalMessage(message, pending),
+      stream: _streamBackendMessage(message, pending),
       onAccepted: pending.accept,
     );
   }
@@ -201,7 +204,7 @@ class AIChatService {
     })();
   }
 
-  Stream<String> _streamLocalMessage(
+  Stream<String> _streamBackendMessage(
     String message,
     _PendingStreamTurn pending,
   ) async* {
@@ -293,7 +296,7 @@ class AIChatService {
           traceId,
           method,
           'STREAM_ATTEMPT_FAILED',
-          'Local AI chat stream failed.',
+          'Backend AI chat stream failed.',
           error,
           stackTrace,
           data: {
@@ -307,7 +310,7 @@ class AIChatService {
 
         if (error is TimeoutException) {
           Error.throwWithStackTrace(
-            const AILocalInferenceTimeoutException(),
+            const AIInferenceTimeoutException(),
             stackTrace,
           );
         }
@@ -488,7 +491,7 @@ class AIChatService {
 
           if (timedOut) {
             Error.throwWithStackTrace(
-              const AILocalInferenceTimeoutException(),
+              const AIInferenceTimeoutException(),
               stackTrace,
             );
           }
@@ -623,7 +626,7 @@ class AIChatService {
 
   bool get _hasRuntimeTextSource => _textGenerator != null || _aiClient != null;
 
-  Never _throwMissingConfiguration({
+  Never _throwMissingBackendClient({
     required String traceId,
     required String method,
   }) {
@@ -631,8 +634,8 @@ class AIChatService {
       _tag,
       traceId,
       method,
-      'NO_LOCAL_MODEL',
-      'Chat AI is unavailable because no local model is selected.',
+      'BACKEND_AI_CLIENT_UNAVAILABLE',
+      'Chat AI is unavailable because the backend client is not configured.',
       data: {'models': _modelNames()},
       location: StackTrace.current,
     );
@@ -641,7 +644,7 @@ class AIChatService {
 
   Never _throwTypedFailure(Object error, StackTrace stackTrace) {
     if (error is AIConfigurationUnavailableException ||
-        error is AILocalInferenceTimeoutException ||
+        error is AIInferenceTimeoutException ||
         error is AIPlatformUnsupportedException ||
         error is AIAuthenticationException ||
         error is AINetworkException ||
@@ -744,7 +747,7 @@ class _PendingStreamTurn {
 }
 
 class AIChatModelCandidates {
-  static const defaultPrimaryModel = LocalAiTextClient.modelId;
+  static const defaultPrimaryModel = BackendAiTextClient.modelId;
   static const defaultFallbackModels = <String>[];
 
   const AIChatModelCandidates._();
@@ -809,8 +812,8 @@ class AIChatRetryPolicy {
 }
 
 String _diagnosticStatusForFailure(Object error) {
-  if (error is TimeoutException || error is AILocalInferenceTimeoutException) {
-    return 'local_inference_timeout';
+  if (error is TimeoutException || error is AIInferenceTimeoutException) {
+    return 'backend_inference_timeout';
   }
   if (error is AiInferenceException) {
     final status = error.status?.trim().toLowerCase();
@@ -818,8 +821,8 @@ String _diagnosticStatusForFailure(Object error) {
       return status;
     }
   }
-  if (error is StateError) return 'local_runtime_state_error';
-  return 'local_inference_error';
+  if (error is StateError) return 'backend_runtime_state_error';
+  return 'backend_inference_error';
 }
 
 String _sanitizedStreamPrefix(String rawText) {

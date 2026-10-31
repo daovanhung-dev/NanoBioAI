@@ -7,7 +7,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/presentation/pages/d
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_dynamic_provider.dart';
 import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/supabase/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/services/backend/cloud_sync/cloud_sync.dart';
 
 void main() {
   testWidgets('pending cloud recovery restores the dashboard after retry', (

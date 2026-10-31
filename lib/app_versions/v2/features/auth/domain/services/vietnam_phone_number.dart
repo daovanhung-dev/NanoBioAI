@@ -23,7 +23,7 @@ class VietnamPhoneNumber {
     return null;
   }
 
-  /// Stable internal Auth identity used while Supabase Phone Auth is disabled.
+  /// Stable internal Auth identity used while phone verification is disabled.
   /// The application continues to collect and display the member's phone.
   static String authEmail(String normalizedPhone) {
     final digits = normalizedPhone.replaceAll(RegExp(r'\D'), '');

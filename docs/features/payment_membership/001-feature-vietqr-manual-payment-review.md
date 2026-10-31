@@ -30,8 +30,8 @@ Commit de xuat: feat(payment): VietQR Vietcombank chờ duyệt thủ công
 
 ## Thành phần chính
 
-- SQL rebuild source: docs/supabase/01_schema_rebuild_local_sandbox.sql.
-- Cấu hình end-state: docs/supabase/config.sql.
+- SQL rebuild source: docs/archive/legacy-supabase/sql/01_schema_rebuild_local_sandbox.sql.
+- Cấu hình end-state: docs/archive/legacy-supabase/sql/config.sql.
 - Payload QR thuần dùng chung: lib/core/payments/viet_qr_payload_builder.dart.
 - Feature khách: lib/app_versions/v2/features/payments.
 - Hàng chờ/badge Admin: lib/app_versions/admin/features/admin_panel.

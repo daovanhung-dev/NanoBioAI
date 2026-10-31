@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/datasources/sqlite_user_data_sync_local_datasource.dart';
-import '../data/datasources/supabase_user_data_sync_remote_datasource.dart';
+import '../data/datasources/backend_user_data_sync_remote_datasource.dart';
 import '../data/repositories/authenticated_user_data_sync_repository_impl.dart';
 import '../domain/entities/cloud_sync_result.dart';
 import '../presentation/controllers/user_data_sync_controller.dart';
 
 final userDataSyncRemoteDatasourceProvider =
-    Provider<SupabaseUserDataSyncRemoteDatasource>((ref) {
-      return const SupabaseUserDataSyncRemoteDatasource();
+    Provider<BackendUserDataSyncRemoteDatasource>((ref) {
+      return const BackendUserDataSyncRemoteDatasource();
     });
 
 final userDataSyncLocalDatasourceProvider =

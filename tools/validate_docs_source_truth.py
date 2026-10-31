@@ -120,8 +120,8 @@ GENERATED_PATHS = {
 }
 
 SUPABASE_SQL_SOURCES = {
-    "docs/supabase/01_build_system.sql",
-    "docs/supabase/02_seed_data.sql",
+    "docs/archive/legacy-supabase/sql/01_build_system.sql",
+    "docs/archive/legacy-supabase/sql/02_seed_data.sql",
 }
 
 SOURCE_EXTENSIONS = {
@@ -160,7 +160,7 @@ SOURCE_ROOTS = (
     "lib/",
     "linux/",
     "macos/",
-    "supabase/",
+    "docs/archive/legacy-supabase/project/",
     "test/",
     "test_driver/",
     "tools/",
@@ -241,7 +241,7 @@ def classify(path: str) -> str:
         return "Historical"
     if path.startswith(REFERENCE_PREFIXES):
         return "Reference"
-    if path.startswith("docs/supabase/") and suffix == ".sql":
+    if path.startswith("docs/archive/legacy-supabase/sql/") and suffix == ".sql":
         return "Source"
     if path.startswith(SOURCE_ROOTS) and suffix in SOURCE_EXTENSIONS:
         if suffix in {".md", ".txt"} or "README" in PurePosixPath(path).name.upper():
@@ -319,13 +319,16 @@ def evidence_for(path: str, lifecycle: str) -> list[str]:
             "nabi_companion_notifications": "lib/features/nabi/",
         }
         return [module_roots.get(module, "lib/main.dart")]
-    if path.startswith("docs/supabase/"):
-        return ["docs/supabase/01_build_system.sql", "lib/services/supabase/"]
+    if path.startswith("docs/archive/legacy-supabase/sql/"):
+        return [
+            "docs/archive/legacy-supabase/sql/01_build_system.sql",
+            "backend/src/nanobio_backend/",
+        ]
     if path.startswith(".codex/design/"):
         return ["lib/core/theme/", "lib/app_versions/v1/router/v1_router.dart"]
     if path.startswith("lib/") and PurePosixPath(path).suffix.lower() in {".md", ".txt"}:
         return [str(PurePosixPath(path).parent) + "/"]
-    if path.startswith("supabase/functions/"):
+    if path.startswith("docs/archive/legacy-supabase/project/functions/"):
         return [str(PurePosixPath(path).parent) + "/"]
     if path.startswith("docs/BD/advanced_health/"):
         return ["lib/app_versions/v2/features/health_modules/"]
@@ -373,7 +376,7 @@ def implementation_for(path: str, lifecycle: str) -> str:
 def verification_for(path: str, lifecycle: str) -> str:
     if lifecycle == "Historical":
         return "Historical"
-    if path.startswith("docs/supabase/") or "supabase" in path.lower():
+    if path.startswith("docs/archive/legacy-supabase/sql/") or "supabase" in path.lower():
         return "Sandbox-unverified"
     if lifecycle == "Reference":
         return "Runtime-unverified"
@@ -571,7 +574,7 @@ def validate_core_contracts(errors: list[str]) -> None:
         "lib/app_versions/v2/router/v2_router.dart": "...v1Routes",
         "lib/app/bio_ai_app.dart": "return const BioAIV2App",
         "pubspec.yaml": "sdk: ^3.9.2",
-        "docs/supabase/02_seed_data.sql": "-- BEGIN GENERATED MEAL CATALOG",
+        "docs/archive/legacy-supabase/sql/02_seed_data.sql": "-- BEGIN GENERATED MEAL CATALOG",
         "lib/core/ai_local/local_ai_model_catalog.dart": "localAiTextModels",
         "lib/app_versions/v1/services/ai/ai_chat_service.dart": "LocalAiTextClient.modelId",
         "lib/app_versions/v1/services/ai/ai_service.dart": "LocalAiTextClient.modelId",
@@ -616,7 +619,7 @@ def validate_core_contracts(errors: list[str]) -> None:
     actual_supabase_sources = {
         path
         for path in workspace
-        if path.startswith("docs/supabase/") and path.endswith(".sql")
+        if path.startswith("docs/archive/legacy-supabase/sql/") and path.endswith(".sql")
     }
     missing_supabase = sorted(SUPABASE_SQL_SOURCES - actual_supabase_sources)
     if missing_supabase:
@@ -644,7 +647,7 @@ def validate_core_contracts(errors: list[str]) -> None:
         if "Gemini SDK" in text:
             errors.append(f"Current canonical doc still claims a Gemini SDK: {canonical}")
 
-    stale_supabase = re.compile(r"docs/supabase/[^\s)`'\"]+\.sql")
+    stale_supabase = re.compile(r"docs/archive/legacy-supabase/sql/[^\s)`'\"]+\.sql")
     for relative in workspace_paths():
         if not relative.startswith("test/docs/") or not relative.endswith(".dart"):
             continue

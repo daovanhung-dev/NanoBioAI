@@ -1,0 +1,22 @@
+[Unit]
+Description=NanoBioAI hourly membership and reward maintenance
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=nanobio-backend
+Group=nanobio-backend
+WorkingDirectory=/opt/nanobio/backend
+EnvironmentFile=/etc/nanobio-backend/backend.env
+ExecStart=/opt/nanobio/backend/.venv/bin/python -m nanobio_backend.maintenance
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/nanobio-backend
+RestrictSUIDSGID=true
+LockPersonality=true
+

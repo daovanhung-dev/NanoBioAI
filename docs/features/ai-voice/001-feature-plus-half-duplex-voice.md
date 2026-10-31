@@ -1,6 +1,17 @@
 Commit de xuat: feat(ai-voice): cho phep nghe moi luot toi da ba phut
 
-# Feature — Voice Plus tuần tự với Gemini client-only
+# Feature — Voice Plus tuần tự
+
+> Runtime update 2026-10-30: speech recognition remains platform-side, while
+> generated voice replies use the authenticated NanoBio backend API. Direct
+> Gemini REST calls described below are historical and are no longer used by
+> the Flutter runtime. Voice playback remains device-side.
+
+> Các mục bên dưới ghi lại contract lịch sử Gemini client-only. Runtime hiện
+> tại dùng STT trên thiết bị -> NanoBio backend AI -> TTS trên thiết bị; cần
+> kết nối HTTPS backend để xác nhận trên thiết bị.
+
+## Contract lịch sử
 
 ## 1. Mục tiêu
 
@@ -36,7 +47,7 @@ Traceability: `AI_CHAT-F03 -> AI_CHAT-FN03 -> AI_CHAT-V03 -> AI_CHAT-API03`.
 - Gemini Live/full-duplex, barge-in, waveform/audio streaming, custom PCM.
 - Bluetooth acceptance, offline, persistent history, greeting tự động.
 - NanoBio Voice quota, bảng/RPC/schema mới hoặc thay đổi
-  `docs/supabase/config.sql`.
+  `docs/archive/legacy-supabase/sql/config.sql`.
 
 ## 3. Kiến trúc
 
@@ -155,7 +166,7 @@ rằng người dùng có thể chen lời.
 
 - Xóa Gemini Live protocol/gateway/events, diagnostics và custom PCM cũ.
 - Xóa `voice-live-token`, `voice-chat-turn`, Deno tests và block Function tương
-  ứng trong `supabase/config.toml`; giữ nguyên `delete-account`.
+  ứng trong `docs/archive/legacy-supabase/project/config.toml`; giữ nguyên `delete-account`.
 - Giữ Android runtime-config bridge đang dùng cho AI Chat chữ.
 - Giữ `RECORD_AUDIO`, speech recognition/TTS declarations và iOS mic/speech
   usage descriptions.

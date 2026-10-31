@@ -147,9 +147,9 @@ void main() {
     });
   });
 
-  group('SupabaseScheduleRewardOnlineGateway input guards', () {
+  group('BackendScheduleRewardOnlineGateway input guards', () {
     test('rejects an empty eligibility registration before any RPC', () async {
-      const gateway = SupabaseScheduleRewardOnlineGateway();
+      const gateway = BackendScheduleRewardOnlineGateway();
 
       await expectLater(
         gateway.registerEligibilities(
@@ -169,11 +169,11 @@ void main() {
 
     test('exposes fixed private bucket and five-megabyte limit', () {
       expect(
-        SupabaseScheduleRewardOnlineGateway.bucketName,
+        BackendScheduleRewardOnlineGateway.bucketName,
         'schedule-completion-proofs',
       );
       expect(
-        SupabaseScheduleRewardOnlineGateway.maxProofBytes,
+        BackendScheduleRewardOnlineGateway.maxProofBytes,
         5 * 1024 * 1024,
       );
     });
