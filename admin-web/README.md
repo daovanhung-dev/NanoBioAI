@@ -1,37 +1,20 @@
 # NanoBio Admin Web
 
-SPA React + TypeScript + Vite cho không gian vận hành Admin NanoBio. Ứng dụng
-dùng API FastAPI tự host qua HTTPS; không chứa Supabase key, database URL hoặc
-khóa AI.
+React, Vite, and TypeScript SPA for super administrators to find and manage user accounts and Plus entitlements.
 
-## Chạy local
+## Local development
 
-```bash
-cp .env.example .env.local
-# VITE_API_BASE_URL mặc định là https://42.118.174.147
-npm install
-npm run dev
-```
+1. Install Node.js 20 or newer and run `npm install`.
+2. For a local backend, start it from `backend/` with `uv run uvicorn nanobio_backend.main:app --reload --host 127.0.0.1 --port 8000`.
+3. For the Ubuntu backend, open an SSH tunnel in a separate terminal:
 
-Các lệnh kiểm tra:
+   ```bash
+   ssh -N -o StrictHostKeyChecking=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:8000:127.0.0.1:8000 nanobio@100.86.238.91
+   ```
 
-```bash
-npm run typecheck
-npm test
-npm run build
-```
+   Keep that terminal open while using the Admin Web. SSH carries the connection to the backend's loopback interface; do not put SSH credentials in `.env.local`.
+4. Run `npm run dev` from `admin-web/`. The Vite proxy sends `/api/v1` and `/health` to `127.0.0.1:8000`; set `VITE_API_PROXY_TARGET` in `.env.local` only when the backend listens on a different reachable origin.
 
-SPA dùng `HashRouter`, vì vậy các route nằm dưới `/admin/*` vẫn khôi phục được
-khi refresh trên GitHub Pages. Build production dùng base `/NanoBioAI/` và sẽ
-được publish tại `https://daovanhung-dev.github.io/NanoBioAI/` sau khi workflow
-Pages hoàn tất.
+For a same-origin deployment, leave `VITE_API_BASE_URL` empty and route `/api/v1` and `/health` to the backend. For a separate HTTPS API origin, set `VITE_API_BASE_URL` at build time.
 
-## Cấu hình GitHub Actions
-
-Trong repository, tạo:
-
-- Repository Variable `NANOBIO_API_BASE_URL` (mặc định là `https://42.118.174.147`).
-
-Bật GitHub Pages với source **GitHub Actions**. Admin Web chỉ dùng phiên đăng
-nhập backend; workflow không cần Supabase URL hoặc anon key. Quyền truy cập được
-kiểm tra lại ở FastAPI trên mọi endpoint quản trị.
+The browser stores the rotating login session in `sessionStorage`. The app requires `super_admin` and checks `/health/ready` before enabling writes. It does not contain production credentials and is not deployed by this project change.

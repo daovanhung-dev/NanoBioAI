@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -18,6 +18,7 @@ from nanobio_backend.modules.admin.models import (
     EarlyAccessLeadStatusRequest,
     MembershipAdjustmentRequest,
     MembershipGrantRequest,
+    MembershipRevokeRequest,
     UserProfileUpdateRequest,
     UserStatusUpdateRequest,
 )
@@ -105,7 +106,7 @@ def search_users(
     actor: User = Depends(current_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    require_admin(actor)
+    require_admin(actor, "super_admin")
     data = view.search_users(db, term=q, limit=limit)
     return success_response(
         request, data, business_code="USERS_RETRIEVED", meta={"count": len(data)}
@@ -146,6 +147,18 @@ def adjust_membership(
     require_admin(actor, "super_admin")
     result = view.adjust_membership(db, actor, payload.model_dump())
     return success_response(request, result, business_code="MEMBERSHIP_PERIOD_UPDATED")
+
+
+@router.post("/memberships/revoke")
+def revoke_membership(
+    payload: MembershipRevokeRequest,
+    request: Request,
+    actor: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    require_admin(actor, "super_admin")
+    result = view.revoke_membership(db, actor, payload.model_dump())
+    return success_response(request, result, business_code="MEMBERSHIP_REVOKED")
 
 
 @router.post("/memberships/bulk-grant")
@@ -227,7 +240,7 @@ def get_user_details(
     actor: User = Depends(current_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    require_admin(actor)
+    require_admin(actor, "super_admin")
     return success_response(
         request,
         view.get_user_details(db, actor, user_id, reason),
@@ -243,13 +256,47 @@ def update_user_profile(
     actor: User = Depends(current_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    require_admin(actor)
+    require_admin(actor, "super_admin")
     data = payload.model_dump(exclude_unset=True)
     return success_response(
         request,
         view.update_user_profile(db, actor, user_id, data),
         business_code="USER_PROFILE_UPDATED",
     )
+
+
+@router.get("/users/{user_id}/data")
+def get_user_data(
+    user_id: UUID,
+    request: Request,
+    section: Literal[
+        "profile",
+        "health",
+        "schedule",
+        "membership",
+        "family",
+        "sleep_safety",
+        "sale_rewards",
+        "activity",
+        "related",
+    ] = Query(),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    reason: str = Query(min_length=2, max_length=500),
+    actor: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    require_admin(actor, "super_admin")
+    data = view.get_user_data(
+        db,
+        actor,
+        user_id,
+        section=section,
+        page=page,
+        page_size=page_size,
+        reason=reason,
+    )
+    return success_response(request, data, business_code="USER_DATA_RETRIEVED")
 
 
 @router.patch("/users/{user_id}/status")
@@ -260,7 +307,7 @@ def update_user_status(
     actor: User = Depends(current_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    require_admin(actor)
+    require_admin(actor, "super_admin")
     result = view.update_user_status(db, actor, user_id, payload.model_dump())
     return success_response(request, result, business_code="USER_STATUS_UPDATED")
 

@@ -8,7 +8,7 @@ class AccountCreateRequest(BaseModel):
 
     phone: str = Field(min_length=1, max_length=32)
     full_name: str = Field(min_length=2, max_length=120)
-    password: str = Field(min_length=8, max_length=128)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
     email: str | None = Field(default=None, max_length=320)
     reason: str = Field(min_length=2, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=160)
@@ -76,7 +76,11 @@ class BulkProvisionExecuteRequest(BulkProvisionRequest):
 
 
 class UserProfileUpdateRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    phone: str | None = Field(default=None, min_length=7, max_length=32)
+    email: str | None = Field(default=None, max_length=320)
     gender: str | None = None
     birth_year: int | None = Field(default=None, ge=1900, le=2100)
     reason: str = Field(min_length=2, max_length=500)
@@ -85,5 +89,12 @@ class UserProfileUpdateRequest(BaseModel):
 
 class UserStatusUpdateRequest(BaseModel):
     status: str = Field(min_length=1, max_length=24)
+    reason: str = Field(min_length=2, max_length=500)
+    idempotency_key: str = Field(min_length=8, max_length=160)
+
+
+class MembershipRevokeRequest(BaseModel):
+    user_id: str
+    subscription_id: str
     reason: str = Field(min_length=2, max_length=500)
     idempotency_key: str = Field(min_length=8, max_length=160)

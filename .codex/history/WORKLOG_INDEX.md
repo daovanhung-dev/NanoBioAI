@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 275
+- Total worklogs: 280
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -284,3 +284,8 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-31 | Chuyen va deploy Admin Web sang backend self-hosted. | supabase-schema | backend/, admin-web/, GitHub Pages environment. | [Worklog - Deploy Admin Web qua NanoBio backend](../../docs/worklog/2026-10-31/001-worklog-admin-web-self-hosted-deploy.md) |
 | 2026-10-31 | feature | coding | backend auth, Admin Web | [Worklog - Đăng nhập Admin bằng username và đổi mật khẩu lần đầu](../../docs/worklog/2026-10-31/002-worklog-admin-username-first-login.md) |
 | 2026-10-31 | bugfix va trien khai Admin Web | docs-context | Admin Web auth, Nginx HTTPS IP | [Worklog - Chuyen Admin Web sang cung origin voi API](../../docs/worklog/2026-10-31/003-worklog-admin-web-same-origin-access.md) |
+| 2026-10-31 | find-issues / API contract audit. | find-issues | admin-web và FastAPI backend. | [Worklog - Đối chiếu API Admin Web và backend](../../docs/worklog/2026-10-31/004-worklog-admin-web-api-contract-audit.md) |
+| 2026-10-31 | docs-context | docs-context | backend API | [Worklog - Danh mục API backend](../../docs/worklog/2026-10-31/005-worklog-backend-api-inventory.md) |
+| 2026-10-31 | test | test | backend API | [Worklog - Kiểm tra live toàn bộ API backend](../../docs/worklog/2026-10-31/006-worklog-backend-live-api-test.md) |
+| 2026-11-01 | coding | coding | Admin Web va backend modules/admin | [Worklog - Admin Web quan ly tai khoan va goi Plus](../../docs/worklog/2026-11-01/001-worklog-admin-web-user-plus-management.md) |
+| 2026-11-01 | bugfix | bugfix | admin-web va NanoBio backend Ubuntu | [Worklog - Khac phuc dang nhap Admin Web local](../../docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md) |

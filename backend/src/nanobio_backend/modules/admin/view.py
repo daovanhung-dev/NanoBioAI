@@ -1,10 +1,11 @@
 import calendar
 import re
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from nanobio_backend.core.responses import ApiError
@@ -27,7 +28,10 @@ from nanobio_backend.services.health_subjects import ensure_self_subject
 MEMBERSHIP_PLANS = {"plus", "family_plus"}
 LEAD_STATUSES = {"new", "contacted", "registered", "converted", "rejected"}
 _EMAIL_PATTERN = re.compile(r"^[^\s@|]+@[^\s@|]+\.[^\s@|]+$", re.IGNORECASE)
-_RESET_PASSWORD = "12345678"
+
+
+def _temporary_password() -> str:
+    return secrets.token_urlsafe(24)
 
 
 def _idempotent_result(
@@ -48,21 +52,34 @@ def create_account(db: Session, actor: User, payload: dict[str, Any]) -> dict[st
             db, actor=actor, operation=operation, key=payload["idempotency_key"], payload=payload
         )
         if cached is not None:
+            if cached.get("temporary_password_generated"):
+                return {**cached, "temporary_password_unavailable": True}
             return cached
         phone = normalize_vietnam_phone(payload["phone"])
         if db.scalar(select(User.id).where(User.phone == phone)) is not None:
             raise ApiError(409, "PHONE_EXISTS", "Số điện thoại này đã có tài khoản.")
+        email = str(payload.get("email") or "").strip().lower() or None
+        if email and not _EMAIL_PATTERN.fullmatch(email):
+            raise ApiError(422, "INVALID_EMAIL", "Địa chỉ email chưa hợp lệ.")
+        if email and db.scalar(select(User.id).where(func.lower(User.email) == email)) is not None:
+            raise ApiError(409, "EMAIL_EXISTS", "Địa chỉ email này đã có tài khoản.")
+        generated_password = payload.get("password") is None
+        password = _temporary_password() if generated_password else str(payload["password"])
         user = User(
             phone=phone,
             full_name=payload["full_name"].strip(),
-            email=payload.get("email"),
-            password_hash=hash_password(payload["password"]),
+            email=email,
+            password_hash=hash_password(password),
             force_password_change=True,
         )
         db.add(user)
         db.flush()
         ensure_self_subject(db, user)
-        result = {"user_id": str(user.id), "created": True}
+        result = {
+            "user_id": str(user.id),
+            "created": True,
+            "temporary_password_generated": generated_password,
+        }
         query.add_audit(
             db,
             actor_id=actor.id,
@@ -79,7 +96,7 @@ def create_account(db: Session, actor: User, payload: dict[str, Any]) -> dict[st
             digest=query.payload_hash(payload),
             result=result,
         )
-        return result
+        return {**result, "temporary_password": password} if generated_password else result
 
 
 def grant_membership(db: Session, actor: User, payload: dict[str, Any]) -> dict[str, Any]:
@@ -246,6 +263,82 @@ def adjust_membership(db: Session, actor: User, payload: dict[str, Any]) -> dict
         return result
 
 
+def revoke_membership(db: Session, actor: User, payload: dict[str, Any]) -> dict[str, Any]:
+    operation = "admin-revoke-membership"
+    with atomic(db):
+        cached = _idempotent_result(
+            db, actor=actor, operation=operation, key=payload["idempotency_key"], payload=payload
+        )
+        if cached is not None:
+            return cached
+        try:
+            user_id = UUID(str(payload["user_id"]))
+            subscription_id = UUID(str(payload["subscription_id"]))
+        except ValueError as exc:
+            raise ApiError(422, "INVALID_ID", "Gói thành viên được chọn chưa hợp lệ.") from exc
+        user = query.get_user_for_update(db, user_id)
+        if user is None:
+            raise ApiError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.")
+        subscription = db.scalar(
+            select(MembershipSubscription)
+            .where(
+                MembershipSubscription.id == subscription_id,
+                MembershipSubscription.user_id == user.id,
+            )
+            .with_for_update()
+        )
+        if subscription is None or subscription.plan_code not in MEMBERSHIP_PLANS:
+            raise ApiError(404, "SUBSCRIPTION_NOT_FOUND", "Không tìm thấy gói Plus.")
+        if subscription.status not in {"trialing", "active", "past_due"}:
+            raise ApiError(409, "MEMBERSHIP_NOT_ACTIVE", "Gói thành viên không còn hiệu lực.")
+        now = datetime.now(UTC)
+        starts_at = subscription.starts_at
+        ends_at = subscription.ends_at
+        if starts_at.tzinfo is None:
+            starts_at = starts_at.replace(tzinfo=UTC)
+        if ends_at is not None and ends_at.tzinfo is None:
+            ends_at = ends_at.replace(tzinfo=UTC)
+        if starts_at > now or (ends_at is not None and ends_at <= now):
+            raise ApiError(409, "MEMBERSHIP_NOT_ACTIVE", "Gói thành viên không còn hiệu lực.")
+        provider_managed = subscription.source != "manual"
+        subscription.status = "revoked"
+        subscription.ends_at = now
+        if subscription.current_period_end is not None:
+            subscription.current_period_end = now
+        db.flush()
+        remaining = query.current_membership(db, user.id, now)
+        user.membership_tier = remaining.plan_code if remaining is not None else "free"
+        result = {
+            "status": "revoked",
+            "user_id": str(user.id),
+            "subscription_id": str(subscription.id),
+            "membership_tier": user.membership_tier,
+            "billing_provider_managed": provider_managed,
+        }
+        query.add_audit(
+            db,
+            actor_id=actor.id,
+            action=operation,
+            target_user_id=user.id,
+            reason=payload["reason"],
+            idempotency_key=payload["idempotency_key"],
+            metadata={
+                "subscription_id": str(subscription.id),
+                "source": subscription.source,
+                "billing_provider_managed": provider_managed,
+            },
+        )
+        query.add_idempotency(
+            db,
+            actor_id=actor.id,
+            operation=operation,
+            key=payload["idempotency_key"],
+            digest=query.payload_hash(payload),
+            result=result,
+        )
+        return result
+
+
 def list_audit(db: Session, *, limit: int = 100) -> list[dict[str, str | None]]:
     rows = db.scalars(
         select(AdminAuditEvent).order_by(AdminAuditEvent.created_at.desc()).limit(limit)
@@ -280,7 +373,10 @@ def search_users(db: Session, *, term: str, limit: int) -> list[dict[str, Any]]:
                 "id": str(user.id),
                 "title": user.full_name or user.email or str(user.id),
                 "subtitle": subtitle,
+                "phone": user.phone,
+                "email": user.email,
                 "status": user.admin_status,
+                "is_active": user.is_active,
                 "section": "users",
                 "created_at": user.created_at.isoformat(),
                 "plan_code": plan,
@@ -294,6 +390,34 @@ def search_users(db: Session, *, term: str, limit: int) -> list[dict[str, Any]]:
             }
         )
     return result
+
+
+def get_user_data(
+    db: Session,
+    actor: User,
+    user_id: UUID,
+    *,
+    section: str,
+    page: int,
+    page_size: int,
+    reason: str,
+) -> dict[str, Any]:
+    with atomic(db):
+        user = query.get_user_for_update(db, user_id)
+        if user is None:
+            raise ApiError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.")
+        data = query.user_data_by_section(
+            db, user_id=user.id, section=section, page=page, page_size=page_size
+        )
+        query.add_audit(
+            db,
+            actor_id=actor.id,
+            action="admin_view_user_data",
+            target_user_id=user.id,
+            reason=reason.strip(),
+            metadata={"section": section, "page": page, "page_size": page_size},
+        )
+        return data
 
 
 def payment_review_count(db: Session) -> int:
@@ -631,10 +755,10 @@ def get_user_details(db: Session, actor: User, user_id: UUID, reason: str) -> di
         query.add_audit(
             db,
             actor_id=actor.id,
-            action="admin_view_user_health",
+            action="admin_view_user_details",
             target_user_id=user.id,
             reason=reason,
-            metadata={"scope": "self_health_and_current_membership"},
+            metadata={"scope": "account_profile"},
         )
         return {
             "user": {
@@ -642,22 +766,46 @@ def get_user_details(db: Session, actor: User, user_id: UUID, reason: str) -> di
                 "phone": user.phone,
                 "full_name": user.full_name,
                 "email": user.email,
+                "username": user.username,
+                "avatar_url": query.sanitize_user_url(user.avatar_url),
                 "gender": user.gender,
                 "birth_year": user.birth_year,
                 "membership_tier": user.membership_tier,
+                "is_active": user.is_active,
+                "app_access_mode": user.app_access_mode,
+                "admin_status": user.admin_status,
+                "force_password_change": user.force_password_change,
+                "onboarding_status": user.onboarding_status,
+                "onboarding_completed_at": user.onboarding_completed_at.isoformat()
+                if user.onboarding_completed_at
+                else None,
+                "sale_status": user.sale_status,
+                "admin_roles": sorted(user.admin_roles),
+                "created_at": user.created_at.isoformat(),
+                "updated_at": user.updated_at.isoformat(),
             },
-            "health": {},
         }
 
 
 def update_user_profile(
     db: Session, actor: User, user_id: UUID, payload: dict[str, Any]
 ) -> dict[str, Any]:
-    changes = {key: payload[key] for key in ("full_name", "gender", "birth_year") if key in payload}
+    changes = {
+        key: payload[key]
+        for key in ("full_name", "phone", "email", "gender", "birth_year")
+        if key in payload
+    }
     if not changes:
         raise ApiError(422, "NO_PROFILE_CHANGES", "Chưa có thông tin cần cập nhật.")
     if changes.get("gender") not in {None, "male", "female", "other", "prefer_not_to_say"}:
         raise ApiError(422, "INVALID_GENDER", "Thông tin giới tính chưa hợp lệ.")
+    if "phone" in changes and changes["phone"] is not None:
+        changes["phone"] = normalize_vietnam_phone(str(changes["phone"]))
+    if "email" in changes:
+        email = str(changes["email"] or "").strip().lower() or None
+        if email is not None and not _EMAIL_PATTERN.fullmatch(email):
+            raise ApiError(422, "INVALID_EMAIL", "Địa chỉ email chưa hợp lệ.")
+        changes["email"] = email
     operation = "admin_update_user_profile"
     idempotency_payload = {"user_id": str(user_id), "changes": changes}
     key = payload["idempotency_key"]
@@ -670,6 +818,22 @@ def update_user_profile(
         user = query.get_user_for_update(db, user_id)
         if user is None:
             raise ApiError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.")
+        phone = changes.get("phone")
+        if (
+            phone is not None
+            and db.scalar(select(User.id).where(User.phone == phone, User.id != user.id))
+            is not None
+        ):
+            raise ApiError(409, "PHONE_EXISTS", "Số điện thoại này đã có tài khoản.")
+        email = changes.get("email")
+        if (
+            email is not None
+            and db.scalar(
+                select(User.id).where(func.lower(User.email) == email, User.id != user.id)
+            )
+            is not None
+        ):
+            raise ApiError(409, "EMAIL_EXISTS", "Địa chỉ email này đã có tài khoản.")
         for field, value in changes.items():
             setattr(user, field, value)
         result = {"changed_fields": list(changes)}
@@ -754,17 +918,24 @@ def reset_user_password(
             db, actor=actor, operation=operation, key=idempotency_key, payload=payload
         )
         if cached is not None:
-            return {**cached, "reset_password": _RESET_PASSWORD}
+            return {
+                **{key: value for key, value in cached.items() if key != "reset_password"},
+                "temporary_password_unavailable": True,
+            }
         user = query.get_user_for_update(db, user_id)
         if user is None:
             raise ApiError(404, "USER_NOT_FOUND", "Không tìm thấy tài khoản.")
-        user.password_hash = hash_password(_RESET_PASSWORD)
+        temporary_password = _temporary_password()
+        user.password_hash = hash_password(temporary_password)
         user.force_password_change = True
         user.updated_at = now_utc()
         db.query(RefreshSession).filter(RefreshSession.user_id == user.id).update(
             {RefreshSession.revoked_at: now_utc()}, synchronize_session=False
         )
-        result = {"reset_password": _RESET_PASSWORD, "must_change_password": True}
+        result = {
+            "temporary_password": temporary_password,
+            "must_change_password": True,
+        }
         query.add_audit(
             db,
             actor_id=actor.id,
@@ -779,6 +950,6 @@ def reset_user_password(
             operation=operation,
             key=idempotency_key,
             digest=query.payload_hash(payload),
-            result=result,
+            result={"must_change_password": True, "temporary_password_generated": True},
         )
         return result

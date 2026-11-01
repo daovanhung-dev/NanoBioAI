@@ -15,11 +15,15 @@ from nanobio_backend.db.business_models import (
     SaleProfile,
 )
 from nanobio_backend.db.models import (
+    AdminAuditEvent,
     AdminUserRole,
+    CloudSnapshot,
     FamilyMember,
     HealthSubject,
+    IdempotencyRecord,
     MembershipSubscription,
     ReferralRelationship,
+    RefreshSession,
     SleepSafetyPreference,
     UsageQuotaRule,
     User,
@@ -412,6 +416,408 @@ def test_admin_route_denies_member_and_grant_is_audited_and_idempotent(runtime):
             select(MembershipSubscription).where(MembershipSubscription.user_id == target_id)
         ).all()
         assert len(subscriptions) == 1
+
+
+def _create_super_admin(client, factory):
+    with factory() as db:
+        admin = User(
+            phone="+84912345678",
+            email="admin@example.test",
+            full_name="Admin Operator",
+            password_hash=PasswordHasher().hash("AdminPass123"),
+        )
+        admin.roles.append(AdminUserRole(role_code="super_admin"))
+        db.add(admin)
+        db.commit()
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"phone": "0912345678", "password": "AdminPass123"},
+    )
+    assert response.status_code == 200
+    return {"Authorization": f"Bearer {response.json()['data']['access_token']}"}
+
+
+def test_admin_create_accounts_generates_unique_one_time_passwords(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    first_payload = {
+        "phone": "0910000001",
+        "full_name": "Free Member One",
+        "email": "one@example.test",
+        "reason": "Approved account request",
+        "idempotency_key": "create-member-one-0001",
+    }
+    second_payload = {
+        **first_payload,
+        "phone": "0910000002",
+        "full_name": "Free Member Two",
+        "email": "two@example.test",
+        "idempotency_key": "create-member-two-0001",
+    }
+    first = client.post("/api/v1/admin/accounts", headers=headers, json=first_payload)
+    second = client.post("/api/v1/admin/accounts", headers=headers, json=second_payload)
+    assert first.status_code == second.status_code == 201
+    first_data = first.json()["data"]
+    second_data = second.json()["data"]
+    assert first_data["temporary_password"] != second_data["temporary_password"]
+    assert first_data["temporary_password_generated"] is True
+    assert second_data["temporary_password_generated"] is True
+
+    replay = client.post("/api/v1/admin/accounts", headers=headers, json=first_payload)
+    assert replay.status_code == 201
+    assert "temporary_password" not in replay.json()["data"]
+    assert replay.json()["data"]["temporary_password_unavailable"] is True
+
+    with factory() as db:
+        created = db.get(User, UUID(first_data["user_id"]))
+        saved_request = db.scalar(
+            select(IdempotencyRecord).where(
+                IdempotencyRecord.idempotency_key == first_payload["idempotency_key"]
+            )
+        )
+        assert created is not None
+        assert created.force_password_change is True
+        assert created.membership_tier == "free"
+        assert saved_request is not None
+        assert first_data["temporary_password"] not in str(saved_request.response_data)
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"phone": first_payload["phone"], "password": first_data["temporary_password"]},
+    )
+    assert login.status_code == 200
+    assert login.json()["data"]["must_change_password"] is True
+
+
+def test_admin_user_data_is_audited_paged_and_redacted(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    with factory() as db:
+        target = User(
+            phone="+84912340001",
+            full_name="Health Data Member",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        db.add(target)
+        db.flush()
+        target_id = target.id
+        db.add(
+            CloudSnapshot(
+                user_id=target.id,
+                snapshot_type="mobile-v1",
+                revision=1,
+                payload={
+                    "user": {
+                        "birth_year": 1984,
+                        "avatar_url": "https://cdn.example.test/avatar.jpg?token=private-value",
+                    },
+                    "tables": {
+                        "health_tracking_logs": [
+                            {
+                                "id": "log-1",
+                                "weight_kg": 61.5,
+                                "refresh_token": "do-not-return",
+                                "apiKey": "do-not-return",
+                            },
+                            {"id": "log-2", "weight_kg": 60.8, "access_token": "do-not-return"},
+                        ]
+                    },
+                },
+            )
+        )
+        support = User(
+            phone="+84912340002",
+            full_name="Support Operator",
+            password_hash=PasswordHasher().hash("SupportPass123"),
+        )
+        support.roles.append(AdminUserRole(role_code="support_admin"))
+        db.add(support)
+        db.commit()
+
+    first = client.get(
+        f"/api/v1/admin/users/{target_id}/data",
+        headers=headers,
+        params={"section": "health", "page": 1, "page_size": 1, "reason": "Health support request"},
+    )
+    second = client.get(
+        f"/api/v1/admin/users/{target_id}/data",
+        headers=headers,
+        params={"section": "health", "page": 2, "page_size": 1, "reason": "Health support request"},
+    )
+    assert first.status_code == second.status_code == 200
+    page_one = first.json()["data"]["tables"]["health_tracking_logs"]
+    page_two = second.json()["data"]["tables"]["health_tracking_logs"]
+    assert page_one["total"] == 2
+    assert page_one["rows"][0]["id"] == "log-1"
+    assert "refresh_token" not in page_one["rows"][0]
+    assert "apiKey" not in page_one["rows"][0]
+    assert page_two["rows"][0]["id"] == "log-2"
+    assert "access_token" not in page_two["rows"][0]
+
+    profile = client.get(
+        f"/api/v1/admin/users/{target_id}/data",
+        headers=headers,
+        params={"section": "profile", "reason": "Health support request"},
+    )
+    assert profile.status_code == 200
+    assert profile.json()["data"]["tables"]["mobile_profile"]["rows"][0]["avatar_url"] == (
+        "https://cdn.example.test/avatar.jpg"
+    )
+
+    support_login = client.post(
+        "/api/v1/auth/login",
+        json={"phone": "0912340002", "password": "SupportPass123"},
+    )
+    assert support_login.status_code == 200
+    denied = client.get(
+        f"/api/v1/admin/users/{target_id}/data",
+        headers={"Authorization": f"Bearer {support_login.json()['data']['access_token']}"},
+        params={"section": "health", "reason": "Support review"},
+    )
+    assert denied.status_code == 403
+    assert denied.json()["businessCode"] == "ACCESS_DENIED"
+
+    with factory() as db:
+        events = db.scalars(
+            select(AdminAuditEvent).where(
+                AdminAuditEvent.target_user_id == target_id,
+                AdminAuditEvent.action == "admin_view_user_data",
+            )
+        ).all()
+        assert len(events) == 3
+        assert {event.reason for event in events} == {"Health support request"}
+
+
+def test_admin_user_data_sections_return_for_every_supported_group(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    with factory() as db:
+        target = User(
+            phone="+84912340041",
+            full_name="Section Coverage Member",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        db.add(target)
+        db.commit()
+        target_id = target.id
+
+    sections = (
+        "profile",
+        "health",
+        "schedule",
+        "membership",
+        "family",
+        "sleep_safety",
+        "sale_rewards",
+        "activity",
+        "related",
+    )
+    for section in sections:
+        response = client.get(
+            f"/api/v1/admin/users/{target_id}/data",
+            headers=headers,
+            params={"section": section, "page": 1, "page_size": 20, "reason": "Section coverage"},
+        )
+        assert response.status_code == 200, (section, response.json())
+        assert response.json()["data"]["section"] == section
+
+
+def test_admin_password_reset_is_random_one_time_and_closing_revokes_sessions(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    now = datetime.now(UTC)
+    with factory() as db:
+        target = User(
+            phone="+84912340031",
+            full_name="Password Reset Member",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        db.add(target)
+        db.flush()
+        db.add(
+            RefreshSession(
+                user_id=target.id,
+                token_hash="a" * 64,
+                expires_at=now + timedelta(days=2),
+            )
+        )
+        db.commit()
+        target_id = target.id
+
+    reset = client.post(
+        f"/api/v1/admin/users/{target_id}/password-reset",
+        headers=headers,
+        params={
+            "reason": "Member cannot access account",
+            "idempotency_key": "reset-member-pass-0001",
+        },
+    )
+    replay = client.post(
+        f"/api/v1/admin/users/{target_id}/password-reset",
+        headers=headers,
+        params={
+            "reason": "Member cannot access account",
+            "idempotency_key": "reset-member-pass-0001",
+        },
+    )
+    assert reset.status_code == replay.status_code == 200
+    password = reset.json()["data"]["temporary_password"]
+    assert len(password) >= 24
+    assert "temporary_password" not in replay.json()["data"]
+    assert replay.json()["data"]["temporary_password_unavailable"] is True
+    with factory() as db:
+        saved_user = db.get(User, target_id)
+        reset_record = db.scalar(
+            select(IdempotencyRecord).where(
+                IdempotencyRecord.operation == "admin_reset_member_password",
+                IdempotencyRecord.idempotency_key == "reset-member-pass-0001",
+            )
+        )
+        sessions = db.scalars(
+            select(RefreshSession).where(RefreshSession.user_id == target_id)
+        ).all()
+        assert saved_user is not None and saved_user.force_password_change is True
+        assert saved_user.password_hash != password
+        assert reset_record is not None
+        assert password not in str(reset_record.response_data)
+        assert sessions and all(session.revoked_at is not None for session in sessions)
+
+    member_login = client.post(
+        "/api/v1/auth/login",
+        json={"phone": "0912340031", "password": password},
+    )
+    assert member_login.status_code == 200
+    assert member_login.json()["data"]["must_change_password"] is True
+    closed = client.patch(
+        f"/api/v1/admin/users/{target_id}/status",
+        headers=headers,
+        json={
+            "status": "closed",
+            "reason": "Close account on member request",
+            "idempotency_key": "close-member-account-0001",
+        },
+    )
+    assert closed.status_code == 200
+    with factory() as db:
+        saved_user = db.get(User, target_id)
+        sessions = db.scalars(
+            select(RefreshSession).where(RefreshSession.user_id == target_id)
+        ).all()
+        assert saved_user is not None and saved_user.admin_status == "closed"
+        assert saved_user.is_active is False
+        assert sessions and all(session.revoked_at is not None for session in sessions)
+
+
+def test_admin_profile_normalizes_identity_and_rejects_duplicates(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    with factory() as db:
+        first_user = User(
+            phone="+84912340011",
+            email="first@example.test",
+            full_name="First Member",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        second_user = User(
+            phone="+84912340012",
+            email="second@example.test",
+            full_name="Second Member",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        db.add_all([first_user, second_user])
+        db.commit()
+        first_id = first_user.id
+
+    duplicate_phone = client.patch(
+        f"/api/v1/admin/users/{first_id}/profile",
+        headers=headers,
+        json={
+            "phone": "0912340012",
+            "reason": "Correct contact details",
+            "idempotency_key": "profile-phone-duplicate-01",
+        },
+    )
+    duplicate_email = client.patch(
+        f"/api/v1/admin/users/{first_id}/profile",
+        headers=headers,
+        json={
+            "email": "SECOND@example.test",
+            "reason": "Correct contact details",
+            "idempotency_key": "profile-email-duplicate-01",
+        },
+    )
+    assert duplicate_phone.status_code == 409
+    assert duplicate_phone.json()["businessCode"] == "PHONE_EXISTS"
+    assert duplicate_email.status_code == 409
+    assert duplicate_email.json()["businessCode"] == "EMAIL_EXISTS"
+
+    updated = client.patch(
+        f"/api/v1/admin/users/{first_id}/profile",
+        headers=headers,
+        json={
+            "full_name": "  Updated Member  ",
+            "phone": "0912340013",
+            "email": " FIRST@EXAMPLE.TEST ",
+            "reason": "Correct contact details",
+            "idempotency_key": "profile-normalize-0001",
+        },
+    )
+    assert updated.status_code == 200
+    with factory() as db:
+        saved = db.get(User, first_id)
+        assert saved is not None
+        assert saved.full_name == "Updated Member"
+        assert saved.phone == "+84912340013"
+        assert saved.email == "first@example.test"
+
+
+def test_admin_revoke_stops_provider_entitlement_without_billing_mutation(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    now = datetime.now(UTC)
+    with factory() as db:
+        target = User(
+            phone="+84912340021",
+            full_name="Plus Member",
+            membership_tier="plus",
+            password_hash=PasswordHasher().hash("MemberPass123"),
+        )
+        db.add(target)
+        db.flush()
+        subscription = MembershipSubscription(
+            user_id=target.id,
+            plan_code="plus",
+            status="active",
+            source="google_play",
+            provider="google_play",
+            provider_subscription_id="provider-id-private",
+            starts_at=now - timedelta(days=3),
+            ends_at=now + timedelta(days=30),
+            current_period_end=now + timedelta(days=30),
+        )
+        db.add(subscription)
+        db.commit()
+        user_id = target.id
+        subscription_id = subscription.id
+
+    payload = {
+        "user_id": str(user_id),
+        "subscription_id": str(subscription_id),
+        "reason": "Requested immediate entitlement removal",
+        "idempotency_key": "revoke-plus-provider-0001",
+    }
+    first = client.post("/api/v1/admin/memberships/revoke", headers=headers, json=payload)
+    replay = client.post("/api/v1/admin/memberships/revoke", headers=headers, json=payload)
+    assert first.status_code == replay.status_code == 200
+    assert first.json()["data"]["billing_provider_managed"] is True
+    assert replay.json()["data"] == first.json()["data"]
+    with factory() as db:
+        saved_user = db.get(User, user_id)
+        saved_subscription = db.get(MembershipSubscription, subscription_id)
+        assert saved_user is not None and saved_user.membership_tier == "free"
+        assert saved_subscription is not None
+        assert saved_subscription.status == "revoked"
+        assert saved_subscription.provider_subscription_id == "provider-id-private"
 
 
 def test_ai_generation_is_disabled_by_default_and_food_scan_stays_disabled(runtime):

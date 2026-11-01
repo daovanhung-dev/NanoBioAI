@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 29 worklog(s).
+- Generated from 30 worklog(s).
 
 ## When To Read
 
@@ -33,6 +33,7 @@
 - Historical task type: coding, test va cap nhat context backend (1)
 - Historical task type: coding, test, diagnostic va cap nhat context backend (1)
 - Historical task type: coding, kiểm tra và build APK. (1)
+- Historical task type: test (1)
 
 ## Common Modules
 

@@ -2,7 +2,7 @@
 
 - Canonical key: find-issues
 - Workflow: .codex/workflows/find-issues.md
-- Generated from 10 worklog(s).
+- Generated from 11 worklog(s).
 
 ## When To Read
 
@@ -16,6 +16,7 @@
 - Historical task type: data intake review/documentation. (1)
 - Historical task type: research/docs trong goal mở rộng meal catalog. (1)
 - Historical task type: find-issues / review source hiện tại (1)
+- Historical task type: find-issues / API contract audit. (1)
 
 ## Common Modules
 
@@ -26,6 +27,7 @@
 - toan bo presentation V1/V2/V3/Sale/Admin + shared UI/Nabi/theme/router/state cross-screen: 1
 - admin-web / gallery landing NanoBio.: 1
 - M02 personal schedule, meal plan và lifestyle schedule: 1
+- admin-web và FastAPI backend.: 1
 
 ## Work Pattern
 
@@ -53,3 +55,4 @@
 - [Worklog - Rà soát candidate catalog 3.000 món](../../docs/worklog/2026-10-16/003-worklog-meal-catalog-candidate-review.md) - M02 PERSONAL_SCHEDULE_AI, meal catalog.
 - [Worklog - Rà soát thêm nguồn công thức tiếng Việt và nguồn mở](../../docs/worklog/2026-10-16/006-worklog-vietnamese-open-recipe-source-review.md) - M02 PERSONAL_SCHEDULE_AI, meal catalog.
 - [Worklog - Rà soát luồng tạo lịch trình mới](../../docs/worklog/2026-10-18/003-worklog-review-new-schedule-flow.md) - M02 personal schedule, meal plan và lifestyle schedule
+- [Worklog - Đối chiếu API Admin Web và backend](../../docs/worklog/2026-10-31/004-worklog-admin-web-api-contract-audit.md) - admin-web và FastAPI backend.

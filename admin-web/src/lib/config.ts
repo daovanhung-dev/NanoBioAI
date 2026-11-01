@@ -1,29 +1,20 @@
-export type RuntimeConfig = {
-  apiBaseUrl: string;
-};
-
-export class RuntimeConfigError extends Error {
-  constructor(message = 'Trang quản trị chưa được cấu hình kết nối.') {
-    super(message);
-    this.name = 'RuntimeConfigError';
-  }
-}
+export type RuntimeConfig = { apiBaseUrl: string };
 
 export function readRuntimeConfig(): RuntimeConfig {
-  const apiBaseUrl = String(
-    import.meta.env.VITE_API_BASE_URL ?? 'https://42.118.174.147',
-  ).trim().replace(/\/+$/, '');
+  const configured = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
+  const apiBaseUrl = (configured || window.location.origin).replace(/\/+$/, "");
+  let url: URL;
   try {
-    const url = new URL(apiBaseUrl);
-    const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-    if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) {
-      throw new Error('HTTPS is required');
-    }
-    if (url.username || url.password || url.search || url.hash) {
-      throw new Error('Invalid API origin');
-    }
+    url = new URL(apiBaseUrl);
   } catch {
-    throw new RuntimeConfigError('Địa chỉ máy chủ chưa hợp lệ. Hãy kiểm tra cấu hình triển khai.');
+    throw new Error("Địa chỉ API chưa hợp lệ. Hãy kiểm tra VITE_API_BASE_URL.");
+  }
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (url.protocol !== "https:" && !(local && url.protocol === "http:")) {
+    throw new Error("Kết nối API cần dùng HTTPS.");
+  }
+  if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+    throw new Error("VITE_API_BASE_URL chỉ nhận địa chỉ gốc của API.");
   }
   return { apiBaseUrl };
 }
