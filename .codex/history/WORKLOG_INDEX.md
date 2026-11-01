@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 280
+- Total worklogs: 281
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -289,3 +289,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-10-31 | test | test | backend API | [Worklog - Kiểm tra live toàn bộ API backend](../../docs/worklog/2026-10-31/006-worklog-backend-live-api-test.md) |
 | 2026-11-01 | coding | coding | Admin Web va backend modules/admin | [Worklog - Admin Web quan ly tai khoan va goi Plus](../../docs/worklog/2026-11-01/001-worklog-admin-web-user-plus-management.md) |
 | 2026-11-01 | bugfix | bugfix | admin-web va NanoBio backend Ubuntu | [Worklog - Khac phuc dang nhap Admin Web local](../../docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md) |
+| 2026-11-01 | bugfix | bugfix | admin-web deployment workflow | [Worklog - Sua pipeline deploy Admin Web](../../docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md) |

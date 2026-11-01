@@ -2,11 +2,11 @@
 
 - Canonical key: bugfix
 - Workflow: .codex/workflows/bugfix.md
-- Generated from 39 worklog(s).
+- Generated from 40 worklog(s).
 
 ## When To Read
 
-- Historical task type: bugfix (33)
+- Historical task type: bugfix (34)
 - Historical task type: bugfix. (3)
 - Historical task type: fix (1)
 - Historical task type: fix UI/copy (1)

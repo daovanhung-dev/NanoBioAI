@@ -1393,3 +1393,8 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md :: ## Loi/Rui ro
 - docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md :: - Chua fix: public IP API van khong truy cap duoc tu moi truong dev; local Admin Web can SSH tunnel con mo. Kiem tra unit runtime tim thay `nanobio-backend.service` su dung environment file; maintenance unit co trong source checkout nhung khong nam trong danh sach unit cai dat tren server luc kiem tra.
 - docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md :: - Can kiem tra tiep: neu tunnel dong, mo lai SSH local forward truoc khi dung Admin Web. Khong luu credential DB hay SSH vao repo.
+- docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - `python3 tools/validate_docs_source_truth.py`: FAIL do thieu `docs/audit/source_truth_manifest.json`.
+- docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL vi cung thieu source-truth manifest va cac stale path cu trong history/task-skill; khong sua ngoai pham vi.
+- docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - GitHub Actions sau push: SKIPPED theo pham vi; khong push va khong deploy.
+- docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: ## Loi/Rui ro
+- docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - Can kiem tra tiep: sau khi nguoi dung push commit, xac nhan toan bo job deploy va bundle tren Pages.
