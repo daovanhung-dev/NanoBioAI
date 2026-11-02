@@ -15,6 +15,7 @@ import 'package:nano_app/app_versions/v1/features/settings/providers/settings_pr
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import 'package:nano_app/app_versions/v2/features/cloud_sync/cloud_sync.dart';
+import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 import 'package:nano_app/app_versions/v2/router/v2_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/config/app_env.dart';
@@ -389,6 +390,7 @@ class SettingsView extends ConsumerWidget {
   Future<void> _refreshSettings(BuildContext context, WidgetRef ref) async {
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
     ref.invalidate(dashboardProvider);
+    ref.invalidate(effectiveAccessProvider);
     ref.invalidate(settingsPreferencesControllerProvider);
     ref.invalidate(settingsCacheSizeProvider);
     ref.invalidate(appExperiencePreferencesProvider);
@@ -400,6 +402,7 @@ class SettingsView extends ConsumerWidget {
 
     final loads = <Future<bool>>[
       _didLoad(() => ref.read(dashboardProvider.future)),
+      _didLoad(() => ref.read(effectiveAccessProvider.future)),
       _didLoad(() => ref.read(settingsPreferencesControllerProvider.future)),
       _didLoad(() => ref.read(settingsCacheSizeProvider.future)),
       _didLoad(() => ref.read(appExperiencePreferencesProvider.future)),
@@ -1051,20 +1054,28 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends ConsumerWidget {
   const _ProfileCard({required this.dashboard});
 
   final DashboardEntity? dashboard;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membershipAsync = ref.watch(effectiveAccessProvider);
     final fullName = _displayText(
       dashboard?.fullName,
       fallback: 'Chưa có hồ sơ',
     );
+    final membershipSubtitle = membershipAsync.when(
+      data: (access) => _subscriptionLabel(
+        access?.membershipPlan ?? dashboard?.subscriptionTier ?? 'unknown',
+      ),
+      error: (_, __) => 'Chưa kiểm tra được gói thành viên',
+      loading: () => 'Đang kiểm tra gói thành viên',
+    );
     final subtitle = dashboard == null
         ? 'Hoàn thành phần làm quen để Nabi ghi nhớ hồ sơ của bạn'
-        : _subscriptionLabel(dashboard!.subscriptionTier);
+        : membershipSubtitle;
     return MedicalSurfaceCard(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
       gradient: AppGradients.hero,

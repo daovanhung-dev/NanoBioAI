@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 288
+- Total worklogs: 290
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -297,3 +297,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-02 | bugfix | bugfix | Backend auth và admin account provisioning | [Worklog - Đảm bảo tài khoản mới luôn hoạt động](../../docs/worklog/2026-11-02/001-worklog-new-accounts-active.md) |
 | 2026-11-02 | bugfix / điều tra production | docs-context | Backend auth, Admin account status | [Worklog - Điều tra trạng thái signup và tài khoản không hoạt động](../../docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md) |
 | 2026-11-02 | coding | coding | Flutter backend client, Admin Web, FastAPI CORS/public origin, build scripts | [Worklog - Chuyển Production Backend sang domain nanobio.s2w.click](../../docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md) |
+| 2026-11-02 | bugfix / production | docs-context | Backend auth và Admin user search | [Worklog - Sửa trạng thái active của tài khoản trên production](../../docs/worklog/2026-11-02/004-worklog-active-account-production-fix.md) |
+| 2026-11-02 | bugfix | bugfix | Flutter membership display; Admin user search | [Worklog - Đồng bộ gói Plus và hiển thị số điện thoại Admin](../../docs/worklog/2026-11-02/005-worklog-membership-plus-admin-phone.md) |

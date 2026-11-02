@@ -33,3 +33,13 @@ Tài khoản mới được báo ở trạng thái không hoạt động. Bản 
 - Probe trước đó trả HTTP 200 nhưng không xác nhận revision đang chạy; probe `/health/ready` ngày 2026-11-02 timeout và Admin Web khóa thao tác ghi.
 - SSH bằng khóa hiện có bị từ chối (`Permission denied (publickey,password)`). Backend chưa được triển khai lại và chưa đăng ký tài khoản production khác.
 - Vì vậy kết quả xác nhận source và test cục bộ; hành vi production sau triển khai vẫn cần được xác nhận.
+
+## Cập nhật production ngày 2026-11-02
+
+- Điều tra trực tiếp DB cho thấy cả 6 tài khoản hiện hữu đều có `is_active=true` và `admin_status=active`. Các nhãn “Không hoạt động” trước đó là do backend production ở revision `38ee4d0` không trả trường `is_active` trong `/api/v1/admin/users/search`; Admin Web diễn giải trường thiếu thành `false`.
+- Bản sao lưu hai file backend đích được tạo trong `/var/backups/nanobio/`. Giữ nguyên các thay đổi chưa commit trên server; chỉ vá cục bộ bốn điểm: đặt tường minh hai cờ active ở phone signup, Admin tạo một tài khoản và bulk; bổ sung `is_active` vào kết quả Admin search.
+- Restart `nanobio-backend` thành công. Service báo `active`; health readiness nội bộ và HTTPS công khai đều trả 200. HTTPS được xác minh bình thường (`curl` báo verify result 0).
+- Tải lại Admin Web trong Chrome sau khi người dùng đăng ký: API sẵn sàng, danh sách có 7 kết quả; tài khoản mới `Test1` hiển thị “Đang hoạt động”. Sáu tài khoản cũ vẫn active; không đổi trạng thái tài khoản cũ hoặc schema.
+- Backend regression tests trên checkout local: 4 passed; Ruff và format check đều đạt. Trên server, `uv run pytest` không chạy được vì quyền ghi vào editable `.pth`; pytest executable không có trong `.venv`. Hai file production đã qua kiểm tra cú pháp AST; readiness và UI sau restart đã xác nhận.
+- Sau khi người dùng tự hoàn tất đăng ký trên điện thoại, Admin Web hiển thị tài khoản `Test1` trong danh sách 7 tài khoản với trạng thái “Đang hoạt động”. Flutter Inspector ghi nhận app đã chuyển tới `OnboardingTextScalePage`, tức đã qua bước đăng nhập/đăng ký và vào onboarding. Không mở hồ sơ sức khỏe.
+- Signup tạo đúng tài khoản mới qua app; không sửa DB trực tiếp, không đổi trạng thái tài khoản cũ hoặc schema.

@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/dashboard_
 import 'package:nano_app/app_versions/v1/features/settings/data/datasources/settings_local_datasource.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v1/features/settings/utils/profile_validator.dart';
+import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 import 'package:nano_app/services/backend/auth/current_backend_user.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -44,8 +45,14 @@ class ProfilePage extends ConsumerWidget {
               onRetry: () async {
                 AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(dashboardProvider);
+                ref.invalidate(effectiveAccessProvider);
                 try {
                   await ref.read(dashboardProvider.future);
+                  try {
+                    await ref.read(effectiveAccessProvider.future);
+                  } catch (_) {
+                    // The local profile remains usable if membership is offline.
+                  }
                   AppFeedbackService.instance.emit(AppFeedbackType.success);
                 } catch (_) {
                   AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -57,8 +64,14 @@ class ProfilePage extends ConsumerWidget {
               onRefresh: () async {
                 AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
                 ref.invalidate(dashboardProvider);
+                ref.invalidate(effectiveAccessProvider);
                 try {
                   await ref.read(dashboardProvider.future);
+                  try {
+                    await ref.read(effectiveAccessProvider.future);
+                  } catch (_) {
+                    // The local profile remains usable if membership is offline.
+                  }
                   AppFeedbackService.instance.emit(AppFeedbackType.success);
                 } catch (_) {
                   AppFeedbackService.instance.emit(AppFeedbackType.error);
@@ -401,13 +414,22 @@ class _ProfileField extends StatelessWidget {
   }
 }
 
-class _ProfileHeader extends StatelessWidget {
+class _ProfileHeader extends ConsumerWidget {
   final DashboardEntity dashboard;
 
   const _ProfileHeader({required this.dashboard});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membershipSubtitle = ref
+        .watch(effectiveAccessProvider)
+        .when(
+          data: (access) => _subscriptionLabel(
+            access?.membershipPlan ?? dashboard.subscriptionTier,
+          ),
+          error: (_, __) => 'Chưa kiểm tra được gói thành viên',
+          loading: () => 'Đang kiểm tra gói thành viên',
+        );
     final name = _displayText(dashboard.fullName, fallback: 'Chưa có tên');
     return Container(
       padding: const EdgeInsets.all(AppSpacing.pagePaddingLarge),
@@ -450,7 +472,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.tiny),
                 Text(
-                  _subscriptionLabel(dashboard.subscriptionTier),
+                  membershipSubtitle,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: context.semanticColors.textInverse.withValues(
                       alpha: .9,

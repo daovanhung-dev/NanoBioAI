@@ -9,6 +9,7 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/providers/admin
 import 'package:nano_app/app_versions/v1/features/settings/providers/settings_provider.dart';
 import 'package:nano_app/app_versions/v2/app/bio_ai_v2_app.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
+import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
@@ -38,6 +39,7 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      ref.invalidate(effectiveAccessProvider);
       unawaited(_checkRuntimePermissions());
     }
   }

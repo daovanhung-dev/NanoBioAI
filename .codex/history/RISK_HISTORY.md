@@ -1433,3 +1433,5 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Can kiem tra tiep: sau khi cấp chứng chỉ TLS có SAN đúng, chạy lại readiness/CORS preflight và nghiệm thu login, refresh, cloud sync, AI/streaming, upload, Admin và nghiệp vụ trên thiết bị thật.
 - docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Dang do: kiểm tra Production readiness/CORS và nghiệm thu thiết bị thật bị BLOCKED bởi certificate.
 - docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Muc do hoan thanh task: source và local validation hoàn tất; Production acceptance còn BLOCKED do certificate.
+- docs/worklog/2026-11-02/004-worklog-active-account-production-fix.md :: - `uv run pytest` trên server: BLOCKED - không ghi được editable `.pth` trong `.venv`; `.venv/bin/pytest` không tồn tại.
+- docs/worklog/2026-11-02/005-worklog-membership-plus-admin-phone.md :: - Cài APK lên thiết bị: BLOCKED - `INSTALL_FAILED_UPDATE_INCOMPATIBLE` vì signing certificate không khớp bản app hiện có. Không gỡ app cũ hoặc xóa dữ liệu.

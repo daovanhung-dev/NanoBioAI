@@ -2,7 +2,7 @@
 
 - Canonical key: docs-context
 - Workflow: .codex/workflows/docs-context.md
-- Generated from 98 worklog(s).
+- Generated from 99 worklog(s).
 
 ## When To Read
 
@@ -38,6 +38,7 @@
 - Historical task type: triển khai app Android, profile firmware ESP và tài liệu nghiệm thu (1)
 - Historical task type: bugfix va trien khai Admin Web (1)
 - Historical task type: bugfix / điều tra production (1)
+- Historical task type: bugfix / production (1)
 
 ## Common Modules
 

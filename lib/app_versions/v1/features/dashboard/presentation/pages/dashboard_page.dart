@@ -14,6 +14,7 @@ import 'package:nano_app/app_versions/v1/features/dashboard/providers/main_navig
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/repositories/daily_routine_preferences_repository.dart';
 import 'package:nano_app/app_versions/v1/features/lifestyle_schedule/domain/entities/schedule_horizon.dart';
 import 'package:nano_app/app_versions/v1/features/nabi/presentation/widgets/nabi_floating_overlay.dart';
+import 'package:nano_app/app_versions/v2/features/membership_entitlement/providers/membership_entitlement_providers.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
@@ -78,9 +79,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   Future<void> _refresh() async {
     ref.invalidate(dashboardProvider);
     ref.invalidate(dashboardDynamicProvider);
+    ref.invalidate(effectiveAccessProvider);
     _invalidateRankSummary();
     await ref.read(dashboardProvider.future);
     await ref.read(dashboardDynamicProvider.future);
+    try {
+      await ref.read(effectiveAccessProvider.future);
+    } catch (_) {
+      // Keep local dashboard data available if the membership check is offline.
+    }
   }
 
   Future<void> _retryDashboardLoad() async {
@@ -353,6 +360,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
   Widget build(BuildContext context) {
     final dashboardAsync = ref.watch(dashboardProvider);
     final dynamicAsync = ref.watch(dashboardDynamicProvider);
+    final effectiveAccessAsync = ref.watch(effectiveAccessProvider);
     final generationState = ref.watch(dashboardControllerProvider);
     final userDataSyncState = ref.watch(userDataSyncControllerProvider);
 
@@ -380,8 +388,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage>
       data: (dashboard) {
         final dynamicData =
             dynamicAsync.value ?? DashboardDynamicEntity.empty();
-        final membershipInfo = membershipDisplayInfoForTier(
-          dashboard.subscriptionTier,
+        final membershipInfo = effectiveAccessAsync.when(
+          data: (access) => membershipDisplayInfoForTier(
+            access?.membershipPlan ?? dashboard.subscriptionTier,
+          ),
+          error: (_, __) => membershipDisplayInfoForTier('unknown'),
+          loading: () => membershipDisplayInfoForTier('unknown'),
         );
         return KeyedSubtree(
           key: const ValueKey('dashboard-ready'),
