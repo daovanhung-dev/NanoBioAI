@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 286
+- Total worklogs: 288
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -295,3 +295,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-01 | bugfix | bugfix | V2 auth route guard / membership payment | [Worklog - Sửa điều hướng nâng cấp Plus](../../docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md) |
 | 2026-11-01 | coding | coding | M15 Admin Dashboard / M16 Admin Operations, Admin Web | [Worklog - Thêm thao tác kích hoạt tài khoản trong Admin Web](../../docs/worklog/2026-11-01/007-worklog-admin-account-activation.md) |
 | 2026-11-02 | bugfix | bugfix | Backend auth và admin account provisioning | [Worklog - Đảm bảo tài khoản mới luôn hoạt động](../../docs/worklog/2026-11-02/001-worklog-new-accounts-active.md) |
+| 2026-11-02 | bugfix / điều tra production | docs-context | Backend auth, Admin account status | [Worklog - Điều tra trạng thái signup và tài khoản không hoạt động](../../docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md) |
+| 2026-11-02 | coding | coding | Flutter backend client, Admin Web, FastAPI CORS/public origin, build scripts | [Worklog - Chuyển Production Backend sang domain nanobio.s2w.click](../../docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md) |

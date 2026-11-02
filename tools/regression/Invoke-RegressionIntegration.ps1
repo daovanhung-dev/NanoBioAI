@@ -18,7 +18,7 @@ param(
   [string]$MatrixPath = '',
 
   [ValidateNotNullOrEmpty()]
-  [string]$ExpectedBackendHost = '42.118.174.147',
+  [string]$ExpectedBackendHost = 'nanobio.s2w.click',
 
   [switch]$ResetState,
 

@@ -51,11 +51,28 @@ void main() {
 
       final apiBaseUrl = AppEnv.maybeString('API_BASE_URL');
       expect(apiBaseUrl, isNotNull);
-      expect(Uri.parse(apiBaseUrl!).scheme, 'https');
-      expect(Uri.parse(apiBaseUrl).host, '42.118.174.147');
+      final uri = Uri.parse(apiBaseUrl!);
+      expect(uri.scheme, 'https');
+      expect(uri.origin, 'https://nanobio.s2w.click');
+      expect(uri.path, isEmpty);
+      expect(
+        AppEnv.valueSource('API_BASE_URL'),
+        AppEnvValueSource.bundledPublicConfig,
+      );
       expect(AppEnv.maybeString('GEMINI_API_KEY'), isNull);
       expect(AppEnv.valueSource('GEMINI_API_KEY'), AppEnvValueSource.missing);
     });
+
+    test(
+      'dotenv local override takes precedence over bundled backend origin',
+      () async {
+        await AppEnv.loadOptionalDotEnv(fileName: 'missing.env');
+        dotenv.loadFromString(envString: 'API_BASE_URL=http://10.0.2.2:8000');
+
+        expect(AppEnv.maybeString('API_BASE_URL'), 'http://10.0.2.2:8000');
+        expect(AppEnv.valueSource('API_BASE_URL'), AppEnvValueSource.dotEnv);
+      },
+    );
 
     test('returns no backend origin when it is missing', () {
       dotenv.loadFromString(envString: 'UNRELATED=https://example.test');

@@ -61,3 +61,27 @@ describe("BackendClient readiness", () => {
     expect(result.message).toBe("Không kết nối được API.");
   });
 });
+
+describe("BackendClient API path resolution", () => {
+  it("adds one versioned path to the configured API origin", async () => {
+    let requestedUrl: URL | undefined;
+    const fetcher: typeof fetch = async (input) => {
+      requestedUrl = new URL(input instanceof Request ? input.url : String(input));
+      return response({ success: true, data: { ok: true } });
+    };
+    const client = new BackendClient(
+      "https://nanobio.s2w.click",
+      testStorage(),
+      fetcher,
+    );
+
+    await client.requestData("/auth/login", {
+      method: "POST",
+      body: { phone: "+84912345678", password: "test-only" },
+      authenticated: false,
+    });
+
+    expect(requestedUrl?.origin).toBe("https://nanobio.s2w.click");
+    expect(requestedUrl?.pathname).toBe("/api/v1/auth/login");
+  });
+});

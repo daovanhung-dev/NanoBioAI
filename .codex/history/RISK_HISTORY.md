@@ -1421,3 +1421,15 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - Cần kiểm tra tiếp: triển khai bản backend này qua kênh SSH được cấp quyền, rồi xác nhận một signup mới có thể gọi hồ sơ bảo vệ và xuất hiện `active` trong Admin Web.
 - docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - Bằng chứng kiểm chứng: 71 backend tests passed, 2 skipped; ruff, format check và mypy passed; health 200 không được xem là bằng chứng deploy.
+- docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md :: - Sau khi xem hồ sơ, Admin Web chuyển sang `API chưa sẵn sàng` và khóa thao tác ghi; probe HTTPS `/health/ready` timeout sau 12 giây.
+- docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md :: - `ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=6 nanobio@100.86.238.91 true`: FAIL - `Permission denied (publickey,password)`.
+- docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md :: - `curl -fsS --max-time 12 https://42.118.174.147/health/ready`: FAIL - connection timeout sau 12 giây.
+- docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md :: - Đăng ký test trên production, cập nhật trạng thái 5 tài khoản, triển khai/restart backend: SKIPPED - API chưa sẵn sàng, thiếu tên/số điện thoại test và SSH key bị từ chối.
+- docs/worklog/2026-11-02/002-worklog-account-active-production-investigation.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - `pwsh -File .codex/tools/validate_codex_integrity.ps1`: FAIL - baseline thiếu `docs/audit/source_truth_manifest.json` và có các stale paths trong worklog/task-skill cũ, không liên quan tới thay đổi này.
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - `curl https://nanobio.s2w.click/health/ready` và CORS preflight bằng TLS verification mặc định: BLOCKED - certificate không có SAN khớp hostname; HTTP status 000, TLS verify result 1. Không dùng HTTP hoặc bỏ xác minh TLS.
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: ## Loi/Rui ro
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Chua fix: chứng chỉ Production không khớp `nanobio.s2w.click`; readiness và CORS qua mạng thật đang BLOCKED.
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Can kiem tra tiep: sau khi cấp chứng chỉ TLS có SAN đúng, chạy lại readiness/CORS preflight và nghiệm thu login, refresh, cloud sync, AI/streaming, upload, Admin và nghiệp vụ trên thiết bị thật.
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Dang do: kiểm tra Production readiness/CORS và nghiệm thu thiết bị thật bị BLOCKED bởi certificate.
+- docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Muc do hoan thanh task: source và local validation hoàn tất; Production acceptance còn BLOCKED do certificate.

@@ -67,6 +67,8 @@ $allowedKeys = @(
     "ONBOARDING_AI_DEV_CHECK_ENABLED"
 )
 
+# Preserve local API_BASE_URL overrides as Dart defines. When the key is absent,
+# leave it unset so AppEnv resolves the bundled public backend configuration.
 $resolvedEnvFile = Resolve-ProjectPath $EnvFile
 $resolvedOutputFile = Resolve-ProjectPath $OutputFile
 $envValues = Read-DotEnvFile $resolvedEnvFile

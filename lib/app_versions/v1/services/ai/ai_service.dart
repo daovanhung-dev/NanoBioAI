@@ -1502,7 +1502,18 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
 
     final contextClient = _aiClient;
     if (contextClient is! AiContextAwareClient) {
-      return (prompt: buildPrompt(null), candidateCodes: null);
+      final minimumCount = max(ExerciseTasksAiNormalizer.exercisesPerDay, days);
+      final remainingScheduleDays = max(1, 8 - startDay);
+      final candidateLimit = max(
+        minimumCount,
+        min(4, remainingScheduleDays * 2),
+      );
+      final candidates = _exerciseCandidateCodes(
+        catalog: catalog,
+        usedCodeCounts: usedExerciseCodeCounts,
+        limit: candidateLimit,
+      );
+      return (prompt: buildPrompt(candidates), candidateCodes: candidates);
     }
     final contextEstimator = contextClient as AiContextAwareClient;
 
@@ -1576,7 +1587,16 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
             );
             return count != 0 ? count : leftCode.compareTo(rightCode);
           });
-    return candidates
+    final belowReuseLimit = candidates
+        .where(
+          (item) => (usedCodeCounts[item.code.trim().toLowerCase()] ?? 0) < 2,
+        )
+        .toList(growable: false);
+    final selectable =
+        belowReuseLimit.length >= ExerciseTasksAiNormalizer.exercisesPerDay
+        ? belowReuseLimit
+        : candidates;
+    return selectable
         .take(limit)
         .map((item) => item.code.trim().toLowerCase())
         .toSet();
@@ -1671,6 +1691,14 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
               'model': entry.name,
               'chunkStartDay': chunk.startDay,
               'itemCount': decoded.length,
+              'candidateCount': candidateCodes?.length,
+              'overReuseLimitItemCount': decoded.whereType<Map>().where((item) {
+                final code = item['exercise_code']
+                    ?.toString()
+                    .trim()
+                    .toLowerCase();
+                return code != null && (usedCodeCounts[code] ?? 0) >= 2;
+              }).length,
             },
             location: StackTrace.current,
           );
@@ -1680,6 +1708,7 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
             startDay: chunk.startDay,
             days: chunk.days,
             usedCodeCounts: usedCodeCounts,
+            eligibleCodes: candidateCodes,
           );
           AITraceLogger.info(
             _tag,

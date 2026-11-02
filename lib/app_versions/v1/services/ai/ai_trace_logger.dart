@@ -48,6 +48,7 @@ class AITraceLogger {
     'nextTotalAttempt',
     'outputReserveTokens',
     'outputTokens',
+    'overReuseLimitItemCount',
     'positionMatchCount',
     'reassignedCount',
     'perModelTimeoutMs',

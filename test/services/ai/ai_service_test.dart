@@ -450,6 +450,60 @@ void main() {
       },
     );
 
+    test('exercise candidates rotate after two weekly uses', () async {
+      const marker = 'Candidates (JSON):\n';
+      final client = _CapturingAiTextClient(
+        response: '',
+        responseBuilder: (messages) {
+          final prompt = messages.single.text;
+          final day = int.parse(
+            RegExp(r'Days (\d+)-').firstMatch(prompt)!.group(1)!,
+          );
+          final start = prompt.lastIndexOf(marker);
+          final root =
+              jsonDecode(prompt.substring(start + marker.length).trim())
+                  as Map<String, dynamic>;
+          final codes = (root['selectable'] as List)
+              .cast<Map<String, dynamic>>()
+              .map((row) => row['code']! as String)
+              .toList(growable: false);
+          return jsonEncode({
+            'items': [
+              {'day': day, 'exercise_code': codes[0]},
+              {'day': day, 'exercise_code': codes[1]},
+            ],
+          });
+        },
+      );
+      final service = AIService(aiClient: client);
+      final usedCodeCounts = <String, int>{};
+      var generatedCount = 0;
+
+      for (var day = 1; day <= 7; day++) {
+        final result = await service.generateExerciseDayCodeItemsWithSource(
+          startDate: DateTime(2026, 10, 20),
+          day: day,
+          catalog: catalog,
+          usedCodeCounts: Map.of(usedCodeCounts),
+          onBackendInvocation: () async {},
+        );
+
+        expect(result.source, PlanGenerationSource.ai);
+        expect(
+          result.value,
+          hasLength(ExerciseTasksAiNormalizer.exercisesPerDay),
+        );
+        generatedCount += result.value.length;
+        for (final item in result.value) {
+          final code = item['exercise_code']! as String;
+          usedCodeCounts.update(code, (count) => count + 1, ifAbsent: () => 1);
+        }
+      }
+
+      expect(generatedCount, 14);
+      expect(usedCodeCounts.values.every((count) => count <= 2), isTrue);
+    });
+
     test(
       'meal prompt excludes unreviewed candidates without schedule eligibility',
       () {
@@ -1373,7 +1427,11 @@ void main() {
         catalogLoader: () async => catalog,
         textGenerator: ({required modelName, required prompt}) async {
           prompts.add(prompt);
-          return jsonEncode(_exerciseItemsForRange(startDay: 4, days: 1));
+          final codes = _exerciseCandidateCodesFromPrompt(prompt);
+          return jsonEncode([
+            {'day': 4, 'exercise_code': codes[0]},
+            {'day': 4, 'exercise_code': codes[1]},
+          ]);
         },
       );
 
@@ -2042,7 +2100,19 @@ void main() {
         catalogLoader: () async => catalog,
         textGenerator: ({required modelName, required prompt}) async {
           prompts.add(prompt);
-          return jsonEncode(_exerciseItemsForRange(startDay: 1, days: 7));
+          final codes = _exerciseCandidateCodesFromPrompt(prompt);
+          return jsonEncode([
+            for (var day = 1; day <= 7; day++) ...[
+              {
+                'day': day,
+                'exercise_code': codes[((day - 1) * 2) % codes.length],
+              },
+              {
+                'day': day,
+                'exercise_code': codes[((day - 1) * 2 + 1) % codes.length],
+              },
+            ],
+          ]);
         },
       );
 
@@ -2062,9 +2132,76 @@ void main() {
 
       expect(exercises, hasLength(14));
       expect(prompts, hasLength(1));
-      expect(exercises.first.title, 'Đi bộ thư giãn');
+      final firstCandidateCode =
+          _exerciseCandidateCodesFromPrompt(prompts.single).first;
+      expect(
+        exercises.first.title,
+        catalog.exercisesByCode[firstCandidateCode]?.title,
+      );
       expect(exercises.first.unit, 'lần');
     });
+
+    test(
+      'exercise generation keeps a reuse-safe shortlist without context estimation',
+      () async {
+        final usageCounts = <String, int>{};
+        final candidateCounts = <int>[];
+        final service = AIService(
+          modelNames: const ['fake-model'],
+          catalogLoader: () async => catalog,
+          textGenerator: ({required modelName, required prompt}) async {
+            final candidateCodes = _exerciseCandidateCodesFromPrompt(prompt);
+            candidateCounts.add(candidateCodes.length);
+
+            final dayRange = RegExp(r'Days (\d+)-(\d+):').firstMatch(prompt)!;
+            final firstDay = int.parse(dayRange.group(1)!);
+            final lastDay = int.parse(dayRange.group(2)!);
+            final items = <Map<String, Object?>>[];
+            for (var day = firstDay; day <= lastDay; day++) {
+              final available =
+                  candidateCodes
+                      .where((code) => (usageCounts[code] ?? 0) < 2)
+                      .toList(growable: false)
+                    ..sort((left, right) {
+                      final useCount = (usageCounts[left] ?? 0).compareTo(
+                        usageCounts[right] ?? 0,
+                      );
+                      return useCount != 0 ? useCount : left.compareTo(right);
+                    });
+              final selected = available.take(2).toList(growable: false);
+              expect(selected, hasLength(2));
+              for (final code in selected) {
+                usageCounts[code] = (usageCounts[code] ?? 0) + 1;
+                items.add({'day': day, 'exercise_code': code});
+              }
+            }
+            return jsonEncode(items);
+          },
+        );
+
+        final exercises = await service.generateExerciseTasks(
+          profile: const DailyHealthProfileEntity(
+            userId: 'u1',
+            fullName: 'Người dùng kiểm thử',
+            goals: [],
+            conditions: [],
+            habits: [],
+            sleepQuality: 'Khá',
+            activityLevel: 'Nhẹ',
+            waterPerDay: '2 lít',
+          ),
+          startDate: DateTime(2026, 6, 18),
+        );
+
+        expect(exercises, hasLength(14));
+        expect(candidateCounts, isNotEmpty);
+        expect(
+          candidateCounts.every((count) => count >= 2 && count <= 16),
+          isTrue,
+        );
+        expect(usageCounts.values.every((count) => count <= 2), isTrue);
+      },
+    );
   });
 
   group('AIModelCandidates', () {
@@ -2371,23 +2508,19 @@ List<Map<String, Object?>> _mealItemsFromPrompt(
   ];
 }
 
-List<Map<String, Object?>> _exerciseItemsForRange({
-  required int startDay,
-  required int days,
-}) {
-  return [
-    for (var day = startDay; day < startDay + days; day++) ...[
-      {
-        'day': day,
-        'exercise_code': AiCatalogSeedData.exercises[((day - 1) * 2) % 16].code,
-      },
-      {
-        'day': day,
-        'exercise_code':
-            AiCatalogSeedData.exercises[(((day - 1) * 2) + 1) % 16].code,
-      },
-    ],
-  ];
+List<String> _exerciseCandidateCodesFromPrompt(String prompt) {
+  const marker = 'Candidates (JSON):\n';
+  final candidateStart = prompt.lastIndexOf(marker);
+  if (candidateStart < 0) {
+    throw StateError('Exercise prompt is missing its candidate list.');
+  }
+  final candidateData =
+      jsonDecode(prompt.substring(candidateStart + marker.length).trim())
+          as Map<String, dynamic>;
+  return (candidateData['selectable'] as List)
+      .cast<Map<String, dynamic>>()
+      .map((candidate) => candidate['code']! as String)
+      .toList(growable: false);
 }
 
 class _CapturingAiTextClient implements AiTextClient, AiContextAwareClient {

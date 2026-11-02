@@ -104,7 +104,13 @@ class ExerciseTasksAiNormalizer {
     }
 
     final catalogByCode = catalog.exercisesByCode;
-    final counts = Map<String, int>.from(usedCodeCounts);
+    final counts = {
+      for (final entry in usedCodeCounts.entries)
+        entry.key.trim().toLowerCase(): entry.value,
+    };
+    final normalizedEligibleCodes = eligibleCodes
+        ?.map((code) => code.trim().toLowerCase())
+        .toSet();
     final grouped = <int, List<Map<String, dynamic>>>{};
 
     for (final item in items) {
@@ -140,19 +146,6 @@ class ExerciseTasksAiNormalizer {
         );
       }
 
-      final nextCount = (counts[exerciseCode] ?? 0) + 1;
-      if (nextCount > 2 &&
-          _hasLessUsedAlternative(
-            catalog,
-            counts,
-            eligibleCodes: eligibleCodes,
-          )) {
-        throw FormatException(
-          'Exercise code repeated too often: $exerciseCode',
-        );
-      }
-      counts[exerciseCode] = nextCount;
-
       dayItems.add({'day': day, 'exercise_code': exerciseCode});
     }
 
@@ -163,6 +156,25 @@ class ExerciseTasksAiNormalizer {
         throw FormatException(
           'Expected $exercisesPerDay exercises for day $day',
         );
+      }
+      final selectedCodes = dayItems
+          .map((item) => item['exercise_code']! as String)
+          .toSet();
+      for (final exerciseCode in selectedCodes) {
+        if ((counts[exerciseCode] ?? 0) >= 2 &&
+            _hasLessUsedAlternative(
+              catalog,
+              counts,
+              eligibleCodes: normalizedEligibleCodes,
+              excludedCodes: selectedCodes,
+            )) {
+          throw FormatException(
+            'Exercise code repeated too often: $exerciseCode',
+          );
+        }
+      }
+      for (final exerciseCode in selectedCodes) {
+        counts[exerciseCode] = (counts[exerciseCode] ?? 0) + 1;
       }
       result.addAll(dayItems);
     }
@@ -197,13 +209,15 @@ class ExerciseTasksAiNormalizer {
     AiCatalogBundle catalog,
     Map<String, int> counts, {
     Set<String>? eligibleCodes,
+    required Set<String> excludedCodes,
   }) {
-    return catalog.exercises.any(
-      (item) =>
-          item.isActive &&
-          (eligibleCodes == null || eligibleCodes.contains(item.code)) &&
-          (counts[item.code] ?? 0) < 2,
-    );
+    return catalog.exercises.any((item) {
+      final code = item.code.trim().toLowerCase();
+      return item.isActive &&
+          (eligibleCodes == null || eligibleCodes.contains(code)) &&
+          !excludedCodes.contains(code) &&
+          (counts[code] ?? 0) < 2;
+    });
   }
 
   static String _readString(Object? value) {

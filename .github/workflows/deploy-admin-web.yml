@@ -48,22 +48,18 @@ jobs:
 
       - name: Validate deployment configuration
         env:
-          VITE_API_BASE_URL: ${{ vars.NANOBIO_API_BASE_URL }}
+          VITE_API_BASE_URL: https://nanobio.s2w.click
         run: |
           set -eu
-          VITE_API_BASE_URL="${VITE_API_BASE_URL:-https://42.118.174.147}"
-          case "$VITE_API_BASE_URL" in
-            https://*) ;;
-            *)
-              echo "::error::NANOBIO_API_BASE_URL must use HTTPS"
-              exit 1
-              ;;
-          esac
+          if [ "$VITE_API_BASE_URL" != "https://nanobio.s2w.click" ]; then
+            echo "::error::VITE_API_BASE_URL must use the production API origin"
+            exit 1
+          fi
 
       - name: Build
         working-directory: admin-web
         env:
-          VITE_API_BASE_URL: ${{ vars.NANOBIO_API_BASE_URL }}
+          VITE_API_BASE_URL: https://nanobio.s2w.click
         run: npm run build
 
       - name: Configure GitHub Pages

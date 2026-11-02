@@ -110,15 +110,32 @@ function Assert-RuntimeEnvironment {
 
   $settings = Read-DotEnvSettings -Path $Path
   $invalidKeys = New-Object System.Collections.Generic.List[string]
+  $usingBundledApiBaseUrl = $false
 
   foreach ($key in $requiredRuntimeKeys) {
-    if (-not $settings.ContainsKey($key) -or (Test-IsPlaceholder -Value $settings[$key])) {
+    $value = if ($settings.ContainsKey($key)) { [string]$settings[$key] } else { "" }
+    if ($key -eq "API_BASE_URL" -and [string]::IsNullOrWhiteSpace($value)) {
+      $bundledConfigPath = Join-Path $repoRoot "assets/config/auth.env"
+      if (Test-Path -LiteralPath $bundledConfigPath -PathType Leaf) {
+        $bundledSettings = Read-DotEnvSettings -Path $bundledConfigPath
+        if ($bundledSettings.ContainsKey($key)) {
+          $value = [string]$bundledSettings[$key]
+          $usingBundledApiBaseUrl = -not [string]::IsNullOrWhiteSpace($value)
+        }
+      }
+    }
+
+    if (Test-IsPlaceholder -Value $value) {
       $invalidKeys.Add($key) | Out-Null
     }
   }
 
   if ($invalidKeys.Count -gt 0) {
     throw "Environment validation failed. Set non-empty, non-placeholder values for: $($invalidKeys -join ', ')."
+  }
+
+  if ($usingBundledApiBaseUrl) {
+    Write-Host "API_BASE_URL is absent; the bundled public backend origin will be used."
   }
 }
 

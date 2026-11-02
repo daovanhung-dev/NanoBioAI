@@ -22,7 +22,8 @@
   out, rejects quota/membership, or returns malformed output. Show a typed
   unavailable/auth/quota result and keep retry available.
 - Client API base URL is configured with `API_BASE_URL`; the release target is
-  `https://42.118.174.147`. Do not use HTTP as a fallback.
+  `https://nanobio.s2w.click`. Keep the base URL at the origin; callers append
+  the versioned `/api/v1` path. Do not use HTTP as a fallback.
 - Food Scan sends its sanitized JPEG and the minimum context required for the
   requested analysis over HTTPS. User consent copy must disclose this before
   analysis. Sleep analysis sends a sanitized metric summary, not recordings,

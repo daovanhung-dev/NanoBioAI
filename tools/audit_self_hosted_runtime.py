@@ -3,10 +3,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import re
-import sys
-
+from pathlib import Path
 
 FORBIDDEN_PATTERNS = {
     "hosted SDK": re.compile(r"supabase_flutter|@supabase/supabase-js", re.IGNORECASE),
@@ -27,7 +25,9 @@ def main() -> int:
             checked.extend(
                 path
                 for path in base.rglob("*")
-                if path.is_file() and path.suffix.lower() in {".dart", ".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml"}
+                if path.is_file()
+                and path.suffix.lower()
+                in {".dart", ".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml"}
             )
 
     failures: list[str] = []
@@ -51,9 +51,31 @@ def main() -> int:
 
     flutter_config = (root / "assets/config/auth.env").read_text(encoding="utf-8")
     web_config = (root / "admin-web/.env.example").read_text(encoding="utf-8")
-    expected = "https://42.118.174.147"
-    if expected not in flutter_config or expected not in web_config:
-        failures.append("Flutter and Admin Web must default to the self-hosted HTTPS API")
+    deploy_config = (root / ".github/workflows/deploy-admin-web.yml").read_text(encoding="utf-8")
+    backend_config = (root / "backend/.env.example").read_text(encoding="utf-8")
+    expected = "https://nanobio.s2w.click"
+    if (
+        expected not in flutter_config
+        or expected not in web_config
+        or expected not in deploy_config
+        or expected not in backend_config
+    ):
+        failures.append(
+            "Flutter, Admin Web and backend config must use the production HTTPS API origin"
+        )
+
+    production_paths = (
+        root / "assets/config/auth.env",
+        root / "lib/core/network/backend_api_client.dart",
+        root / ".github/workflows/deploy-admin-web.yml",
+        root / "tools/regression/Invoke-RegressionIntegration.ps1",
+        root / ".codex/domains/ai-service.md",
+        root / "lib/app_versions/v1/services/ai/README_FIX.md",
+    )
+    old_host = "42.118.174.147"
+    for path in production_paths:
+        if old_host in path.read_text(encoding="utf-8"):
+            failures.append(f"{path.relative_to(root)} still contains the retired production host")
     if (root / "supabase/config.toml").exists():
         failures.append("Supabase CLI project config remains in the active repository root")
     if not (root / "docs/archive/legacy-supabase/project/config.toml").exists():

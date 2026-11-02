@@ -15,5 +15,6 @@ on-device.
 
 Nabi ESP retains local microphone capture, Whisper speech recognition, ESP32
 transport, and offline TTS; its generated reply now uses the authenticated
-backend. The release API base is `https://42.118.174.147`; do not downgrade to
-HTTP. Live acceptance depends on HTTPS readiness.
+backend. The release API base is `https://nanobio.s2w.click`; callers append
+their versioned API paths. Do not downgrade to HTTP. Live acceptance depends
+on HTTPS readiness.

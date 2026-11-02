@@ -7,14 +7,23 @@ void main() {
     final file = File('assets/config/auth.env');
     expect(file.existsSync(), isTrue);
 
-    final keys = file
-        .readAsLinesSync()
-        .map((line) => line.trim())
-        .where((line) => line.isNotEmpty && !line.startsWith('#'))
-        .map((line) => line.split('=').first.trim())
-        .toSet();
+    final settings = <String, String>{};
+    for (final line
+        in file
+            .readAsLinesSync()
+            .map((line) => line.trim())
+            .where((line) => line.isNotEmpty && !line.startsWith('#'))) {
+      final separator = line.indexOf('=');
+      if (separator <= 0) continue;
+      settings[line.substring(0, separator).trim()] = line
+          .substring(separator + 1)
+          .trim();
+    }
 
-    expect(keys, equals({'API_BASE_URL'}));
-    expect(keys, isNot(contains('GEMINI_API_KEY')));
+    expect(settings.keys, equals({'API_BASE_URL'}));
+    expect(settings.keys, isNot(contains('GEMINI_API_KEY')));
+    final uri = Uri.parse(settings['API_BASE_URL']!);
+    expect(uri.origin, 'https://nanobio.s2w.click');
+    expect(uri.path, isEmpty);
   });
 }

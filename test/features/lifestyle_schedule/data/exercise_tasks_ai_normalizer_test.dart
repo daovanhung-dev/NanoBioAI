@@ -131,6 +131,49 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test(
+    'weekly reuse validation considers only unselected eligible options',
+    () {
+      final firstCode = AiCatalogSeedData.exercises[0].code;
+      final secondCode = AiCatalogSeedData.exercises[1].code;
+      final thirdCode = AiCatalogSeedData.exercises[2].code;
+      final usedCodeCounts = {firstCode: 2, secondCode: 1, thirdCode: 2};
+      const normalizer = ExerciseTasksAiNormalizer();
+
+      expect(
+        () => normalizer.validateCodeItems(
+          items: [
+            {'day': 7, 'exercise_code': firstCode},
+            {'day': 7, 'exercise_code': secondCode},
+          ],
+          catalog: catalog,
+          startDay: 7,
+          days: 1,
+          usedCodeCounts: usedCodeCounts,
+          eligibleCodes: {firstCode, secondCode},
+        ),
+        returnsNormally,
+        reason: 'The less-used eligible option is already selected that day.',
+      );
+
+      expect(
+        () => normalizer.validateCodeItems(
+          items: [
+            {'day': 7, 'exercise_code': firstCode},
+            {'day': 7, 'exercise_code': thirdCode},
+          ],
+          catalog: catalog,
+          startDay: 7,
+          days: 1,
+          usedCodeCounts: usedCodeCounts,
+          eligibleCodes: {firstCode, secondCode, thirdCode},
+        ),
+        throwsFormatException,
+        reason: 'An unselected, less-used eligible exercise is available.',
+      );
+    },
+  );
 }
 
 List<Map<String, Object?>> _items() {

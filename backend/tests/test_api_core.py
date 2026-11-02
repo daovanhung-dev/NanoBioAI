@@ -81,6 +81,54 @@ def test_phone_signup_login_and_refresh_rotation(runtime):
     assert replay.json()["data"] is None
 
 
+def test_admin_search_reports_phone_signup_as_active(runtime):
+    client, factory, _ = runtime
+    created = _signup(
+        client,
+        phone="0912345677",
+        name="Signup Status Check",
+    )
+    assert created.status_code == 201
+
+    with factory() as db:
+        member = db.scalar(select(User).where(User.phone == "+84912345677"))
+        assert member is not None
+        assert member.is_active is True
+        assert member.admin_status == "active"
+        member_id = str(member.id)
+
+        admin = User(
+            phone="+84900000001",
+            email="admin-status@example.test",
+            full_name="Admin Status Check",
+            password_hash=PasswordHasher().hash("AdminPass123"),
+            is_active=True,
+            admin_status="active",
+        )
+        admin.roles.append(AdminUserRole(role_code="super_admin"))
+        db.add(admin)
+        db.commit()
+
+    login = client.post(
+        "/api/v1/auth/login",
+        json={"phone": "+84900000001", "password": "AdminPass123"},
+    )
+    assert login.status_code == 200
+    search = client.get(
+        "/api/v1/admin/users/search",
+        params={"q": "Signup Status Check"},
+        headers={"Authorization": f"Bearer {login.json()['data']['access_token']}"},
+    )
+    assert search.status_code == 200
+    result = next(
+        (row for row in search.json()["data"] if row["id"] == member_id),
+        None,
+    )
+    assert result is not None
+    assert result["status"] == "active"
+    assert result["is_active"] is True
+
+
 def test_membership_access_is_server_derived_and_defaults_to_free(runtime):
     client, _, _ = runtime
     _signup(client)
