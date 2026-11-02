@@ -48,6 +48,10 @@ void main() {
       const promptVersion = 'prompt-v1';
       await store.prepareStaging(
         requestId: 'staging-request',
+        userId: 'staging-user',
+        actorMode: GeneratedPlanActorModes.initialGuest,
+        startDate: startDate,
+        days: 7,
         inputFingerprint: inputFingerprint,
         catalogFingerprint: catalogFingerprint,
         promptVersion: promptVersion,
@@ -90,6 +94,10 @@ void main() {
 
       final resumed = await store.prepareStaging(
         requestId: 'staging-request',
+        userId: 'staging-user',
+        actorMode: GeneratedPlanActorModes.initialGuest,
+        startDate: startDate,
+        days: 7,
         inputFingerprint: inputFingerprint,
         catalogFingerprint: catalogFingerprint,
         promptVersion: promptVersion,
@@ -103,11 +111,48 @@ void main() {
 
       final changedInput = await store.prepareStaging(
         requestId: 'staging-request',
+        userId: 'staging-user',
+        actorMode: GeneratedPlanActorModes.initialGuest,
+        startDate: startDate,
+        days: 7,
         inputFingerprint: 'changed-input-hash',
         catalogFingerprint: catalogFingerprint,
         promptVersion: promptVersion,
       );
       expect(changedInput.chunks, isEmpty);
+    },
+  );
+
+  test(
+    'preparing staging atomically creates its missing request parent',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
+      addTearDown(db.close);
+      await db.execute(UsersTable.createTable);
+      await db.insert(UsersTable.tableName, {'id': 'atomic-staging-user'});
+      await db.execute(PersonalScheduleAiRequestsTable.createTable);
+      await db.execute(PersonalScheduleAiStagingTable.createTable);
+
+      final store = LocalPersonalScheduleAiRequestStore(databaseOverride: db);
+      final startDate = DateTime(2026, 10, 13);
+      await store.prepareStaging(
+        requestId: 'atomic-staging-request',
+        userId: 'atomic-staging-user',
+        actorMode: GeneratedPlanActorModes.initialGuest,
+        startDate: startDate,
+        days: 7,
+        inputFingerprint: 'input-hash',
+        catalogFingerprint: 'catalog-hash',
+        promptVersion: 'prompt-v1',
+      );
+
+      final request = await store.findByRequestId('atomic-staging-request');
+      expect(request?.status, GeneratedPlanRequestStatuses.generating);
+      expect(request?.userId, 'atomic-staging-user');
+      expect(
+        await db.query(PersonalScheduleAiStagingTable.tableName),
+        hasLength(1),
+      );
     },
   );
 

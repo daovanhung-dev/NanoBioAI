@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_generation_result.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
+import 'package:sqflite/sqflite.dart' show DatabaseException;
 import 'package:nano_app/app_versions/v1/features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
@@ -344,6 +347,7 @@ class OnboardingController extends Notifier<OnboardingState> {
 
   bool _isExpectedSaveError(Object error) {
     return error is AIOverloadedException ||
+        error is AIRateLimitedException ||
         error is GuestInitialPlanAlreadyUsedException ||
         error is OnboardingInitialPlanException ||
         error is StateError;
@@ -585,6 +589,51 @@ class OnboardingController extends Notifier<OnboardingState> {
     state = state.copyWith(habits: items);
   }
 
+  void _logInitialPlanFailure(Object error, StackTrace stackTrace) {
+    if (!kDebugMode) return;
+    debugPrint(
+      '[ONBOARDING_AI_TRACE] stage=initial_plan_generation '
+      '${_initialPlanFailureDetails(error, stackTrace)}',
+    );
+  }
+
+  String _initialPlanFailureDetails(Object error, StackTrace stackTrace) {
+    final aiFailure = error is AiInferenceException ? error : null;
+    final providerFailure = error is AIOverloadedException ? error : null;
+    final rawStatus = providerFailure?.providerStatus ?? aiFailure?.status;
+    final rawCode =
+        providerFailure?.providerErrorCode ?? aiFailure?.backendErrorCode;
+    final status =
+        rawStatus != null &&
+            RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(rawStatus)
+        ? rawStatus
+        : 'none';
+    final businessCode =
+        rawCode != null && RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(rawCode)
+        ? rawCode
+        : 'none';
+    final statusCode =
+        providerFailure?.providerStatusCode ?? aiFailure?.statusCode;
+    final sqliteCode = error is DatabaseException
+        ? error.getResultCode()
+        : null;
+    final sourceFrames = stackTrace
+        .toString()
+        .split('\n')
+        .map((line) {
+          return RegExp(
+            r'package:nano_app/[^:]+:\d+:\d+',
+          ).firstMatch(line)?.group(0);
+        })
+        .whereType<String>()
+        .take(3)
+        .join(',');
+    return 'causeType=${error.runtimeType} '
+        'statusCode=${statusCode ?? 'none'} status=$status '
+        'businessCode=$businessCode sqliteCode=${sqliteCode ?? 'none'} '
+        'frames=${sourceFrames.isEmpty ? 'none' : sourceFrames}';
+  }
+
   Future<void> saveOnboarding() async {
     AppLogger.separator(_tag);
     AppLogger.action(_tag, 'Submit Button Clicked');
@@ -710,6 +759,7 @@ class OnboardingController extends Notifier<OnboardingState> {
           return;
         }
       } on AIOverloadedException catch (error, stackTrace) {
+        _logInitialPlanFailure(error, stackTrace);
         AppLogger.error(
           _tag,
           'Initial plan generation failed at stage=$failureStage',
@@ -718,6 +768,7 @@ class OnboardingController extends Notifier<OnboardingState> {
         );
         rethrow;
       } catch (error, stackTrace) {
+        _logInitialPlanFailure(error, stackTrace);
         AppLogger.error(
           _tag,
           'Initial plan generation failed at stage=$failureStage',
@@ -734,6 +785,8 @@ class OnboardingController extends Notifier<OnboardingState> {
           aiLoginRequired = true;
           generatedPlan = false;
           planGenerated = false;
+        } else if (error is AIRateLimitedException) {
+          rethrow;
         } else if (AIModelContextLimitException.matches(error)) {
           throw const OnboardingInitialPlanException(
             AIModelContextLimitException.userMessage,
@@ -815,6 +868,32 @@ class OnboardingController extends Notifier<OnboardingState> {
       AppLogger.separator(_tag);
     } catch (error, stackTrace) {
       final expectedError = _isExpectedSaveError(error);
+      final aiFailure = error is AiInferenceException ? error : null;
+      final providerFailure = error is AIOverloadedException ? error : null;
+      final safeStatus = providerFailure?.providerStatus ?? aiFailure?.status;
+      final safeBusinessCode =
+          providerFailure?.providerErrorCode ?? aiFailure?.backendErrorCode;
+      final statusCode =
+          providerFailure?.providerStatusCode ?? aiFailure?.statusCode;
+      final statusForLog =
+          safeStatus != null &&
+              RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(safeStatus)
+          ? safeStatus
+          : 'none';
+      final codeForLog =
+          safeBusinessCode != null &&
+              RegExp(r'^[A-Za-z0-9_.-]{1,64}$').hasMatch(safeBusinessCode)
+          ? safeBusinessCode
+          : 'none';
+      if (kDebugMode) {
+        debugPrint(
+          '[ONBOARDING_AI_TRACE] stage=$failureStage '
+          'errorType=${error.runtimeType} '
+          'statusCode=${statusCode ?? 'none'} status=$statusForLog '
+          'businessCode=$codeForLog '
+          'aiFailure=${aiFailure != null || providerFailure != null}',
+        );
+      }
       AppLogger.error(
         _tag,
         expectedError

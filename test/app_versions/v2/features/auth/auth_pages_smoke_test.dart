@@ -112,6 +112,27 @@ void main() {
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isTrue);
   });
+
+  testWidgets('register form rejects a one-character name before submit', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: V2RegisterPage())),
+    );
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'A');
+    await tester.enterText(fields.at(1), '0910000101');
+    await tester.enterText(fields.at(2), 'StrongPass123');
+    await tester.enterText(fields.at(3), 'StrongPass123');
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Tạo tài khoản'));
+    await tester.tap(find.text('Tạo tài khoản'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tên cần ít nhất 2 ký tự nhé.'), findsOneWidget);
+  });
 }
 
 InkWell _loginSubmitInkWell(WidgetTester tester) {

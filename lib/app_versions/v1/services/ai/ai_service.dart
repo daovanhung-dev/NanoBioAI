@@ -1828,7 +1828,8 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
           location: StackTrace.current,
         );
 
-        if (error is AiInferenceException && !transient) {
+        if (AIRateLimitedException.matches(error) ||
+            error is AiInferenceException && !transient) {
           break;
         }
 
@@ -1879,6 +1880,9 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
       final stackTrace = lastStackTrace;
       if (stackTrace == null) {
         throw StateError('AI failure did not include a stack trace.');
+      }
+      if (AIRateLimitedException.matches(failure)) {
+        Error.throwWithStackTrace(const AIRateLimitedException(), stackTrace);
       }
       if (failure is FormatException) {
         Error.throwWithStackTrace(
@@ -2003,11 +2007,29 @@ Ràng buộc cá nhân (JSON): ${jsonEncode(personalization)}
     if (message.startsWith('Exercise AI day must')) {
       return 'exercise_day_invalid';
     }
+    if (message.startsWith('Exercise code repeated too often:')) {
+      return 'exercise_code_repeated_too_often';
+    }
+    if (message.startsWith('Duplicate exercise_code for day')) {
+      return 'exercise_code_duplicate_for_day';
+    }
     if (message.startsWith('Unknown exercise_code:')) {
       return 'exercise_code_unknown';
     }
     if (message.startsWith('Duplicate exercise_code')) {
       return 'exercise_code_duplicate';
+    }
+    if (message.startsWith('Expected 2 exercises for day')) {
+      return 'exercise_day_item_count_invalid';
+    }
+    if (message.startsWith('Exercise AI task must be an object')) {
+      return 'exercise_item_shape_invalid';
+    }
+    if (message.startsWith('Exercise AI item must contain only')) {
+      return 'exercise_item_fields_invalid';
+    }
+    if (message == 'Model selected an exercise outside its prompt shortlist.') {
+      return 'exercise_code_outside_shortlist';
     }
     return 'schema_validation_failed';
   }
@@ -2288,7 +2310,9 @@ class AIRetryPolicy {
 
   const AIRetryPolicy._();
 
-  static bool isTransient(Object error) => AIOverloadedException.matches(error);
+  static bool isTransient(Object error) =>
+      !AIRateLimitedException.matches(error) &&
+      AIOverloadedException.matches(error);
 
   static Duration baseDelayForFailureNumber(int failureNumber) {
     return switch (failureNumber) {

@@ -4,8 +4,8 @@ Generated from canonical task keys. Read the file matching the selected workflow
 
 | Task key | Title | Workflow | Worklogs | File |
 | --- | --- | --- | ---: | --- |
-| coding | Coding | .codex/workflows/coding.md | 47 | [coding.md](coding.md) |
-| bugfix | Direct bugfix | .codex/workflows/bugfix.md | 40 | [bugfix.md](bugfix.md) |
+| coding | Coding | .codex/workflows/coding.md | 48 | [coding.md](coding.md) |
+| bugfix | Direct bugfix | .codex/workflows/bugfix.md | 44 | [bugfix.md](bugfix.md) |
 | fix-issues | Fix documented issue | .codex/workflows/fix-issues.md | 3 | [fix-issues.md](fix-issues.md) |
 | test | Test and verification | .codex/workflows/test.md | 30 | [test.md](test.md) |
 | find-issues | Review and find issues | .codex/workflows/find-issues.md | 11 | [find-issues.md](find-issues.md) |

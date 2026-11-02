@@ -629,7 +629,7 @@ def test_ai_endpoint_enforces_per_user_technical_rate_limit(runtime) -> None:
     headers = {"Authorization": f"Bearer {token}"}
     body = {"messages": [{"role": "user", "content": "Chào Nabi."}]}
 
-    responses = [client.post("/api/v1/ai/generate", headers=headers, json=body) for _ in range(6)]
+    responses = [client.post("/api/v1/ai/generate", headers=headers, json=body) for _ in range(30)]
     limited = client.post("/api/v1/ai/generate", headers=headers, json=body)
 
     assert all(response.status_code == 200 for response in responses)

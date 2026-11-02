@@ -137,6 +137,8 @@ def sign_up(
                 phone=normalized_phone,
                 password_hash=hash_password(password),
                 full_name=full_name.strip(),
+                is_active=True,
+                admin_status="active",
             )
             db.add(user)
             db.flush()

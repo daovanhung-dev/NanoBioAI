@@ -215,6 +215,39 @@ void main() {
     });
 
     test(
+      'rate-limited AI generation stays resumable and does not complete onboarding',
+      () async {
+        final repository = _FakeOnboardingRepository();
+        final container = ProviderContainer(
+          overrides: [
+            onboardingRepositoryProvider.overrideWithValue(repository),
+            dailyRoutinePreferencesRepositoryProvider.overrideWithValue(
+              _FakeRoutinePreferencesRepository(),
+            ),
+            onboardingCompletionCallbackProvider.overrideWith((ref) {
+              return ({GeneratedPlanProgressCallback? onProgress}) async =>
+                  throw const AIRateLimitedException();
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final controller = container.read(onboardingProvider.notifier);
+        _seedValidState(controller);
+
+        await expectLater(
+          controller.saveOnboarding(),
+          throwsA(isA<AIRateLimitedException>()),
+        );
+
+        expect(repository.saveCalls, 1);
+        expect(repository.markCompletedCalls, 0);
+        expect(await AppPrefs.isOnboardingCompleted(), isFalse);
+        expect(container.read(onboardingProvider).isSaving, isFalse);
+      },
+    );
+
+    test(
       'preserves safe candidate failure message without completing onboarding',
       () async {
         const message = 'Danh mục hiện chưa đủ dữ liệu đã xác minh.';

@@ -41,7 +41,7 @@ void main() {
   });
 
   test('maps pending onboarding statuses to onboarding required', () {
-    for (final status in ['not_started', 'in_progress']) {
+    for (final status in ['pending', 'not_started', 'in_progress']) {
       final state = resolver.resolve(
         session: session,
         profile: AuthProfile(id: 'user-1', onboardingStatus: status),

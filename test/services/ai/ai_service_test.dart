@@ -1703,6 +1703,38 @@ void main() {
       expect(backendInvocations, AIRetryPolicy.maxAttemptsPerRequest);
     });
 
+    test('rate limited requests stop without retrying other models', () async {
+      final modelCalls = <String>[];
+      var backendInvocations = 0;
+      final service = AIService(
+        modelNames: const ['first-model', 'fallback-model'],
+        catalogLoader: () async => catalog,
+        delay: (_) async {},
+        textGenerator: ({required modelName, required prompt}) async {
+          modelCalls.add(modelName);
+          throw const AiInferenceException(
+            status: 'rate_limited',
+            statusCode: 429,
+            backendErrorCode: 'RATE_LIMITED',
+            message: 'Rate limited.',
+          );
+        },
+      );
+
+      await expectLater(
+        service.generateMealDayCodeItems(
+          startDate: DateTime(2026, 6, 18),
+          day: 1,
+          catalog: catalog,
+          usedCodeCounts: const {},
+          onBackendInvocation: () async => backendInvocations++,
+        ),
+        throwsA(isA<AIRateLimitedException>()),
+      );
+      expect(modelCalls, ['first-model']);
+      expect(backendInvocations, 1);
+    });
+
     test('missing meal catalog fails before making an AI request', () async {
       var requestCount = 0;
       final service = AIService(

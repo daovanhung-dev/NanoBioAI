@@ -162,6 +162,7 @@ class AIRateLimitedException implements Exception {
     if (error is AiInferenceException) {
       final status = error.status?.trim().toLowerCase();
       return error.statusCode == 429 ||
+          error.backendErrorCode?.trim().toUpperCase() == 'RATE_LIMITED' ||
           status == 'resource_exhausted' ||
           status == 'rate_limit_exceeded';
     }

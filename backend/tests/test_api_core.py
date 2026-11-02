@@ -50,17 +50,29 @@ def test_health_trace_and_real_database_probe(runtime):
 
 
 def test_phone_signup_login_and_refresh_rotation(runtime):
-    client, _, _ = runtime
+    client, factory, _ = runtime
     created = _signup(client, phone="0084 912 345 678")
     assert created.status_code == 201
     assert created.json()["success"] is True
     assert created.json()["data"]["user"]["phone"] == "+84912345678"
     assert created.headers.get("X-Trace-Id") == created.json()["traceId"]
 
+    with factory() as db:
+        user = db.scalar(select(User).where(User.phone == "+84912345678"))
+        assert user is not None
+        assert user.is_active is True
+        assert user.admin_status == "active"
+        assert user.onboarding_status == "pending"
+
     login = client.post(
         "/api/v1/auth/login", json={"phone": "+84912345678", "password": "StrongPass123"}
     )
     assert login.status_code == 200
+    profile = client.get(
+        "/api/v1/profile/me",
+        headers={"Authorization": f"Bearer {login.json()['data']['access_token']}"},
+    )
+    assert profile.status_code == 200
     original_refresh = login.json()["data"]["refresh_token"]
     rotated = client.post("/api/v1/auth/refresh", json={"refresh_token": original_refresh})
     assert rotated.status_code == 200
@@ -476,6 +488,8 @@ def test_admin_create_accounts_generates_unique_one_time_passwords(runtime):
             )
         )
         assert created is not None
+        assert created.is_active is True
+        assert created.admin_status == "active"
         assert created.force_password_change is True
         assert created.membership_tier == "free"
         assert saved_request is not None
@@ -487,6 +501,48 @@ def test_admin_create_accounts_generates_unique_one_time_passwords(runtime):
     )
     assert login.status_code == 200
     assert login.json()["data"]["must_change_password"] is True
+
+
+def test_admin_bulk_provision_creates_active_account(runtime):
+    client, factory, _ = runtime
+    headers = _create_super_admin(client, factory)
+    account = {"phone": "0910000012", "full_name": "Bulk Member One", "email": None}
+    base_payload = {
+        "accounts": [account],
+        "plan_code": "plus",
+        "duration_months": 1,
+        "reason": "Approved bulk account request",
+        "idempotency_key": "bulk-create-member-0001",
+    }
+
+    preview = client.post(
+        "/api/v1/admin/accounts/bulk-provision/preview",
+        headers=headers,
+        json={**base_payload, "mode": "preview"},
+    )
+    assert preview.status_code == 200
+    fingerprint = preview.json()["data"]["fingerprint"]
+
+    created = client.post(
+        "/api/v1/admin/accounts/bulk-provision",
+        headers=headers,
+        json={
+            **base_payload,
+            "mode": "execute",
+            "password": "StrongPass123",
+            "preview_fingerprint": fingerprint,
+            "confirmation": "TAO TAI KHOAN 1",
+        },
+    )
+    assert created.status_code == 200
+    assert created.json()["data"]["created_count"] == 1
+
+    with factory() as db:
+        user = db.scalar(select(User).where(User.phone == "+84910000012"))
+        assert user is not None
+        assert user.is_active is True
+        assert user.admin_status == "active"
+        assert user.force_password_change is True
 
 
 def test_admin_user_data_is_audited_paged_and_redacted(runtime):

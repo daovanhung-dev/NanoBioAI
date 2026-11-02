@@ -68,6 +68,14 @@ void main() {
         ),
         isTrue,
       );
+      expect(
+        V2RouteGuards.protectedRouteRedirectTarget(
+          V2RoutePaths.payments,
+          isSignedIn: true,
+          authStatus: AuthRouteStatus.onboardingRequired,
+        ),
+        isNull,
+      );
     });
 
     test('allows an authenticated-ready user', () {
@@ -78,6 +86,14 @@ void main() {
           authStatus: AuthRouteStatus.authenticatedReady,
         ),
         isTrue,
+      );
+      expect(
+        V2RouteGuards.protectedRouteRedirectTarget(
+          V2RoutePaths.payments,
+          isSignedIn: true,
+          authStatus: AuthRouteStatus.authenticatedReady,
+        ),
+        isNull,
       );
     });
 
@@ -109,6 +125,49 @@ void main() {
         ),
         isFalse,
       );
+      expect(
+        V2RouteGuards.protectedRouteRedirectTarget(
+          V2RoutePaths.healthScore,
+          isSignedIn: true,
+          authStatus: AuthRouteStatus.onboardingRequired,
+        ),
+        V2RoutePaths.authGate,
+      );
+    });
+
+    test('keeps guests and unresolved sessions behind route protection', () {
+      expect(
+        V2RouteGuards.protectedRouteRedirectTarget(
+          V2RoutePaths.payments,
+          isSignedIn: false,
+          authStatus: AuthRouteStatus.unauthenticated,
+        ),
+        V2RoutePaths.login,
+      );
+      expect(
+        V2RouteGuards.protectedRouteRedirectTarget(
+          V2RoutePaths.payments,
+          isSignedIn: false,
+          authStatus: AuthRouteStatus.onboardingRequired,
+        ),
+        V2RoutePaths.authGate,
+      );
+      for (final status in [
+        AuthRouteStatus.initializing,
+        AuthRouteStatus.passwordChangeRequired,
+        AuthRouteStatus.profileBootstrapUnavailable,
+        AuthRouteStatus.failure,
+      ]) {
+        expect(
+          V2RouteGuards.protectedRouteRedirectTarget(
+            V2RoutePaths.payments,
+            isSignedIn: true,
+            authStatus: status,
+          ),
+          V2RoutePaths.authGate,
+          reason: status.name,
+        );
+      }
     });
   });
 }

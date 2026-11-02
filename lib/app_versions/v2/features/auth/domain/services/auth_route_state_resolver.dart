@@ -38,6 +38,8 @@ class AuthRouteStateResolver {
           email: session.email,
           subscriptionTier: subscriptionTier,
         );
+      // The backend uses `pending` for newly created accounts.
+      case 'pending':
       case 'not_started':
       case 'in_progress':
         return AuthRouteState.onboardingRequired(

@@ -900,13 +900,6 @@ class GeneratedPlanService {
       if (filteredMealsOverride == null) {
         _validateMealCatalogClassifications(fullCatalog);
       }
-      await requestStore.markGenerating(
-        requestId: resolvedRequestId,
-        userId: userId,
-        actorMode: actorMode,
-        startDate: resolvedStartDate,
-        days: days,
-      );
       AppLogger.info(_tag, 'Resolved generated-plan range for $days days');
       AppLogger.info(
         _tag,
@@ -1048,6 +1041,10 @@ class GeneratedPlanService {
       final catalogFingerprint = _catalogFingerprint(scheduleCatalog);
       final staging = await requestStore.prepareStaging(
         requestId: resolvedRequestId,
+        userId: userId,
+        actorMode: actorMode,
+        startDate: resolvedStartDate,
+        days: days,
         inputFingerprint: inputFingerprint,
         catalogFingerprint: catalogFingerprint,
         promptVersion: promptVersion,

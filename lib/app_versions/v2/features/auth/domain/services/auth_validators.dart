@@ -27,6 +27,9 @@ class AuthValidators {
 
   static String? fullName(String value) {
     final trimmed = value.trim();
+    if (trimmed.length < 2) {
+      return 'Tên cần ít nhất 2 ký tự nhé.';
+    }
     if (trimmed.length > 80) {
       return 'Tên hơi dài rồi, bạn rút gọn giúp Nabinhé.';
     }

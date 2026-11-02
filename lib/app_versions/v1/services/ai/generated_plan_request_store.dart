@@ -117,6 +117,10 @@ abstract class PersonalScheduleAiRequestStore {
 
   Future<GeneratedPlanStagingSnapshot> prepareStaging({
     required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
     required String inputFingerprint,
     required String catalogFingerprint,
     required String promptVersion,
@@ -275,12 +279,28 @@ class LocalPersonalScheduleAiRequestStore
   @override
   Future<GeneratedPlanStagingSnapshot> prepareStaging({
     required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
     required String inputFingerprint,
     required String catalogFingerprint,
     required String promptVersion,
   }) async {
     final db = await _db();
     return db.transaction((txn) async {
+      // The staging table references this request. Establish the parent row in
+      // the same transaction so staging cannot fail if an earlier request
+      // state write was interrupted or removed before this transaction starts.
+      await _upsertRequest(
+        txn,
+        requestId: requestId,
+        userId: userId,
+        actorMode: actorMode,
+        status: GeneratedPlanRequestStatuses.generating,
+        startDate: startDate,
+        days: days,
+      );
       final table = PersonalScheduleAiStagingTable.tableName;
       final metaRows = await txn.query(
         table,

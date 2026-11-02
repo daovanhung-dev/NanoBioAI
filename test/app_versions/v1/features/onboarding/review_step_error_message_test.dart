@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/review_step.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
+import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 
 void main() {
   group('onboarding submission error message', () {
@@ -24,6 +25,13 @@ void main() {
           const OnboardingInitialPlanException(message),
         ),
         message,
+      );
+    });
+
+    test('reports rate limiting without suggesting an immediate retry', () {
+      expect(
+        onboardingSubmissionErrorMessage(const AIRateLimitedException()),
+        AIRateLimitedException.userMessage,
       );
     });
   });

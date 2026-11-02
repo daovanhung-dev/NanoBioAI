@@ -1398,3 +1398,26 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - GitHub Actions sau push: SKIPPED theo pham vi; khong push va khong deploy.
 - docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: ## Loi/Rui ro
 - docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md :: - Can kiem tra tiep: sau khi nguoi dung push commit, xac nhan toan bo job deploy va bundle tren Pages.
+- docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md :: - `.codex/tools/validate_codex_integrity.ps1`: FAIL do thieu `docs/audit/source_truth_manifest.json` va cac stale path co san trong history/task-skill; khong sua ngoai pham vi.
+- docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md :: - Regression tests: SKIPPED.
+- docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md :: ## Loi/Rui ro
+- docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md :: - Chua fix: khong co.
+- docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md :: - Can kiem tra tiep: nguoi dung hoan tat onboarding; app se vao man chinh theo route da cau hinh.
+- docs/worklog/2026-11-01/005-worklog-personalized-ai-schedule-phone.md :: ## Lỗi/rủi ro còn lại
+- docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md :: - Kiểm tra UI điện thoại: SKIPPED cho CTA Plus; app hiện ở onboarding bước 8/9 và hoàn tất onboarding sẽ ghi dữ liệu ngoài phạm vi route check. Không thực hiện giao dịch.
+- docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md :: - Chưa fix: không phát sinh lỗi liên quan khác trong phạm vi.
+- docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md :: - Cần kiểm tra tiếp: trên thiết bị, chọn CTA “Nâng cấp Plus” và xác nhận trang gói đăng ký mở mà không mua. Chưa thể đi tới CTA từ màn hình hiện tại mà không hoàn tất onboarding.
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: - `npm run typecheck`: SKIPPED - `npm` không có trong môi trường.
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: - Deno TypeScript project check: FAIL - `vitest` không được phân giải trong `admin-web/src/lib/backend-client.test.ts`.
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: - Test suite và triển khai production: SKIPPED - không nằm trong yêu cầu hiện tại.
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: - Chưa fix: không phát sinh lỗi code đã xác nhận trong phạm vi.
+- docs/worklog/2026-11-01/007-worklog-admin-account-activation.md :: - Cần kiểm tra tiếp: chạy test/build trong môi trường có đầy đủ dependency và triển khai Admin Web khi có yêu cầu rollout.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - `uv run pytest -q`: PASS - 71 passed, 2 skipped.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - `pwsh -ExecutionPolicy Bypass -File .codex/tools/validate_codex_integrity.ps1`: FAIL - repo thiếu `docs/audit/source_truth_manifest.json` và có các stale path trong history cũ; không liên quan tới file mới của task.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - `ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=6 nanobio@100.86.238.91 true`: FAIL - máy chủ từ chối xác thực khóa.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - Kiểm thử đăng ký mới trên điện thoại sau triển khai: SKIPPED - chưa triển khai được backend.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - Cần kiểm tra tiếp: triển khai bản backend này qua kênh SSH được cấp quyền, rồi xác nhận một signup mới có thể gọi hồ sơ bảo vệ và xuất hiện `active` trong Admin Web.
+- docs/worklog/2026-11-02/001-worklog-new-accounts-active.md :: - Bằng chứng kiểm chứng: 71 backend tests passed, 2 skipped; ruff, format check và mypy passed; health 200 không được xem là bằng chứng deploy.

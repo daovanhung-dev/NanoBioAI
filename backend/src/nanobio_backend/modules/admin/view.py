@@ -70,6 +70,8 @@ def create_account(db: Session, actor: User, payload: dict[str, Any]) -> dict[st
             full_name=payload["full_name"].strip(),
             email=email,
             password_hash=hash_password(password),
+            is_active=True,
+            admin_status="active",
             force_password_change=True,
         )
         db.add(user)
@@ -695,6 +697,8 @@ def bulk_provision_execute(db: Session, actor: User, payload: dict[str, Any]) ->
                     full_name=candidate["full_name"],
                     email=candidate["email"],
                     password_hash=hash_password(payload["password"]),
+                    is_active=True,
+                    admin_status="active",
                     force_password_change=True,
                 )
                 db.add(user)

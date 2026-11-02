@@ -21,6 +21,9 @@ import 'onboarding_step_shell.dart';
 import 'onboarding_stitch_components.dart';
 
 String onboardingSubmissionErrorMessage(Object error) {
+  if (error is AIRateLimitedException) {
+    return AIRateLimitedException.userMessage;
+  }
   if (error is AIOverloadedException) return AIOverloadedException.userMessage;
   if (error is OnboardingInitialPlanException) return error.message;
   if (error is ScheduleMealClassificationException) return error.userMessage;
@@ -348,16 +351,22 @@ class ReviewStep extends ConsumerWidget {
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (!context.mounted) return;
       Navigator.of(context).pop();
-      _showMessage(context, onboardingSubmissionErrorMessage(error));
+      final message = onboardingSubmissionErrorMessage(error);
+      _showMessage(context, message);
     }
   }
 
-  static void _showMessage(BuildContext context, String message) {
+  static void _showMessage(
+    BuildContext context,
+    String message, {
+    Duration? duration,
+  }) {
     final colors = context.semanticColors;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
+          duration: duration ?? const Duration(seconds: 4),
           content: Row(
             children: [
               const Icon(Icons.eco_rounded, color: AppColors.textInverse),

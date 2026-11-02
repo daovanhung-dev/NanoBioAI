@@ -249,7 +249,14 @@ export class BackendClient {
     });
   }
 
-  updateStatus(userId: string, input: Record<string, unknown>): Promise<unknown> {
+  updateStatus(
+    userId: string,
+    input: {
+      status: "active" | "suspended" | "closed";
+      reason: string;
+      idempotency_key: string;
+    },
+  ): Promise<unknown> {
     return this.requestData(`/admin/users/${encodeURIComponent(userId)}/status`, {
       method: "PATCH",
       body: input,

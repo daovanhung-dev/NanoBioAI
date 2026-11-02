@@ -71,6 +71,15 @@ void main() {
       expect(text, 'Mình nghe bạn.');
       expect(requests.single.url.path, '/api/v1/ai/generate');
       expect(
+        requests.single.headers['x-trace-id'],
+        matches(
+          RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'
+            r'[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+          ),
+        ),
+      );
+      expect(
         requests.single.headers['authorization'],
         'Bearer test-access-token',
       );
@@ -123,6 +132,110 @@ void main() {
 
     expect(deltas, ['Mình nghe']);
     expect(requests.single.url.path, '/api/v1/ai/generate/stream');
+    expect(
+      requests.single.headers['x-trace-id'],
+      matches(
+        RegExp(
+          r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'
+          r'[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+        ),
+      ),
+    );
+  });
+
+  test(
+    'preserves a backend rate-limit code and status for diagnostics',
+    () async {
+      final rateLimitedApi = BackendApiClient(
+        baseUrl: 'https://api.example.test',
+        sessionStore: _MemorySessionStore(),
+        httpClient: MockClient((request) async {
+          requests.add(request);
+          return http.Response(
+            jsonEncode({
+              'success': false,
+              'businessCode': 'RATE_LIMITED',
+              'message': 'Bạn gửi yêu cầu hơi nhanh.',
+              'data': null,
+              'traceId': 'server-trace-1',
+            }),
+            429,
+            headers: {
+              'content-type': 'application/json; charset=utf-8',
+              'x-trace-id': 'server-trace-1',
+            },
+          );
+        }),
+      );
+      addTearDown(rateLimitedApi.close);
+      await rateLimitedApi.establishSession({
+        'access_token': 'test-access-token',
+        'refresh_token': 'test-refresh-token',
+        'expires_in': 900,
+        'user': {'id': 'user-1'},
+      });
+
+      final client = BackendAiTextClient(clientOverride: rateLimitedApi);
+      await expectLater(
+        client.generateText(
+          model: BackendAiTextClient.modelId,
+          messages: const [AiMessage.user('Tạo lịch.')],
+          generationConfig: const AiGenerationConfig(),
+        ),
+        throwsA(
+          isA<BackendAiInferenceException>()
+              .having((error) => error.statusCode, 'statusCode', 429)
+              .having(
+                (error) => error.backendErrorCode,
+                'businessCode',
+                'RATE_LIMITED',
+              )
+              .having((error) => error.status, 'status', 'rate_limit_exceeded'),
+        ),
+      );
+      expect(requests.single.headers['x-trace-id'], isNotEmpty);
+    },
+  );
+
+  test('maps a client transport failure to a safe network error', () async {
+    final disconnectedApi = BackendApiClient(
+      baseUrl: 'https://api.example.test',
+      sessionStore: _MemorySessionStore(),
+      httpClient: MockClient(
+        (_) async => throw http.ClientException('private transport detail'),
+      ),
+    );
+    addTearDown(disconnectedApi.close);
+    await disconnectedApi.establishSession({
+      'access_token': 'test-access-token',
+      'refresh_token': 'test-refresh-token',
+      'expires_in': 900,
+      'user': {'id': 'user-1'},
+    });
+
+    final client = BackendAiTextClient(clientOverride: disconnectedApi);
+    await expectLater(
+      client.generateText(
+        model: BackendAiTextClient.modelId,
+        messages: const [AiMessage.user('Tạo lịch.')],
+        generationConfig: const AiGenerationConfig(),
+      ),
+      throwsA(
+        isA<BackendAiInferenceException>()
+            .having((error) => error.statusCode, 'statusCode', 0)
+            .having(
+              (error) => error.backendErrorCode,
+              'businessCode',
+              'NETWORK_UNAVAILABLE',
+            )
+            .having((error) => error.status, 'status', 'network_error')
+            .having(
+              (error) => error.message,
+              'safeMessage',
+              contains('Chưa kết nối được'),
+            ),
+      ),
+    );
   });
 
   test(

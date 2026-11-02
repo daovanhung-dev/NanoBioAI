@@ -26,8 +26,19 @@ class ExerciseTasksPrompt {
             .where((entry) => entry.value > 0)
             .toList(growable: false)
           ..sort((left, right) => left.key.compareTo(right.key));
+    final candidateCodeSet = candidateCodes
+        ?.map((code) => code.trim().toLowerCase())
+        .toSet();
+    final relevantUsedCodes = usedCodes
+        .where(
+          (entry) =>
+              candidateCodeSet == null || candidateCodeSet.contains(entry.key),
+        )
+        .toList(growable: false);
     final selectionHistory = compactSelectionContext
-        ? ''
+        ? (relevantUsedCodes.isEmpty
+              ? ''
+              : 'Previous uses among selectable codes: ${relevantUsedCodes.map((entry) => '${entry.key}=${entry.value}').join(', ')}. Prefer codes with fewer than 2 previous uses when available.\n')
         : '''
 Mã đã dùng: ${usedCodes.map((entry) => '${entry.key}: ${entry.value} lần').join(', ')}
 ''';

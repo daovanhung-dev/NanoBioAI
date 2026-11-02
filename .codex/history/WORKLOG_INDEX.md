@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 281
+- Total worklogs: 286
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -290,3 +290,8 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-01 | coding | coding | Admin Web va backend modules/admin | [Worklog - Admin Web quan ly tai khoan va goi Plus](../../docs/worklog/2026-11-01/001-worklog-admin-web-user-plus-management.md) |
 | 2026-11-01 | bugfix | bugfix | admin-web va NanoBio backend Ubuntu | [Worklog - Khac phuc dang nhap Admin Web local](../../docs/worklog/2026-11-01/002-worklog-admin-web-local-login-connectivity.md) |
 | 2026-11-01 | bugfix | bugfix | admin-web deployment workflow | [Worklog - Sua pipeline deploy Admin Web](../../docs/worklog/2026-11-01/003-worklog-admin-web-deploy-pipeline.md) |
+| 2026-11-01 | bugfix | bugfix | V2 auth route state | [Worklog - Fix auth onboarding status pending](../../docs/worklog/2026-11-01/004-worklog-auth-onboarding-pending-status.md) |
+| 2026-11-01 | bugfix | bugfix | tạo lộ trình AI cá nhân trên Android và backend | [Worklog - Fix tạo lộ trình AI cá nhân trên điện thoại](../../docs/worklog/2026-11-01/005-worklog-personalized-ai-schedule-phone.md) |
+| 2026-11-01 | bugfix | bugfix | V2 auth route guard / membership payment | [Worklog - Sửa điều hướng nâng cấp Plus](../../docs/worklog/2026-11-01/006-worklog-plus-upgrade-onboarding-route.md) |
+| 2026-11-01 | coding | coding | M15 Admin Dashboard / M16 Admin Operations, Admin Web | [Worklog - Thêm thao tác kích hoạt tài khoản trong Admin Web](../../docs/worklog/2026-11-01/007-worklog-admin-account-activation.md) |
+| 2026-11-02 | bugfix | bugfix | Backend auth và admin account provisioning | [Worklog - Đảm bảo tài khoản mới luôn hoạt động](../../docs/worklog/2026-11-02/001-worklog-new-accounts-active.md) |

@@ -32,6 +32,17 @@ void main() {
       expect(AuthValidators.confirmPassword('12345678', '12345678'), isNull);
     });
 
+    test('requires a trimmed full name between 2 and 80 characters', () {
+      expect(AuthValidators.fullName(''), isNotNull);
+      expect(AuthValidators.fullName('   '), isNotNull);
+      expect(AuthValidators.fullName('A'), isNotNull);
+      expect(AuthValidators.fullName(' A '), isNotNull);
+      expect(AuthValidators.fullName('AB'), isNull);
+      expect(AuthValidators.fullName('  AB  '), isNull);
+      expect(AuthValidators.fullName('A' * 80), isNull);
+      expect(AuthValidators.fullName('A' * 81), isNotNull);
+    });
+
     test('requires accepted terms', () {
       expect(AuthValidators.acceptedTerms(false), isNotNull);
       expect(AuthValidators.acceptedTerms(true), isNull);

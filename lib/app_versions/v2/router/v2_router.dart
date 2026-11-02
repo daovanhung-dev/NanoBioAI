@@ -143,14 +143,15 @@ final v2RouterProvider = Provider<GoRouter>((ref) {
         return redirectTo(V2RoutePaths.authGate, 'auth_state_unresolved');
       }
 
-      return switch (routeState.status) {
-        AuthRouteStatus.authenticatedReady => null,
-        AuthRouteStatus.unauthenticated => redirectTo(
-          V2RoutePaths.login,
-          'authentication_required',
-        ),
-        _ => redirectTo(V2RoutePaths.authGate, 'auth_transition_in_progress'),
-      };
+      final target = V2RouteGuards.protectedRouteRedirectTarget(
+        path,
+        isSignedIn: isSignedIn,
+        authStatus: routeState.status,
+      );
+      final reason = routeState.status == AuthRouteStatus.unauthenticated
+          ? 'authentication_required'
+          : 'auth_transition_in_progress';
+      return redirectTo(target, reason);
     },
     routes: [...v1Routes, ...v2Routes, ...v3Routes],
   );
@@ -187,6 +188,27 @@ abstract class V2RouteGuards {
     if (path.trim() != V2RoutePaths.payments || !isSignedIn) return false;
     return authStatus == AuthRouteStatus.onboardingRequired ||
         authStatus == AuthRouteStatus.authenticatedReady;
+  }
+
+  static String? protectedRouteRedirectTarget(
+    String path, {
+    required bool isSignedIn,
+    required AuthRouteStatus authStatus,
+  }) {
+    if (authStatus == AuthRouteStatus.unauthenticated) {
+      return V2RoutePaths.login;
+    }
+    if (canAccessMembershipPayment(
+      path,
+      isSignedIn: isSignedIn,
+      authStatus: authStatus,
+    )) {
+      return null;
+    }
+    return switch (authStatus) {
+      AuthRouteStatus.authenticatedReady => null,
+      _ => V2RoutePaths.authGate,
+    };
   }
 }
 

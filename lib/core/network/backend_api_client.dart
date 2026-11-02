@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 const defaultBackendApiBaseUrl = 'https://42.118.174.147';
+final Random _backendRequestTraceRandom = Random.secure();
 
 class BackendApiException implements Exception {
   final int statusCode;
@@ -496,6 +500,8 @@ class BackendApiClient {
           queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
         );
     final headers = <String, String>{'Accept': 'application/json'};
+    final traceId = _newBackendRequestTraceId();
+    headers['X-Trace-Id'] = traceId;
     if (body != null) {
       headers['Content-Type'] = 'application/json; charset=utf-8';
     }
@@ -503,8 +509,9 @@ class BackendApiClient {
       headers['Authorization'] = 'Bearer ${_session!.accessToken}';
     }
     final encodedBody = body == null ? null : jsonEncode(body);
+    final stopwatch = Stopwatch()..start();
     try {
-      return switch (method.toUpperCase()) {
+      final response = switch (method.toUpperCase()) {
         'GET' => await _httpClient.get(uri, headers: headers),
         'POST' => await _httpClient.post(
           uri,
@@ -532,9 +539,30 @@ class BackendApiClient {
           'Unsupported HTTP method.',
         ),
       };
+      stopwatch.stop();
+      _logAiHttpResponse(
+        method: method,
+        path: path,
+        traceId: traceId,
+        durationMs: stopwatch.elapsedMilliseconds,
+        statusCode: response.statusCode,
+        businessCode: _businessCodeFromBody(response.body),
+        serverTraceId:
+            _safeTraceValue(response.headers['x-trace-id']) ??
+            _traceIdFromBody(response.body),
+      );
+      return response;
     } on BackendApiException {
       rethrow;
-    } catch (_) {
+    } catch (error) {
+      stopwatch.stop();
+      _logAiHttpFailure(
+        method: method,
+        path: path,
+        traceId: traceId,
+        durationMs: stopwatch.elapsedMilliseconds,
+        errorType: _safeErrorType(error),
+      );
       throw const BackendApiException(
         statusCode: 0,
         businessCode: 'NETWORK_UNAVAILABLE',
@@ -607,8 +635,10 @@ class BackendApiClient {
     required bool authenticated,
   }) async {
     final uri = _baseUri.resolve(path);
+    final traceId = _newBackendRequestTraceId();
     final request = http.Request(method.toUpperCase(), uri)
       ..headers['Accept'] = 'application/x-ndjson'
+      ..headers['X-Trace-Id'] = traceId
       ..headers['Cache-Control'] = 'no-cache';
     if (body != null) {
       request.headers['Content-Type'] = 'application/json; charset=utf-8';
@@ -617,9 +647,29 @@ class BackendApiClient {
     if (authenticated && _session != null) {
       request.headers['Authorization'] = 'Bearer ${_session!.accessToken}';
     }
+    final stopwatch = Stopwatch()..start();
     try {
-      return await _httpClient.send(request);
-    } catch (_) {
+      final response = await _httpClient.send(request);
+      stopwatch.stop();
+      _logAiHttpResponse(
+        method: method,
+        path: path,
+        traceId: traceId,
+        durationMs: stopwatch.elapsedMilliseconds,
+        statusCode: response.statusCode,
+        businessCode: null,
+        serverTraceId: _safeTraceValue(response.headers['x-trace-id']),
+      );
+      return response;
+    } catch (error) {
+      stopwatch.stop();
+      _logAiHttpFailure(
+        method: method,
+        path: path,
+        traceId: traceId,
+        durationMs: stopwatch.elapsedMilliseconds,
+        errorType: _safeErrorType(error),
+      );
       throw const BackendApiException(
         statusCode: 0,
         businessCode: 'NETWORK_UNAVAILABLE',
@@ -689,4 +739,107 @@ Uri _validateBaseUrl(String value) {
     throw ArgumentError.value(value, 'baseUrl', 'HTTPS is required.');
   }
   return uri.replace(path: '', query: '', fragment: '');
+}
+
+String _newBackendRequestTraceId() {
+  final bytes = List<int>.generate(
+    16,
+    (_) => _backendRequestTraceRandom.nextInt(256),
+    growable: false,
+  );
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  final hex = bytes
+      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+      .join();
+  return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-'
+      '${hex.substring(12, 16)}-${hex.substring(16, 20)}-'
+      '${hex.substring(20, 32)}';
+}
+
+bool _isAiTracePath(String path) =>
+    path == '/api/v1/ai/generate' || path == '/api/v1/ai/generate/stream';
+
+String? _businessCodeFromBody(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map) return null;
+    final value = decoded['businessCode']?.toString();
+    return value != null && RegExp(r'^[A-Z0-9_.-]{1,64}$').hasMatch(value)
+        ? value
+        : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+String? _traceIdFromBody(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is! Map) return null;
+    return _safeTraceValue(decoded['traceId']?.toString());
+  } catch (_) {
+    return null;
+  }
+}
+
+String? _safeTraceValue(String? value) {
+  final candidate = value?.trim();
+  if (candidate == null ||
+      !RegExp(r'^[A-Za-z0-9._-]{1,80}$').hasMatch(candidate)) {
+    return null;
+  }
+  return candidate;
+}
+
+String _safeErrorType(Object error) {
+  final type = error.runtimeType.toString();
+  return RegExp(r'^[A-Za-z0-9_]{1,64}$').hasMatch(type) ? type : 'Unknown';
+}
+
+void _logAiHttpResponse({
+  required String method,
+  required String path,
+  required String traceId,
+  required int durationMs,
+  required int statusCode,
+  required String? businessCode,
+  required String? serverTraceId,
+}) {
+  if (!_isAiTracePath(path)) return;
+  final level = statusCode >= 500
+      ? 1000
+      : statusCode >= 400
+      ? 900
+      : 800;
+  final message =
+      'backend_request method=${method.toUpperCase()} path=$path '
+      'traceId=$traceId durationMs=$durationMs statusCode=$statusCode '
+      'businessCode=${businessCode ?? 'unknown'} '
+      'serverTraceId=${serverTraceId ?? 'unknown'}';
+  try {
+    if (kDebugMode) debugPrint('[BACKEND_AI_TRACE] $message');
+    developer.log(message, name: 'NanoBio.BackendApiClient', level: level);
+  } catch (_) {
+    // Diagnostics must never change the result of a backend request.
+  }
+}
+
+void _logAiHttpFailure({
+  required String method,
+  required String path,
+  required String traceId,
+  required int durationMs,
+  required String errorType,
+}) {
+  if (!_isAiTracePath(path)) return;
+  final message =
+      'backend_request_failed method=${method.toUpperCase()} path=$path '
+      'traceId=$traceId durationMs=$durationMs errorType=$errorType';
+  try {
+    if (kDebugMode) debugPrint('[BACKEND_AI_TRACE] $message');
+    developer.log(message, name: 'NanoBio.BackendApiClient', level: 900);
+  } catch (_) {
+    // Diagnostics must never change the result of a backend request.
+  }
 }

@@ -1634,10 +1634,21 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
   @override
   Future<GeneratedPlanStagingSnapshot> prepareStaging({
     required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
     required String inputFingerprint,
     required String catalogFingerprint,
     required String promptVersion,
   }) async {
+    _recordGenerating(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      startDate: startDate,
+      days: days,
+    );
     promptVersions.add(promptVersion);
     final next = (inputFingerprint, catalogFingerprint, promptVersion);
     if (_stageFingerprints[requestId] != next) {
@@ -1768,6 +1779,22 @@ class _RecordingRequestStore implements PersonalScheduleAiRequestStore {
     required DateTime startDate,
     required int days,
   }) async {
+    _recordGenerating(
+      requestId: requestId,
+      userId: userId,
+      actorMode: actorMode,
+      startDate: startDate,
+      days: days,
+    );
+  }
+
+  void _recordGenerating({
+    required String requestId,
+    required String userId,
+    required String actorMode,
+    required DateTime startDate,
+    required int days,
+  }) {
     generatingCalls++;
     final previous = records[requestId];
     records[requestId] = PersonalScheduleAiRequestRecord(

@@ -26,6 +26,7 @@ const SECTIONS: Array<{ id: UserDataSection; label: string; icon: string }> = [
 
 type Notice = { tone: "success" | "error" | "warning" | "info"; text: string };
 type ActionIntent =
+  | { kind: "activate" }
   | { kind: "close" }
   | { kind: "reset" }
   | { kind: "grant" }
@@ -261,7 +262,14 @@ export default function App() {
     setIntent(null);
     setNotice(null);
     try {
-      if (action.kind === "close") {
+      if (action.kind === "activate") {
+        await client.updateStatus(selectedUser.id, {
+          status: "active",
+          reason,
+          idempotency_key: keyForRequest(),
+        });
+        setNotice({ tone: "success", text: "Tài khoản đã được kích hoạt và có thể đăng nhập." });
+      } else if (action.kind === "close") {
         await client.updateStatus(selectedUser.id, {
           status: "closed",
           reason,
@@ -747,6 +755,7 @@ function UserDrawer({ user, detail, section, data, loading, error, page, maxPage
   const plusIsActive = Boolean(user.subscription_id && user.plan_code !== "free");
   const providerManaged = user.membership_source !== null && user.membership_source !== "manual";
   const closed = user.status === "closed" || !user.is_active;
+  const canActivate = !user.is_active && user.status !== "closed";
   const joinedRows = Object.values(data?.tables ?? {}).reduce((sum, table) => sum + table.total, 0);
   return (
     <div className="drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
@@ -762,6 +771,7 @@ function UserDrawer({ user, detail, section, data, loading, error, page, maxPage
         </div>
 
         <div className="drawer-actions" aria-label="Thao tác tài khoản">
+          {canActivate && <button type="button" className="button button-primary button-small" disabled={!ready} onClick={() => onIntent({ kind: "activate" })}>✓ Kích hoạt tài khoản</button>}
           <button type="button" className="button button-secondary button-small" disabled={!ready || closed} onClick={() => onIntent({ kind: "reset" })}>↻ Đặt lại mật khẩu</button>
           {!plusIsActive ? (
             <button type="button" className="button button-accent button-small" disabled={!ready || closed} onClick={() => onIntent({ kind: "grant" })}>◇ Cấp Plus</button>
@@ -887,6 +897,7 @@ function ActionModal({ intent, userName, ready, onClose, onConfirm }: {
   const [days, setDays] = useState(30);
   const [busy, setBusy] = useState(false);
   const actionTitles: Record<ActionIntent["kind"], string> = {
+    activate: "Kích hoạt tài khoản",
     close: "Đóng tài khoản",
     reset: "Đặt lại mật khẩu",
     grant: "Cấp gói Plus",
@@ -894,6 +905,7 @@ function ActionModal({ intent, userName, ready, onClose, onConfirm }: {
     revoke: "Kết thúc gói Plus",
   };
   const descriptions: Record<ActionIntent["kind"], string> = {
+    activate: "Tài khoản sẽ được chuyển sang trạng thái hoạt động để người dùng có thể đăng nhập. Lý do kích hoạt sẽ được lưu trong audit.",
     close: "Tài khoản sẽ chuyển sang trạng thái đóng và mọi phiên đăng nhập sẽ bị thu hồi. Dữ liệu và audit được giữ lại.",
     reset: "Máy chủ sẽ tạo mật khẩu tạm riêng, thu hồi phiên hiện tại và buộc người dùng đổi mật khẩu khi đăng nhập.",
     grant: "Gói Plus được cấp thủ công và mặc định bắt đầu ngay. Tài khoản không được đổi sang gói provider.",
