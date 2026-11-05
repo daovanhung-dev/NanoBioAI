@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 290
+- Total worklogs: 292
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -299,3 +299,5 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-02 | coding | coding | Flutter backend client, Admin Web, FastAPI CORS/public origin, build scripts | [Worklog - Chuyển Production Backend sang domain nanobio.s2w.click](../../docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md) |
 | 2026-11-02 | bugfix / production | docs-context | Backend auth và Admin user search | [Worklog - Sửa trạng thái active của tài khoản trên production](../../docs/worklog/2026-11-02/004-worklog-active-account-production-fix.md) |
 | 2026-11-02 | bugfix | bugfix | Flutter membership display; Admin user search | [Worklog - Đồng bộ gói Plus và hiển thị số điện thoại Admin](../../docs/worklog/2026-11-02/005-worklog-membership-plus-admin-phone.md) |
+| 2026-11-04 | bugfix / chẩn đoán kết nối. | docs-context | Admin Web và đường vào FastAPI qua HTTPS. | [Worklog - Chẩn đoán API Admin Web không truy cập được](../../docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md) |
+| 2026-11-05 | coding | coding | Android/iOS app display name | [Worklog - Đổi tên hiển thị ứng dụng Nabi](../../docs/worklog/2026-11-05/001-worklog-app-display-name.md) |

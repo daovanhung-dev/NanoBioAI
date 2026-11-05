@@ -1435,3 +1435,16 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-02/003-worklog-production-api-domain-update.md :: - Muc do hoan thanh task: source và local validation hoàn tất; Production acceptance còn BLOCKED do certificate.
 - docs/worklog/2026-11-02/004-worklog-active-account-production-fix.md :: - `uv run pytest` trên server: BLOCKED - không ghi được editable `.pth` trong `.venv`; `.venv/bin/pytest` không tồn tại.
 - docs/worklog/2026-11-02/005-worklog-membership-plus-admin-phone.md :: - Cài APK lên thiết bị: BLOCKED - `INSTALL_FAILED_UPDATE_INCOMPATIBLE` vì signing certificate không khớp bản app hiện có. Không gỡ app cũ hoặc xóa dữ liệu.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - Route IPv4 của server có default gateway qua interface LAN; server có thể truy cập Internet chiều ra. Gọi hostname public từ chính server vẫn timeout.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - DNS phân giải đến địa chỉ egress công khai của server. Từ máy đang chạy Chrome, kết nối HTTPS tới địa chỉ công khai timeout. Server nghe TCP 443 trên mọi interface, UFW inactive và policy INPUT của nftables là accept.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - HTTPS health qua hostname/DNS công khai từ máy làm việc: FAIL, TCP connect timeout.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - HTTPS health qua hostname public từ server: FAIL, TCP connect timeout; chiều ra Internet và default route vẫn hoạt động.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - Test source: SKIPPED; không có runtime source thay đổi.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - Cần kiểm tra tiếp: xác nhận và cấu hình ingress tại router/ISP; giữ DHCP reservation cho địa chỉ LAN của server nếu dùng NAT.
+- docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md :: - Bằng chứng kiểm chứng: HTTP 200 qua Tailscale, Access-Control-Allow-Origin hợp lệ, service active, cổng 443 listen và public connect timeout.
+- docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - `pwsh -NoProfile -File .codex/tools/validate_codex_integrity.ps1`: FAIL - thiếu `docs/audit/source_truth_manifest.json` và báo stale path trong history/task-skill hiện có; không liên quan hai metadata tên app.
+- docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - iOS native build/install: SKIPPED - host Linux không có `xcodebuild`.
+- docs/worklog/2026-11-05/001-worklog-app-display-name.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - Chưa fix: không có.
+- docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - Cần kiểm tra tiếp: build/cài iOS trên macOS nếu cần nghiệm thu binary iOS.
