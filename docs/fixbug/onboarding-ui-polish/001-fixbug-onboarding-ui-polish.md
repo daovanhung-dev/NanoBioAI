@@ -34,3 +34,11 @@ Commit de xuat: fix(onboarding): lam sach va rut gon onboarding
 - Tái sử dụng ảnh Nabi guide theo asset bundle đang bật, căn giữa phía trên preview; không thêm chữ hoặc nền trang trí.
 - Ảnh có kích thước 112 dp ở màn thường, giảm xuống 88 dp khi viewport hẹp/thấp.
 - Widget test xác nhận ảnh và preview cùng hiển thị, lựa chọn chữ vẫn hoạt động, và không phát sinh lỗi layout ở 390×844 / 320×640.
+
+## Bổ sung Step 7 hỏi đủ dữ liệu lịch sinh hoạt — 2026-11-13
+
+- Trước đây Step 7 chỉ hỏi 7 giờ chính cho mỗi hồ sơ; ngủ trưa, hai khung tập và giờ bận nằm trong phần mở rộng nên người dùng có thể bỏ qua các trường đang được lưu.
+- Luồng mới hỏi lần lượt giờ thức dậy, 5 giờ ăn, giờ ngủ, ngủ trưa Có/Không và khung giờ nếu Có, hai khung tập, giờ bận Có/Không và khung giờ nếu Có. Hỏi đủ cho ngày thường và cuối tuần.
+- Mỗi câu có minh họa Nabi; khung thời gian có nút chọn riêng cho giờ bắt đầu và kết thúc. Back quay lại câu trước và giữ câu trả lời.
+- Giữ nguyên `DailyRoutinePreferences`, validator, xác nhận routine và persistence; không thay schema/API.
+- Focused widget suite tăng lên 7 test; targeted analyzer và formatter pass. Android visual/device smoke chưa chạy.

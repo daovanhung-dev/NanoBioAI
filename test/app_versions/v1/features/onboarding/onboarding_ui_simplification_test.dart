@@ -7,6 +7,7 @@ import 'package:nano_app/app_versions/v1/features/onboarding/presentation/pages/
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/consent_step.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
+import 'package:nano_app/app_versions/v1/features/daily_routine/domain/entities/daily_routine_preferences.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -84,7 +85,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('routine asks each core time separately for both profiles', (
+  testWidgets('routine asks every stored field for both profiles', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -96,7 +97,7 @@ void main() {
     addTearDown(container.dispose);
     await _pumpOnboarding(tester, container);
 
-    const questions = [
+    const coreQuestions = [
       'Bạn thức dậy vào lúc mấy giờ?',
       'Bạn ăn sáng từ lúc mấy giờ?',
       'Bạn ăn bữa phụ sáng lúc mấy giờ?',
@@ -106,43 +107,168 @@ void main() {
       'Bạn thường đi ngủ lúc mấy giờ?',
     ];
 
-    for (var index = 0; index < questions.length; index++) {
-      expect(find.text(questions[index]), findsOneWidget);
-      expect(find.text('NGÀY THƯỜNG'), findsOneWidget);
-      if (index < questions.length - 1) {
+    for (final profile in ['NGÀY THƯỜNG', 'CUỐI TUẦN']) {
+      for (final question in coreQuestions) {
+        expect(find.text(question), findsOneWidget);
+        expect(find.text(profile), findsOneWidget);
+        expect(find.byKey(const Key('daily_routine_nabi')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('daily_routine_next')));
+        await tester.pumpAndSettle();
+      }
+
+      expect(find.text('Bạn có ngủ trưa không?'), findsOneWidget);
+      await tester.tap(find.text('Không'));
+      await tester.pumpAndSettle();
+      final preferences = container.read(onboardingProvider).routinePreferences;
+      expect(
+        profile == 'NGÀY THƯỜNG'
+            ? preferences.weekday.napEnabled
+            : preferences.weekend.napEnabled,
+        isFalse,
+      );
+      await tester.tap(find.byKey(const Key('daily_routine_next')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Bạn thường ngủ trưa từ mấy giờ đến mấy giờ?'),
+        findsNothing,
+      );
+      expect(
+        find.text('Lần tập đầu tiên trong ngày của bạn là khi nào?'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('daily_routine_range_start')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('daily_routine_range_end')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('daily_routine_next')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Lần tập thứ hai trong ngày của bạn là khi nào?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('daily_routine_next')));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Bạn có khoảng thời gian bận học hoặc làm việc không?'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Không'));
+      await tester.pumpAndSettle();
+      if (profile == 'NGÀY THƯỜNG') {
         await tester.tap(find.byKey(const Key('daily_routine_next')));
         await tester.pumpAndSettle();
       }
     }
 
-    await tester.tap(find.byKey(const Key('daily_routine_next')));
-    await tester.pumpAndSettle();
-    expect(find.text(questions.first), findsOneWidget);
-    expect(find.text('CUỐI TUẦN'), findsOneWidget);
-    expect(find.text('07:30'), findsOneWidget);
-
-    for (var index = 0; index < questions.length; index++) {
-      expect(find.text(questions[index]), findsOneWidget);
-      expect(find.text('CUỐI TUẦN'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('daily_routine_next')));
-      await tester.pumpAndSettle();
-    }
-
-    expect(find.text('Bạn muốn thêm giờ nào không?'), findsOneWidget);
-    expect(find.text('Thêm giờ tùy chọn'), findsOneWidget);
-    expect(find.text('Bữa sáng'), findsNothing);
-
-    await tester.tap(find.byKey(const Key('daily_routine_optional_editor')));
-    await tester.pumpAndSettle();
-    expect(find.text('Khung ngủ trưa'), findsWidgets);
-    expect(find.text('Khung tập 1'), findsWidgets);
-    expect(find.text('Bữa sáng'), findsNothing);
-
+    expect(find.byKey(const Key('daily_routine_confirm')), findsOneWidget);
+    expect(find.text('Bạn thường bận từ mấy giờ đến mấy giờ?'), findsNothing);
     await tester.tap(find.byKey(const Key('daily_routine_confirm')));
     await tester.pumpAndSettle();
-    expect(container.read(onboardingProvider).currentStep, 7);
-    expect(container.read(onboardingProvider).routineConfirmed, isTrue);
+    final completed = container.read(onboardingProvider);
+    expect(completed.currentStep, 7);
+    expect(completed.routineConfirmed, isTrue);
+    expect(completed.routinePreferences.validate(), isEmpty);
+    expect(completed.routinePreferences.weekday.napEnabled, isFalse);
+    expect(completed.routinePreferences.weekend.napEnabled, isFalse);
+    expect(completed.routinePreferences.weekday.busyRange, isNull);
+    expect(completed.routinePreferences.weekend.busyRange, isNull);
   });
+
+  testWidgets('routine asks nap and busy intervals when enabled', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final defaults = DailyRoutinePreferences.defaultValue;
+    final preferences = defaults.copyWith(
+      weekday: defaults.weekday.copyWith(clearBusyRange: true),
+    );
+    final container = _container(
+      OnboardingState(
+        currentStep: 6,
+        routineQuestionIndex: 7,
+        routinePreferences: preferences,
+      ),
+    );
+    addTearDown(container.dispose);
+    await _pumpOnboarding(tester, container);
+
+    expect(find.text('Bạn có ngủ trưa không?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('daily_routine_next')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Bạn thường ngủ trưa từ mấy giờ đến mấy giờ?'),
+      findsOneWidget,
+    );
+    expect(find.text('12:45'), findsOneWidget);
+    expect(find.text('13:15'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('onboarding_back')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Không'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('daily_routine_next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('daily_routine_next')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('daily_routine_next')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Bạn có khoảng thời gian bận học hoặc làm việc không?'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Có'));
+    await tester.pumpAndSettle();
+    expect(
+      container.read(onboardingProvider).routinePreferences.weekday.busyRange,
+      isNotNull,
+    );
+    await tester.tap(find.byKey(const Key('daily_routine_next')));
+    await tester.pumpAndSettle();
+    expect(find.text('Bạn thường bận từ mấy giờ đến mấy giờ?'), findsOneWidget);
+    expect(find.byKey(const Key('daily_routine_nabi')), findsOneWidget);
+    expect(find.byKey(const Key('daily_routine_range_start')), findsOneWidget);
+    expect(find.byKey(const Key('daily_routine_range_end')), findsOneWidget);
+  });
+
+  testWidgets(
+    'routine illustration and interval controls fit compact screens',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final container = _container(
+        const OnboardingState(currentStep: 6, routineQuestionIndex: 8),
+      );
+      addTearDown(container.dispose);
+      await _pumpOnboarding(tester, container);
+
+      expect(
+        find.text('Bạn thường ngủ trưa từ mấy giờ đến mấy giờ?'),
+        findsOneWidget,
+      );
+      final nabi = tester.widget<Image>(
+        find.byKey(const Key('daily_routine_nabi')),
+      );
+      expect(nabi.width, 72);
+      expect(nabi.height, 72);
+      expect(
+        find.byKey(const Key('daily_routine_range_start')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('daily_routine_range_end')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('system back moves to the previous routine question first', (
     tester,

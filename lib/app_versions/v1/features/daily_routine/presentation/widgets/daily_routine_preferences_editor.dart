@@ -8,13 +8,11 @@ import 'package:nano_app/core/theme/app_spacing.dart';
 class DailyRoutinePreferencesEditor extends StatelessWidget {
   final DailyRoutinePreferences value;
   final ValueChanged<DailyRoutinePreferences> onChanged;
-  final bool showCoreTimes;
 
   const DailyRoutinePreferencesEditor({
     super.key,
     required this.value,
     required this.onChanged,
-    this.showCoreTimes = true,
   });
 
   @override
@@ -24,14 +22,12 @@ class DailyRoutinePreferencesEditor extends StatelessWidget {
         _TemplateEditor(
           title: 'Ngày thường · Thứ Hai–Thứ Sáu',
           value: value.weekday,
-          showCoreTimes: showCoreTimes,
           onChanged: (template) => onChanged(value.copyWith(weekday: template)),
         ),
         const SizedBox(height: AppSpacing.md),
         _TemplateEditor(
           title: 'Cuối tuần · Thứ Bảy–Chủ Nhật',
           value: value.weekend,
-          showCoreTimes: showCoreTimes,
           onChanged: (template) => onChanged(value.copyWith(weekend: template)),
         ),
       ],
@@ -51,12 +47,10 @@ class _TemplateEditor extends StatelessWidget {
   final String title;
   final RoutineDayTemplate value;
   final ValueChanged<RoutineDayTemplate> onChanged;
-  final bool showCoreTimes;
 
   const _TemplateEditor({
     required this.title,
     required this.value,
-    required this.showCoreTimes,
     required this.onChanged,
   });
 
@@ -67,36 +61,30 @@ class _TemplateEditor extends StatelessWidget {
       child: ExpansionTile(
         initiallyExpanded: true,
         title: Text(title, style: AppTextStyles.heading5),
-        subtitle: Text(
-          showCoreTimes
-              ? 'Thức ${value.wakeTime} · Ngủ ${value.sleepTime}'
-              : 'Giờ ngủ trưa, tập luyện và bận',
-        ),
+        subtitle: Text('Thức ${value.wakeTime} · Ngủ ${value.sleepTime}'),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
-          if (showCoreTimes) ...[
+          _TimeRow(
+            label: 'Giờ thức dậy',
+            value: value.wakeTime,
+            onChanged: (time) => onChanged(value.copyWith(wakeTime: time)),
+          ),
+          _TimeRow(
+            label: 'Giờ ngủ',
+            value: value.sleepTime,
+            onChanged: (time) => onChanged(value.copyWith(sleepTime: time)),
+          ),
+          const Divider(),
+          for (var index = 0; index < _mealLabels.length; index++)
             _TimeRow(
-              label: 'Giờ thức dậy',
-              value: value.wakeTime,
-              onChanged: (time) => onChanged(value.copyWith(wakeTime: time)),
+              label: _mealLabels[index],
+              value: value.mealTimes[index],
+              onChanged: (time) {
+                final meals = [...value.mealTimes]..[index] = time;
+                onChanged(value.copyWith(mealTimes: meals));
+              },
             ),
-            _TimeRow(
-              label: 'Giờ ngủ',
-              value: value.sleepTime,
-              onChanged: (time) => onChanged(value.copyWith(sleepTime: time)),
-            ),
-            const Divider(),
-            for (var index = 0; index < _mealLabels.length; index++)
-              _TimeRow(
-                label: _mealLabels[index],
-                value: value.mealTimes[index],
-                onChanged: (time) {
-                  final meals = [...value.mealTimes]..[index] = time;
-                  onChanged(value.copyWith(mealTimes: meals));
-                },
-              ),
-            const Divider(),
-          ],
+          const Divider(),
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('Có ngủ trưa'),

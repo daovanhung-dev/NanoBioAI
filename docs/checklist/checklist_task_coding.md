@@ -543,3 +543,10 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Ảnh thích ứng 112 dp / 88 dp; widget test xác nhận không lỗi bố cục ở 390×844 và 320×640.
 - [x] `flutter analyze`, focused widget suite và `dart format --set-exit-if-changed` pass.
 - [ ] Android visual/device smoke chưa xác minh.
+
+### M01 Daily routine all-fields follow-up — 2026-11-13
+
+- [x] Step 7 tuần tự hỏi đủ các trường `DailyRoutinePreferences` cho ngày thường và cuối tuần; ngủ trưa/giờ bận có nhánh Có/Không và chỉ hỏi khung giờ khi bật.
+- [x] Nabi xuất hiện ở từng câu; khoảng thời gian có nút chọn riêng cho Bắt đầu/Kết thúc; quay lại giữ nguyên dữ liệu.
+- [x] Focused analyze, widget tests, format và `git diff --check` pass; worklog: `docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md`.
+- [ ] Chạy visual/device smoke Android khi có thiết bị; không thay đổi M01 device acceptance.

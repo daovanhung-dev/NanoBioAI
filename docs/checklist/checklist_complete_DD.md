@@ -347,9 +347,9 @@ This addendum is outside M01-M32 progress totals.
 - Onboarding backgrounds now use a plain semantic theme color; leaf shapes,
   water-trail strokes and ambient orbs are removed.
 - Text-size setup shows a short preview and the size options. Routine step asks
-  seven core times in sequence for weekdays and weekends, then offers optional
-  nap/exercise/busy times. Consent step keeps a short summary and expandable
-  technical detail.
+  seven core times in sequence for weekdays and weekends, followed by the
+  remaining stored routine fields. Consent step keeps a short summary and
+  expandable technical detail.
 - Targeted analysis reports no issues and five focused widget tests pass on
   Flutter Linux. Android visual/device and Supabase consent/audit evidence
   remain unverified; M01 progress totals are unchanged.
@@ -360,3 +360,13 @@ This addendum is outside M01-M32 progress totals.
   down on compact screens and adds no visible copy or background decoration.
 - Targeted analyzer is clean and the focused suite passes at 390×844 and
   320×640. Android/device and sandbox evidence remain unverified.
+
+### M01 Daily routine asks all stored fields — 2026-11-13
+
+- Step 7 asks wake/sleep and five meal times, nap yes/no and its interval when
+  enabled, both workout intervals, and busy-time yes/no and its interval when
+  enabled, for both weekday and weekend profiles.
+- A Nabi illustration appears on every question. Existing preference data,
+  validation, confirmation and persistence remain in place.
+- Targeted Flutter analyzer and seven widget tests pass. Android visual/device
+  acceptance remains unverified; M01 progress totals are unchanged.

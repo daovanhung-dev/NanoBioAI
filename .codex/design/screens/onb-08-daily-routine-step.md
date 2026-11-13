@@ -27,10 +27,10 @@ Ghi nhận nhịp sinh hoạt để xây lịch phù hợp với ngày thực t�
 The user can identify the current state, the next safe action, and the result of that action without needing internal implementation knowledge.
 
 ## 08. Information hierarchy
-Use the order **context → most important state/data → next action → supporting detail → history/help**. Do not place equal visual weight on every card.
+Use the order **context → current question → supporting illustration → answer control → next action**. Do not place equal visual weight on every card.
 
 ## 09. Page anatomy
-Clean semantic theme background with one visible time question at a time. Ask seven daily times in chronological order for weekdays, then repeat for weekends; show profile progress, one selected time and a “Chọn giờ” control. After all 14 questions, offer nap, exercise and busy-time settings as optional details.
+Clean semantic theme background with one visible question at a time. For each profile (weekdays, then weekends), ask seven daily times from morning to night, whether the user naps and the nap interval when enabled, both workout intervals, and whether the user has a busy interval and its times when enabled. Show a Nabi illustration on every question, profile progress and the answer controls for the current question. Interval questions use paired “Bắt đầu” and “Kết thúc” time selectors.
 
 ## 10. Material 3 Expressive archetype
 Use expressive typography, shape and motion to clarify hierarchy—not to decorate every surface. One visual focal point per viewport is the default.
@@ -58,7 +58,7 @@ Prefer tonal containment + border + short shadow. Glass/blur is allowed only for
 Cards, section headers, semantic icons, state containers and buttons come from canonical theme/primitives. Feature-local styling must not introduce a parallel design system.
 
 ## 17. Primary action
-“Tiếp tục” advances one question at a time; “Xác nhận” appears after the optional details. Back returns to the previous question before leaving the step.
+“Tiếp tục” advances one applicable question at a time; “Xác nhận” appears on the last applicable question after both profiles are complete. Back returns to the previous question before leaving the step.
 
 ## 18. Secondary actions
 Keep secondary actions visually quieter and spatially grouped with the content they affect. Overflow/menu is preferred over a row of equally weighted buttons.
@@ -110,8 +110,10 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - Validate narrow screen, large text, dark mode and reduced motion for this surface.
 
 ## 32. Acceptance criteria
-- [ ] The seven prompts are visible, sequential questions for both weekday and weekend profiles; no timeline of “mốc” cards is shown.
-- [ ] Optional nap, exercise and busy-time controls appear after the 14 core questions and do not duplicate the core schedule fields.
+- [ ] The seven core time prompts are asked in morning-to-night order for weekdays and weekends, with one prompt visible at a time; no timeline of “mốc” cards is shown.
+- [ ] Each profile also asks nap yes/no and, when enabled, the nap interval; both workout intervals; and busy-time yes/no and, when enabled, the busy interval.
+- [ ] A Nabi illustration appears on every question. Interval prompts show separate start and end time selectors.
+- [ ] Progress reflects the applicable questions for the current profile; “Xác nhận” appears only on the final applicable question.
 - [ ] Background is clean and has no leaf, water-trail or orb decoration.
 - [ ] Visual hierarchy matches this spec and group rules.
 - [ ] Loading/empty/error/ready/disabled state coverage is explicit.

@@ -244,8 +244,8 @@ class OnboardingState {
 class OnboardingController extends Notifier<OnboardingState> {
   static const _tag = 'ONBOARDING';
   static const dailyRoutineStepIndex = 6;
-  static const routineQuestionsPerProfile = 7;
-  static const routineQuestionCount = routineQuestionsPerProfile * 2;
+  static const maxRoutineQuestionsPerProfile = 13;
+  static const routineQuestionCount = maxRoutineQuestionsPerProfile * 2;
   static const Set<String> _exclusiveWeightGoalCodes = {
     'maintain_weight',
     'lose_weight',

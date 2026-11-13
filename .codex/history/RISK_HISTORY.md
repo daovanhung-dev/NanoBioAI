@@ -1467,3 +1467,4 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Chưa fix: không có lỗi trong targeted analyzer/widget tests.
 - docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Cần kiểm tra tiếp: Android visual/device smoke chưa chạy.
+- docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED — host Linux không có `powershell`/`pwsh`.
