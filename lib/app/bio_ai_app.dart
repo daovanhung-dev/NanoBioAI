@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:nano_app/app/android_runtime_permission_coordinator.dart';
 import 'package:nano_app/app/app_surface_controller.dart';
 import 'package:nano_app/app_versions/admin/app/bio_ai_admin_app.dart';
@@ -14,6 +16,7 @@ import 'package:nano_app/core/health_events/health_domain_event.dart';
 import 'package:nano_app/core/health_events/health_event_type.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/core/config/app_env.dart';
 import 'package:nano_app/services/health_orchestration/health_domain_event_sink.dart';
 
 class BioAIApp extends ConsumerStatefulWidget {
@@ -64,6 +67,9 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb && _isAdminRoute(Uri.base.path)) {
+      return const _WebAdminRouteApp();
+    }
     final authState = ref.watch(v2AuthControllerProvider);
     final currentUserId = ref.watch(currentAuthUserIdProvider);
     final requestedSurface = ref.watch(appSurfaceControllerProvider);
@@ -138,7 +144,9 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
       requestedSurface: requestedSurface,
     );
 
-    if (resolvedSurface == AppSurface.admin) {
+    if (resolvedSurface == AppSurface.admin &&
+        (!kIsWeb || session?.canUseUserApp != true)) {
+      if (kIsWeb) return const _WebAdminRouteApp();
       return _withPermissionNotice(
         const BioAIAdminApp(key: ValueKey('admin-app')),
         themeMode,
@@ -150,6 +158,8 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
       themeMode,
     );
   }
+
+  bool _isAdminRoute(String path) => path == '/admin' || path == '/admin/';
 
   Widget _withPermissionNotice(Widget app, ThemeMode themeMode) {
     return Stack(
@@ -190,6 +200,105 @@ class _BioAIAppState extends ConsumerState<BioAIApp>
       // Identity resolution itself is authoritative. Refresh orchestration must
       // never block mounting the authenticated application surface.
     }
+  }
+}
+
+class _WebAdminRouteApp extends StatefulWidget {
+  const _WebAdminRouteApp();
+
+  @override
+  State<_WebAdminRouteApp> createState() => _WebAdminRouteAppState();
+}
+
+class _WebAdminRouteAppState extends State<_WebAdminRouteApp> {
+  String? _launchError;
+
+  Uri? get _adminUri {
+    final rawValue = AppEnv.maybeString('ADMIN_WEB_URL');
+    if (rawValue == null) return null;
+    final uri = Uri.tryParse(rawValue);
+    if (uri == null ||
+        !uri.hasAuthority ||
+        uri.userInfo.isNotEmpty ||
+        uri.scheme != 'https') {
+      return null;
+    }
+    return uri;
+  }
+
+  Future<void> _openAdmin() async {
+    final uri = _adminUri;
+    if (uri == null) return;
+    final opened = await launchUrl(uri, mode: LaunchMode.platformDefault);
+    if (opened || !mounted) return;
+    setState(
+      () => _launchError = 'Chưa mở được cổng quản trị. Bạn thử lại nhé.',
+    );
+  }
+
+  Future<void> _openUserApp() async {
+    final userAppUri = Uri.base.replace(path: '/', query: null, fragment: null);
+    await launchUrl(userAppUri, mode: LaunchMode.platformDefault);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uri = _adminUri;
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'NanoBio - Quản trị',
+      theme: AppTheme.lightTheme,
+      home: Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.admin_panel_settings_outlined, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Cổng quản trị NanoBio',
+                      style: AppTextStyles.heading2,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      uri == null
+                          ? 'Cổng quản trị chưa được cấu hình cho trang web này.'
+                          : 'Khu vực quản trị được mở tại trang riêng.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                    if (_launchError case final message?) ...[
+                      const SizedBox(height: 8),
+                      Text(message, textAlign: TextAlign.center),
+                    ],
+                    const SizedBox(height: 20),
+                    if (uri != null)
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _openAdmin,
+                          icon: const Icon(Icons.open_in_new_rounded),
+                          label: const Text('Mở cổng quản trị'),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _openUserApp,
+                      child: const Text('Về ứng dụng NanoBio'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

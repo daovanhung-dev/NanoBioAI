@@ -12,6 +12,7 @@ class AppEnv {
     'API_BASE_URL',
     'PRIVACY_POLICY_URL',
     'ACCOUNT_DELETION_URL',
+    'ADMIN_WEB_URL',
   };
   static Map<String, String> _bundledAuthValues = const {};
 
@@ -141,6 +142,7 @@ class AppEnv {
       'ACCOUNT_DELETION_URL' => const String.fromEnvironment(
         'ACCOUNT_DELETION_URL',
       ),
+      'ADMIN_WEB_URL' => const String.fromEnvironment('ADMIN_WEB_URL'),
       'ONBOARDING_AI_DEV_CHECK_ENABLED' => const String.fromEnvironment(
         'ONBOARDING_AI_DEV_CHECK_ENABLED',
       ),

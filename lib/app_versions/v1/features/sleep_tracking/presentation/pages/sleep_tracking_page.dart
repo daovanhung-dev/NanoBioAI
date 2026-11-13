@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,6 +66,17 @@ class SleepTrackingPage extends ConsumerWidget {
     final phoneFallbackMessage = state.phoneFallbackContact == null
         ? null
         : state.notice;
+
+    Future<void> openSubPage(Widget page) async {
+      if (kIsWeb && state.monitoringActive) {
+        await controller.stopMonitoring(reason: 'screen_closed');
+      }
+      if (!context.mounted) return;
+      await Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute<void>(builder: (_) => page));
+    }
+
     final alert =
         state.machine.phase == SleepSafetyPhase.awaitingResponse ||
         state.machine.phase == SleepSafetyPhase.manualHelp ||
@@ -76,238 +90,227 @@ class SleepTrackingPage extends ConsumerWidget {
           'manual_call_handoff',
         }.contains(event?.state);
 
-    return MedicalPageScaffold(
-      appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
-      body: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                'Nabi đồng hành cùng bạn trong đêm',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Theo dõi các tín hiệu âm thanh bất thường trên thiết bị và cảnh báo sớm khi cần chú ý.',
-              ),
-              const SizedBox(height: 18),
-              if (state.errorMessage != null)
-                Card(
-                  color: Theme.of(context).colorScheme.errorContainer,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(state.errorMessage!),
+    return PopScope<void>(
+      onPopInvokedWithResult: (didPop, result) {
+        if (kIsWeb && didPop && state.monitoringActive) {
+          unawaited(controller.stopMonitoring(reason: 'screen_closed'));
+        }
+      },
+      child: MedicalPageScaffold(
+        appBar: AppBar(title: const Text('Giám sát giấc ngủ')),
+        body: Stack(
+          children: [
+            ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Text(
+                  'Nabi đồng hành cùng bạn trong đêm',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              if (state.notice != null)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(state.notice!),
-                  ),
-                ),
-              SleepSafetyStatusCard(
-                phase: state.machine.phase,
-                sensitivity: _sensitivity(pref?.sensitivity),
-                contactsLoaded: state.contactsLoaded,
-                verifiedContacts: state.contacts
-                    .where((contact) => contact.isVerified)
-                    .length,
-                callReadyContacts: state.contacts
-                    .where((contact) => contact.canReceiveSafetyCall)
-                    .length,
-                busy: state.isBusy,
-                onStart: () => controller.startMonitoring(source: startSource),
-                onStop: controller.stopMonitoring,
-                onManageContacts: () => _openSafetyContacts(context),
-              ),
-              if (state.monitoringActive) ...[
-                const SizedBox(height: 12),
-                SleepSafetyAudioLevelMeter(
-                  signalLevel: metrics?.signalLevel ?? 0,
-                  peakLevel: metrics?.peakLevel ?? 0,
-                  baselineLevel: metrics?.baselineLevel ?? 0,
-                  relativeEnergy: metrics?.relativeEnergy ?? 0,
-                  phase: state.detectorCandidateType != null
-                      ? 'candidate'
-                      : metrics?.phase ??
-                            (state.machine.phase == SleepSafetyPhase.calibrating
-                                ? 'calibrating'
-                                : 'waiting'),
-                  sensitivity: _sensitivity(pref?.sensitivity),
-                  hasSignal: metrics != null,
-                  signalStale: state.audioSignalStale,
-                ),
-              ],
-              if (state.machine.phase == SleepSafetyPhase.calibrating) ...[
-                const SizedBox(height: 8),
-                LinearProgressIndicator(value: state.calibrationProgress),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 const Text(
-                  'Nabi đang làm quen với âm thanh trong phòng. Giữ điện thoại ở vị trí bạn thường đặt khi ngủ nhé. Âm thanh cực lớn vẫn được kiểm tra trong lúc hiệu chỉnh.',
+                  'Theo dõi các tín hiệu âm thanh bất thường trên thiết bị và cảnh báo sớm khi cần chú ý.',
                 ),
-              ],
-              const SizedBox(height: 12),
-              if (pref != null)
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.tune_rounded),
-                        title: const Text('Độ nhạy'),
-                        subtitle: Text(_sensitivity(pref.sensitivity)),
-                        trailing: DropdownButton<SleepSafetySensitivity>(
-                          value: pref.sensitivity,
-                          items: SleepSafetySensitivity.values
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(_sensitivity(value)),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: state.monitoringActive
+                const SizedBox(height: 18),
+                if (state.errorMessage != null)
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(state.errorMessage!),
+                    ),
+                  ),
+                if (state.notice != null)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(state.notice!),
+                    ),
+                  ),
+                SleepSafetyStatusCard(
+                  phase: state.machine.phase,
+                  sensitivity: _sensitivity(pref?.sensitivity),
+                  contactsLoaded: state.contactsLoaded,
+                  verifiedContacts: state.contacts
+                      .where((contact) => contact.isVerified)
+                      .length,
+                  callReadyContacts: state.contacts
+                      .where((contact) => contact.canReceiveSafetyCall)
+                      .length,
+                  busy: state.isBusy,
+                  onStart: () =>
+                      controller.startMonitoring(source: startSource),
+                  onStop: controller.stopMonitoring,
+                  onManageContacts: () =>
+                      openSubPage(const SleepSafetyContactsPage()),
+                ),
+                if (state.monitoringActive) ...[
+                  const SizedBox(height: 12),
+                  SleepSafetyAudioLevelMeter(
+                    signalLevel: metrics?.signalLevel ?? 0,
+                    peakLevel: metrics?.peakLevel ?? 0,
+                    baselineLevel: metrics?.baselineLevel ?? 0,
+                    relativeEnergy: metrics?.relativeEnergy ?? 0,
+                    phase: state.detectorCandidateType != null
+                        ? 'candidate'
+                        : metrics?.phase ??
+                              (state.machine.phase ==
+                                      SleepSafetyPhase.calibrating
+                                  ? 'calibrating'
+                                  : 'waiting'),
+                    sensitivity: _sensitivity(pref?.sensitivity),
+                    hasSignal: metrics != null,
+                    signalStale: state.audioSignalStale,
+                  ),
+                ],
+                if (state.machine.phase == SleepSafetyPhase.calibrating) ...[
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: state.calibrationProgress),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Nabi đang làm quen với âm thanh trong phòng. Giữ điện thoại ở vị trí bạn thường đặt khi ngủ nhé. Âm thanh cực lớn vẫn được kiểm tra trong lúc hiệu chỉnh.',
+                  ),
+                ],
+                const SizedBox(height: 12),
+                if (pref != null)
+                  Card(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.tune_rounded),
+                          title: const Text('Độ nhạy'),
+                          subtitle: Text(_sensitivity(pref.sensitivity)),
+                          trailing: DropdownButton<SleepSafetySensitivity>(
+                            value: pref.sensitivity,
+                            items: SleepSafetySensitivity.values
+                                .map(
+                                  (value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(_sensitivity(value)),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: state.monitoringActive
+                                ? null
+                                : (value) {
+                                    if (value != null) {
+                                      controller.savePreference(
+                                        pref.copyWith(sensitivity: value),
+                                      );
+                                    }
+                                  },
+                          ),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.schedule_rounded),
+                          title: const Text('Lịch giám sát'),
+                          subtitle: Text(
+                            pref.scheduleEnabled
+                                ? 'Đã bật nhắc theo lịch'
+                                : 'Chưa bật',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () =>
+                              openSubPage(const SleepSafetySchedulePage()),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.contacts_rounded),
+                          title: const Text('Người liên hệ an toàn'),
+                          subtitle: Text('${state.contacts.length}/3 người'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () =>
+                              openSubPage(const SleepSafetyContactsPage()),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.history_rounded),
+                          title: const Text('Lịch sử cảnh báo'),
+                          subtitle: const Text(
+                            'Chỉ lưu thông tin sự kiện, không lưu bản ghi âm',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () =>
+                              openSubPage(const SleepSafetyHistoryPage()),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.bedtime_rounded),
+                          title: const Text('Phân tích giấc ngủ'),
+                          subtitle: Text(
+                            latestSessionId == null
+                                ? 'Cần ít nhất một phiên giám sát đã kết thúc'
+                                : 'Chỉ số cục bộ, xu hướng 7 đêm và phân tích AI',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          enabled: latestSessionId != null,
+                          onTap: latestSessionId == null
                               ? null
-                              : (value) {
-                                  if (value != null) {
-                                    controller.savePreference(
-                                      pref.copyWith(sensitivity: value),
-                                    );
-                                  }
-                                },
-                        ),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.schedule_rounded),
-                        title: const Text('Lịch giám sát'),
-                        subtitle: Text(
-                          pref.scheduleEnabled
-                              ? 'Đã bật nhắc theo lịch'
-                              : 'Chưa bật',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SleepSafetySchedulePage(),
-                          ),
-                        ),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.contacts_rounded),
-                        title: const Text('Người liên hệ an toàn'),
-                        subtitle: Text('${state.contacts.length}/3 người'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SleepSafetyContactsPage(),
-                          ),
-                        ),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.history_rounded),
-                        title: const Text('Lịch sử cảnh báo'),
-                        subtitle: const Text(
-                          'Chỉ lưu thông tin sự kiện, không lưu bản ghi âm',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SleepSafetyHistoryPage(),
-                          ),
-                        ),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.bedtime_rounded),
-                        title: const Text('Phân tích giấc ngủ'),
-                        subtitle: Text(
-                          latestSessionId == null
-                              ? 'Cần ít nhất một phiên giám sát đã kết thúc'
-                              : 'Chỉ số cục bộ, xu hướng 7 đêm và phân tích AI',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        enabled: latestSessionId != null,
-                        onTap: latestSessionId == null
-                            ? null
-                            : () => Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => SleepNightAnalysisPage(
+                              : () => openSubPage(
+                                  SleepNightAnalysisPage(
                                     sessionId: latestSessionId,
                                   ),
                                 ),
-                              ),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.hearing_rounded),
-                        title: const Text('Hiệu chỉnh lại âm thanh phòng'),
-                        subtitle: Text(
-                          pref.calibrationUpdatedAt == null
-                              ? 'Chưa hiệu chỉnh'
-                              : 'Lần gần nhất: ${pref.calibrationUpdatedAt}',
                         ),
-                        onTap: state.monitoringActive
-                            ? controller.recalibrate
-                            : null,
-                      ),
-                    ],
+                        ListTile(
+                          leading: const Icon(Icons.hearing_rounded),
+                          title: const Text('Hiệu chỉnh lại âm thanh phòng'),
+                          subtitle: Text(
+                            pref.calibrationUpdatedAt == null
+                                ? 'Chưa hiệu chỉnh'
+                                : 'Lần gần nhất: ${pref.calibrationUpdatedAt}',
+                          ),
+                          onTap: state.monitoringActive
+                              ? controller.recalibrate
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              const SleepSafetyDisclaimer(),
-              const SizedBox(height: 32),
-            ],
-          ),
-          if (alert &&
-              state.currentEvent != null &&
-              state.machine.alertStartedAt != null)
-            Positioned.fill(
-              child: SleepSafetyAlertOverlay(
-                startedAt: state.machine.alertStartedAt!,
-                dispatching: dispatchingNoResponseCall,
-                dispatchFailed: noResponseCallFailed,
-                dispatchError: state.errorMessage,
-                manualHelpPending: manualHelpPending,
-                manualHelpFailed: manualHelpFailed,
-                manualHelpError: state.errorMessage,
-                onRetryHelp: controller.requestHelp,
-                requiresContactSetup:
-                    noResponseCallFailed &&
-                    event?.state == 'no_response_call_unavailable' &&
-                    state.contactsLoaded &&
-                    state.phoneFallbackContact == null,
-                onOk: controller.respondOk,
-                onNeedHelp: controller.requestHelp,
-                onRetry: controller.retryNoResponsePhoneCall,
-                onManageContacts: () => _openSafetyContacts(context),
-                onCallContact: state.phoneFallbackContact == null
-                    ? null
-                    : () => controller.callPhoneFallback(),
-                onNextContact: state.phoneFallbackContacts.length > 1
-                    ? () => controller.callPhoneFallback(next: true)
-                    : null,
-                phoneFallbackName: state.phoneFallbackContact?.name,
-                dispatchNotice: state.phoneFallbackContact == null
-                    ? state.notice
-                    : null,
-                phoneFallbackMessage: phoneFallbackMessage,
-              ),
+                const SleepSafetyDisclaimer(),
+                const SizedBox(height: 32),
+              ],
             ),
-        ],
+            if (alert &&
+                state.currentEvent != null &&
+                state.machine.alertStartedAt != null)
+              Positioned.fill(
+                child: SleepSafetyAlertOverlay(
+                  startedAt: state.machine.alertStartedAt!,
+                  dispatching: dispatchingNoResponseCall,
+                  dispatchFailed: noResponseCallFailed,
+                  dispatchError: state.errorMessage,
+                  manualHelpPending: manualHelpPending,
+                  manualHelpFailed: manualHelpFailed,
+                  manualHelpError: state.errorMessage,
+                  onRetryHelp: controller.requestHelp,
+                  requiresContactSetup:
+                      noResponseCallFailed &&
+                      event?.state == 'no_response_call_unavailable' &&
+                      state.contactsLoaded &&
+                      state.phoneFallbackContact == null,
+                  onOk: controller.respondOk,
+                  onNeedHelp: controller.requestHelp,
+                  onRetry: controller.retryNoResponsePhoneCall,
+                  onManageContacts: () =>
+                      openSubPage(const SleepSafetyContactsPage()),
+                  onCallContact: state.phoneFallbackContact == null
+                      ? null
+                      : () => controller.callPhoneFallback(),
+                  onNextContact: state.phoneFallbackContacts.length > 1
+                      ? () => controller.callPhoneFallback(next: true)
+                      : null,
+                  phoneFallbackName: state.phoneFallbackContact?.name,
+                  dispatchNotice: state.phoneFallbackContact == null
+                      ? state.notice
+                      : null,
+                  phoneFallbackMessage: phoneFallbackMessage,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
-
-  Future<void> _openSafetyContacts(BuildContext context) =>
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => const SleepSafetyContactsPage(),
-        ),
-      );
 
   static String _sensitivity(SleepSafetySensitivity? value) => switch (value) {
     SleepSafetySensitivity.low => 'Thấp',

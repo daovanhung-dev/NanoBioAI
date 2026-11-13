@@ -47,6 +47,15 @@ dialer handoff, never a connected call.
 
 ## Source boundaries
 
+### Browser web delta — 2026-11-14
+
+The web adapter supports visible-page monitoring only. It uses browser
+microphone PCM in memory for numeric feature extraction and stops the session
+when the page is hidden/paused or the user leaves the Sleep Safety screen. It cannot replace Android foreground-service
+or iOS background-audio monitoring. Automatic browser phone handoff is disabled;
+the user must press the visible `Gọi ngay` action. See the platform delta in
+`Overall.md` and `Function_List.md`.
+
 - Flutter feature root: `lib/app_versions/v1/features/sleep_tracking/`
 - Night analysis domain: `domain/services/sleep_night_analysis_service.dart`
 - Night analysis UI: `presentation/pages/sleep_night_analysis_page.dart`

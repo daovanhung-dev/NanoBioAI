@@ -128,6 +128,15 @@ Legacy `pending` vẫn review được để tương thích migration, nhưng re
 
 ## 11. Risks, Assumptions, and Decisions
 
+### Browser checkout delta — 2026-11-14
+
+The web membership screen uses the same owner-scoped backend payment request,
+server-owned bank details/reference, VietQR, pending-review refresh, and trusted
+entitlement flow described above. Native Google Play billing remains the
+Android purchase path. Browser payment, bank-app QR scan, sandbox/RLS, and
+Finance review acceptance remain unverified until exercised in their target
+environments.
+
 | ID | Type | Content | Status |
 |---|---|---|---|
 | PAYMENT_MEMBERSHIP-RISK01 | Acceptance | Supabase sandbox/RLS/two-session concurrency chưa có evidence trong phiên patch này. | Open |

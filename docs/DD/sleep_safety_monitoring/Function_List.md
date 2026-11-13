@@ -29,6 +29,22 @@
 | M31-FN26 | Set unverified voice-alert consent | Contact form + 7-argument Cloud RPC | contact + explicit opt-in | preference saved; default off | does not enable SMS; legacy 5-argument RPC remains compatible |
 | M31-FN27 | Initiate direct phone handoff | Controller + Android channel / iOS `tel:` | explicit help or enabled +15s timeout + highest-priority opted-in contact | Android OS call request or dialer handoff | `CALL_PHONE` requested before monitoring; fallback after denial/failure; never report connected |
 
+### M31 browser web delta — 2026-11-14
+
+- FN02–FN07 and FN22 use `BrowserSleepSafetyGateway` on web. It requests a
+  microphone stream after a user start action, processes short PCM frames in
+  browser memory, emits numeric metrics/events, and never stores or uploads PCM.
+- FN05/FN06 mirror the native calibration and acoustic thresholds. The web
+  detector is source-verified only; it is not clinically validated and needs
+  browser/device false-positive, lifecycle, and microphone acceptance.
+- FN03 stops the active session when Flutter reports the page hidden/paused or
+  the user leaves the Sleep Safety screen. The UI tells the user to start a new
+  session after returning. Web has no background monitoring or persistent alert
+  guarantee.
+- FN08 still starts the 15-second in-app response deadline. FN10/FN27 never
+  initiate browser `tel:` automatically; a user must tap the visible call
+  action. The web alert is an in-app overlay while the page is active.
+
 ## API / RPC contracts
 
 ### M31-API01 — `upsert_sleep_safety_contact`

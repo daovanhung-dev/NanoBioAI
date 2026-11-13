@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nano_app/core/storage/localdb/tables/meal_plans_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/meal_catalog_table.dart';
 import 'package:nano_app/core/storage/localdb/tables/exercise_catalog_table.dart';
@@ -20,9 +21,12 @@ import 'package:nano_app/core/utils/logger/app_log_level.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'
+    show databaseFactoryFfiWeb;
 
 import 'database_constants.dart';
 import 'database_version.dart';
+import 'database_web_lock.dart';
 import 'sync/sync_outbox_schema.dart';
 import 'tables/users_table.dart';
 import 'tables/health_profiles_table.dart';
@@ -65,14 +69,29 @@ class DatabaseService {
 
   static const _logScope = 'DatabaseService';
   static Database? _database;
+  static Future<Database>? _databaseOpening;
+  static bool _webFactoryInitialized = false;
 
   static Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    final cachedDatabase = _database;
+    if (cachedDatabase != null) return cachedDatabase;
+    return _databaseOpening ??= _openAndCacheDatabase();
+  }
+
+  static Future<Database> _openAndCacheDatabase() async {
+    try {
+      final database = await _initDatabase();
+      _database = database;
+      _databaseOpening = null;
+      return database;
+    } catch (_) {
+      _databaseOpening = null;
+      rethrow;
+    }
   }
 
   static Future<Database> _initDatabase() async {
+    await _preparePlatform();
     final stopwatch = Stopwatch()..start();
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, DatabaseConstants.databaseName);
@@ -349,6 +368,7 @@ class DatabaseService {
 
   static Future<void> deleteDatabaseFile() async {
     final stopwatch = Stopwatch()..start();
+    await _preparePlatform();
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, DatabaseConstants.databaseName);
     try {
@@ -381,12 +401,22 @@ class DatabaseService {
     }
   }
 
+  static Future<void> _preparePlatform() async {
+    if (!kIsWeb) return;
+    await acquireWebDatabaseSessionLock();
+    if (!_webFactoryInitialized) {
+      databaseFactory = databaseFactoryFfiWeb;
+      _webFactoryInitialized = true;
+    }
+  }
+
   static Future<void> closeDatabase() async {
     if (_database == null) return;
     final stopwatch = Stopwatch()..start();
     try {
       await _database!.close();
       _database = null;
+      _databaseOpening = null;
       stopwatch.stop();
       AppLogger.event(
         level: AppLogLevel.info,

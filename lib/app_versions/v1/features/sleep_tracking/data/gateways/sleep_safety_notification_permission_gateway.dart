@@ -18,7 +18,9 @@ class LocalSleepSafetyNotificationPermissionGateway
 
   @override
   Future<bool> requestPermission() async {
-    if (kIsWeb) return false;
+    // Browser monitoring stops as soon as the page leaves the foreground.
+    // Its in-app alert overlay is therefore the active-session notification.
+    if (kIsWeb) return true;
 
     await NotificationBootstrap.initialize();
     final scheduler = NotificationBootstrap.scheduler;
@@ -27,21 +29,25 @@ class LocalSleepSafetyNotificationPermissionGateway
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        final androidPlugin = plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+        final androidPlugin = plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
         final result = await androidPlugin?.requestNotificationsPermission();
         // Android <=12 has no runtime POST_NOTIFICATIONS dialog.
         return result ?? true;
       case TargetPlatform.iOS:
         final result = await plugin
             .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin>()
+              IOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? false;
       case TargetPlatform.macOS:
         final result = await plugin
             .resolvePlatformSpecificImplementation<
-                MacOSFlutterLocalNotificationsPlugin>()
+              MacOSFlutterLocalNotificationsPlugin
+            >()
             ?.requestPermissions(alert: true, badge: true, sound: true);
         return result ?? false;
       case TargetPlatform.fuchsia:

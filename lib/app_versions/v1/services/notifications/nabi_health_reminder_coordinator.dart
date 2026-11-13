@@ -14,7 +14,7 @@ import 'notification_navigation_coordinator.dart';
 import 'reminder_notification_scheduler.dart';
 
 class NabiHealthReminderCoordinator {
-  final LocalReminderNotificationScheduler scheduler;
+  final ReminderNotificationScheduler scheduler;
   final NabiHealthReminderPreferencesRepository preferencesRepository;
   final NabiHealthReminderScheduleRepository scheduleRepository;
   final NabiHealthReminderPlanner planner;
@@ -30,7 +30,8 @@ class NabiHealthReminderCoordinator {
            preferencesRepository ??
            const SqliteNabiHealthReminderPreferencesRepository(),
        scheduleRepository =
-           scheduleRepository ?? const SqliteNabiHealthReminderScheduleRepository(),
+           scheduleRepository ??
+           const SqliteNabiHealthReminderScheduleRepository(),
        now = now ?? DateTime.now;
 
   Future<NabiHealthReminderPreferences?> loadPreferences({
@@ -74,8 +75,9 @@ class NabiHealthReminderCoordinator {
             startMinutes: preferences.fallbackQuietStartMinutes,
             endMinutes: preferences.fallbackQuietEndMinutes,
           );
-    final profileUpdated =
-        await scheduleRepository.loadHealthProfileUpdatedAt(actor);
+    final profileUpdated = await scheduleRepository.loadHealthProfileUpdatedAt(
+      actor,
+    );
     final waterDone = await scheduleRepository.isWaterGoalCompletedToday(
       actorKey: actor,
       now: currentTime,
@@ -180,7 +182,7 @@ class NabiHealthReminderCoordinator {
         scheduledAt: item.scheduledAt.toUtc().toIso8601String(),
         voiceEnabled: preferences.voiceEnabled,
       );
-      await scheduler.scheduleNabiCompanionReminder(
+      await _scheduleCompanion(
         id: nativeId,
         title: item.category.title,
         body: item.category.body,
@@ -189,6 +191,37 @@ class NabiHealthReminderCoordinator {
         voiceEnabled: preferences.voiceEnabled,
       );
     }
+  }
+
+  Future<void> _scheduleCompanion({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+    required bool voiceEnabled,
+  }) async {
+    final currentScheduler = scheduler;
+    if (currentScheduler is NabiCompanionReminderNotificationScheduler) {
+      final companionScheduler =
+          currentScheduler as NabiCompanionReminderNotificationScheduler;
+      await companionScheduler.scheduleNabiCompanionReminder(
+        id: id,
+        title: title,
+        body: body,
+        scheduledAt: scheduledAt,
+        payload: payload,
+        voiceEnabled: voiceEnabled,
+      );
+      return;
+    }
+    await currentScheduler.scheduleReminder(
+      id: id,
+      title: title,
+      body: body,
+      scheduledAt: scheduledAt,
+      payload: payload,
+    );
   }
 
   Future<void> _defer(NabiCompanionNotificationPayload payload) async {
@@ -235,7 +268,7 @@ class NabiHealthReminderCoordinator {
       scheduledAt: deferredUntil.toUtc().toIso8601String(),
       voiceEnabled: preferences.voiceEnabled,
     );
-    await scheduler.scheduleNabiCompanionReminder(
+    await _scheduleCompanion(
       id: nativeId,
       title: payload.category.title,
       body: payload.category.body,

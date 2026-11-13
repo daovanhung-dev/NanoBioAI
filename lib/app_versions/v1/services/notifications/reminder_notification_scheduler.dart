@@ -32,10 +32,22 @@ abstract interface class MedicationDailyNotificationScheduler {
   Future<void> cancelMedicationReminders({String? ownerId});
 }
 
+abstract interface class NabiCompanionReminderNotificationScheduler {
+  Future<void> scheduleNabiCompanionReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required String payload,
+    required bool voiceEnabled,
+  });
+}
+
 class LocalReminderNotificationScheduler
     implements
         ReminderNotificationScheduler,
-        MedicationDailyNotificationScheduler {
+        MedicationDailyNotificationScheduler,
+        NabiCompanionReminderNotificationScheduler {
   LocalReminderNotificationScheduler({
     FlutterLocalNotificationsPlugin? plugin,
     void Function(NotificationResponse response)? onForegroundResponse,
@@ -238,6 +250,7 @@ class LocalReminderNotificationScheduler
   /// Schedules an M30 health-care reminder without changing the M09 scheduler
   /// interface used by existing tests/fakes. Voice mode uses a dedicated
   /// immutable Android channel and a bundled, non-sensitive spoken WAV.
+  @override
   Future<void> scheduleNabiCompanionReminder({
     required int id,
     required String title,

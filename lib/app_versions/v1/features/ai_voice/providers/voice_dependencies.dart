@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/datasources/voice_chat_turn_datasource.dart';
@@ -8,7 +9,9 @@ import '../domain/gateways/voice_gateways.dart';
 import '../domain/repositories/ai_voice_repository.dart';
 
 final speechRecognitionGatewayProvider = Provider<SpeechRecognitionGateway>(
-  (ref) => DeviceSpeechRecognitionGateway(),
+  (ref) => kIsWeb
+      ? BrowserWhisperSpeechRecognitionGateway()
+      : DeviceSpeechRecognitionGateway(),
 );
 
 final textToSpeechGatewayProvider = Provider<TextToSpeechGateway>(

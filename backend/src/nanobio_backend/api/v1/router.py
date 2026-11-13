@@ -14,6 +14,7 @@ from nanobio_backend.modules.schedule_rewards.router import router as schedule_r
 from nanobio_backend.modules.sleep_safety.router import router as sleep_safety_router
 from nanobio_backend.modules.storage.router import router as storage_router
 from nanobio_backend.modules.usage_quota.router import router as usage_quota_router
+from nanobio_backend.modules.web_push.router import router as web_push_router
 
 router = APIRouter()
 router.include_router(auth_router, prefix="/auth", tags=["auth"])
@@ -29,6 +30,7 @@ router.include_router(payments_router, prefix="/payments", tags=["payments"])
 router.include_router(family_plus_router, prefix="/family-plus", tags=["family-plus"])
 router.include_router(usage_quota_router, prefix="/usage-quota", tags=["usage-quota"])
 router.include_router(business_router, tags=["business"])
+router.include_router(web_push_router, prefix="/web-push", tags=["web-push"])
 router.include_router(
     schedule_rewards_router, prefix="/schedule-rewards", tags=["schedule-rewards"]
 )

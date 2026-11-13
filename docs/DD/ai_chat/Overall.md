@@ -194,3 +194,15 @@ client-only paid gate là rủi ro được chấp nhận rõ ràng.
 | Voice Android reaction re-smoke | Build/install lại; Siêu nhanh 0,2 giây, Stop → đổi threshold → Start cùng page và multi-turn. | No - PASS trên Xiaomi `220333QPG`; delayed arm, safe network retry, selector lock/persistence và Stop trong TTS |
 | Voice 3-minute hard cap/text bounds | Source test xác nhận `listenFor = 180.000 ms`, final/endpointing vẫn thắng; input 3.000 ký tự accepted, 6.001 rejected, response >2.000 rejected; Android compatibility smoke qua mốc 60 giây khi OS cho phép. | No - source/90 tests/analyze/build/install PASS; >60-second device continuity pending; không claim OS luôn giữ recognizer/raw audio đủ 3 phút |
 | Voice iOS | Xcode build và iPhone mic/speech/TTS/background smoke trên macOS. | No - pending |
+
+### Browser voice delta — 2026-11-14
+
+- Web speech input uses the existing Whisper plugin's local WebAssembly
+  worker. Captured PCM stays in browser memory; only the transcript text is
+  passed to the existing voice turn datasource.
+- Voice input is enabled only on a secure, cross-origin isolated page with
+  microphone permission. The web capture is capped at 25 seconds per turn;
+  text entry remains available when local recognition cannot start.
+- Browser TTS is attempted through the existing plugin. If it is unavailable,
+  the answer text remains visible and the voice session reports the existing
+  TTS error. Browser runtime and device acceptance remain pending.

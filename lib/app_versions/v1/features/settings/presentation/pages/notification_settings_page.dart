@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/settings/providers/notification_settings_provider.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/features/nabi/domain/notifications/nabi_health_reminder_preferences.dart';
@@ -120,6 +122,21 @@ class _NotificationSettingsBody extends ConsumerWidget {
                 AppSpacing.xxxl,
               ),
               children: [
+                if (kIsWeb) ...[
+                  const _SettingsCard(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.info_outline_rounded),
+                        title: Text('Thông báo trên web'),
+                        subtitle: Text(
+                          'Thông báo cần trình duyệt cho phép và máy chủ đã cấu hình Web Push. Trên iPhone, hãy thêm NanoBio vào Màn hình chính trước khi bật thông báo.',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
                 _SettingsCard(
                   children: [
                     SwitchListTile.adaptive(
@@ -138,13 +155,14 @@ class _NotificationSettingsBody extends ConsumerWidget {
                           value,
                         );
                         if (!context.mounted || granted || !value) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Bạn cần cho phép thông báo trong cài đặt thiết bị để Nabi có thể nhắc.',
-                            ),
-                          ),
-                        );
+                        final message = kIsWeb
+                            ? NotificationBootstrap
+                                      .webPushAvailabilityMessage ??
+                                  'Bạn cần cho phép thông báo trên trình duyệt để Nabi có thể nhắc.'
+                            : 'Bạn cần cho phép thông báo trong cài đặt thiết bị để Nabi có thể nhắc.';
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(message)));
                       },
                     ),
                   ],

@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_whisper_ggml/flutter_whisper.dart';
+import 'package:record/record.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import 'package:nano_app/core/platform/web_runtime_support.dart' as web_support;
 import '../../domain/gateways/voice_gateways.dart';
 
 class DeviceSpeechRecognitionGateway implements SpeechRecognitionGateway {
@@ -277,5 +283,192 @@ class DeviceSpeechRecognitionGateway implements SpeechRecognitionGateway {
     final failure = _sessionFailure;
     if (failure is SpeechRecognitionPermissionDeniedException) throw failure;
     if (failure is SpeechRecognitionUnavailableException) throw failure;
+  }
+}
+
+/// Web voice input uses a local Whisper WebAssembly worker. Captured PCM stays
+/// in browser memory and is never sent to the AI backend; only its text result
+/// follows the existing chat request.
+class BrowserWhisperSpeechRecognitionGateway
+    implements SpeechRecognitionGateway {
+  BrowserWhisperSpeechRecognitionGateway({AudioRecorder? recorder})
+    : _recorder = recorder ?? AudioRecorder();
+
+  static const _silenceThreshold = 420.0;
+  static const _minimumSpeech = Duration(milliseconds: 350);
+  static const _trailingSilence = Duration(milliseconds: 900);
+  static const _maximumCapture = Duration(seconds: 25);
+
+  final AudioRecorder _recorder;
+  FlutterWhisper? _whisper;
+  Completer<void>? _cancelCapture;
+  bool _disposed = false;
+
+  @override
+  Future<bool> initialize() async {
+    if (_disposed) throw StateError('Whisper voice session is disposed.');
+    if (!kIsWeb) return false;
+    if (!web_support.isSecureCrossOriginIsolated) {
+      throw const SpeechRecognitionUnavailableException(
+        message:
+            'WebAssembly cần kết nối an toàn và cấu hình trình duyệt phù hợp. Hãy nhấn “Nhập chữ” để tiếp tục bằng văn bản.',
+      );
+    }
+    try {
+      if (!await _recorder.hasPermission()) {
+        throw const SpeechRecognitionPermissionDeniedException();
+      }
+      _whisper ??= await FlutterWhisper.loadModel(
+        model: WhisperModels.tinyQ5_1,
+        config: const WhisperModelConfig(useGpu: false),
+      );
+      return true;
+    } on SpeechRecognitionPermissionDeniedException {
+      rethrow;
+    } catch (_) {
+      throw const SpeechRecognitionUnavailableException(
+        message:
+            'Whisper trên web chưa sẵn sàng. Hãy nhấn “Nhập chữ” để tiếp tục bằng văn bản.',
+      );
+    }
+  }
+
+  @override
+  Future<String> listenOnce({
+    String localeId = 'vi_VN',
+    Duration listenFor = const Duration(minutes: 3),
+    Duration pauseFor = const Duration(seconds: 1),
+  }) async {
+    if (_disposed || _whisper == null) {
+      throw const SpeechRecognitionUnavailableException();
+    }
+    final audio = BytesBuilder(copy: false);
+    final finished = Completer<void>();
+    final cancelled = Completer<void>();
+    _cancelCapture = cancelled;
+    var bytesReceived = 0;
+    var speechStartedAt = 0;
+    var lastVoiceAt = 0;
+    StreamSubscription<Uint8List>? subscription;
+    Timer? timeout;
+
+    try {
+      final stream = await _recorder.startStream(
+        const RecordConfig(
+          encoder: AudioEncoder.pcm16bits,
+          sampleRate: 16000,
+          numChannels: 1,
+          autoGain: true,
+          echoCancel: true,
+          noiseSuppress: true,
+        ),
+      );
+      final clock = Stopwatch()..start();
+      final captureDuration = listenFor < _maximumCapture
+          ? listenFor
+          : _maximumCapture;
+      final trailingSilence = pauseFor < _trailingSilence
+          ? pauseFor
+          : _trailingSilence;
+      timeout = Timer(captureDuration, () {
+        if (!finished.isCompleted) finished.complete();
+      });
+      subscription = stream.listen(
+        (chunk) {
+          if (chunk.isEmpty || finished.isCompleted) return;
+          audio.add(chunk);
+          bytesReceived += chunk.length;
+          final sampleCount = chunk.length ~/ 2;
+          final byteData = ByteData.sublistView(chunk);
+          var energy = 0.0;
+          for (var index = 0; index < sampleCount; index++) {
+            final sample = byteData
+                .getInt16(index * 2, Endian.little)
+                .toDouble();
+            energy += sample * sample;
+          }
+          final rms = sampleCount == 0 ? 0 : math.sqrt(energy / sampleCount);
+          final elapsed = clock.elapsedMilliseconds;
+          if (rms >= _silenceThreshold) {
+            speechStartedAt = elapsed;
+            lastVoiceAt = elapsed;
+          }
+          final enoughSpeech =
+              speechStartedAt > 0 &&
+              elapsed - speechStartedAt >= _minimumSpeech.inMilliseconds;
+          if (enoughSpeech &&
+              elapsed - lastVoiceAt >= trailingSilence.inMilliseconds &&
+              !finished.isCompleted) {
+            finished.complete();
+          }
+          if (bytesReceived >= 16000 * 2 * captureDuration.inSeconds &&
+              !finished.isCompleted) {
+            finished.complete();
+          }
+        },
+        onError: (Object error, StackTrace stack) {
+          if (!finished.isCompleted) finished.completeError(error, stack);
+        },
+        onDone: () {
+          if (!finished.isCompleted) finished.complete();
+        },
+        cancelOnError: true,
+      );
+      await Future.any([finished.future, cancelled.future]);
+      if (cancelled.isCompleted) return '';
+      await _recorder.stop();
+      await subscription.cancel();
+      subscription = null;
+      timeout.cancel();
+      timeout = null;
+
+      final bytes = audio.takeBytes();
+      final sampleCount = bytes.length ~/ 2;
+      if (sampleCount < 16000 * 0.35) return '';
+      final samples = Float32List(sampleCount);
+      final byteData = ByteData.sublistView(bytes);
+      for (var index = 0; index < sampleCount; index++) {
+        samples[index] = byteData.getInt16(index * 2, Endian.little) / 32768.0;
+      }
+      final result = await _whisper!.transcribe(
+        samples,
+        config: const WhisperTranscribeConfig(
+          language: 'vi',
+          threads: 2,
+          noContext: true,
+        ),
+      );
+      return result.text.trim();
+    } finally {
+      if (identical(_cancelCapture, cancelled)) _cancelCapture = null;
+      timeout?.cancel();
+      await subscription?.cancel();
+      try {
+        await _recorder.stop();
+      } catch (_) {
+        // The browser may already have stopped the stream.
+      }
+    }
+  }
+
+  @override
+  Future<void> stop() async {
+    final cancelled = _cancelCapture;
+    if (cancelled != null && !cancelled.isCompleted) cancelled.complete();
+    await _recorder.stop();
+  }
+
+  @override
+  Future<void> cancel() async {
+    _whisper?.cancel();
+    await stop();
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    await cancel();
+    await _recorder.dispose();
+    await _whisper?.dispose();
   }
 }

@@ -558,3 +558,12 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Targeted analyzer và formatter pass; automated tests không chạy trong lượt này.
 - [ ] Xác minh microphone permission, tải model, giọng TTS, nhận diện tiếng Việt, luồng hoàn tất và thao tác chạm dự phòng trên Android/iOS thật.
 - Worklog: `docs/worklog/2026-11-13/006-worklog-onboarding-voice-mode.md`; feature: `docs/features/onboarding-voice-mode/001-feature-onboarding-voice-mode.md`.
+
+### Flutter web parity — 2026-11-14
+
+- [x] Keep the consumer app on the default web route; direct `/admin` opens the separately configured Admin Web destination.
+- [x] Add browser SQLite/PWA assets, generic Web Push scheduling, verified VietQR web checkout, local Whisper WebAssembly voice and foreground-only Sleep Safety behavior.
+- [x] Targeted `flutter analyze` passed and the web release build completed. Browser/iOS/Android UI, payment, push delivery and microphone acceptance remain unverified.
+- [ ] Configure VAPID, apply backend migration `0008_web_push`, install the systemd worker/timer, then verify real-browser push delivery and click-through.
+- [ ] Run Chrome Android, desktop Chrome and iOS Safari/PWA acceptance, including SQLite reopen, local voice permissions/model fallback, foreground stop, checkout status refresh, and installed-PWA notifications.
+- Worklog: `docs/worklog/2026-11-14/001-worklog-flutter-web-parity.md`.

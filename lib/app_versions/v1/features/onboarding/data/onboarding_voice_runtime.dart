@@ -8,6 +8,8 @@ import 'package:flutter_whisper_ggml/flutter_whisper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import 'package:nano_app/core/platform/web_runtime_support.dart' as web_support;
+
 /// On-device Vietnamese speech input for onboarding. PCM is streamed directly
 /// from the microphone to Whisper and is never written to a file.
 class OnboardingVoiceRuntime {
@@ -30,10 +32,10 @@ class OnboardingVoiceRuntime {
 
   bool get isSupported => platformIsSupported;
 
-  static bool get platformIsSupported =>
-      !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+  static bool get platformIsSupported => kIsWeb
+      ? web_support.isSecureCrossOriginIsolated
+      : (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
 
   Future<void> prepare({
     void Function(double progress)? onDownloadProgress,
@@ -44,7 +46,13 @@ class OnboardingVoiceRuntime {
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) throw const OnboardingVoicePermissionException();
 
-    if (_whisper == null) {
+    if (_whisper == null && kIsWeb) {
+      _whisper = await FlutterWhisper.loadModel(
+        model: WhisperModels.tinyQ5_1,
+        config: const WhisperModelConfig(useGpu: false),
+        onModelProgress: (progress) => onDownloadProgress?.call(progress / 100),
+      );
+    } else if (_whisper == null) {
       final supportDirectory = await getApplicationSupportDirectory();
       final modelDirectory =
           '${supportDirectory.path}/models/$modelDirectoryName';
@@ -56,12 +64,18 @@ class OnboardingVoiceRuntime {
             onDownloadProgress?.call(progress.fraction),
       );
     }
-    await prepareSpeech();
+    if (!kIsWeb) await prepareSpeech();
   }
 
   Future<void> prepareSpeech() async {
     if (_disposed) throw StateError('Onboarding voice session was disposed.');
     if (_ttsReady) return;
+    if (kIsWeb) {
+      // Browser speech synthesis can use a remote voice. Keep web onboarding
+      // voice input on-device and let the visible question remain the prompt.
+      _ttsReady = true;
+      return;
+    }
     try {
       await _tts.awaitSpeakCompletion(true);
       final available = await _tts.isLanguageAvailable('vi-VN');
@@ -115,7 +129,7 @@ class OnboardingVoiceRuntime {
 
   Future<void> speak(String text) async {
     final normalized = text.trim();
-    if (normalized.isEmpty) return;
+    if (normalized.isEmpty || kIsWeb) return;
     await prepareSpeech();
     try {
       await _tts.stop();

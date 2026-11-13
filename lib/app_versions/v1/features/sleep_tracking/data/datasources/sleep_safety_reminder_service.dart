@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/reminder_notification_scheduler.dart';
+import 'package:nano_app/app_versions/v1/services/notifications/web_push_notification_scheduler.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../domain/entities/sleep_safety_preference.dart';
@@ -13,8 +14,9 @@ import '../gateways/sleep_safety_notification_permission_gateway.dart';
 class SleepSafetyReminderService {
   const SleepSafetyReminderService({
     SleepSafetyNotificationPermissionGateway? permissionGateway,
-  }) : _permissionGateway = permissionGateway ??
-            const LocalSleepSafetyNotificationPermissionGateway();
+  }) : _permissionGateway =
+           permissionGateway ??
+           const LocalSleepSafetyNotificationPermissionGateway();
 
   static const _baseId = 319100;
 
@@ -26,12 +28,58 @@ class SleepSafetyReminderService {
     for (var index = 0; index < 8; index++) {
       await scheduler.cancel(_baseId + index);
     }
-    if (!preference.scheduleEnabled) return;
+    if (!preference.scheduleEnabled) {
+      if (scheduler is WebPushNotificationScheduler) {
+        await scheduler.synchronize();
+      }
+      return;
+    }
 
     // M31 reminders are inexact by design. Do not reuse M09's permission
     // helper here because it also requests Exact Alarm special access.
     final allowed = await _permissionGateway.requestPermission();
-    if (!allowed) return;
+    if (!allowed) {
+      if (scheduler is WebPushNotificationScheduler) {
+        await scheduler.synchronize();
+      }
+      return;
+    }
+
+    if (scheduler is WebPushNotificationScheduler) {
+      final now = DateTime.now();
+      var created = 0;
+      for (var offset = 0; offset < 14 && created < 7; offset++) {
+        final day = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: offset));
+        if (!preference.selectedWeekdays.contains(day.weekday)) continue;
+        final scheduled = DateTime(
+          day.year,
+          day.month,
+          day.day,
+          preference.scheduleStartMinutes ~/ 60,
+          preference.scheduleStartMinutes % 60,
+        );
+        if (!scheduled.isAfter(now)) continue;
+        await scheduler.scheduleReminder(
+          id: _baseId + created,
+          title: 'Đã đến giờ bật giám sát giấc ngủ',
+          body: 'Mở NanoBio và xác nhận Bắt đầu giám sát nhé.',
+          scheduledAt: scheduled,
+          payload: jsonEncode(<String, Object?>{
+            'type': 'sleep_safety',
+            'version': 1,
+            'action': 'arm',
+            'scheduled_at': scheduled.toIso8601String(),
+          }),
+        );
+        created++;
+      }
+      await scheduler.synchronize();
+      return;
+    }
 
     // Reuse the already-initialized M09 plugin so responses keep flowing through
     // the single NotificationBootstrap callback, but use a dedicated M31 copy
@@ -42,9 +90,11 @@ class SleepSafetyReminderService {
     final now = DateTime.now();
     var created = 0;
     for (var offset = 0; offset < 14 && created < 7; offset++) {
-      final day = DateTime(now.year, now.month, now.day).add(
-        Duration(days: offset),
-      );
+      final day = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).add(Duration(days: offset));
       if (!preference.selectedWeekdays.contains(day.weekday)) continue;
 
       final hour = preference.scheduleStartMinutes ~/ 60;

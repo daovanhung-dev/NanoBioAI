@@ -3,7 +3,7 @@
 **Commit proposal:** `feat(onboarding): add local voice guided onboarding`  
 **Date:** 2026-11-13  
 **Module:** M01 `ONBOARDING_PROFILE`  
-**Status:** Implemented in source; Android/iOS device acceptance pending.
+**Status:** Implemented in source; Android/iOS device and browser acceptance pending.
 
 ## Goal
 
@@ -38,8 +38,12 @@ for an answer. Touch input remains available throughout the flow.
 - First voice use can request microphone permission and download the roughly
   31 MB model. Missing permission, model, or Vietnamese TTS leaves the user on
   a screen with touch input and a mode switch.
-- Voice mode is exposed only on Android and iOS. Other platforms keep the touch
-  flow.
+- Android/iOS use the device model and installed Vietnamese TTS voice.
+- Web uses the local Whisper WebAssembly worker only in a secure,
+  cross-origin isolated page. If browser isolation, microphone, model download,
+  or recognition is unavailable, the existing touch and text controls remain
+  available. Web onboarding does not use TTS, so its visible question is the
+  prompt.
 - No database, API, payload, controller business rule, or persistence contract
   changes are introduced.
 
@@ -74,8 +78,8 @@ for an answer. Touch input remains available throughout the flow.
 - Targeted `dart format` on touched Dart files: PASS.
 - Automated tests were not run in this implementation turn.
 - Android microphone/model/TTS acceptance, iOS microphone/model/TTS acceptance,
-  and visual device smoke remain pending; static analysis does not verify native
-  audio behavior.
+  browser microphone/model acceptance, and visual device smoke remain pending;
+  static analysis does not verify runtime audio behavior.
 
 ## Related screens and worklog
 

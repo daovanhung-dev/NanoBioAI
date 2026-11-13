@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     usda_api_key: SecretStr | None = None
     google_play_package_name: str | None = None
     google_play_service_account_json: SecretStr | None = None
+    web_push_vapid_public_key: str | None = None
+    web_push_vapid_private_key: SecretStr | None = None
+    web_push_vapid_subject: str = "mailto:support@nanobioai.com"
     sleep_safety_provider_base_url: str | None = None
     sleep_safety_provider_token: SecretStr | None = None
     sleep_safety_provider_webhook_secret: SecretStr | None = None

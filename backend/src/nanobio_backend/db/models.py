@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -8,6 +8,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -93,6 +94,56 @@ class RefreshSession(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     replaced_by_id: Mapped[UUID | None] = mapped_column(nullable=True)
+
+
+class WebPushSubscription(Base):
+    __tablename__ = "web_push_subscriptions"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    guest_capability_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    endpoint: Mapped[str] = mapped_column(String(2048))
+    endpoint_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    p256dh_key: Mapped[str] = mapped_column(String(256))
+    auth_key: Mapped[str] = mapped_column(String(128))
+    timezone: Mapped[str] = mapped_column(String(64), default="Asia/Ho_Chi_Minh")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+
+
+class WebPushReminder(Base):
+    __tablename__ = "web_push_reminders"
+    __table_args__ = (
+        UniqueConstraint("subscription_id", "reminder_key", name="uq_web_push_reminder_key"),
+        CheckConstraint(
+            "(scheduled_at is not null and daily_minute is null) or "
+            "(scheduled_at is null and daily_minute is not null)",
+            name="ck_web_push_reminder_schedule_kind",
+        ),
+        CheckConstraint(
+            "daily_minute is null or daily_minute between 0 and 1439",
+            name="ck_web_push_daily_minute",
+        ),
+        Index("ix_web_push_reminders_due", "is_active", "scheduled_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    subscription_id: Mapped[UUID] = mapped_column(
+        ForeignKey("web_push_subscriptions.id", ondelete="CASCADE"), index=True
+    )
+    reminder_key: Mapped[str] = mapped_column(String(96))
+    category: Mapped[str] = mapped_column(String(32))
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    daily_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    last_sent_on: Mapped[date | None] = mapped_column(Date, nullable=True)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
 
 
 class RateLimitBucket(Base):

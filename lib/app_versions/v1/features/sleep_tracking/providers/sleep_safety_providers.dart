@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 import '../data/datasources/sleep_safety_cloud_datasource.dart';
 import '../data/datasources/sleep_safety_local_datasource.dart';
 import '../data/datasources/sleep_safety_reminder_service.dart';
 import '../data/gateways/sleep_safety_native_gateway.dart';
+import '../data/gateways/sleep_safety_web_gateway.dart';
 import '../data/gateways/sleep_safety_notification_permission_gateway.dart';
 import '../data/gateways/sleep_safety_connectivity_gateway.dart';
 import '../data/gateways/sleep_safety_phone_gateway.dart';
@@ -20,7 +22,9 @@ final sleepSafetyCloudDatasourceProvider = Provider<SleepSafetyCloudDatasource>(
 );
 
 final sleepSafetyNativeGatewayProvider = Provider<SleepSafetyNativeGateway>(
-  (ref) => const MethodChannelSleepSafetyNativeGateway(),
+  (ref) => kIsWeb
+      ? BrowserSleepSafetyGateway()
+      : const MethodChannelSleepSafetyNativeGateway(),
 );
 
 final sleepSafetyNotificationPermissionGatewayProvider =

@@ -23,19 +23,19 @@ phải đọc ở cột verification.
 
 | Module | DD decision | Implementation | Verification | Current source boundary / gap |
 |---|---|---|---|---|
-| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Focused-widget-tests-pass (existing touch-flow coverage); Voice-device-unverified; Sandbox-unverified | 9-step onboarding, successful completion handoff, save-error/meal-approval guards, Menu return and local voice-mode source are present; Android/iOS microphone, model, TTS and voice-flow acceptance plus sandbox evidence remain pending. |
+| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Web-release-build-pass; Focused-widget-tests-pass (existing touch-flow coverage); Android/iOS/Web voice runtime unverified; Sandbox-unverified | 9-step onboarding and local voice source are present. Web voice uses local Whisper WebAssembly only in a secure, cross-origin isolated context; browser microphone/model acceptance and Android/iOS voice acceptance remain pending. |
 | M02 `PERSONAL_SCHEDULE_AI` | Approved | Implemented | Static-verified; Focused-tests-pass; Targeted-analysis-pass; Android-debug-APK-build-pass; Web-build-pass; Schedule-flow-unverified; Device-inference-unverified; Sandbox-unverified | Reachable first/additional plan flows; SQLite catalog has 3,163 meals (163 existing + 3,000 workspace candidates) and 40 exercises. A local prefilter now classifies/filter all 3,163 before AI; with an empty profile, 3,113 remain (639 breakfast, 41 morning snack, 597 lunch, 89 afternoon snack, 1,747 dinner). Each prompt still shortlists eligible code/name pairs under the selected model context; full filtered local set is shown in both wait flows and remains authoritative for normalization, duplicate rejection, and safety rules. Candidate status remains unreviewed (`is_plan_eligible=false`, `unclassified`, estimated nutrition, awaiting constraint review); relevant unverified allergy/condition/avoid/goal evidence fails closed, and no medical suitability is claimed. Insufficient unique candidates stop before AI/schedule/quota commit. Generation stages stable events in chronological order, emits per-event progress, commits each day only after validation and approval, pauses for custom-meal review, and resumes idempotently. SQLite v36 seeds 3,163 on fresh install and insert-only adds 3,000 on v35 upgrade. Focused tests, targeted analysis, and Android debug build pass; live schedule flow, Qwen device inference, and Supabase quota flow remain unverified. |
 | M03 `DASHBOARD_SCHEDULE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Dashboard/schedule/proof/reward client source is reachable. |
 | M04 `BASIC_HEALTH_CALC` | Approved | Partial | Static-verified; Runtime-unverified | Calculator/formula engine exists; Admin formula-version management is not end-to-end. |
 | M05 `AUTH_PROFILE_SYNC` | Approved | Implemented | Focused-tests-pass; Production-API-signup-login-pass; Android-interaction-unverified | Member signup/sign-in use normalized Vietnam phone and internal email/password Auth aliases; Admin staff keep email login. Admin can reset member passwords to `12345678`; members change passwords themselves in Settings. Seven existing Auth identities still need the guarded alias migration before phone login works for those accounts. |
 | M06 `MEMBERSHIP_QUOTA` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Effective access, trusted quota gateway/RPC, and scheduled membership-expiry reconciliation source exist. |
-| M07 `AI_CHAT` | Approved | Implemented | Backend routing source-verified; focused tests and HTTPS/device E2E pending | Text/JSON, streaming chat, Nabi Care, voice replies, health analysis and Food Scan use authenticated NanoBio backend APIs with no local text/vision fallback. Guests can use non-AI features and receive sign-in messaging for AI. Platform speech recognition and TTS remain device-side; Nabi ESP retains Whisper for transcription only. HTTPS 443 and device E2E remain unverified. |
+| M07 `AI_CHAT` | Approved | Implemented | Backend routing source-verified; Web-release-build-pass; focused tests and HTTPS/device E2E pending | Text/JSON, streaming chat, Nabi Care, voice replies, health analysis and Food Scan use authenticated NanoBio backend APIs with no local text/vision fallback. Web voice recognition uses local Whisper WebAssembly in a worker; raw audio stays in the browser and text entry remains the fallback when browser isolation or microphone access is unavailable. HTTPS 443 and device E2E remain unverified. |
 | M08 `HEALTH_SCORE_HABITS` | Approved | Implemented | Focused-tests-pass; Production-schema/RPC-verified; Runtime/RLS-unverified | Health-score route/repository/ledger source exists; rewards migration is live, while authenticated redemption acceptance is pending. |
-| M09 `SCHEDULE_NOTIFICATIONS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Bootstrap/scheduler/actions are reachable; real-device delivery is unverified here. |
+| M09 `SCHEDULE_NOTIFICATIONS` | Approved | Implemented | Static-verified; Web-release-build-pass; backend Web Push tests/static checks pass; browser delivery and deployment unverified | Web reminders use generic Web Push payloads and server-side scheduling. VAPID secrets, migration, worker installation and real browser delivery still need deployment acceptance. |
 | M10 `ADVANCED_TRACKING_GOALS` | Approved | Partial | Static-verified; Runtime-unverified; Sandbox-unverified | Advanced hydration slice exists; broader multi-goal/plan-adjustment scope is absent. |
 | M11 `FAMILYPLUS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | FamilyPlus route/repository/RPC source exists. |
 | M12 `REFERRAL_DIRECT` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Sale/referral flow and RPC source are reachable. |
-| M13 `PAYMENT_MEMBERSHIP` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | VietQR/manual-review source is reachable; bank UAT is unverified. |
+| M13 `PAYMENT_MEMBERSHIP` | Approved | Implemented | Static-verified; Web-release-build-pass; Runtime-unverified; Sandbox-unverified | Web checkout uses the same server-owned VietQR/manual-review flow; native Google Play billing remains on device. Bank UAT is unverified. |
 | M14 `SALE_POINTS` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Wallet/conversion/Admin adjustment source is reachable. |
 | M15 `ADMIN_DASHBOARD` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Admin dashboard and permissioned drill-down are reachable. |
 | M16 `ADMIN_OPS` | Approved | Implemented | Focused-tests-pass; Production-schema/RPC-grants-verified; Runtime/RLS-unverified | Permissioned operations and reward RPC mappings are reachable; live Admin role/audit behavior and device acceptance remain pending. |
@@ -58,7 +58,7 @@ phải đọc ở cột verification.
 
 | Module | DD decision | Implementation | Verification | Source boundary |
 |---|---|---|---|---|
-| M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Sleep metrics remain deterministic on-device; optional AI uses authenticated NanoBio backend; HTTPS/device E2E pending | Sleep analysis sends a sanitized summary through backend AI; no local text-model fallback. Manual help uses the on-device call gateway; automatic no-response remains voice/SMS. Existing 15-second/call-handoff UI and iOS acceptance remain separate pending items. |
+| M31 SLEEP_SAFETY_MONITORING | Approved | Implemented | Static-verified; Web-release-build-pass; Android/iOS/browser audio acceptance and HTTPS/device E2E pending | Android/iOS keep native monitoring. Web uses local PCM feature extraction only while the Sleep Safety screen is open and foregrounded, stops on screen/tab exit, and opens `tel:` only after an explicit user action. Web has no background monitoring guarantee. |
 | M32 FITNESS_TRAINING | Draft | In Progress | Workout-only/conflict consent: 24 focused Flutter tests and targeted analyze pass; backend AI routing source-verified; device and HTTPS E2E pending | Schedule generation now sends selected training context to authenticated backend AI while retaining quota gateway, catalog validation, and pilot constraints. FamilyPlus subject flow and reviewer sign-offs remain pending; not release-approved. Earlier pilot evidence is recorded in its dated worklog. |
 
 M32 exception: PO directed implementation to proceed on 2026-10-05. Do not fabricate
@@ -383,3 +383,24 @@ This addendum is outside M01-M32 progress totals.
 - Targeted analyzer and formatter pass. Automated tests and native device smoke
   were not run in this turn; Android/iOS microphone permission, model download,
   TTS voice availability and end-to-end voice acceptance remain unverified.
+
+### Web parity implementation — 2026-11-14
+
+- Consumer routes remain the default web experience. `/admin` links to the
+  separate Admin Web URL configured with `ADMIN_WEB_URL`.
+- SQLite uses IndexedDB with a single-tab web lock. PWA metadata and the
+  generated SQLite worker/WASM assets are included.
+- M01 and M07 use local Whisper WebAssembly in a worker; web onboarding keeps
+  its touch/text path when local voice is unavailable. M31 is foreground-only
+  and stops when the page is hidden; web `tel:` is user initiated.
+- M09 uses generic Web Push copy and minimal schedule metadata. Backend VAPID
+  configuration, migration/worker installation and browser delivery remain
+  pending deployment and runtime acceptance.
+- M13 web checkout uses the existing server-owned VietQR/manual-review flow.
+  Browser, bank-app and sandbox acceptance remain pending.
+- Static analyzer passed on changed Flutter sources. `flutter build web
+  --release` passed; the optional Flutter WASM dry run reported pre-existing
+  `flutter_secure_storage_web`/`flutter_tts` compatibility findings, so this
+  is not a claim that every browser selects the WASM renderer. Browser,
+  iOS Safari, Android Chrome, payment, push delivery and microphone smoke were
+  not run.

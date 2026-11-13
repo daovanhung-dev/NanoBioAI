@@ -41,6 +41,7 @@ Lên lịch nhắc theo plan/item và xử lý thao tác mở nhiệm vụ hoặ
 - Delta 2026-08-16: manual health task tái sử dụng scheduler hiện tại và hỗ trợ opt-out reminder theo item.
 - Delta 2026-07-13: hành động mở nhiệm vụ không hoàn thành nền.
 - Delta 2026-10-15: M09 schedules generic recurring medication alerts from the local M22 owner-scoped repository and opens Notification Settings on a validated tap.
+- Delta 2026-11-14: Web uses the capability-protected, generic Web Push contract in [Implementation_Delta_2026-11-14_Web_Push.md](Implementation_Delta_2026-11-14_Web_Push.md); production VAPID/worker and browser delivery acceptance are pending.
 
 ## Dependent Modules
 - PERSONAL_SCHEDULE_AI: source plan items.

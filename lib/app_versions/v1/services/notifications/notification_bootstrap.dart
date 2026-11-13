@@ -23,6 +23,7 @@ import 'notification_action_handler.dart';
 import 'notification_navigation_coordinator.dart';
 import 'reminder_notification_scheduler.dart';
 import 'reminder_schedule_service.dart';
+import 'web_push_notification_scheduler.dart';
 
 @pragma('vm:entry-point')
 void bioAiNotificationBackgroundResponse(NotificationResponse response) {
@@ -36,26 +37,37 @@ class NotificationBootstrap {
   static const _tag = 'NOTIFICATION_BOOTSTRAP';
   static const _fallbackTimezone = 'Asia/Ho_Chi_Minh';
 
-  static final LocalReminderNotificationScheduler _scheduler =
+  static final LocalReminderNotificationScheduler _localScheduler =
       LocalReminderNotificationScheduler(
         onForegroundResponse: handleNotificationResponse,
         onBackgroundResponse: bioAiNotificationBackgroundResponse,
       );
+  static final WebPushNotificationScheduler _webScheduler =
+      createWebPushNotificationScheduler();
 
   static bool _timezoneInitialized = false;
   static bool _initialized = false;
   static Future<void>? _initializing;
   static bool _launchResponseHandled = false;
 
-  static ReminderNotificationScheduler get scheduler => _scheduler;
+  static ReminderNotificationScheduler get scheduler =>
+      kIsWeb ? _webScheduler : _localScheduler;
+
+  static ReminderNotificationScheduler get _activeScheduler => scheduler;
+
+  static MedicationDailyNotificationScheduler get _medicationScheduler =>
+      scheduler as MedicationDailyNotificationScheduler;
+
+  static String? get webPushAvailabilityMessage =>
+      kIsWeb ? _webScheduler.availabilityMessage : null;
 
   static NabiHealthReminderCoordinator _careCoordinator() =>
-      NabiHealthReminderCoordinator(scheduler: _scheduler);
+      NabiHealthReminderCoordinator(scheduler: _activeScheduler);
 
   static MedicationReminderCoordinator _medicationCoordinator() =>
       MedicationReminderCoordinator(
         repository: const SqliteMedicationReminderRepository(),
-        scheduler: _scheduler,
+        scheduler: _medicationScheduler,
         masterEnabled: _medicationMasterEnabled,
       );
 
@@ -68,7 +80,7 @@ class NotificationBootstrap {
     try {
       WidgetsFlutterBinding.ensureInitialized();
       await _initializeTimezone();
-      await _scheduler.initialize();
+      await _activeScheduler.initialize();
       _initialized = true;
       await _handleLaunchResponseOnce();
       AppLogger.info(_tag, 'Notification bootstrap initialized');
@@ -80,8 +92,10 @@ class NotificationBootstrap {
   static Future<void> _handleLaunchResponseOnce() async {
     if (_launchResponseHandled) return;
     _launchResponseHandled = true;
+    if (kIsWeb) return;
     try {
-      final details = await _scheduler.plugin.getNotificationAppLaunchDetails();
+      final details = await _localScheduler.plugin
+          .getNotificationAppLaunchDetails();
       final response = details?.notificationResponse;
       if (details?.didNotificationLaunchApp == true && response != null) {
         await handleNotificationResponse(response);
@@ -94,9 +108,9 @@ class NotificationBootstrap {
     }
   }
 
-  static Future<bool> requestPermissions() async {
-    await initialize();
-    return _scheduler.requestPermissions();
+  static Future<bool> requestPermissions() {
+    if (kIsWeb && _initialized) return _webScheduler.requestPermissions();
+    return initialize().then((_) => _activeScheduler.requestPermissions());
   }
 
   static Future<void> scheduleGeneratedReminders({
@@ -115,7 +129,7 @@ class NotificationBootstrap {
       );
     }
     final service = await ReminderScheduleService.create(
-      scheduler: _scheduler,
+      scheduler: _activeScheduler,
       activeSubjectUserId: () async => subject,
     );
     final coordinator = _careCoordinator();
@@ -130,6 +144,7 @@ class NotificationBootstrap {
       await service.clearPendingReminders(subjectUserId: subject);
     }
     await coordinator.refresh(subjectUserId: subject);
+    await _synchronizeWebPush();
   }
 
   /// Called after the user adds an onboarding medicine schedule. Permission
@@ -149,7 +164,7 @@ class NotificationBootstrap {
     final shared = await SharedPreferences.getInstance();
     var granted = false;
     try {
-      granted = await _scheduler.requestPermissions();
+      granted = await _activeScheduler.requestPermissions();
     } catch (error) {
       AppLogger.warning(
         _tag,
@@ -189,6 +204,7 @@ class NotificationBootstrap {
   }) async {
     await initialize();
     await _careCoordinator().refresh(subjectUserId: subjectUserId);
+    await _synchronizeWebPush();
   }
 
   static Future<void> clearGeneratedReminders({String? subjectUserId}) async {
@@ -196,7 +212,9 @@ class NotificationBootstrap {
     final subject = await resolveActiveNotificationSubject(
       requestedSubjectUserId: subjectUserId,
     );
-    final service = await ReminderScheduleService.create(scheduler: _scheduler);
+    final service = await ReminderScheduleService.create(
+      scheduler: _activeScheduler,
+    );
     await service.clearPendingReminders(subjectUserId: subject);
     await _careCoordinator().clear(subjectUserId: subject);
     try {
@@ -207,6 +225,7 @@ class NotificationBootstrap {
         'Medication reminder clear failed; errorType=${error.runtimeType}',
       );
     }
+    await _synchronizeWebPush();
   }
 
   static Future<void> handleNotificationResponse(
@@ -230,7 +249,7 @@ class NotificationBootstrap {
         return;
       }
       final handler = await NotificationActionHandler.create(
-        scheduler: _scheduler,
+        scheduler: _activeScheduler,
       );
       await handler.handleResponse(response);
     } catch (error, stackTrace) {
@@ -239,6 +258,18 @@ class NotificationBootstrap {
         'Failed to handle notification response',
         error,
         stackTrace,
+      );
+    }
+  }
+
+  static Future<void> _synchronizeWebPush() async {
+    if (!kIsWeb) return;
+    try {
+      await _webScheduler.synchronize();
+    } catch (error) {
+      AppLogger.warning(
+        _tag,
+        'Web push reminders could not be synchronized; errorType=${error.runtimeType}',
       );
     }
   }
@@ -290,7 +321,6 @@ class NotificationBootstrap {
   }
 
   static Future<String> _resolveTimezoneName() async {
-    if (kIsWeb) return _fallbackTimezone;
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       final identifier = timezoneInfo.identifier.trim();

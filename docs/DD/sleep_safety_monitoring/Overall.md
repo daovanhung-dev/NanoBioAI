@@ -6,6 +6,7 @@
 |---|---|
 | Access Plus/FamilyPlus | `Q-M31-07`, `M31-BR01` |
 | Android+iOS | `Q-M31-01` |
+| Browser foreground session | User-approved parity delta 2026-11-14 |
 | Non-medical acoustic labels | `Q-M31-02`, `M31-BR05` |
 | On-device/no raw audio | `Q-M31-03`, `M31-BR04` |
 | 15 second response window | `Q-M31-04`, `M31-BR06/07` |
@@ -23,9 +24,10 @@ SleepTrackingPage
     -> SleepSafetyRepository
       -> SleepSafetyLocalDatasource -> SleepSafetyDao -> SQLite v28
       -> SleepSafetyCloudDatasource -> Supabase tables/RPC/Edge Functions
-      -> SleepSafetyNativeGateway -> Method/EventChannel
+      -> MethodChannelSleepSafetyNativeGateway -> Method/EventChannel
         -> Android SleepSafetyForegroundService / AudioRecord
         -> iOS AVAudioSession + AVAudioEngine
+      -> BrowserSleepSafetyGateway -> record web microphone stream
 
 Native PCM frame (RAM only)
   -> calibration / feature extraction
@@ -182,6 +184,21 @@ low-overhead frame-level features instead.
   is handed back to Flutter after contact config loads
 - implementation kept in existing `AppDelegate.swift` in this delivery so no
   unsafe manual `project.pbxproj` mutation is required.
+
+### Browser web — user-approved parity delta 2026-11-14
+
+- HTTPS microphone capture uses `record` and a foreground-only Dart detector;
+  PCM remains in browser memory and only numeric measurements/event metadata
+  enter the existing controller and persistence flow.
+- Hiding the page or leaving the Sleep Safety screen stops the microphone and
+  ends the session. The browser does not promise background monitoring, native
+  local scheduled alarms, or a persistent safety alert; the visible in-app
+  alert is available only while the page is active. Generic remote Web Push can
+  remind the user to open the screen but never starts monitoring.
+- The 15-second response timer can show the no-response state, but a browser
+  `tel:` action is opened only after the user presses the call button. This
+  does not provide native all-night monitoring parity and is not a medical or
+  emergency service.
 
 ## 7. Cloud trust boundary
 

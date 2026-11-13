@@ -62,7 +62,13 @@ def create_app(
         allow_origins=resolved_settings.cors_allowed_origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Trace-Id", "Idempotency-Key"],
+        allow_headers=[
+            "Authorization",
+            "Content-Type",
+            "X-Trace-Id",
+            "Idempotency-Key",
+            "X-Guest-Capability",
+        ],
         expose_headers=["X-Trace-Id"],
     )
     register_exception_handlers(app)

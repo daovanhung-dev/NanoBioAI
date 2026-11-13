@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
 import 'package:nano_app/app_versions/v2/features/auth/providers/auth_providers.dart';
 import '../data/gateways/sleep_safety_native_gateway.dart';
 import '../domain/entities/safety_contact.dart';
@@ -154,7 +155,8 @@ class SleepSafetyViewState {
   );
 }
 
-class SleepSafetyController extends Notifier<SleepSafetyViewState> {
+class SleepSafetyController extends Notifier<SleepSafetyViewState>
+    with WidgetsBindingObserver {
   final _machine = const SleepSafetyStateMachine();
   StreamSubscription<SleepSafetyNativeEvent>? _nativeSubscription;
   Timer? _audioMetricsWatchdog;
@@ -169,12 +171,25 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
 
   @override
   SleepSafetyViewState build() {
+    if (kIsWeb) WidgetsBinding.instance.addObserver(this);
     ref.onDispose(() {
+      if (kIsWeb) WidgetsBinding.instance.removeObserver(this);
       _nativeSubscription?.cancel();
       _audioMetricsWatchdog?.cancel();
     });
     unawaited(_initialize());
     return SleepSafetyViewState.initial();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!kIsWeb ||
+        !this.state.monitoringActive ||
+        (state != AppLifecycleState.hidden &&
+            state != AppLifecycleState.paused)) {
+      return;
+    }
+    unawaited(stopMonitoring(reason: 'tab_backgrounded'));
   }
 
   Future<void> _initialize() async {
@@ -238,7 +253,6 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     final userId = ref.read(currentAuthUserIdProvider);
     final preference = state.preference;
     if (userId == null || preference == null || state.isBusy) return;
-
     SleepSafetySession? startingSession;
     var nativeStartRequested = false;
     var directCallPermissionGranted = true;
@@ -350,6 +364,17 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
     try {
       await _repository.stopNative(reason);
       await _finishSession(reason);
+      if (kIsWeb && reason == 'tab_backgrounded') {
+        state = state.copyWith(
+          notice:
+              'Giám sát đã dừng vì trang rời màn hình. Hãy mở lại trang và bắt đầu phiên mới khi bạn sẵn sàng.',
+        );
+      } else if (kIsWeb && reason == 'screen_closed') {
+        state = state.copyWith(
+          notice:
+              'Giám sát đã dừng khi bạn rời màn hình này. Hãy bắt đầu phiên mới nếu cần.',
+        );
+      }
     } catch (_) {
       state = state.copyWith(
         errorMessage: 'Chưa thể dừng giám sát ngay. Bạn thử lại nhé.',
@@ -1097,6 +1122,16 @@ class SleepSafetyController extends Notifier<SleepSafetyViewState> {
         return;
       }
       if (!_isNoResponseCallStarting(eventId)) return;
+
+      if (kIsWeb) {
+        await _finishNoResponseCall(
+          updated,
+          stateName: 'no_response_call_unavailable',
+          errorMessage:
+              'Hãy bấm “Gọi ngay” để tự mở ứng dụng Điện thoại. Trình duyệt chỉ mở cuộc gọi sau thao tác của bạn.',
+        );
+        return;
+      }
 
       final contact = _phoneFallbackForNative();
       if (contact == null) {

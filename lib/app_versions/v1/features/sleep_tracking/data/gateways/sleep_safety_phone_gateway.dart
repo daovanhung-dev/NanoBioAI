@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 abstract interface class SleepSafetyPhoneGateway {
   bool get supportsDirectCalling;
@@ -51,6 +52,12 @@ class UrlLauncherSleepSafetyPhoneGateway implements SleepSafetyPhoneGateway {
   @override
   Future<bool> openDialer(String phoneE164, {String? eventId}) async {
     if (!RegExp(r'^\+[1-9][0-9]{7,14}$').hasMatch(phoneE164)) return false;
+    if (kIsWeb) {
+      return launchUrl(
+        Uri(scheme: 'tel', path: phoneE164),
+        mode: LaunchMode.externalApplication,
+      );
+    }
     try {
       return await _control.invokeMethod<bool>('openDialer', {
             'phoneE164': phoneE164,

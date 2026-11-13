@@ -235,6 +235,7 @@ class BackendApiClient {
     Map<String, Object?>? query,
     Object? body,
     bool authenticated = true,
+    Map<String, String>? headers,
   }) async {
     final response = await _send(
       method,
@@ -242,6 +243,7 @@ class BackendApiClient {
       query: query,
       body: body,
       authenticated: authenticated,
+      extraHeaders: headers,
     );
     if (response.statusCode == 401 &&
         authenticated &&
@@ -255,6 +257,7 @@ class BackendApiClient {
             query: query,
             body: body,
             authenticated: authenticated,
+            extraHeaders: headers,
           ),
         );
       }
@@ -268,6 +271,7 @@ class BackendApiClient {
     Map<String, Object?>? query,
     Object? body,
     bool authenticated = true,
+    Map<String, String>? headers,
   }) async {
     final result = await request(
       method,
@@ -275,6 +279,7 @@ class BackendApiClient {
       query: query,
       body: body,
       authenticated: authenticated,
+      headers: headers,
     );
     if (result is Map) return Map<String, Object?>.from(result);
     throw const FormatException('Backend response must be an object.');
@@ -490,6 +495,7 @@ class BackendApiClient {
     Map<String, Object?>? query,
     Object? body,
     required bool authenticated,
+    Map<String, String>? extraHeaders,
   }) async {
     if (!path.startsWith('/api/v1/')) {
       throw ArgumentError.value(path, 'path', 'Must use a versioned API path.');
@@ -500,6 +506,7 @@ class BackendApiClient {
           queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
         );
     final headers = <String, String>{'Accept': 'application/json'};
+    if (extraHeaders != null) headers.addAll(extraHeaders);
     final traceId = _newBackendRequestTraceId();
     headers['X-Trace-Id'] = traceId;
     if (body != null) {
