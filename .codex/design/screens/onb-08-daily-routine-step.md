@@ -123,3 +123,8 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Ask each weekday and weekend time in morning-to-night order: wake, five meals, optional nap interval, two workout ranges, optional busy range and sleep.
+- Nabi speaks each question and listens for a Vietnamese time. “Có/Không” controls the optional nap and busy intervals.
+- Keep existing routine validation and explicit routine confirmation before consent.

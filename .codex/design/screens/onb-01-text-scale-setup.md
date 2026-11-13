@@ -121,3 +121,8 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Voice mode asks for one of the four existing text-size presets before the first onboarding question.
+- Nabi reads the options and begins listening after the prompt. The same four choices remain tappable as fallback.
+- Explain the first-use offline model download and local handling without adding unrelated copy or decoration.

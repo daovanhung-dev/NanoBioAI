@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/onboarding_stitch_components.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/onboarding_voice_step.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/data/onboarding_voice_runtime.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_voice_provider.dart';
 import 'package:nano_app/core/theme/app_text_scale.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
@@ -32,6 +35,12 @@ class OnboardingTextScalePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final voiceMode = ref.watch(
+      onboardingVoiceProvider.select((state) => state.isVoiceMode),
+    );
+    if (voiceMode && OnboardingVoiceRuntime.platformIsSupported) {
+      return const OnboardingVoiceTextScalePage();
+    }
     final state = ref.watch(appTextScaleControllerProvider).value;
     final selected = state?.preset ?? AppTextScalePreset.standard;
     final controller = ref.read(appTextScaleControllerProvider.notifier);
@@ -82,10 +91,27 @@ class OnboardingTextScalePage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Icon(
-                      Icons.format_size_rounded,
-                      color: colors.textSecondary,
-                    ),
+                    if (OnboardingVoiceRuntime.platformIsSupported)
+                      IconButton.filledTonal(
+                        key: const Key('onboarding_text_scale_voice_toggle'),
+                        tooltip: 'Bật chế độ giọng nói',
+                        onPressed: () => ref
+                            .read(onboardingVoiceProvider.notifier)
+                            .enterVoiceMode(
+                              stepIndex: -1,
+                              questionId: 'text_scale',
+                            ),
+                        icon: const Icon(Icons.mic_rounded),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colors.card,
+                          foregroundColor: colors.textPrimary,
+                        ),
+                      )
+                    else
+                      Icon(
+                        Icons.format_size_rounded,
+                        color: colors.textSecondary,
+                      ),
                   ],
                 ),
               ),

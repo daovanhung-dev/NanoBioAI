@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,12 +16,14 @@ import 'package:nano_app/shared/widgets/generated_plan_progress_panel.dart'
     show showGeneratedCustomMealDecisionDialog;
 
 import '../../providers/onboarding_provider.dart';
+import '../../providers/onboarding_voice_provider.dart';
 import '../controllers/onboarding_controller.dart';
 import '../pages/onboarding_result_page.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_schedule_progress_panel.dart';
 import 'onboarding_step_shell.dart';
+import 'onboarding_voice_step.dart';
 import 'onboarding_stitch_components.dart';
 
 String onboardingSubmissionErrorMessage(Object error) {
@@ -38,6 +42,21 @@ class ReviewStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<int>(
+      onboardingVoiceProvider.select((voice) => voice.createRequestToken),
+      (previous, next) {
+        if (next <= (previous ?? 0)) return;
+        final latestState = ref.read(onboardingProvider);
+        unawaited(
+          _submit(
+            context,
+            ref,
+            latestState,
+            ref.read(onboardingProvider.notifier),
+          ),
+        );
+      },
+    );
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
     final goals = _labels(OnboardingCatalog.goals, state.goals);
@@ -74,6 +93,18 @@ class ReviewStep extends ConsumerWidget {
       if (state.treatmentNote.trim().isNotEmpty)
         'Điều trị: ${state.treatmentNote.trim()}',
     ].join(' · ');
+    final isVoiceMode = ref.watch(
+      onboardingVoiceProvider.select((voice) => voice.isVoiceMode),
+    );
+    final spokenSummary = [
+      if (state.fullName.trim().isNotEmpty)
+        'Hồ sơ của ${state.fullName.trim()}.',
+      if (goals.isNotEmpty) 'Mục tiêu: ${_preview(goals)}.',
+      if (conditionSummary.isNotEmpty)
+        'Lưu ý sức khỏe: ${_preview(conditionSummary)}.',
+      if (lifestyleSummary.isNotEmpty) lifestyleSummary,
+      if (extrasSummary.isNotEmpty) extrasSummary,
+    ].join(' ');
 
     return OnboardingStepShell(
       stepIndex: 8,
@@ -88,7 +119,13 @@ class ReviewStep extends ConsumerWidget {
             key: const Key('onboarding_review_create_plan'),
             onPressed: state.isSaving
                 ? null
-                : () => _submit(context, ref, state, controller),
+                : () async {
+                    if (isVoiceMode) {
+                      await ref.read(onboardingVoiceRuntimeProvider).stopAll();
+                    }
+                    if (!context.mounted) return;
+                    await _submit(context, ref, state, controller);
+                  },
             label: state.isSaving ? 'Đang tạo lộ trình...' : 'Tạo lộ trình',
             icon: Icons.auto_awesome_rounded,
             isLoading: state.isSaving,
@@ -135,6 +172,10 @@ class ReviewStep extends ConsumerWidget {
                 ? 'Hồ sơ đã đủ thông tin. Bạn có thể kiểm tra hoặc chỉnh sửa trước khi tiếp tục.'
                 : 'Hãy bổ sung thông tin còn thiếu trước khi tiếp tục.',
           ),
+          if (isVoiceMode) ...[
+            const SizedBox(height: AppSpacing.sm),
+            OnboardingReviewVoicePanel(summary: spokenSummary),
+          ],
           const SizedBox(height: AppSpacing.md),
           const OnboardingScreenHeading(
             title: 'Bạn muốn kiểm tra lại thông tin nào?',
@@ -271,6 +312,7 @@ class ReviewStep extends ConsumerWidget {
     OnboardingState state,
     OnboardingController controller,
   ) async {
+    if (state.isSaving) return;
     if (!state.agreed) {
       AppFeedbackService.instance.emit(AppFeedbackType.warning);
       controller.goToStep(7);
@@ -344,6 +386,7 @@ class ReviewStep extends ConsumerWidget {
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
       final completedState = ref.read(onboardingProvider);
       final message = completedState.savedLog?.trim();
+      ref.read(onboardingVoiceProvider.notifier).setTouchMode();
       context.go(
         V1RoutePaths.onboardingResult,
         extra: OnboardingResultRouteData(
@@ -364,6 +407,11 @@ class ReviewStep extends ConsumerWidget {
       await hideProgress();
       if (!context.mounted) return;
       final message = onboardingSubmissionErrorMessage(error);
+      if (ref.read(onboardingVoiceProvider).isVoiceMode) {
+        ref
+            .read(onboardingVoiceProvider.notifier)
+            .setPhase(OnboardingVoicePhase.error, message: message);
+      }
       _showMessage(context, message);
     }
   }

@@ -16,6 +16,7 @@ import in_app_purchase_storekit
 import local_auth_darwin
 import opus_codec_macos
 import path_provider_foundation
+import record_darwin
 import shared_preferences_foundation
 import speech_to_text
 import sqflite_darwin
@@ -34,6 +35,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   LocalAuthPlugin.register(with: registry.registrar(forPlugin: "LocalAuthPlugin"))
   OpusFlutterMacosPlugin.register(with: registry.registrar(forPlugin: "OpusFlutterMacosPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+  RecordDarwinPlugin.register(with: registry.registrar(forPlugin: "RecordDarwinPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
   SpeechToTextPlugin.register(with: registry.registrar(forPlugin: "SpeechToTextPlugin"))
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))

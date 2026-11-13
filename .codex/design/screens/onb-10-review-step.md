@@ -121,3 +121,8 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Nabi reads a concise review summary and listens for “Tạo lộ trình”.
+- The voice command calls the same review submission method as the existing button; preserve its validation, progress, error and meal-approval behavior.
+- Keep the touch submission button available throughout.

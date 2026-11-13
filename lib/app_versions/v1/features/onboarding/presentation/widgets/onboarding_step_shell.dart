@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_voice_provider.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/data/onboarding_voice_runtime.dart';
 
 import 'nabi_onboarding_experience.dart';
 
 /// Shared Blue Wellness frame for every onboarding step.
-class OnboardingStepShell extends StatelessWidget {
+class OnboardingStepShell extends ConsumerWidget {
   final int stepIndex;
   final int totalSteps;
   final String title;
@@ -59,7 +62,10 @@ class OnboardingStepShell extends StatelessWidget {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isVoiceMode = ref.watch(
+      onboardingVoiceProvider.select((state) => state.isVoiceMode),
+    );
     final content = Column(
       children: [
         _WellnessTopBar(
@@ -69,6 +75,15 @@ class OnboardingStepShell extends StatelessWidget {
           onBack: onBack,
           mood: _resolvedMood,
           showCompanion: showCompanion,
+          isVoiceMode: isVoiceMode,
+          onToggleVoice: () {
+            final voiceController = ref.read(onboardingVoiceProvider.notifier);
+            if (isVoiceMode) {
+              voiceController.setTouchMode();
+            } else {
+              voiceController.enterVoiceMode(stepIndex: stepIndex);
+            }
+          },
         ),
         Expanded(
           child: _StepBody(
@@ -95,6 +110,8 @@ class _WellnessTopBar extends StatelessWidget {
   final VoidCallback? onBack;
   final NabiOnboardingMood mood;
   final bool showCompanion;
+  final bool isVoiceMode;
+  final VoidCallback onToggleVoice;
 
   const _WellnessTopBar({
     required this.stepIndex,
@@ -103,6 +120,8 @@ class _WellnessTopBar extends StatelessWidget {
     required this.onBack,
     required this.mood,
     required this.showCompanion,
+    required this.isVoiceMode,
+    required this.onToggleVoice,
   });
 
   @override
@@ -214,6 +233,25 @@ class _WellnessTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
+          if (OnboardingVoiceRuntime.platformIsSupported)
+            IconButton.filledTonal(
+              key: const Key('onboarding_voice_mode_toggle'),
+              tooltip: isVoiceMode
+                  ? 'Dùng thao tác chạm'
+                  : 'Bật chế độ giọng nói',
+              onPressed: onToggleVoice,
+              icon: Icon(
+                isVoiceMode ? Icons.touch_app_rounded : Icons.mic_rounded,
+                size: 19,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: colors.card,
+                foregroundColor: colors.textPrimary,
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(40, 40),
+              ),
+            ),
+          const SizedBox(width: AppSpacing.xs),
           if (showCompanion)
             Container(
               width: 36,

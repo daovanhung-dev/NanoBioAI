@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 297
+- Total worklogs: 298
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -306,3 +306,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-13 | bugfix/coding/test/docs | test | M01 ONBOARDING_PROFILE — onboarding v1 | [Worklog - Onboarding UI polish](../../docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md) |
 | 2026-11-13 | coding/test/docs | coding | M01 ONBOARDING_PROFILE — màn chọn cỡ chữ | [Worklog - Minh họa Nabi cho màn chọn cỡ chữ](../../docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md) |
 | 2026-11-13 | coding/test/docs | coding | M01 ONBOARDING_PROFILE — bước lịch sinh hoạt | [Worklog - Onboarding Step 7 hỏi đủ thông tin lịch sinh hoạt](../../docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md) |
+| 2026-11-13 | coding/docs | docs-context | M01 ONBOARDING_PROFILE | [Worklog - Onboarding bằng giọng nói trên thiết bị](../../docs/worklog/2026-11-13/006-worklog-onboarding-voice-mode.md) |

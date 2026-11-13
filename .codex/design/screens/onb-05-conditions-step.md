@@ -118,3 +118,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Nabi asks for health conditions and keeps the existing long multi-select catalog on screen for manual selection.
+- Ask the optional other-condition field separately and preserve existing selection rules.

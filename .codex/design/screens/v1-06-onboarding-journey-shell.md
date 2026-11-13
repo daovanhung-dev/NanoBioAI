@@ -118,3 +118,9 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- The journey shell offers a voice/touch mode switch on Android/iOS at every onboarding step.
+- Switching modes retains answers, the active voice question and unsubmitted text input.
+- Voice mode presents one question at a time. Nabi speaks, then automatically listens; short choice lists can be answered by label or number, while long lists stay manually selectable.
+- Microphone, local model, TTS and recognition errors provide a retry or touch fallback. Voice mode is unavailable on other platforms.

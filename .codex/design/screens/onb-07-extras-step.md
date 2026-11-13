@@ -118,3 +118,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Ask allergies, treatment, medication and concern catalogs as separate manual multi-select questions; ask notes and reminder details separately.
+- Optional notes and medication reminders can be skipped. A reminder must retain its existing medicine name and at least one time validation.

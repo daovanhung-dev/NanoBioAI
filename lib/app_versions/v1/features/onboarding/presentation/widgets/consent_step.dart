@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
+import '../../providers/onboarding_voice_provider.dart';
 import 'nabi_onboarding_experience.dart';
+import 'onboarding_voice_step.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
 import 'onboarding_stitch_components.dart';
@@ -22,6 +24,9 @@ class _ConsentStepState extends ConsumerState<ConsentStep> {
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     final state = ref.watch(onboardingProvider);
+    final isVoiceMode = ref.watch(
+      onboardingVoiceProvider.select((voice) => voice.isVoiceMode),
+    );
     final controller = ref.read(onboardingProvider.notifier);
 
     return OnboardingStepShell(
@@ -33,6 +38,7 @@ class _ConsentStepState extends ConsumerState<ConsentStep> {
       onNext: state.agreed ? controller.nextStep : null,
       child: OnboardingRevealColumn(
         children: [
+          if (isVoiceMode) const OnboardingConsentVoiceReader(),
           const _ConsentInfoCard(
             icon: Icons.lock_person_rounded,
             title: 'Thông tin của bạn',

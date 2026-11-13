@@ -118,3 +118,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Ask lifestyle habits as a manual long-list selection, then ask sleep quality, activity level and daily water amount one at a time.
+- Read short option labels and accept a spoken label or position; all choices write through the existing controller.

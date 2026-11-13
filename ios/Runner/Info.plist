@@ -71,7 +71,7 @@
     <string>Chúng tôi sử dụng Face ID để bảo mật quyền truy cập vào ứng dụng của bạn</string>
     <!-- Voice / sleep safety permissions -->
     <key>NSMicrophoneUsageDescription</key>
-    <string>NaBi dùng micro khi bạn chủ động bật trò chuyện giọng nói hoặc giám sát an toàn giấc ngủ. Âm thanh giám sát được phân tích trên thiết bị và không lưu bản ghi âm thô.</string>
+    <string>NaBi dùng micro khi bạn chủ động bật onboarding bằng giọng nói, trò chuyện giọng nói hoặc giám sát an toàn giấc ngủ. Nhận dạng onboarding chạy trên thiết bị và không lưu bản ghi âm thô.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>NaBi cần nhận dạng giọng nói để chuyển câu hỏi của bạn thành văn bản</string>
   </dict>

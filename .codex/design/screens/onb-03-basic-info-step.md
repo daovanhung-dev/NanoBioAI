@@ -118,3 +118,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Ask name, gender, birth year, occupation, height and weight one at a time.
+- Speak the two gender options; keep occupation and other long catalogs manually selectable. Numeric answers must parse into the existing controller fields and can be typed when unclear.

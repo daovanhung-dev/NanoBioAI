@@ -23,7 +23,7 @@ phải đọc ở cột verification.
 
 | Module | DD decision | Implementation | Verification | Current source boundary / gap |
 |---|---|---|---|---|
-| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Focused-widget-tests-pass; Device-unverified; Sandbox-unverified | 9-step onboarding, successful completion handoff, save-error/meal-approval guards, and Menu return are covered by targeted Flutter widget tests; Android/device and sandbox evidence remain pending. |
+| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Focused-widget-tests-pass (existing touch-flow coverage); Voice-device-unverified; Sandbox-unverified | 9-step onboarding, successful completion handoff, save-error/meal-approval guards, Menu return and local voice-mode source are present; Android/iOS microphone, model, TTS and voice-flow acceptance plus sandbox evidence remain pending. |
 | M02 `PERSONAL_SCHEDULE_AI` | Approved | Implemented | Static-verified; Focused-tests-pass; Targeted-analysis-pass; Android-debug-APK-build-pass; Web-build-pass; Schedule-flow-unverified; Device-inference-unverified; Sandbox-unverified | Reachable first/additional plan flows; SQLite catalog has 3,163 meals (163 existing + 3,000 workspace candidates) and 40 exercises. A local prefilter now classifies/filter all 3,163 before AI; with an empty profile, 3,113 remain (639 breakfast, 41 morning snack, 597 lunch, 89 afternoon snack, 1,747 dinner). Each prompt still shortlists eligible code/name pairs under the selected model context; full filtered local set is shown in both wait flows and remains authoritative for normalization, duplicate rejection, and safety rules. Candidate status remains unreviewed (`is_plan_eligible=false`, `unclassified`, estimated nutrition, awaiting constraint review); relevant unverified allergy/condition/avoid/goal evidence fails closed, and no medical suitability is claimed. Insufficient unique candidates stop before AI/schedule/quota commit. Generation stages stable events in chronological order, emits per-event progress, commits each day only after validation and approval, pauses for custom-meal review, and resumes idempotently. SQLite v36 seeds 3,163 on fresh install and insert-only adds 3,000 on v35 upgrade. Focused tests, targeted analysis, and Android debug build pass; live schedule flow, Qwen device inference, and Supabase quota flow remain unverified. |
 | M03 `DASHBOARD_SCHEDULE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Dashboard/schedule/proof/reward client source is reachable. |
 | M04 `BASIC_HEALTH_CALC` | Approved | Partial | Static-verified; Runtime-unverified | Calculator/formula engine exists; Admin formula-version management is not end-to-end. |
@@ -370,3 +370,16 @@ This addendum is outside M01-M32 progress totals.
   validation, confirmation and persistence remain in place.
 - Targeted Flutter analyzer and seven widget tests pass. Android visual/device
   acceptance remains unverified; M01 progress totals are unchanged.
+
+### M01 Voice guided onboarding — 2026-11-13
+
+- Android/iOS voice mode uses an in-memory PCM stream with local Whisper and
+  device Vietnamese TTS. Answers update the existing onboarding controller;
+  no recording/transcript API or storage contract was added.
+- Voice covers text-size setup, basic profile, goals, conditions, lifestyle,
+  extras, every weekday/weekend routine field, consent reading and review
+  submission. Long catalogs remain manual, consent agreement remains a tap,
+  and the existing review submit path is reused.
+- Targeted analyzer and formatter pass. Automated tests and native device smoke
+  were not run in this turn; Android/iOS microphone permission, model download,
+  TTS voice availability and end-to-end voice acceptance remain unverified.

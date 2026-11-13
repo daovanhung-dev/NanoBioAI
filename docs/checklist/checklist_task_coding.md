@@ -17,7 +17,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 
 | Status | Modules | Current boundary |
 |---|---|---|
-| Implemented | M01-M03, M05-M09, M11-M16 | M01 now has focused Flutter widget-test evidence; Android/device/provider/Supabase acceptance remains unverified. Other module boundaries remain as documented in the DD checklist. |
+| Implemented | M01-M03, M05-M09, M11-M16 | M01 retains focused touch-flow widget-test evidence and now includes Android/iOS local voice-mode source; voice device/provider/Supabase acceptance remains unverified. Other module boundaries remain as documented in the DD checklist. |
 | Partial | M04, M10, M17-M19 | Có luồng reachable nhưng chưa bao phủ toàn bộ capability DD/BD; xem gap tại `docs/DD/README.md`. |
 | Placeholder | M20-M21, M23-M29 | Chỉ catalog/access shell; M22 local reminder slice follows its approved DD. |
 | Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
@@ -550,3 +550,11 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [x] Nabi xuất hiện ở từng câu; khoảng thời gian có nút chọn riêng cho Bắt đầu/Kết thúc; quay lại giữ nguyên dữ liệu.
 - [x] Focused analyze, widget tests, format và `git diff --check` pass; worklog: `docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md`.
 - [ ] Chạy visual/device smoke Android khi có thiết bị; không thay đổi M01 device acceptance.
+
+### M01 Voice guided onboarding — 2026-11-13
+
+- [x] Thêm mode giọng nói Android/iOS từ chọn cỡ chữ tới review; hỏi từng câu, dùng Whisper cục bộ và giữ dữ liệu qua `OnboardingController` hiện có.
+- [x] Danh sách dài chọn thủ công; consent vẫn cần chạm xác nhận; lệnh review gọi luồng submit hiện có. Không thêm recording/transcript upload hoặc schema/API.
+- [x] Targeted analyzer và formatter pass; automated tests không chạy trong lượt này.
+- [ ] Xác minh microphone permission, tải model, giọng TTS, nhận diện tiếng Việt, luồng hoàn tất và thao tác chạm dự phòng trên Android/iOS thật.
+- Worklog: `docs/worklog/2026-11-13/006-worklog-onboarding-voice-mode.md`; feature: `docs/features/onboarding-voice-mode/001-feature-onboarding-voice-mode.md`.

@@ -4,7 +4,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 
 ## Canonical Work Types Seen
 
-- docs-context - Context and docs update: 100 worklog(s)
+- docs-context - Context and docs update: 101 worklog(s)
 - coding - Coding: 53 worklog(s)
 - bugfix - Direct bugfix: 46 worklog(s)
 - supabase-schema - Supabase schema and RLS: 44 worklog(s)
@@ -20,6 +20,7 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - unknown: 56
 - catalog nabi_3000_mon_viet_moi.json.: 6
 - M32 FITNESS_TRAINING: 5
+- M01 ONBOARDING_PROFILE: 3
 - M31 SLEEP_SAFETY_MONITORING: 3
 - M31 SLEEP_SAFETY_MONITORING.: 3
 - M02 PERSONAL_SCHEDULE_AI, meal catalog.: 3
@@ -28,7 +29,6 @@ Generated from the full worklog corpus. Read this after `.codex/AGENTS.md`.
 - .codex: 2
 - docs/issues, docs/todo: 2
 - authentication: 2
-- docs/DD M01-M19: 2
 
 ## Reusable Project Skills
 

@@ -11,6 +11,8 @@ import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_text_client.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/presentation/widgets/nabi_onboarding_experience.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/data/onboarding_voice_runtime.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_voice_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
@@ -254,6 +256,29 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
                           ),
                         ),
                       ),
+                      if (OnboardingVoiceRuntime.platformIsSupported) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        AppViewMotion(
+                          key: const Key('onboarding_entry_voice_motion'),
+                          offset: const Offset(1, 0),
+                          duration: AppDuration.emphasized,
+                          delay: AppDuration.stagger,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: NabiSecondaryButton(
+                              key: const Key('onboarding_entry_voice_cta'),
+                              onPressed: () {
+                                ref
+                                    .read(onboardingVoiceProvider.notifier)
+                                    .enterVoiceMode(stepIndex: 0);
+                                context.push(V1RoutePaths.onboarding);
+                              },
+                              label: 'Tiếp tục bằng giọng nói',
+                              icon: Icons.mic_rounded,
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       AppViewMotion(
                         key: const Key('onboarding_entry_login_motion'),

@@ -118,3 +118,8 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- Android/iOS entry exposes a secondary “Tiếp tục bằng giọng nói” action alongside the existing touch action.
+- The entry action preserves the current onboarding route and controller state. Touch remains the default and fallback.
+- Voice setup explains first-use microphone permission, the roughly 31 MB offline model download, and local speech processing.

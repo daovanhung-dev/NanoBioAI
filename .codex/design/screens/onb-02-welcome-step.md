@@ -118,3 +118,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- In voice mode, Nabi asks the user to say “Bắt đầu” before advancing to the existing basic information step.
+- Keep the existing touch CTA available and route both actions through the current onboarding controller.

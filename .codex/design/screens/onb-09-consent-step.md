@@ -121,3 +121,7 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - [ ] User-facing copy is Vietnamese and contains no internal technical terms.
 - [ ] Feedback fires only after the corresponding semantic event.
 - [ ] Source/route classification remains accurate at implementation time.
+
+## 33. Voice mode addendum
+- In voice mode, Nabi reads the existing consent and health disclaimer content aloud.
+- Agreement remains an explicit tap on the existing consent control; speech alone must not set consent or advance the step.

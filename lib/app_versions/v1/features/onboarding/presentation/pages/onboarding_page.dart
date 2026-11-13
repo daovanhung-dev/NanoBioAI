@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_provider.dart';
+import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_voice_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -18,6 +19,7 @@ import '../widgets/lifestyle_step.dart';
 import '../widgets/nabi_onboarding_experience.dart';
 import '../widgets/review_step.dart';
 import '../widgets/welcome_step.dart';
+import '../widgets/onboarding_voice_step.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
@@ -43,6 +45,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     });
 
     final state = ref.watch(onboardingProvider);
+    final isVoiceMode = ref.watch(
+      onboardingVoiceProvider.select((voice) => voice.isVoiceMode),
+    );
     final hasHistory = Navigator.of(context).canPop();
     return PopScope(
       canPop: state.currentStep <= 0 && !state.isSaving && hasHistory,
@@ -50,13 +55,15 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         if (didPop || state.isSaving) return;
         if (state.currentStep > 0) {
           final controller = ref.read(onboardingProvider.notifier);
-          if (state.currentStep == OnboardingController.dailyRoutineStepIndex) {
+          if (!isVoiceMode &&
+              state.currentStep == OnboardingController.dailyRoutineStepIndex) {
             controller.previousRoutineQuestion();
           } else {
             controller.previousStep();
           }
           return;
         }
+        ref.read(onboardingVoiceProvider.notifier).setTouchMode();
         context.go(V1RoutePaths.onboardingEntry);
       },
       child: MedicalPageScaffold(
@@ -68,17 +75,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             duration: const Duration(milliseconds: 280),
             child: KeyedSubtree(
               key: ValueKey(state.currentStep),
-              child: switch (state.currentStep) {
-                0 => const WelcomeStep(),
-                1 => const BasicInfoStep(),
-                2 => const GoalsStep(),
-                3 => const ConditionsStep(),
-                4 => const LifestyleStep(),
-                5 => const ExtrasStep(),
-                6 => const DailyRoutineStep(),
-                7 => const ConsentStep(),
-                _ => const ReviewStep(),
-              },
+              child: isVoiceMode && state.currentStep <= 6
+                  ? OnboardingVoiceStep(stepIndex: state.currentStep)
+                  : switch (state.currentStep) {
+                      0 => const WelcomeStep(),
+                      1 => const BasicInfoStep(),
+                      2 => const GoalsStep(),
+                      3 => const ConditionsStep(),
+                      4 => const LifestyleStep(),
+                      5 => const ExtrasStep(),
+                      6 => const DailyRoutineStep(),
+                      7 => const ConsentStep(),
+                      _ => const ReviewStep(),
+                    },
             ),
           ),
         ),
