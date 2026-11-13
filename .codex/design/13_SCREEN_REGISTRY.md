@@ -38,7 +38,7 @@ Working-tree snapshot 2026-10-07: **94 repository surface specs** mapped from cu
 - **ONB-08 — Daily Routine Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/daily_routine_step.dart`
 - **ONB-09 — Consent Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/consent_step.dart`
 - **ONB-10 — Review Step** · `internal-step` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/review_step.dart`
-- **ONB-11 — Result Step** · `source-only` · `V1RoutePaths.onboarding (internal)` · `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
+- **ONB-11 — Result Step** · `internal-step` · `V1RoutePaths.onboardingResult` · `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_result_page.dart + lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
 - **V1-X01 — Features Hub** · `source-sub-surface` · `MainNavigationPage tab: Tiện ích` · `lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart`
 - **V1-X02 — Health Insights / Góc Nabi** · `source-sub-surface` · `MainNavigationPage tab: Góc Nabi` · `lib/app_versions/v1/features/other/presentation/pages/other_page.dart`
 - **V1-X03 — Schedule Proof Gallery** · `source-sub-surface` · `push từ Lifestyle Schedule` · `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart`

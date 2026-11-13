@@ -15,7 +15,7 @@ class ResultStep extends StatelessWidget {
     super.key,
     this.healthScore,
     this.userName = 'Bạn',
-    this.message = 'Hồ sơ đã sẵn sàng.',
+    this.message = 'Hồ sơ của bạn đã được lưu. Nabi sẽ đồng hành cùng bạn.',
     this.onContinue,
     this.onRestart,
   });
@@ -27,7 +27,6 @@ class ResultStep extends StatelessWidget {
       ambientBackground: false,
       backgroundColor: Colors.transparent,
       body: NabiAmbientBackground(
-        strong: true,
         child: SafeArea(
           child: NabiCelebrationBurst(
             child: Center(
@@ -56,14 +55,14 @@ class ResultStep extends StatelessWidget {
                         child: Column(
                           children: [
                             const NabiCompanionAvatar(
-                              size: 144,
+                              size: 124,
                               mood: NabiOnboardingMood.celebrate,
                               showStatus: false,
                               hero: true,
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             Text(
-                              'Sẵn sàng rồi, $userName!',
+                              'Bạn đã sẵn sàng đồng hành cùng Nabi chưa?',
                               textAlign: TextAlign.center,
                               style: AppTextStyles.heading2.copyWith(
                                 color: AppColors.textInverse,
@@ -106,18 +105,20 @@ class ResultStep extends StatelessWidget {
                                       children: [
                                         Text(
                                           'Hồ sơ đã sẵn sàng',
-                                          style: AppTextStyles.heading5.copyWith(
-                                            color: colors.textPrimary,
-                                            fontWeight: FontWeight.w900,
-                                          ),
+                                          style: AppTextStyles.heading5
+                                              .copyWith(
+                                                color: colors.textPrimary,
+                                                fontWeight: FontWeight.w900,
+                                              ),
                                         ),
                                         const SizedBox(height: AppSpacing.xs),
                                         Text(
                                           'Điểm sức khỏe chỉ hiển thị khi có dữ liệu thật để tính.',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: colors.textSecondary,
-                                            height: 1.4,
-                                          ),
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: colors.textSecondary,
+                                                height: 1.4,
+                                              ),
                                         ),
                                       ],
                                     ),
@@ -135,18 +136,20 @@ class ResultStep extends StatelessWidget {
                                       children: [
                                         Text(
                                           'Điểm khởi đầu',
-                                          style: AppTextStyles.heading5.copyWith(
-                                            color: colors.textPrimary,
-                                            fontWeight: FontWeight.w900,
-                                          ),
+                                          style: AppTextStyles.heading5
+                                              .copyWith(
+                                                color: colors.textPrimary,
+                                                fontWeight: FontWeight.w900,
+                                              ),
                                         ),
                                         const SizedBox(height: AppSpacing.xs),
                                         Text(
                                           'Nabi sẽ đồng hành và điều chỉnh theo tiến trình của bạn.',
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: colors.textSecondary,
-                                            height: 1.4,
-                                          ),
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: colors.textSecondary,
+                                                height: 1.4,
+                                              ),
                                         ),
                                       ],
                                     ),

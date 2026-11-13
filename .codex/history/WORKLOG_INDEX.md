@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 292
+- Total worklogs: 296
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -301,3 +301,7 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-02 | bugfix | bugfix | Flutter membership display; Admin user search | [Worklog - Đồng bộ gói Plus và hiển thị số điện thoại Admin](../../docs/worklog/2026-11-02/005-worklog-membership-plus-admin-phone.md) |
 | 2026-11-04 | bugfix / chẩn đoán kết nối. | docs-context | Admin Web và đường vào FastAPI qua HTTPS. | [Worklog - Chẩn đoán API Admin Web không truy cập được](../../docs/worklog/2026-11-04/001-worklog-admin-web-api-public-reachability.md) |
 | 2026-11-05 | coding | coding | Android/iOS app display name | [Worklog - Đổi tên hiển thị ứng dụng Nabi](../../docs/worklog/2026-11-05/001-worklog-app-display-name.md) |
+| 2026-11-13 | coding/test/docs | coding | M01 ONBOARDING_PROFILE — UI/UX onboarding v1 | [Worklog - Chỉnh onboarding Nabi theo NABI-01–08](../../docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md) |
+| 2026-11-13 | bugfix | bugfix | Android Gradle signing config | [Worklog - Android debug build without release keystore](../../docs/worklog/2026-11-13/002-worklog-android-debug-build-without-keystore.md) |
+| 2026-11-13 | bugfix/coding/test/docs | test | M01 ONBOARDING_PROFILE — onboarding v1 | [Worklog - Onboarding UI polish](../../docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md) |
+| 2026-11-13 | coding/test/docs | coding | M01 ONBOARDING_PROFILE — màn chọn cỡ chữ | [Worklog - Minh họa Nabi cho màn chọn cỡ chữ](../../docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md) |

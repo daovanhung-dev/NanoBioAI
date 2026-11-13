@@ -19,8 +19,8 @@ class WelcomeStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 0,
-      title: 'Chào bạn, mình là Nabi',
-      subtitle: 'Mình cùng tạo lộ trình phù hợp nhé.',
+      title: 'Cùng bắt đầu nhé?',
+      subtitle: 'Mình là Nabi, sẽ đồng hành cùng bạn.',
       mood: NabiOnboardingMood.welcome,
       showBack: true,
       onBack: () {
@@ -36,8 +36,8 @@ class WelcomeStep extends ConsumerWidget {
             offset: Offset.zero,
             child: Center(
               child: SizedBox(
-                width: 212,
-                height: 202,
+                width: 184,
+                height: 168,
                 child: Stack(
                   alignment: Alignment.center,
                   clipBehavior: Clip.none,
@@ -111,8 +111,8 @@ class WelcomeStep extends ConsumerWidget {
                     ),
                     Image.asset(
                       NabiOnboardingMood.welcome.assetPath,
-                      width: 164,
-                      height: 164,
+                      width: 136,
+                      height: 136,
                       fit: BoxFit.contain,
                       cacheWidth: 360,
                       semanticLabel: 'Nabi chào bạn',
@@ -139,12 +139,16 @@ class WelcomeStep extends ConsumerWidget {
                     color: colors.secondaryDark,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    'ĐỒNG HÀNH CÙNG NABI',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: colors.secondaryDark,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.4,
+                  Flexible(
+                    child: Text(
+                      'NABI ĐỒNG HÀNH',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: colors.secondaryDark,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                      ),
                     ),
                   ),
                 ],
@@ -153,7 +157,7 @@ class WelcomeStep extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Chào bạn, mình là Nabi',
+            'Cùng bắt đầu nhé?',
             textAlign: TextAlign.center,
             style: AppTextStyles.displaySmall.copyWith(
               color: colors.textPrimary,
@@ -163,7 +167,7 @@ class WelcomeStep extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Mình cùng tạo lộ trình phù hợp với nhịp sống của bạn nhé.',
+            'Mình là Nabi, sẽ cùng bạn tạo lộ trình phù hợp.',
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               color: colors.textSecondary,
@@ -175,7 +179,7 @@ class WelcomeStep extends ConsumerWidget {
             icon: Icons.quiz_outlined,
             title: 'Tìm hiểu thể trạng',
             label: 'Khảo sát',
-            description: 'Vài câu hỏi về thể trạng và thói quen sinh hoạt.',
+            description: 'Vài câu hỏi ngắn về sức khỏe và thói quen.',
             tint: NabiPalette.calmBlue,
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -183,7 +187,7 @@ class WelcomeStep extends ConsumerWidget {
             icon: Icons.lock_outline_rounded,
             title: 'Minh bạch thông tin',
             label: 'Riêng tư',
-            description: 'Bạn luôn kiểm soát thông tin mình chia sẻ.',
+            description: 'Bạn luôn kiểm soát thông tin đã chia sẻ.',
             tint: NabiPalette.greenPrimary,
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -191,37 +195,8 @@ class WelcomeStep extends ConsumerWidget {
             icon: Icons.tune_rounded,
             title: 'Dễ dàng tùy chỉnh',
             label: 'Linh hoạt',
-            description: 'Có thể điều chỉnh lộ trình bất cứ lúc nào.',
+            description: 'Bạn có thể điều chỉnh lộ trình sau này.',
             tint: NabiPalette.personalPurple,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colors.primarySubtle,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.format_quote_rounded,
-                  color: colors.secondary,
-                  size: 22,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                Expanded(
-                  child: Text(
-                    'Lắng nghe cơ thể là bước đầu tiên để chăm sóc mình tốt hơn.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: colors.textSecondary,
-                      fontStyle: FontStyle.italic,
-                      height: 1.45,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

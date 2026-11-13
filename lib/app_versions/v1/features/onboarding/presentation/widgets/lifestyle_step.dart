@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 import '../../providers/onboarding_provider.dart';
+
 import 'package:nano_app/core/constants/onboarding_constants.dart';
+
 import '../constants/onboarding_options.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
@@ -20,36 +22,27 @@ class LifestyleStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 4,
-      title: 'Nhịp sống của bạn',
-      subtitle: 'Chia sẻ thói quen gần với một ngày thường của bạn.',
+      title: 'Nhịp sống hằng ngày của bạn thế nào?',
+      subtitle: 'Chọn mức gần đúng cho các thói quen.',
       mood: NabiOnboardingMood.lifestyle,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: OnboardingRevealColumn(
         children: [
-          const OnboardingNabiNote(
-            mood: NabiOnboardingMood.lifestyle,
-            eyebrow: 'NABI ĐỒNG HÀNH',
-            message:
-                'Nhịp sinh học mỗi người là một câu chuyện riêng. Cứ chia sẻ theo thói quen thực tế của bạn nhé.',
-          ),
-          const SizedBox(height: AppSpacing.lg),
           const OnboardingScreenHeading(
-            title: 'Nhịp sống của bạn',
-            subtitle:
-                'Những lựa chọn này giúp Nabi điều chỉnh gợi ý theo lịch sinh hoạt hằng ngày.',
+            title: 'Nhịp sống hằng ngày của bạn thế nào?',
+            subtitle: 'Chia sẻ thói quen gần đúng của bạn.',
             bottomSpacing: AppSpacing.md,
           ),
           _LifestyleCard(
             number: '01',
             category: 'GIẤC NGỦ',
-            title: 'Chất lượng giấc ngủ',
-            caption: 'Phục hồi năng lượng',
+            title: 'Bạn ngủ thế nào?',
             icon: Icons.nights_stay_rounded,
             scene: const _LifestyleScene(kind: _SceneKind.sleep),
             child: OnboardingChoicePickerField(
-              label: 'Chọn mức độ ngủ',
-              hint: 'Chọn mức độ ngủ',
+              label: 'Chất lượng giấc ngủ',
+              hint: 'Chọn mức gần đúng',
               icon: Icons.bedtime_rounded,
               options: OnboardingOptions.sleepQualityChoices,
               selectedCode: OnboardingOptions.codeForLabel(
@@ -68,13 +61,12 @@ class LifestyleStep extends ConsumerWidget {
           _LifestyleCard(
             number: '02',
             category: 'VẬN ĐỘNG',
-            title: 'Mức độ vận động',
-            caption: 'Lưu thông và dẻo dai',
+            title: 'Bạn vận động ra sao?',
             icon: Icons.energy_savings_leaf_rounded,
             scene: const _LifestyleScene(kind: _SceneKind.movement),
             child: OnboardingChoicePickerField(
-              label: 'Chọn mức độ vận động',
-              hint: 'Chọn mức độ vận động',
+              label: 'Mức độ vận động',
+              hint: 'Chọn mức gần đúng',
               icon: Icons.directions_walk_rounded,
               options: OnboardingOptions.activityChoices,
               selectedCode: OnboardingOptions.codeForLabel(
@@ -93,13 +85,12 @@ class LifestyleStep extends ConsumerWidget {
           _LifestyleCard(
             number: '03',
             category: 'NƯỚC UỐNG',
-            title: 'Lượng nước mỗi ngày',
-            caption: 'Dịu dàng tiếp sức cơ thể',
+            title: 'Bạn uống bao nhiêu nước?',
             icon: Icons.water_drop_rounded,
             scene: const _LifestyleScene(kind: _SceneKind.water),
             child: OnboardingChoicePickerField(
-              label: 'Chọn lượng nước',
-              hint: 'Chọn lượng nước',
+              label: 'Lượng nước mỗi ngày',
+              hint: 'Chọn mức gần đúng',
               icon: Icons.local_drink_rounded,
               options: OnboardingOptions.waterChoices,
               selectedCode: OnboardingOptions.codeForLabel(
@@ -109,13 +100,6 @@ class LifestyleStep extends ConsumerWidget {
               onSelected: (code) => controller.updateWaterPerDay(
                 OnboardingCatalog.labelOf(OnboardingOptions.waterChoices, code),
               ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Thông tin chỉ giúp Nabi điều chỉnh gợi ý cho gần với nhịp sống của bạn.',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: context.semanticColors.textSecondary,
             ),
           ),
         ],
@@ -129,7 +113,6 @@ class _LifestyleCard extends StatelessWidget {
     required this.number,
     required this.category,
     required this.title,
-    required this.caption,
     required this.icon,
     required this.scene,
     required this.child,
@@ -138,7 +121,6 @@ class _LifestyleCard extends StatelessWidget {
   final String number;
   final String category;
   final String title;
-  final String caption;
   final IconData icon;
   final Widget scene;
   final Widget child;
@@ -155,8 +137,8 @@ class _LifestyleCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: colors.secondarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -191,17 +173,9 @@ class _LifestyleCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          SizedBox(height: 82, width: double.infinity, child: scene),
+          SizedBox(height: 60, width: double.infinity, child: scene),
           const SizedBox(height: AppSpacing.sm),
           child,
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            caption,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: colors.textMuted,
-              letterSpacing: 0,
-            ),
-          ),
         ],
       ),
     );
@@ -229,9 +203,9 @@ class _LifestyleScene extends StatelessWidget {
       _SceneKind.water => Icons.water_drop_rounded,
     };
     final label = switch (kind) {
-      _SceneKind.sleep => 'Một khoảng nghỉ êm',
-      _SceneKind.movement => 'Chuyển động vừa sức',
-      _SceneKind.water => 'Từng ngụm nước mát',
+      _SceneKind.sleep => 'Giấc ngủ',
+      _SceneKind.movement => 'Vận động',
+      _SceneKind.water => 'Uống nước',
     };
 
     return ClipRRect(
@@ -264,8 +238,8 @@ class _LifestyleScene extends StatelessWidget {
             bottom: 0,
             child: Center(
               child: Container(
-                width: 46,
-                height: 46,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.22),
                   shape: BoxShape.circle,
@@ -273,13 +247,13 @@ class _LifestyleScene extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.28),
                   ),
                 ),
-                child: Icon(icon, color: Colors.white, size: 23),
+                child: Icon(icon, color: Colors.white, size: 20),
               ),
             ),
           ),
           Positioned(
             left: 68,
-            bottom: 10,
+            bottom: 6,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(

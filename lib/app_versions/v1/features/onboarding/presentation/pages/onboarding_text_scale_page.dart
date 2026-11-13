@@ -42,7 +42,6 @@ class OnboardingTextScalePage extends ConsumerWidget {
     return MedicalPageScaffold(
       backgroundColor: colors.background,
       body: NabiAmbientBackground(
-        strong: true,
         child: SafeArea(
           child: Column(
             children: [
@@ -74,14 +73,7 @@ class OnboardingTextScalePage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Cài đặt hiển thị',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: colors.textSecondary,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                          Text(
-                            'Kích thước chữ',
+                            'Cỡ chữ',
                             style: AppTextStyles.heading5.copyWith(
                               color: colors.textPrimary,
                               fontWeight: FontWeight.w700,
@@ -99,252 +91,88 @@ class OnboardingTextScalePage extends ConsumerWidget {
               ),
               Expanded(
                 child: LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 22),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: 620,
-                          minHeight: constraints.maxHeight - 30,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Wrap(
-                              spacing: AppSpacing.xs,
-                              runSpacing: AppSpacing.xs,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.secondarySoft,
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.pill,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'CÁ NHÂN HÓA',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: colors.secondaryDark,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.35,
-                                    ),
+                  builder: (context, constraints) {
+                    final mascotSize =
+                        constraints.maxWidth < 360 ||
+                            constraints.maxHeight < 460
+                        ? 88.0
+                        : 112.0;
+                    return SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 22),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: 620,
+                            minHeight: constraints.maxHeight - 30,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Xem trước',
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: colors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Align(
+                                child: Image.asset(
+                                  key: const Key('onboarding_text_scale_nabi'),
+                                  NabiOnboardingMood.guide.assetPath,
+                                  width: mascotSize,
+                                  height: mascotSize,
+                                  fit: BoxFit.contain,
+                                  cacheWidth: (mascotSize * 3).round(),
+                                  semanticLabel: 'Nabi',
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              _PreviewCard(fontSize: 14 + selectedIndex * 2),
+                              const SizedBox(height: AppSpacing.md),
+                              Text(
+                                'Chọn cỡ chữ',
+                                style: AppTextStyles.labelLarge.copyWith(
+                                  color: colors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: colors.primarySoft,
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.xl,
                                   ),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.remove_red_eye_outlined,
-                                      color: colors.secondary,
-                                      size: 17,
-                                    ),
-                                    const SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      'Thân thiện thị giác',
-                                      style: AppTextStyles.labelSmall.copyWith(
-                                        color: colors.secondaryDark,
-                                        letterSpacing: 0,
+                                    for (
+                                      var index = 0;
+                                      index < presets.length;
+                                      index++
+                                    )
+                                      Expanded(
+                                        child: _ScaleOption(
+                                          preset: presets[index],
+                                          selected: selected == presets[index],
+                                          fontSize: 14 + index * 2,
+                                          onTap: () =>
+                                              controller.select(presets[index]),
+                                        ),
                                       ),
-                                    ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'Chữ vừa mắt bạn',
-                              style: AppTextStyles.displaySmall.copyWith(
-                                color: colors.textPrimary,
-                                fontWeight: FontWeight.w800,
-                                height: 1.15,
                               ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              'Chọn kích thước chữ giúp bạn đọc thoải mái trên toàn bộ ứng dụng.',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: colors.textSecondary,
-                                height: 1.45,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            const OnboardingNabiNote(
-                              mood: NabiOnboardingMood.guide,
-                              eyebrow: 'NABI GỢI Ý',
-                              compact: true,
-                              message:
-                                  'Cỡ chữ phù hợp giúp mắt thả lỏng suốt quá trình chăm sóc bản thân.',
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Khung xem trước trực tiếp',
-                                    style: AppTextStyles.labelLarge.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colors.primarySoft,
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.pill,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Cỡ chữ: ${_label(selected)}',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: colors.primary,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            _PreviewCard(fontSize: 14 + selectedIndex * 2),
-                            const SizedBox(height: AppSpacing.md),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Mức kích thước',
-                                    style: AppTextStyles.labelLarge.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '4 mức tùy chọn',
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: colors.textSecondary,
-                                    letterSpacing: 0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: colors.primarySoft,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.xl,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  for (
-                                    var index = 0;
-                                    index < presets.length;
-                                    index++
-                                  )
-                                    Expanded(
-                                      child: _ScaleOption(
-                                        preset: presets[index],
-                                        selected: selected == presets[index],
-                                        fontSize: 14 + index * 2,
-                                        onTap: () =>
-                                            controller.select(presets[index]),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.text_decrease_rounded,
-                                  size: 17,
-                                  color: colors.textSecondary,
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.pill,
-                                    ),
-                                    child: LinearProgressIndicator(
-                                      value:
-                                          (selectedIndex + 1) / presets.length,
-                                      minHeight: 4,
-                                      backgroundColor: colors.primarySoft,
-                                      color: colors.primary,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Icon(
-                                  Icons.text_increase_rounded,
-                                  size: 21,
-                                  color: colors.textSecondary,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: colors.card,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadius.lg,
-                                ),
-                                border: Border.all(color: colors.borderLight),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.accessibility_new_rounded,
-                                    color: colors.secondaryDark,
-                                  ),
-                                  const SizedBox(width: AppSpacing.sm),
-                                  Expanded(
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text:
-                                            'Bạn có thể thay đổi lại bất cứ lúc nào trong ',
-                                        children: [
-                                          TextSpan(
-                                            text: 'Cài đặt cá nhân.',
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                                  color: colors.textPrimary,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: colors.textSecondary,
-                                        height: 1.35,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
               Container(
@@ -361,7 +189,7 @@ class OnboardingTextScalePage extends ConsumerWidget {
                       child: NabiPrimaryButton(
                         key: const Key('onboarding_text_scale_continue'),
                         onPressed: controller.markConfigured,
-                        label: 'Bắt đầu trải nghiệm',
+                        label: 'Tiếp tục',
                         icon: Icons.arrow_forward_rounded,
                       ),
                     ),
@@ -374,13 +202,6 @@ class OnboardingTextScalePage extends ConsumerWidget {
       ),
     );
   }
-
-  static String _label(AppTextScalePreset preset) => switch (preset) {
-    AppTextScalePreset.small => 'Nhỏ (14px)',
-    AppTextScalePreset.standard => 'Vừa (16px)',
-    AppTextScalePreset.large => 'Lớn (18px)',
-    AppTextScalePreset.veryLarge => 'Rất lớn (20px)',
-  };
 }
 
 class _PreviewCard extends StatelessWidget {
@@ -392,89 +213,14 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     return OnboardingStitchCard(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colors.secondarySoft,
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    NabiOnboardingMood.guide.assetPath,
-                    fit: BoxFit.cover,
-                    cacheWidth: 110,
-                    semanticLabel: 'Nabi',
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(
-                  'Nabi',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Text(
-                'Vừa xong',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: colors.textMuted,
-                  letterSpacing: 0,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: colors.primarySoft,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-            ),
-            child: Text(
-              'Nabi chào bạn! Một giấc ngủ trọn vẹn và vài ngụm nước ấm đầu ngày là khởi đầu dịu dàng cho cơ thể.',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: colors.textPrimary,
-                fontSize: fontSize.toDouble(),
-                height: 1.42,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Icon(Icons.favorite_rounded, size: 15, color: colors.secondary),
-              const SizedBox(width: 5),
-              Text(
-                'Tự chăm sóc',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: colors.secondaryDark,
-                  letterSpacing: 0,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Icon(Icons.schedule_rounded, size: 15, color: colors.textMuted),
-              const SizedBox(width: 5),
-              Text(
-                'Hôm nay',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: colors.textSecondary,
-                  letterSpacing: 0,
-                ),
-              ),
-            ],
-          ),
-        ],
+      padding: const EdgeInsets.all(18),
+      child: Text(
+        'Một ngày mới, một bước chăm sóc bản thân.',
+        style: AppTextStyles.bodyMedium.copyWith(
+          color: colors.textPrimary,
+          fontSize: fontSize.toDouble(),
+          height: 1.42,
+        ),
       ),
     );
   }
@@ -551,14 +297,6 @@ class _ScaleOption extends StatelessWidget {
                   style: AppTextStyles.labelSmall.copyWith(
                     color: selected ? colors.primary : colors.textSecondary,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
-                    letterSpacing: 0,
-                  ),
-                ),
-                Text(
-                  '${fontSize}px',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: colors.textMuted,
-                    fontSize: 10,
                     letterSpacing: 0,
                   ),
                 ),

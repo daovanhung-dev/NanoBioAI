@@ -30,7 +30,7 @@ The user can identify the current state, the next safe action, and the result of
 Use the order **context → most important state/data → next action → supporting detail → history/help**. Do not place equal visual weight on every card.
 
 ## 09. Page anatomy
-Time-oriented vertical flow with date/progress anchors.
+Clean semantic theme background with one visible time question at a time. Ask seven daily times in chronological order for weekdays, then repeat for weekends; show profile progress, one selected time and a “Chọn giờ” control. After all 14 questions, offer nap, exercise and busy-time settings as optional details.
 
 ## 10. Material 3 Expressive archetype
 Use expressive typography, shape and motion to clarify hierarchy—not to decorate every surface. One visual focal point per viewport is the default.
@@ -58,7 +58,7 @@ Prefer tonal containment + border + short shadow. Glass/blur is allowed only for
 Cards, section headers, semantic icons, state containers and buttons come from canonical theme/primitives. Feature-local styling must not introduce a parallel design system.
 
 ## 17. Primary action
-Completion/skip/detail remain distinct and reversible where domain allows.
+“Tiếp tục” advances one question at a time; “Xác nhận” appears after the optional details. Back returns to the previous question before leaving the step.
 
 ## 18. Secondary actions
 Keep secondary actions visually quieter and spatially grouped with the content they affect. Overflow/menu is preferred over a row of equally weighted buttons.
@@ -110,6 +110,9 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - Validate narrow screen, large text, dark mode and reduced motion for this surface.
 
 ## 32. Acceptance criteria
+- [ ] The seven prompts are visible, sequential questions for both weekday and weekend profiles; no timeline of “mốc” cards is shown.
+- [ ] Optional nap, exercise and busy-time controls appear after the 14 core questions and do not duplicate the core schedule fields.
+- [ ] Background is clean and has no leaf, water-trail or orb decoration.
 - [ ] Visual hierarchy matches this spec and group rules.
 - [ ] Loading/empty/error/ready/disabled state coverage is explicit.
 - [ ] No business/access/persistence behavior changed by styling.

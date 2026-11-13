@@ -30,7 +30,7 @@ The user can identify the current state, the next safe action, and the result of
 Use the order **context → most important state/data → next action → supporting detail → history/help**. Do not place equal visual weight on every card.
 
 ## 09. Page anatomy
-Single-column trust flow, max content width 520–600 px.
+Clean semantic theme background and a compact single-column trust flow: short data-use and health summaries, expandable technical details, then one consent control.
 
 ## 10. Material 3 Expressive archetype
 Use expressive typography, shape and motion to clarify hierarchy—not to decorate every surface. One visual focal point per viewport is the default.
@@ -58,7 +58,7 @@ Prefer tonal containment + border + short shadow. Glass/blur is allowed only for
 Cards, section headers, semantic icons, state containers and buttons come from canonical theme/primitives. Feature-local styling must not introduce a parallel design system.
 
 ## 17. Primary action
-One dominant CTA; secondary route action low emphasis.
+Keep consent required for “Tiếp tục”; keep full technical details collapsed until requested.
 
 ## 18. Secondary actions
 Keep secondary actions visually quieter and spatially grouped with the content they affect. Overflow/menu is preferred over a row of equally weighted buttons.
@@ -110,6 +110,9 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - Validate narrow screen, large text, dark mode and reduced motion for this surface.
 
 ## 32. Acceptance criteria
+- [ ] The first view uses short summaries; technical data-flow details are available in a collapsed disclosure.
+- [ ] Consent remains required to continue, and the health disclaimer remains visible.
+- [ ] Background is clean and has no leaf, water-trail or orb decoration.
 - [ ] Visual hierarchy matches this spec and group rules.
 - [ ] Loading/empty/error/ready/disabled state coverage is explicit.
 - [ ] No business/access/persistence behavior changed by styling.

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import 'package:nano_app/app_versions/v1/router/router.dart';
+import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/app_versions/v1/services/ai/ai_exceptions.dart';
 import 'package:nano_app/app_versions/v1/services/ai/generated_plan_service.dart';
 import 'package:nano_app/app_versions/v1/features/onboarding/providers/onboarding_completion_provider.dart';
@@ -14,6 +15,7 @@ import 'package:nano_app/shared/widgets/generated_plan_progress_panel.dart'
 
 import '../../providers/onboarding_provider.dart';
 import '../controllers/onboarding_controller.dart';
+import '../pages/onboarding_result_page.dart';
 import 'nabi_onboarding_experience.dart';
 import 'onboarding_compact_ui.dart';
 import 'onboarding_schedule_progress_panel.dart';
@@ -75,8 +77,8 @@ class ReviewStep extends ConsumerWidget {
 
     return OnboardingStepShell(
       stepIndex: 8,
-      title: 'Hồ sơ của bạn',
-      subtitle: 'Xem lại trước khi Nabi bắt đầu tạo lộ trình.',
+      title: 'Bạn muốn kiểm tra lại thông tin nào?',
+      subtitle: 'Sửa mục cần thiết trước khi tạo lộ trình.',
       mood: NabiOnboardingMood.review,
       onBack: controller.previousStep,
       footer: Column(
@@ -93,7 +95,7 @@ class ReviewStep extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Nabi tôn trọng dữ liệu cá nhân • Có thể điều chỉnh lại bất cứ lúc nào',
+            'Bạn có thể chỉnh sửa thông tin bất cứ lúc nào.',
             textAlign: TextAlign.center,
             style: AppTextStyles.labelSmall.copyWith(
               color: colors.textSecondary,
@@ -114,19 +116,12 @@ class ReviewStep extends ConsumerWidget {
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
-                  'HOÀN TẤT THU THẬP DỮ LIỆU',
+                  'HỒ SƠ ĐÃ ĐIỀN',
                   style: AppTextStyles.labelSmall.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.25,
                   ),
-                ),
-              ),
-              Text(
-                'Bước 9/9',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: colors.textSecondary,
-                  letterSpacing: 0,
                 ),
               ),
             ],
@@ -137,14 +132,13 @@ class ReviewStep extends ConsumerWidget {
             eyebrow: 'NABI AI ĐỒNG HÀNH',
             compact: true,
             message: state.canSave
-                ? 'Tuyệt vời! Bạn vừa hoàn thành các thông tin cốt lõi. Hãy lướt lại các mục trước khi tạo lộ trình nhé.'
-                : 'Hãy kiểm tra các mục còn thiếu trước khi tạo lộ trình.',
+                ? 'Hồ sơ đã đủ thông tin. Bạn có thể kiểm tra hoặc chỉnh sửa trước khi tiếp tục.'
+                : 'Hãy bổ sung thông tin còn thiếu trước khi tiếp tục.',
           ),
           const SizedBox(height: AppSpacing.md),
           const OnboardingScreenHeading(
-            title: 'Hồ sơ của bạn',
-            subtitle:
-                'Kiểm tra lại các chi tiết trước khi Nabi bắt đầu tính toán và thiết lập nhịp sinh học.',
+            title: 'Bạn muốn kiểm tra lại thông tin nào?',
+            subtitle: 'Chỉnh sửa mục cần thiết trước khi tạo lộ trình.',
             bottomSpacing: AppSpacing.sm,
           ),
           _ReadinessHero(ready: state.canSave, name: state.fullName),
@@ -291,20 +285,37 @@ class ReviewStep extends ConsumerWidget {
     }
 
     AppFeedbackService.instance.emit(AppFeedbackType.primaryAction);
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const AIGeneratingPage(
-          progressContent: OnboardingScheduleProgressPanel(),
+    Future<void>? progressRoute;
+    var progressVisible = false;
+
+    void showProgress() {
+      progressVisible = true;
+      progressRoute = Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => const AIGeneratingPage(
+            progressContent: OnboardingScheduleProgressPanel(),
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    Future<void> hideProgress() async {
+      if (!progressVisible) return;
+      progressVisible = false;
+      Navigator.of(context).pop();
+      final route = progressRoute;
+      progressRoute = null;
+      if (route != null) await route;
+    }
+
+    showProgress();
     try {
       await controller.saveOnboarding();
       var proposal = ref
           .read(onboardingProvider)
           .initialPlanProgress
           .pendingMealProposal;
-      if (proposal != null && context.mounted) Navigator.of(context).pop();
+      if (proposal != null && context.mounted) await hideProgress();
       while (proposal != null) {
         if (!context.mounted) return;
         final decision = await showGeneratedCustomMealDecisionDialog(
@@ -313,34 +324,34 @@ class ReviewStep extends ConsumerWidget {
         );
         if (decision == null || !context.mounted) return;
 
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => const AIGeneratingPage(
-              progressContent: OnboardingScheduleProgressPanel(),
-            ),
-          ),
-        );
+        showProgress();
         try {
           await controller.respondToPendingCustomMeal(
             proposal: proposal,
             approve: decision,
           );
         } finally {
-          if (context.mounted) Navigator.of(context).pop();
+          if (context.mounted) await hideProgress();
         }
         proposal = ref
             .read(onboardingProvider)
             .initialPlanProgress
             .pendingMealProposal;
       }
+      if (!context.mounted) return;
+      await hideProgress();
+      if (!context.mounted) return;
       AppFeedbackService.instance.emit(AppFeedbackType.milestone);
-      final generationSource = ref
-          .read(onboardingProvider)
-          .initialPlanGenerationSource;
-      if (generationSource.isBasicSuggestion && context.mounted) {
-        _showMessage(context, 'Nabi đã tạo lịch gợi ý cơ bản đầu tiên.');
-      }
-      if (context.mounted) V1AppNavigator.goMenu(context);
+      final completedState = ref.read(onboardingProvider);
+      final message = completedState.savedLog?.trim();
+      context.go(
+        V1RoutePaths.onboardingResult,
+        extra: OnboardingResultRouteData(
+          message: message == null || message.isEmpty
+              ? 'Hồ sơ của bạn đã được lưu. Nabi sẽ đồng hành cùng bạn.'
+              : message,
+        ),
+      );
     } catch (error, stackTrace) {
       AppLogger.error(
         'ONBOARDING_REVIEW',
@@ -350,7 +361,8 @@ class ReviewStep extends ConsumerWidget {
       );
       AppFeedbackService.instance.emit(AppFeedbackType.error);
       if (!context.mounted) return;
-      Navigator.of(context).pop();
+      await hideProgress();
+      if (!context.mounted) return;
       final message = onboardingSubmissionErrorMessage(error);
       _showMessage(context, message);
     }
@@ -398,12 +410,59 @@ class _ReadinessHero extends StatelessWidget {
     final colors = context.semanticColors;
     final statusColor = ready ? colors.secondaryDark : colors.warning;
     final normalizedName = name.trim();
+    final statusChip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: colors.card.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            ready ? Icons.schedule_rounded : Icons.info_outline_rounded,
+            size: 14,
+            color: statusColor,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            ready ? 'Chờ thiết lập' : 'Cần kiểm tra',
+            style: AppTextStyles.labelSmall.copyWith(
+              color: statusColor,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+    final readinessInfo = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Mức độ tương thích hồ sơ',
+          style: AppTextStyles.labelLarge.copyWith(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          ready
+              ? normalizedName.isEmpty
+                    ? 'Sẵn sàng khởi tạo'
+                    : 'Hồ sơ của $normalizedName sẵn sàng khởi tạo'
+              : 'Cần hoàn tất thông tin bắt buộc',
+          style: AppTextStyles.bodySmall.copyWith(color: colors.textSecondary),
+        ),
+      ],
+    );
     return OnboardingStitchCard(
       color: colors.primarySubtle,
       padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final icon = Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
@@ -415,61 +474,34 @@ class _ReadinessHero extends StatelessWidget {
               color: colors.primary,
               size: 25,
             ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          );
+          if (constraints.maxWidth < 300) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Mức độ tương thích hồ sơ',
-                  style: AppTextStyles.labelLarge.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Row(
+                  children: [
+                    icon,
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(child: readinessInfo),
+                  ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  ready
-                      ? normalizedName.isEmpty
-                            ? 'Sẵn sàng khởi tạo'
-                            : 'Hồ sơ của $normalizedName sẵn sàng khởi tạo'
-                      : 'Cần hoàn tất thông tin bắt buộc',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
+                const SizedBox(height: AppSpacing.xs),
+                Align(alignment: Alignment.centerRight, child: statusChip),
               ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-            decoration: BoxDecoration(
-              color: colors.card.withValues(alpha: 0.78),
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  ready ? Icons.schedule_rounded : Icons.info_outline_rounded,
-                  size: 14,
-                  color: statusColor,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  ready ? 'Chờ thiết lập' : 'Cần kiểm tra',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+            );
+          }
+
+          return Row(
+            children: [
+              icon,
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: readinessInfo),
+              const SizedBox(width: AppSpacing.xs),
+              statusChip,
+            ],
+          );
+        },
       ),
     );
   }

@@ -73,6 +73,19 @@ final v1Routes = <RouteBase>[
         const OnboardingTextScaleGate(child: OnboardingPage()),
   ),
   GoRoute(
+    path: V1RoutePaths.onboardingResult,
+    name: V1RoutePaths.onboardingResult,
+    redirect: (context, state) =>
+        state.extra is OnboardingResultRouteData ? null : V1RoutePaths.menu,
+    builder: (context, state) {
+      final routeData = state.extra;
+      if (routeData is! OnboardingResultRouteData) {
+        return const OnboardingResultPage(message: '');
+      }
+      return OnboardingResultPage(message: routeData.message);
+    },
+  ),
+  GoRoute(
     path: V1RoutePaths.menu,
     name: V1RoutePaths.menu,
     builder: (context, state) => MainNavigationPage(

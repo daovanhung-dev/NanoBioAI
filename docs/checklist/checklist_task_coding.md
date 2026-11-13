@@ -17,7 +17,7 @@ Commit de xuat: docs(checklist): dong bo coding status theo source truth
 
 | Status | Modules | Current boundary |
 |---|---|---|
-| Implemented | M01-M03, M05-M09, M11-M16 | Source reachable; device/provider/Supabase acceptance vẫn đọc là Runtime-unverified/Sandbox-unverified. |
+| Implemented | M01-M03, M05-M09, M11-M16 | M01 now has focused Flutter widget-test evidence; Android/device/provider/Supabase acceptance remains unverified. Other module boundaries remain as documented in the DD checklist. |
 | Partial | M04, M10, M17-M19 | Có luồng reachable nhưng chưa bao phủ toàn bộ capability DD/BD; xem gap tại `docs/DD/README.md`. |
 | Placeholder | M20-M21, M23-M29 | Chỉ catalog/access shell; M22 local reminder slice follows its approved DD. |
 | Source-only | M30 | Có SQLite v15/current v20, catalog/engine/repository/controller và Supabase source; chưa nối controller/trigger/overlay/CTA/native delivery vào app shell. |
@@ -519,3 +519,27 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - Draft design: `docs/DD/nabi_esp_assistant/`. Do not enable runtime work until Tech, QA, and Privacy reviews are recorded; PO intent is in the approved user plan.
 - OSTB 3ST still requires a first USB firmware/partition deployment; current connected-device profile is in `iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`.
 - Next: collect Tech/QA/Privacy review evidence; refine firmware key lifecycle and Android service ownership; then implement and validate on Android + ESP hardware.
+
+### M01 Nabi onboarding UX — 2026-11-13
+
+- [x] Rút gọn copy và cân lại minh họa trong phạm vi 9 bước onboarding; giữ nguyên dữ liệu, điều kiện bắt buộc, consent và lưu hồ sơ.
+- [x] Bước 5/9 giữ ba mục ngủ/vận động/nước uống; bước 7/9 bỏ heading nội dung và giữ tiến độ/quay lại/CTA xác nhận.
+- [x] Kết thúc bằng `ResultStep` sau khi completion được xác nhận; lỗi và món chờ duyệt không điều hướng tới màn hoàn tất; CTA và back mở Menu.
+- [x] Flutter widget tests bao phủ layout 320×640 (text scale 1.3 và keyboard), 390×844, điều hướng đủ 9 bước, lưu dữ liệu qua back/next, completion/error/pending approval và route guards.
+- [x] Targeted analyzer/formatter và `git diff --check` pass. Ghi chi tiết ở `docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md`.
+- [ ] Ảnh Android và visual/device smoke chưa có vì môi trường chỉ cung cấp Flutter Linux; không tăng M01 device/sandbox acceptance.
+
+### M01 Onboarding UI polish — 2026-11-13
+
+- [x] Nền onboarding sạch, bỏ họa tiết lá, vệt nước và orb trang trí.
+- [x] Thu gọn màn chọn cỡ chữ; bước lịch sinh hoạt hỏi tuần tự 7 mốc cho ngày thường/cuối tuần, giờ phụ vẫn tùy chọn.
+- [x] Bước đồng ý hiển thị tóm tắt ngắn và mở rộng chi tiết khi người dùng cần; giữ nguyên consent gate và dữ liệu.
+- [x] Targeted `flutter analyze` và 5 widget tests pass; xem `docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md`.
+- [ ] Chưa có Android visual/device smoke hoặc Supabase consent/audit evidence.
+
+### M01 Text scale illustration — 2026-11-13
+
+- [x] Thêm minh họa Nabi căn giữa phía trên phần xem trước; không thêm copy hiển thị.
+- [x] Ảnh thích ứng 112 dp / 88 dp; widget test xác nhận không lỗi bố cục ở 390×844 và 320×640.
+- [x] `flutter analyze`, focused widget suite và `dart format --set-exit-if-changed` pass.
+- [ ] Android visual/device smoke chưa xác minh.

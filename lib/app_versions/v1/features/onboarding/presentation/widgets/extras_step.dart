@@ -32,31 +32,21 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
 
     return OnboardingStepShell(
       stepIndex: 5,
-      title: 'Thông tin cần lưu ý',
-      subtitle: 'Bạn có thể cập nhật các chi tiết này sau.',
+      title: 'Bạn muốn Nabi lưu ý điều gì?',
+      subtitle: 'Các mục bổ sung đều không bắt buộc.',
       mood: NabiOnboardingMood.thinking,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
       child: OnboardingRevealColumn(
         children: [
-          const OnboardingNabiNote(
-            mood: NabiOnboardingMood.thinking,
-            message:
-                'Mỗi cơ thể là một vũ trụ riêng. Những chi tiết nhỏ giúp gợi ý của Nabi gần với bạn hơn.',
-          ),
-          const SizedBox(height: AppSpacing.lg),
           const OnboardingScreenHeading(
-            title: 'Thông tin cần lưu ý',
-            subtitle:
-                'Chia sẻ điều bạn thấy phù hợp để Nabi cá nhân hóa lộ trình.',
+            title: 'Bạn muốn Nabi lưu ý thêm điều gì?',
+            subtitle: 'Chia sẻ thêm nếu phù hợp.',
             bottomSpacing: AppSpacing.md,
           ),
           OnboardingAccordionCard(
-            title: 'Dị ứng hoặc thực phẩm cần tránh',
-            subtitle: _summary(
-              _split(state.allergyName),
-              'Hải sản, hạt, lactose…',
-            ),
+            title: 'Có thực phẩm nào bạn cần tránh?',
+            subtitle: _summary(_split(state.allergyName), 'Chọn nếu có'),
             icon: Icons.spa_rounded,
             accent: colors.primary,
             expanded: _expanded[0] ?? false,
@@ -87,11 +77,8 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
           ),
           const SizedBox(height: AppSpacing.sm),
           OnboardingAccordionCard(
-            title: 'Chỉ số đang theo dõi đặc biệt',
-            subtitle: _summary(
-              _split(state.treatmentName),
-              'Đường huyết, huyết áp…',
-            ),
+            title: 'Bạn đang theo dõi tình trạng nào?',
+            subtitle: _summary(_split(state.treatmentName), 'Chọn nếu có'),
             icon: Icons.monitor_heart_rounded,
             accent: colors.info,
             expanded: _expanded[1] ?? false,
@@ -108,11 +95,8 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
           ),
           const SizedBox(height: AppSpacing.sm),
           OnboardingAccordionCard(
-            title: 'Thực phẩm bổ sung hoặc thuốc',
-            subtitle: _summary(
-              _split(state.medicationName),
-              'Vitamin, khoáng chất…',
-            ),
+            title: 'Bạn đang dùng thuốc hay thực phẩm bổ sung?',
+            subtitle: _summary(_split(state.medicationName), 'Chọn nếu có'),
             icon: Icons.medication_rounded,
             accent: colors.tertiary,
             expanded: _expanded[2] ?? false,
@@ -141,7 +125,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Tên thuốc và giờ nhắc chỉ lưu trên thiết bị. Thông báo sẽ dùng nội dung chung, không hiện tên thuốc. Sau khi hoàn tất, để thêm/xóa lịch nhắc, đổi tên thuốc hoặc chỉnh giờ, vào Cài đặt > Quản lý thông báo > Nhắc uống thuốc.',
+                  'Tên thuốc và giờ nhắc chỉ lưu trên thiết bị. Thông báo không hiển thị tên thuốc. Bạn có thể quản lý lịch nhắc trong Cài đặt > Quản lý thông báo.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                     height: 1.4,
@@ -240,11 +224,8 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
           ),
           const SizedBox(height: AppSpacing.sm),
           OnboardingAccordionCard(
-            title: 'Chủ đề bạn muốn Nabi ưu tiên',
-            subtitle: _summary(
-              _split(state.concernText),
-              'Chọn chủ đề quan tâm (tùy chọn)',
-            ),
+            title: 'Bạn muốn Nabi ưu tiên chủ đề nào?',
+            subtitle: _summary(_split(state.concernText), 'Chọn nếu có'),
             icon: Icons.favorite_rounded,
             accent: colors.secondary,
             expanded: _expanded[3] ?? false,
@@ -253,7 +234,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Chọn những chủ đề bạn quan tâm để Nabi sắp xếp lịch trình cá nhân hóa.',
+                  'Chọn chủ đề bạn quan tâm.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                     height: 1.4,
@@ -280,7 +261,7 @@ class _ExtrasStepState extends ConsumerState<ExtrasStep> {
               const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Text(
-                  'Không bắt buộc. Bạn luôn có thể cập nhật lại trong Hồ sơ.',
+                  'Không bắt buộc • Có thể cập nhật trong Hồ sơ.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
                   ),

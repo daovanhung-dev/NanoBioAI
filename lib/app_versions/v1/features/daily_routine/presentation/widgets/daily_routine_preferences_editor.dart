@@ -4,14 +4,17 @@ import 'package:nano_app/core/theme/app_text_styles.dart';
 import '../../domain/entities/daily_routine_preferences.dart';
 
 import 'package:nano_app/core/theme/app_spacing.dart';
+
 class DailyRoutinePreferencesEditor extends StatelessWidget {
   final DailyRoutinePreferences value;
   final ValueChanged<DailyRoutinePreferences> onChanged;
+  final bool showCoreTimes;
 
   const DailyRoutinePreferencesEditor({
     super.key,
     required this.value,
     required this.onChanged,
+    this.showCoreTimes = true,
   });
 
   @override
@@ -21,12 +24,14 @@ class DailyRoutinePreferencesEditor extends StatelessWidget {
         _TemplateEditor(
           title: 'Ngày thường · Thứ Hai–Thứ Sáu',
           value: value.weekday,
+          showCoreTimes: showCoreTimes,
           onChanged: (template) => onChanged(value.copyWith(weekday: template)),
         ),
         const SizedBox(height: AppSpacing.md),
         _TemplateEditor(
           title: 'Cuối tuần · Thứ Bảy–Chủ Nhật',
           value: value.weekend,
+          showCoreTimes: showCoreTimes,
           onChanged: (template) => onChanged(value.copyWith(weekend: template)),
         ),
       ],
@@ -46,10 +51,12 @@ class _TemplateEditor extends StatelessWidget {
   final String title;
   final RoutineDayTemplate value;
   final ValueChanged<RoutineDayTemplate> onChanged;
+  final bool showCoreTimes;
 
   const _TemplateEditor({
     required this.title,
     required this.value,
+    required this.showCoreTimes,
     required this.onChanged,
   });
 
@@ -60,30 +67,36 @@ class _TemplateEditor extends StatelessWidget {
       child: ExpansionTile(
         initiallyExpanded: true,
         title: Text(title, style: AppTextStyles.heading5),
-        subtitle: Text('Thức ${value.wakeTime} · Ngủ ${value.sleepTime}'),
+        subtitle: Text(
+          showCoreTimes
+              ? 'Thức ${value.wakeTime} · Ngủ ${value.sleepTime}'
+              : 'Giờ ngủ trưa, tập luyện và bận',
+        ),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
-          _TimeRow(
-            label: 'Giờ thức dậy',
-            value: value.wakeTime,
-            onChanged: (time) => onChanged(value.copyWith(wakeTime: time)),
-          ),
-          _TimeRow(
-            label: 'Giờ ngủ',
-            value: value.sleepTime,
-            onChanged: (time) => onChanged(value.copyWith(sleepTime: time)),
-          ),
-          const Divider(),
-          for (var index = 0; index < _mealLabels.length; index++)
+          if (showCoreTimes) ...[
             _TimeRow(
-              label: _mealLabels[index],
-              value: value.mealTimes[index],
-              onChanged: (time) {
-                final meals = [...value.mealTimes]..[index] = time;
-                onChanged(value.copyWith(mealTimes: meals));
-              },
+              label: 'Giờ thức dậy',
+              value: value.wakeTime,
+              onChanged: (time) => onChanged(value.copyWith(wakeTime: time)),
             ),
-          const Divider(),
+            _TimeRow(
+              label: 'Giờ ngủ',
+              value: value.sleepTime,
+              onChanged: (time) => onChanged(value.copyWith(sleepTime: time)),
+            ),
+            const Divider(),
+            for (var index = 0; index < _mealLabels.length; index++)
+              _TimeRow(
+                label: _mealLabels[index],
+                value: value.mealTimes[index],
+                onChanged: (time) {
+                  final meals = [...value.mealTimes]..[index] = time;
+                  onChanged(value.copyWith(mealTimes: meals));
+                },
+              ),
+            const Divider(),
+          ],
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('Có ngủ trưa'),
@@ -161,10 +174,7 @@ class _RangeEditor extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: AppSpacing.sm),
-          child: Text(
-            label,
-            style: AppTextStyles.labelLarge,
-          ),
+          child: Text(label, style: AppTextStyles.labelLarge),
         ),
         Row(
           children: [
@@ -203,27 +213,45 @@ class _TimeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(label),
-      trailing: OutlinedButton(
-        onPressed: () async {
-          final initial = _timeOfDay(value);
-          final selected = await showTimePicker(
-            context: context,
-            initialTime: initial,
-            builder: (context, child) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(alwaysUse24HourFormat: true),
-              child: child!,
+    Future<void> pickTime() async {
+      final initial = _timeOfDay(value);
+      final selected = await showTimePicker(
+        context: context,
+        initialTime: initial,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        ),
+      );
+      if (selected != null) onChanged(_format(selected));
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final timeButton = OutlinedButton(
+          onPressed: pickTime,
+          child: Text(value),
+        );
+        if (constraints.maxWidth < 360) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(label, style: AppTextStyles.bodyMedium),
+                Align(alignment: Alignment.centerRight, child: timeButton),
+              ],
             ),
           );
-          if (selected != null) onChanged(_format(selected));
-        },
-        child: Text(value),
-      ),
+        }
+
+        return ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(label),
+          trailing: timeButton,
+        );
+      },
     );
   }
 }

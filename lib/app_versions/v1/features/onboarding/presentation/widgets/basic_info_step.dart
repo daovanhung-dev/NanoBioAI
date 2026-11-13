@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nano_app/core/theme/theme.dart';
 
 import 'package:nano_app/core/constants/onboarding_constants.dart';
+
 import '../../providers/onboarding_provider.dart';
 import '../constants/gender_options.dart';
 import '../constants/onboarding_options.dart';
@@ -23,8 +24,8 @@ class BasicInfoStep extends ConsumerWidget {
     final colors = context.semanticColors;
     return OnboardingStepShell(
       stepIndex: 1,
-      title: 'Để Nabi hiểu bạn',
-      subtitle: 'Thông tin gần đúng là đủ.',
+      title: 'Cho Nabi biết đôi điều về bạn nhé?',
+      subtitle: 'Thông tin ước lượng cũng được.',
       mood: NabiOnboardingMood.guide,
       onBack: controller.previousStep,
       onNext: state.canContinueBasicInfo ? controller.nextStep : null,
@@ -56,7 +57,7 @@ class BasicInfoStep extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Để Nabi hiểu bạn',
+                        'Cho Nabi biết đôi điều về bạn nhé?',
                         style: AppTextStyles.heading5.copyWith(
                           color: colors.textPrimary,
                           fontWeight: FontWeight.w800,
@@ -64,7 +65,7 @@ class BasicInfoStep extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Thông tin gần đúng là đủ.',
+                        'Thông tin ước lượng cũng được.',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: colors.textSecondary,
                         ),
@@ -76,7 +77,7 @@ class BasicInfoStep extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          _SectionTitle(title: 'Thông tin chính'),
+          _SectionTitle(title: 'Thông tin cơ bản'),
           const SizedBox(height: AppSpacing.sm),
           OnboardingTextField(
             label: 'Họ và tên *',

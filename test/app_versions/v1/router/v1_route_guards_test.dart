@@ -13,6 +13,7 @@ void main() {
         V1RoutePaths.splash,
         V1RoutePaths.onboardingEntry,
         V1RoutePaths.onboarding,
+        V1RoutePaths.onboardingResult,
         V1RoutePaths.dashboard,
         V1RoutePaths.menu,
         V1RoutePaths.mealPlan,
@@ -67,6 +68,10 @@ void main() {
 
     test('registered V1 route contract contains only live route paths', () {
       expect(V1RouteGuards.registeredV1Paths, contains(V1RoutePaths.dashboard));
+      expect(
+        V1RouteGuards.registeredV1Paths,
+        contains(V1RoutePaths.onboardingResult),
+      );
       expect(
         V1RouteGuards.registeredV1Paths,
         contains(V1RoutePaths.fitnessTraining),

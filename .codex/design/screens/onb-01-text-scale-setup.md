@@ -30,7 +30,7 @@ The user can identify the current state, the next safe action, and the result of
 Use the order **context → most important state/data → next action → supporting detail → history/help**. Do not place equal visual weight on every card.
 
 ## 09. Page anatomy
-Calm medical card hierarchy with one expressive focal element.
+Plain semantic theme background with a compact text-scale setup: one short heading, a centered Nabi illustration above the live preview sentence, and four size choices. Do not add visible copy for the illustration or leaf, water-trail or orb decorations to the background.
 
 ## 10. Material 3 Expressive archetype
 Use expressive typography, shape and motion to clarify hierarchy—not to decorate every surface. One visual focal point per viewport is the default.
@@ -58,7 +58,7 @@ Prefer tonal containment + border + short shadow. Glass/blur is allowed only for
 Cards, section headers, semantic icons, state containers and buttons come from canonical theme/primitives. Feature-local styling must not introduce a parallel design system.
 
 ## 17. Primary action
-Primary task visually dominant; secondary actions grouped.
+One clear “Tiếp tục” action advances after the user selects a text size.
 
 ## 18. Secondary actions
 Keep secondary actions visually quieter and spatially grouped with the content they affect. Overflow/menu is preferred over a row of equally weighted buttons.
@@ -110,6 +110,9 @@ Presentation reads through existing provider/controller boundaries. No DAO/API c
 - Validate narrow screen, large text, dark mode and reduced motion for this surface.
 
 ## 32. Acceptance criteria
+- [ ] The page shows only the preview and size choices needed to select a readable scale.
+- [ ] A centered Nabi illustration fills the preview area without adding visible text; it scales down on compact screens.
+- [ ] Background is clean and uses the semantic theme color without foliage or water-trail decoration.
 - [ ] Visual hierarchy matches this spec and group rules.
 - [ ] Loading/empty/error/ready/disabled state coverage is explicit.
 - [ ] No business/access/persistence behavior changed by styling.

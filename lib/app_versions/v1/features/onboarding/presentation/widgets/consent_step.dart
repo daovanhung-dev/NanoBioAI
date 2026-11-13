@@ -8,143 +8,63 @@ import 'onboarding_compact_ui.dart';
 import 'onboarding_step_shell.dart';
 import 'onboarding_stitch_components.dart';
 
-class ConsentStep extends ConsumerWidget {
+class ConsentStep extends ConsumerStatefulWidget {
   const ConsentStep({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsentStep> createState() => _ConsentStepState();
+}
+
+class _ConsentStepState extends ConsumerState<ConsentStep> {
+  bool _detailsExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.semanticColors;
     final state = ref.watch(onboardingProvider);
     final controller = ref.read(onboardingProvider.notifier);
 
     return OnboardingStepShell(
       stepIndex: 7,
-      title: 'Bạn luôn có quyền chọn',
-      subtitle: 'Xem thông tin trước khi đồng ý.',
+      title: 'Quyền riêng tư',
+      subtitle: 'Xem nhanh trước khi đồng ý.',
       mood: NabiOnboardingMood.consent,
       onBack: controller.previousStep,
       onNext: state.agreed ? controller.nextStep : null,
       child: OnboardingRevealColumn(
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [colors.primarySubtle, colors.infoSoft],
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.xxl),
-              border: Border.all(color: colors.primary.withValues(alpha: 0.06)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colors.card.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lock_rounded,
-                        size: 14,
-                        color: colors.secondaryDark,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'QUYỀN RIÊNG TƯ & MINH BẠCH',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: colors.secondaryDark,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.25,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Bạn luôn có quyền chọn',
-                  style: AppTextStyles.displaySmall.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w800,
-                    height: 1.16,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Thông tin của bạn được sử dụng minh bạch và tôn trọng quyền riêng tư trong quá trình đồng hành cùng Nabi.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: colors.textSecondary,
-                    height: 1.48,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
           const _ConsentInfoCard(
             icon: Icons.lock_person_rounded,
-            title: 'Dữ liệu của bạn',
+            title: 'Thông tin của bạn',
             description:
-                'Thông tin được lưu trữ trong ứng dụng. Khi bạn dùng AI văn bản hoặc phân tích ảnh, dữ liệu tối thiểu cần cho tác vụ sẽ được gửi qua HTTPS tới máy chủ NanoBio; ứng dụng không dùng model văn bản/ảnh cục bộ thay thế. Riêng trợ lý ESP32 có thể tải Whisper để nhận dạng lời nói trên điện thoại. Cần đăng nhập để dùng AI của máy chủ.',
+                'Hồ sơ lưu trong ứng dụng. Khi dùng AI qua máy chủ, dữ liệu cần thiết được gửi tới NanoBio.',
             accent: NabiPalette.greenPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           const _ConsentInfoCard(
             icon: Icons.medical_information_rounded,
             title: 'Lưu ý sức khỏe',
-            description:
-                'Nabi hỗ trợ gợi ý lối sống, không thay thế chẩn đoán y khoa từ bác sĩ hoặc chuyên gia y tế.',
+            description: 'Nabi gợi ý lối sống, không thay thế chẩn đoán y tế.',
             accent: NabiPalette.calmBlue,
           ),
           const SizedBox(height: AppSpacing.sm),
-          OnboardingStitchCard(
-            color: colors.primarySubtle,
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colors.card,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.groups_2_rounded, color: colors.primary),
+          OnboardingAccordionCard(
+            key: const Key('onboarding_consent_details'),
+            title: 'Xem chi tiết',
+            subtitle: 'Cách thông tin và AI được sử dụng.',
+            icon: Icons.info_outline_rounded,
+            expanded: _detailsExpanded,
+            onToggle: () =>
+                setState(() => _detailsExpanded = !_detailsExpanded),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                'Thông tin được lưu trong ứng dụng. Khi dùng AI văn bản hoặc phân tích ảnh, dữ liệu tối thiểu cần cho tác vụ được gửi qua HTTPS tới máy chủ NanoBio. Ứng dụng không dùng model văn bản hoặc ảnh cục bộ thay thế. Trợ lý ESP32 có thể tải Whisper để nhận dạng lời nói trên điện thoại. Cần đăng nhập để dùng AI của máy chủ.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: colors.textSecondary,
+                  height: 1.45,
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Những người đồng hành cùng Nabi',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Một nhóm sáng chế và huấn luyện cùng mong muốn giúp người Việt chủ động chăm sóc sức khỏe mỗi ngày.',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: colors.textPrimary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -245,18 +165,18 @@ class _ConsentInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.semanticColors;
     return OnboardingStitchCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: accent.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: accent, size: 22),
+            child: Icon(icon, color: accent, size: 21),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -275,7 +195,7 @@ class _ConsentInfoCard extends StatelessWidget {
                   description,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: colors.textSecondary,
-                    height: 1.45,
+                    height: 1.4,
                   ),
                 ),
               ],

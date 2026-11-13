@@ -23,7 +23,7 @@ phải đọc ở cột verification.
 
 | Module | DD decision | Implementation | Verification | Current source boundary / gap |
 |---|---|---|---|---|
-| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | 9-step onboarding and completion callback are reachable. |
+| M01 `ONBOARDING_PROFILE` | Approved | Implemented | Static-verified; Focused-widget-tests-pass; Device-unverified; Sandbox-unverified | 9-step onboarding, successful completion handoff, save-error/meal-approval guards, and Menu return are covered by targeted Flutter widget tests; Android/device and sandbox evidence remain pending. |
 | M02 `PERSONAL_SCHEDULE_AI` | Approved | Implemented | Static-verified; Focused-tests-pass; Targeted-analysis-pass; Android-debug-APK-build-pass; Web-build-pass; Schedule-flow-unverified; Device-inference-unverified; Sandbox-unverified | Reachable first/additional plan flows; SQLite catalog has 3,163 meals (163 existing + 3,000 workspace candidates) and 40 exercises. A local prefilter now classifies/filter all 3,163 before AI; with an empty profile, 3,113 remain (639 breakfast, 41 morning snack, 597 lunch, 89 afternoon snack, 1,747 dinner). Each prompt still shortlists eligible code/name pairs under the selected model context; full filtered local set is shown in both wait flows and remains authoritative for normalization, duplicate rejection, and safety rules. Candidate status remains unreviewed (`is_plan_eligible=false`, `unclassified`, estimated nutrition, awaiting constraint review); relevant unverified allergy/condition/avoid/goal evidence fails closed, and no medical suitability is claimed. Insufficient unique candidates stop before AI/schedule/quota commit. Generation stages stable events in chronological order, emits per-event progress, commits each day only after validation and approval, pauses for custom-meal review, and resumes idempotently. SQLite v36 seeds 3,163 on fresh install and insert-only adds 3,000 on v35 upgrade. Focused tests, targeted analysis, and Android debug build pass; live schedule flow, Qwen device inference, and Supabase quota flow remain unverified. |
 | M03 `DASHBOARD_SCHEDULE` | Approved | Implemented | Static-verified; Runtime-unverified; Sandbox-unverified | Dashboard/schedule/proof/reward client source is reachable. |
 | M04 `BASIC_HEALTH_CALC` | Approved | Partial | Static-verified; Runtime-unverified | Calculator/formula engine exists; Admin formula-version management is not end-to-end. |
@@ -330,3 +330,33 @@ so the Feature Hub runtime, hotspot, models, network and ESP audio have not been
 exercised. BLE pairing, device-key OTA authentication, firmware control/ack,
 Tech/QA/Privacy reviews and physical conversation acceptance remain pending.
 This addendum is outside M01-M32 progress totals.
+
+### M01 Nabi onboarding UX — 2026-11-13
+
+- Focused widget tests pass for the 9-step flow, next/back data retention,
+  step 7/9 heading removal, result route, successful save, failure, pending
+  meal approval, and return to Menu.
+- Layout widget tests pass at 320×640 with 1.3 text scale and keyboard inset,
+  and at 390×844. This is Flutter Linux test evidence, not Android device
+  acceptance.
+- M01 implementation scope and coding progress are unchanged. Android visual
+  screenshots and Supabase sandbox/consent-audit evidence remain unverified.
+
+### M01 Onboarding UI polish — 2026-11-13
+
+- Onboarding backgrounds now use a plain semantic theme color; leaf shapes,
+  water-trail strokes and ambient orbs are removed.
+- Text-size setup shows a short preview and the size options. Routine step asks
+  seven core times in sequence for weekdays and weekends, then offers optional
+  nap/exercise/busy times. Consent step keeps a short summary and expandable
+  technical detail.
+- Targeted analysis reports no issues and five focused widget tests pass on
+  Flutter Linux. Android visual/device and Supabase consent/audit evidence
+  remain unverified; M01 progress totals are unchanged.
+
+### M01 Text scale illustration — 2026-11-13
+
+- Reused the bundled Nabi guide illustration above the live preview; it scales
+  down on compact screens and adds no visible copy or background decoration.
+- Targeted analyzer is clean and the focused suite passes at 390×844 and
+  320×640. Android/device and sandbox evidence remain unverified.

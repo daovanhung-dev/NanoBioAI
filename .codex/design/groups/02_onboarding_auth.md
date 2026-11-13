@@ -18,4 +18,4 @@ Onboarding and auth are progressive, trust-first, reversible and accessibility-a
 - [ONB-08 — Daily Routine Step](../screens/onb-08-daily-routine-step.md) — internal-step
 - [ONB-09 — Consent Step](../screens/onb-09-consent-step.md) — internal-step
 - [ONB-10 — Review Step](../screens/onb-10-review-step.md) — internal-step
-- [ONB-11 — Result Step](../screens/onb-11-result-step.md) — source-only
+- [ONB-11 — Result Step](../screens/onb-11-result-step.md) — internal-step

@@ -50,7 +50,7 @@ Baseline audit commit: `30587ab9b04d95aa621e5412502aafd0d0ca4827`.
 | ONB-08 Daily Routine Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/daily_routine_step.dart` | internal-step | [open](screens/onb-08-daily-routine-step.md) |
 | ONB-09 Consent Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/consent_step.dart` | internal-step | [open](screens/onb-09-consent-step.md) |
 | ONB-10 Review Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/review_step.dart` | internal-step | [open](screens/onb-10-review-step.md) |
-| ONB-11 Result Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart` | source-only | [open](screens/onb-11-result-step.md) |
+| ONB-11 Result Step | 02_onboarding_auth | `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_result_page.dart` + `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart` | internal-step | [open](screens/onb-11-result-step.md) |
 | V1-X01 Features Hub | 03_dashboard_health | `lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart` | source-sub-surface | [open](screens/v1-x01-features-hub.md) |
 | V1-X02 Health Insights / Góc Nabi | 03_dashboard_health | `lib/app_versions/v1/features/other/presentation/pages/other_page.dart` | source-sub-surface | [open](screens/v1-x02-health-insights-g-c-nabi.md) |
 | V1-X03 Schedule Proof Gallery | 03_dashboard_health | `lib/app_versions/v1/features/lifestyle_schedule/presentation/pages/schedule_proof_gallery_page.dart` | source-sub-surface | [open](screens/v1-x03-schedule-proof-gallery.md) |

@@ -1,18 +1,18 @@
 # ONB-11 — Result Step
 
 > Baseline: `daovanhung-dev/NanoBioAI` @ `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`  
-> Classification: **source-only** · Group: `02_onboarding_auth` · Archetype: `result`
+> Classification: **internal-step** · Group: `02_onboarding_auth` · Archetype: `result`
 
 ## 01. Purpose
-Trình bày kết quả/hành trình kế tiếp nếu surface được gọi; không coi đây là bước route active nếu source điều phối chưa gọi trực tiếp.
+Chúc mừng người dùng sau khi hồ sơ và trạng thái hoàn tất đã được lưu thành công.
 
 ## 02. Source evidence
-- Source: `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
+- Source: `lib/app_versions/v1/features/onboarding/presentation/pages/onboarding_result_page.dart` and `lib/app_versions/v1/features/onboarding/presentation/widgets/result_step.dart`
 - Evidence baseline: commit `d126e8ad0c482e3eacc373f35b37f339dd37a8cb`.
 - This spec preserves runtime/business boundaries; it is a UI/UX implementation contract, not new product logic.
 
 ## 03. Route / entry
-`V1RoutePaths.onboarding (internal)`
+`V1RoutePaths.onboardingResult` — internal success route, entered after confirmed completion.
 
 ## 04. Access model
 Respect existing guards, membership, guest/auth, admin/sale state and trusted-backend decisions. UI must never infer access from color, local cache or optimistic state.
@@ -79,7 +79,7 @@ Use Nabi-safe Vietnamese on consumer surfaces and operational Vietnamese on Admi
 Ready content should be glanceable in the first viewport, with detail progressively disclosed. Avoid dense prose above the first actionable information.
 
 ## 24. Disabled / locked / coming-soon
-No direct active route is proven. Keep design ready for invocation but do not describe it as a shipping navigation destination.
+Reached only after the onboarding save/completion flow succeeds. Direct navigation without completion route data returns to Menu.
 
 ## 25. Motion
 Fade-through / subtle shape morph 180–260 ms. Reduced Motion must collapse movement to opacity/static state changes while preserving causality and hierarchy.

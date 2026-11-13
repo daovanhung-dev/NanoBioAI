@@ -57,6 +57,7 @@ class OnboardingState {
   final bool agreed;
   final DailyRoutinePreferences routinePreferences;
   final bool routineConfirmed;
+  final int routineQuestionIndex;
 
   const OnboardingState({
     this.currentStep = 0,
@@ -90,6 +91,7 @@ class OnboardingState {
     this.agreed = false,
     this.routinePreferences = DailyRoutinePreferences.defaultValue,
     this.routineConfirmed = false,
+    this.routineQuestionIndex = 0,
   });
 
   double get bmi {
@@ -199,6 +201,7 @@ class OnboardingState {
     bool? agreed,
     DailyRoutinePreferences? routinePreferences,
     bool? routineConfirmed,
+    int? routineQuestionIndex,
   }) {
     return OnboardingState(
       currentStep: currentStep ?? this.currentStep,
@@ -233,12 +236,16 @@ class OnboardingState {
       agreed: agreed ?? this.agreed,
       routinePreferences: routinePreferences ?? this.routinePreferences,
       routineConfirmed: routineConfirmed ?? this.routineConfirmed,
+      routineQuestionIndex: routineQuestionIndex ?? this.routineQuestionIndex,
     );
   }
 }
 
 class OnboardingController extends Notifier<OnboardingState> {
   static const _tag = 'ONBOARDING';
+  static const dailyRoutineStepIndex = 6;
+  static const routineQuestionsPerProfile = 7;
+  static const routineQuestionCount = routineQuestionsPerProfile * 2;
   static const Set<String> _exclusiveWeightGoalCodes = {
     'maintain_weight',
     'lose_weight',
@@ -301,6 +308,30 @@ class OnboardingController extends Notifier<OnboardingState> {
     AppLogger.info(
       _tag,
       'Entered Step ${newStep + 1} - ${_stepTitle(newStep)}',
+    );
+  }
+
+  void nextRoutineQuestion() {
+    if (state.currentStep != dailyRoutineStepIndex ||
+        state.routineQuestionIndex >= routineQuestionCount) {
+      return;
+    }
+    state = state.copyWith(
+      routineQuestionIndex: state.routineQuestionIndex + 1,
+    );
+  }
+
+  void previousRoutineQuestion() {
+    if (state.currentStep != dailyRoutineStepIndex) {
+      previousStep();
+      return;
+    }
+    if (state.routineQuestionIndex == 0) {
+      previousStep();
+      return;
+    }
+    state = state.copyWith(
+      routineQuestionIndex: state.routineQuestionIndex - 1,
     );
   }
 
@@ -838,10 +869,10 @@ class OnboardingController extends Notifier<OnboardingState> {
       }
 
       final savedLog = aiLoginRequired
-          ? 'Đã lưu hồ sơ của bạn. Đăng nhập để tạo lịch gợi ý bằng AI khi bạn muốn.'
+          ? 'Hồ sơ đã lưu. Đăng nhập để tạo lịch gợi ý bằng AI khi bạn muốn.'
           : generationSource.isBasicSuggestion
-          ? 'Mình đã lưu hồ sơ sức khỏe và lịch gợi ý cơ bản đầu tiên của bạn. Khi dịch vụ sẵn sàng, bạn có thể tạo lại lịch để nhận gợi ý cá nhân hơn nhé.'
-          : 'Mình đã lưu hồ sơ sức khỏe của bạn thành công.';
+          ? 'Hồ sơ và lịch gợi ý cơ bản đã sẵn sàng. Bạn có thể tạo lịch cá nhân hơn sau.'
+          : 'Hồ sơ sức khỏe của bạn đã được lưu.';
       state = state.copyWith(
         isSaving: false,
         savedLog: savedLog,
@@ -981,7 +1012,7 @@ class OnboardingController extends Notifier<OnboardingState> {
       }
       state = state.copyWith(
         isSaving: false,
-        savedLog: 'Mình đã lưu hồ sơ sức khỏe và lịch đầu tiên của bạn.',
+        savedLog: 'Hồ sơ và lịch đầu tiên của bạn đã sẵn sàng.',
         initialPlanGenerationSource: result.generationSource,
       );
       return result;

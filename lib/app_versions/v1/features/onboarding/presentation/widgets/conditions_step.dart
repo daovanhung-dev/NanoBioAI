@@ -44,8 +44,8 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
 
     return OnboardingStepShell(
       stepIndex: 3,
-      title: 'Điều cần lưu ý',
-      subtitle: 'Chọn nhiều nếu phù hợp.',
+      title: 'Có điều gì Nabi cần lưu ý?',
+      subtitle: 'Chọn tất cả điều phù hợp.',
       mood: NabiOnboardingMood.care,
       onBack: controller.previousStep,
       onNext: controller.nextStep,
@@ -81,14 +81,14 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Điều cần lưu ý',
+                        'Có điều gì Nabi cần lưu ý?',
                         style: AppTextStyles.heading5.copyWith(
                           color: colors.textPrimary,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
-                        'Chọn nhiều nếu phù hợp.',
+                        'Chọn tất cả điều phù hợp.',
                         style: AppTextStyles.bodySmall.copyWith(
                           color: colors.textSecondary,
                         ),
@@ -104,7 +104,7 @@ class _ConditionsStepState extends ConsumerState<ConditionsStep> {
             onChanged: (value) => setState(() => _query = value),
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'Tìm kiếm tình trạng sức khỏe...',
+              hintText: 'Tìm tình trạng sức khỏe...',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: _query.isEmpty
                   ? null

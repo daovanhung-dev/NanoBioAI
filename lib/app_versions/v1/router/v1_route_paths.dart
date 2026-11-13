@@ -5,6 +5,7 @@ abstract class V1RoutePaths {
 
   static const onboarding = '/onboarding';
   static const onboardingEntry = '/start';
+  static const onboardingResult = '/onboarding/result';
 
   static const dashboard = '/dashboard';
 

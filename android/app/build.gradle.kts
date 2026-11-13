@@ -14,19 +14,27 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val releaseSigningKeys = listOf("keyAlias", "keyPassword", "storeFile", "storePassword")
+val hasReleaseSigningConfig = releaseSigningKeys.all { key ->
+    !keystoreProperties.getProperty(key).isNullOrBlank()
+}
+
 android {
     namespace = "com.nanobioai.app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     signingConfigs {
-       create("release") {
-           keyAlias = keystoreProperties["keyAlias"] as String
-           keyPassword = keystoreProperties["keyPassword"] as String
-           storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-           storePassword = keystoreProperties["storePassword"] as String
-       }
-   }		
+        // Local debug builds should not require the private release keystore.
+        if (hasReleaseSigningConfig) {
+            create("release") {
+                keyAlias = checkNotNull(keystoreProperties.getProperty("keyAlias"))
+                keyPassword = checkNotNull(keystoreProperties.getProperty("keyPassword"))
+                storeFile = checkNotNull(keystoreProperties.getProperty("storeFile")).let { file(it) }
+                storePassword = checkNotNull(keystoreProperties.getProperty("storePassword"))
+            }
+        }
+    }
 
 
    compileOptions {
@@ -52,7 +60,9 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigningConfig) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }

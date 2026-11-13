@@ -1448,3 +1448,22 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-05/001-worklog-app-display-name.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - Chưa fix: không có.
 - docs/worklog/2026-11-05/001-worklog-app-display-name.md :: - Cần kiểm tra tiếp: build/cài iOS trên macOS nếu cần nghiệm thu binary iOS.
+- docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED — host không có `powershell`/`pwsh`; sẽ dùng Python history refresh sau worklog.
+- docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md :: - Android screenshots/device smoke: SKIPPED — `flutter devices` chỉ có Linux target; không ghi nhận ảnh nghiệm thu.
+- docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md :: - Chưa fix: không có lỗi chức năng trong scope đã kiểm tra.
+- docs/worklog/2026-11-13/001-worklog-nabi-onboarding-fix.md :: - Cần kiểm tra tiếp: chụp ảnh/visual smoke trên Android; Supabase sandbox, consent/audit production evidence vẫn ngoài phạm vi.
+- docs/worklog/2026-11-13/002-worklog-android-debug-build-without-keystore.md :: - `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`: SKIPPED - PowerShell khong co trong moi truong.
+- docs/worklog/2026-11-13/002-worklog-android-debug-build-without-keystore.md :: ## Loi/Rui ro
+- docs/worklog/2026-11-13/002-worklog-android-debug-build-without-keystore.md :: - Chua fix: khong co.
+- docs/worklog/2026-11-13/002-worklog-android-debug-build-without-keystore.md :: - Can kiem tra tiep: can `android/key.properties` day du de tao release artifact duoc ky.
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED — host has no `powershell`/`pwsh`; targeted analyzer, source checks and diff check were run.
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: - `python3 tools/validate_docs_source_truth.py`: FAIL — repository manifest `docs/audit/source_truth_manifest.json` is missing; unrelated to the onboarding changes.
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: - Android screenshots/device smoke: SKIPPED — no Android visual acceptance was run.
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: - Chưa fix: không còn lỗi trong phạm vi targeted analysis/widget tests.
+- docs/worklog/2026-11-13/003-worklog-onboarding-ui-polish.md :: - Cần kiểm tra tiếp: Android visual/device acceptance; Supabase sandbox/RLS và consent/audit production evidence.
+- docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - PowerShell integrity validator: SKIPPED — `powershell`/`pwsh` unavailable in this Linux environment.
+- docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Chưa fix: không có lỗi trong targeted analyzer/widget tests.
+- docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Cần kiểm tra tiếp: Android visual/device smoke chưa chạy.

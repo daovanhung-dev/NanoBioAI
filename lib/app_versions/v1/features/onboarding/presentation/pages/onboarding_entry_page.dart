@@ -199,7 +199,6 @@ class _OnboardingEntryPageState extends ConsumerState<OnboardingEntryPage> {
       ambientBackground: false,
       backgroundColor: colors.background,
       body: NabiAmbientBackground(
-        strong: true,
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
@@ -371,40 +370,6 @@ class _EntryHero extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              left: -44,
-              top: -68,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  color: colors.secondary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned(
-              right: -30,
-              bottom: -56,
-              child: Container(
-                width: 190,
-                height: 190,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.09),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _EntryNaturePainter(
-                    water: colors.primary.withValues(alpha: 0.20),
-                    leaf: colors.secondary.withValues(alpha: 0.30),
-                  ),
-                ),
-              ),
-            ),
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -491,66 +456,6 @@ class _EntryHero extends StatelessWidget {
       ),
     );
   }
-}
-
-class _EntryNaturePainter extends CustomPainter {
-  const _EntryNaturePainter({required this.water, required this.leaf});
-
-  final Color water;
-  final Color leaf;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final waterPaint = Paint()
-      ..color = water
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    final leafPaint = Paint()
-      ..color = leaf
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    for (var index = 0; index < 3; index++) {
-      final y = size.height * (.18 + index * .045);
-      canvas.drawPath(
-        Path()
-          ..moveTo(size.width * .62, y)
-          ..cubicTo(
-            size.width * .76,
-            y - 16,
-            size.width * .88,
-            y + 14,
-            size.width * 1.02,
-            y,
-          ),
-        waterPaint,
-      );
-    }
-    final stem = Path()
-      ..moveTo(size.width * .85, size.height * .92)
-      ..cubicTo(
-        size.width * .78,
-        size.height * .67,
-        size.width * .82,
-        size.height * .45,
-        size.width * .95,
-        size.height * .31,
-      );
-    canvas.drawPath(stem, leafPaint);
-    for (var index = 0; index < 3; index++) {
-      final y = size.height * (.73 - index * .11);
-      final leafPath = Path()
-        ..moveTo(size.width * .83, y)
-        ..quadraticBezierTo(size.width * .73, y - 20, size.width * .69, y - 7)
-        ..quadraticBezierTo(size.width * .73, y + 5, size.width * .83, y);
-      canvas.drawPath(leafPath, leafPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _EntryNaturePainter oldDelegate) =>
-      oldDelegate.water != water || oldDelegate.leaf != leaf;
 }
 
 class _RetryPlanCard extends StatelessWidget {

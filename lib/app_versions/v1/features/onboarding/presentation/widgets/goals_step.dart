@@ -20,7 +20,7 @@ class GoalsStep extends ConsumerWidget {
     final controller = ref.read(onboardingProvider.notifier);
     return OnboardingStepShell(
       stepIndex: 2,
-      title: 'Điều bạn muốn cải thiện',
+      title: 'Bạn muốn cải thiện điều gì?',
       subtitle: 'Chọn một hoặc nhiều mục tiêu.',
       mood: NabiOnboardingMood.goal,
       onBack: controller.previousStep,
@@ -31,54 +31,17 @@ class GoalsStep extends ConsumerWidget {
             mood: NabiOnboardingMood.goal,
             eyebrow: 'NABI ĐỒNG HÀNH',
             message:
-                'Mỗi bước khởi đầu nhỏ đều có ý nghĩa. Hãy chọn điều bạn muốn chăm sóc trước nhé.',
+                'Bạn muốn chăm sóc điều gì trước? Chọn mục tiêu phù hợp nhé.',
           ),
           const SizedBox(height: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: context.semanticColors.primarySoft,
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.checklist_rounded,
-                  size: 16,
-                  color: context.semanticColors.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Tùy biến lộ trình cá nhân',
-                  style: AppTextStyles.labelSmall.copyWith(
-                    color: context.semanticColors.primary,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
           const OnboardingScreenHeading(
-            title: 'Điều bạn muốn cải thiện',
-            subtitle:
-                'Bạn có thể chọn một hoặc nhiều mục tiêu quan trọng nhất với mình hiện tại.',
+            title: 'Bạn muốn cải thiện điều gì?',
+            subtitle: 'Chọn điều phù hợp với bạn lúc này.',
             bottomSpacing: AppSpacing.md,
           ),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Danh sách mục tiêu',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: context.semanticColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ),
+              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,

@@ -7,6 +7,7 @@ import 'package:nano_app/core/constants/onboarding_constants.dart';
 import 'package:nano_app/core/theme/theme.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 
+import '../controllers/onboarding_controller.dart';
 import '../widgets/basic_info_step.dart';
 import '../widgets/conditions_step.dart';
 import '../widgets/consent_step.dart';
@@ -48,7 +49,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop || state.isSaving) return;
         if (state.currentStep > 0) {
-          ref.read(onboardingProvider.notifier).previousStep();
+          final controller = ref.read(onboardingProvider.notifier);
+          if (state.currentStep == OnboardingController.dailyRoutineStepIndex) {
+            controller.previousRoutineQuestion();
+          } else {
+            controller.previousStep();
+          }
           return;
         }
         context.go(V1RoutePaths.onboardingEntry);
