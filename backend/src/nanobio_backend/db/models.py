@@ -414,6 +414,90 @@ class CloudSnapshot(Base):
     )
 
 
+class IotDevice(Base):
+    __tablename__ = "iot_devices"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    owner_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+    unbound_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class IotPairingSession(Base):
+    __tablename__ = "iot_pairing_sessions"
+    __table_args__ = (Index("ix_iot_pairing_owner_created", "owner_id", "created_at"),)
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    device_id: Mapped[str | None] = mapped_column(
+        ForeignKey("iot_devices.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class IotDeviceCredential(Base):
+    __tablename__ = "iot_device_credentials"
+
+    device_id: Mapped[str] = mapped_column(
+        ForeignKey("iot_devices.id", ondelete="CASCADE"), primary_key=True
+    )
+    access_token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    access_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    refresh_token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    refresh_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+
+
+class IotDeviceConsent(Base):
+    __tablename__ = "iot_device_consents"
+
+    device_id: Mapped[str] = mapped_column(
+        ForeignKey("iot_devices.id", ondelete="CASCADE"), primary_key=True
+    )
+    identity: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    profile_goals: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false")
+    )
+    sensitive_health: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false")
+    )
+    recent_tracking: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=now_utc, onupdate=now_utc
+    )
+
+
+class IotDeviceSession(Base):
+    __tablename__ = "iot_device_sessions"
+
+    device_id: Mapped[str] = mapped_column(
+        ForeignKey("iot_devices.id", ondelete="CASCADE"), primary_key=True
+    )
+    connection_id: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
+    connected_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    sensitive_unlocked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
 class EarlyAccessLead(Base):
     __tablename__ = "early_access_leads"
 

@@ -221,7 +221,8 @@ std::string WifiManager::GetMacAddress() const {
 
 // ==================== Config AP Mode ====================
 
-void WifiManager::StartConfigAp() {
+void WifiManager::StartConfigAp(const std::string& access_point_password,
+                                std::function<void(httpd_handle_t)> on_web_server_started) {
     std::unique_lock<std::mutex> lock(mutex_);
 
     if (!initialized_) {
@@ -246,6 +247,8 @@ void WifiManager::StartConfigAp() {
     ESP_LOGI(TAG, "Starting config AP");
 
     config_ap_->SetSsidPrefix(config_.ssid_prefix);
+    config_ap_->SetAccessPointPassword(access_point_password);
+    config_ap_->OnWebServerStarted(std::move(on_web_server_started));
     config_ap_->SetLanguage(config_.language);
     config_ap_->SetShowOtaConfig(config_.show_ota_config);
     config_ap_->SetShowSleepConfig(config_.show_sleep_config);

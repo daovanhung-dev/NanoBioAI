@@ -1,24 +1,35 @@
-Commit de xuat: feat(nabi-esp): provision ESP OSTB qua hotspot Nabi
+Commit de xuat: feat(nabi-esp): provision ESP OSTB qua server NanoBio
 
 # Nabi - Siêu trợ lý AI kết nối ESP OSTB 3ST
 
 ## Trạng thái
 
-PO intent đã được duyệt theo kế hoạch người dùng ngày 2026-10-23. Đợt này nối ứng dụng Nabi Android với profile firmware OSTB 3ST bằng một hợp đồng sinh từ `iot/nabi_esp_contract.json`. Tính năng vẫn ở trạng thái review-gated; Tech, QA và Privacy chưa sign-off. Build hoặc phép thử source không tự mở cổng phát hành.
+PO intent đã được duyệt theo kế hoạch người dùng ngày 2026-11-17. App đăng nhập online trước khi cấu hình, lưu credential mã hóa tới khi logout; sau đó người dùng nối AP WPA2 của ESP và gửi Wi‑Fi cùng account credential qua API local. Không cần dữ liệu di động trong bước AP. ESP lưu account credential trong NVS, tự vào Wi‑Fi và xác thực qua HTTPS device-login trước khi dùng voice trực tiếp với NanoBio server. Tính năng vẫn Draft và release-gated; Tech, QA, Privacy chưa sign-off.
 
-## Trải nghiệm dự kiến
+## Trải nghiệm
 
-Người dùng bấm “Kết nối Nabi” để app chuẩn bị Whisper tiếng Việt cho nhận dạng lời nói, dùng voice Android TTS offline, rồi khởi động LocalOnlyHotspot và dịch vụ kết nối ESP. Không có model văn bản cục bộ; câu trả lời được tạo qua NanoBio backend và yêu cầu Internet cùng phiên đăng nhập. Android tự chọn SSID/mật khẩu. App dò ESP qua BLE, lần ghép đầu yêu cầu mã 8 chữ số đang hiển thị trên ESP, rồi gửi credential hotspot hiện tại qua Security 2. ESP kết nối Wi-Fi và gọi gateway DHCP trên `/nabi/ota/`. MVP phục vụ một ESP.
+Người dùng đăng nhập Nabi thành công khi điện thoại có Internet. Khi nối vào AP WPA2 `Nabi-xxxx`, người dùng nhập SSID/password Wi‑Fi 2.4 GHz; app gửi Wi‑Fi cùng account credential qua `http://192.168.4.1/nabi/provision` mà không cần mobile data. ESP lưu credential trong NVS, kết nối Wi‑Fi nhà, xác thực qua `/api/v1/iot/devices/credentials/login`, lưu refresh token và mở WSS voice v3. Backend PostgreSQL chỉ lưu Argon2 password hash; device token lưu hash.
 
-## Trạng thái hiện tại
+Sau khi ghép, app hiển thị thiết bị thuộc tài khoản, cho đổi tên, bật/tắt consent, xác nhận mở dữ liệu nhạy cảm trong 5 phút hoặc thu hồi. Consent identity, profile_goals, sensitive_health và recent_tracking mặc định tắt. Thiết lập AP chỉ cho thao tác trong Android debug; release vẫn khóa.
 
-- Tile chỉ xuất hiện Android, trong “Sắp ra mắt”; iOS không hiển thị. Nút kết nối giữ cổng review hiện hành.
-- Android dùng LocalOnlyHotspot, service nền `connectedDevice`, HTTP OTA/WebSocket v3 trên cổng 8386, khóa thiết bị cho OTA và bearer token riêng cho WebSocket. Pipeline dùng Whisper local cho nhận dạng, backend NanoBio cho câu trả lời, TTS và Opus; audio/hội thoại giữ trong RAM.
-- Android BLE provisioning dùng Espressif Provisioning Android Security 2; khóa ghép được mã hóa bằng Android Keystore. Ghép đôi lần đầu và cấp cấu hình Wi-Fi đã chạy trên điện thoại/ESP thật.
-- Firmware profile OSTB 3ST có BLE Security 2, mã ghép đầu tiên hết hạn sau 2 phút, khóa pairing sau 5 mã sai tới lần khởi động kế tiếp, lưu khóa trong NVS, gửi Wi-Fi qua custom endpoint và tạo OTA URL bằng gateway DHCP. Manual config AP còn làm đường phục hồi.
-- Firmware tích hợp được build/nạp vào OTA0; BLE provisioning, DHCP, `/nabi/ota/`, WebSocket v3 và ACK cho lệnh nghe/dừng đã được xác nhận. Firmware image đã đọc lại và khớp hash.
-- Hội thoại giọng nói chưa nghiệm thu: chưa xác nhận round trip backend qua HTTPS hoặc TTS ra loa ESP. Cũng chưa thử phục hồi nhiều lần sau hotspot restart, màn hình khóa/Doze hoặc hội thoại khi ngắt Internet. Chi tiết ở [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md), [DD module](../../DD/nabi_esp_assistant/README.md) và [hồ sơ ESP](../../../iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md).
+## Kiến trúc
 
-## Mở khóa triển khai
+- App Nabi lưu account credential đã mã hóa trong SQLite bằng Android Keystore và quản lý thiết bị qua API đăng nhập.
+- ESP lấy access/refresh token từ server; access token chỉ giữ RAM, refresh token xoay vòng và lưu trong NVS.
+- ESP gửi voice tới NanoBio server qua WSS; STT, AI và TTS ở server; app không relay audio.
+- Speech worker chạy nội bộ trên loopback. Audio/transcript không được ghi vào log hoặc file.
+- Cloud contract/profile tách biệt với local phone-AI contract và config.local-ai.json.
 
-Đã build/cài Nabi Android, build/flash app partition tương thích đồng thời giữ NVS, và thử hotspot, BLE, OTA config cùng WebSocket v3/control trên điện thoại/ESP thật. Còn cần xác nhận hội thoại TTS/loa, hotspot restart, màn hình khóa/Doze và hành vi offline. Tech xác nhận giao thức, khóa và lifecycle; QA hoàn tất ma trận quyền/nền/kết nối; Privacy duyệt data flow, retention, logging và lưu khóa NVS. Không mở tính năng trong release trước khi đủ review và nghiệm thu.
+## Trạng thái source và acceptance
+
+- Flutter page/runtime, Android local/crypto bridge, backend device-login source/test và OSTB cloud firmware profile có source.
+- Flutter analyze, backend focused tests/Ruff/mypy, Android debug build và ESP-IDF build pass. Device-login endpoint đã deploy trong release riêng; service active, health/OpenAPI pass.
+- Board không xuất hiện trong cổng serial ở lượt này nên firmware v4 chưa được nạp; NVS, OTA metadata, partition table, bootloader, assets và eFuse chưa bị ghi trong lượt này.
+- Chưa nghiệm thu qua điện thoại: AP/Wi‑Fi/account exchange, device-login/refresh/revocation, WSS voice round trip, consent, reconnect, mất Internet và TTS ra loa ESP.
+- Release gate chỉ mở sau Tech, QA, Privacy sign-off và acceptance trên OSTB 3ST thật.
+
+## Tài liệu
+
+- [DD Overall](../../DD/nabi_esp_assistant/Overall.md)
+- [DD Features](../../DD/nabi_esp_assistant/List_Features.md)
+- [Worklog implementation](../../worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md)

@@ -33,6 +33,8 @@ public:
 
     void SetSsidPrefix(const std::string &&ssid_prefix);
     void SetSsidPrefix(const std::string &ssid_prefix);
+    void SetAccessPointPassword(const std::string &password);
+    void OnWebServerStarted(std::function<void(httpd_handle_t)> callback);
     void SetLanguage(const std::string &&language);
     void SetLanguage(const std::string &language);
     void SetShowOtaConfig(bool show) { show_ota_config_ = show; }
@@ -60,6 +62,7 @@ private:
     httpd_handle_t server_ = NULL;
     EventGroupHandle_t event_group_;
     std::string ssid_prefix_;
+    std::string access_point_password_;
     std::string language_;
     esp_event_handler_instance_t instance_any_id_;
     esp_event_handler_instance_t instance_got_ip_;
@@ -82,6 +85,7 @@ private:
 
     // Callbacks
     std::function<void()> on_exit_requested_;
+    std::function<void(httpd_handle_t)> on_web_server_started_;
 
     void StartAccessPoint();
     void StartWebServer();

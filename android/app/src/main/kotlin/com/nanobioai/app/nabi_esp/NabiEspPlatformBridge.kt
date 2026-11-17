@@ -20,6 +20,7 @@ class NabiEspPlatformBridge(
 ) : MethodChannel.MethodCallHandler {
     private val channel = MethodChannel(messenger, CHANNEL_NAME)
     private val bleProvisioner = NabiEspBleProvisioner(context)
+    private val localProvisioner = NabiEspLocalProvisioner(context)
 
     init {
         channel.setMethodCallHandler(this)
@@ -31,6 +32,11 @@ class NabiEspPlatformBridge(
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "androidSdkInt" -> result.success(Build.VERSION.SDK_INT)
+            "isEspApConnected" -> result.success(localProvisioner.isEspApConnected())
+            "getEspLocalStatus" -> runNetworkAction(result) { localProvisioner.getEspStatus() }
+            "provisionEspLocal" -> provisionEspLocal(call, result)
+            "encryptNabiCredential" -> encryptNabiCredential(call, result)
+            "decryptNabiCredential" -> decryptNabiCredential(call, result)
             "startForegroundService" -> startForegroundService(result)
             "updateForegroundNotification" -> updateForegroundNotification(call, result)
             "stopForegroundService" -> stopForegroundService(result)
@@ -47,6 +53,97 @@ class NabiEspPlatformBridge(
     fun dispose() {
         channel.setMethodCallHandler(null)
         NabiEspForegroundService.stopRequested = null
+    }
+
+    private fun runNetworkAction(result: MethodChannel.Result, action: () -> Any?) {
+        Thread {
+            try {
+                val value = action()
+                Handler(Looper.getMainLooper()).post { result.success(value) }
+            } catch (exception: Exception) {
+                val message = if (exception is IllegalStateException) {
+                    exception.message ?: "Không thể hoàn tất thao tác với ESP. Hãy thử lại."
+                } else {
+                    "Không thể kết nối với ESP. Kiểm tra Wi-Fi Nabi rồi thử lại."
+                }
+                Handler(Looper.getMainLooper()).post {
+                    result.error("nabi_network_error", message, null)
+                }
+            }
+        }.start()
+    }
+
+    private fun provisionEspLocal(call: MethodCall, result: MethodChannel.Result) {
+        val ssid = call.argument<String>("ssid")?.trim()
+        val wifiPassword = call.argument<String>("wifiPassword")
+        val identifierType = call.argument<String>("identifierType")
+        val identifier = call.argument<String>("identifier")
+        val accountPassword = call.argument<String>("accountPassword")
+        if (ssid.isNullOrBlank() || wifiPassword == null || identifierType == null ||
+            identifier == null || accountPassword == null || ssid.toByteArray().size > 32 ||
+            wifiPassword.length !in 8..63 || identifierType !in setOf("phone", "email", "username") ||
+            identifier.isBlank() || identifier.length > 320 || accountPassword.isEmpty() ||
+            accountPassword.length > 128
+        ) {
+            result.error("wifi_config_invalid", "Wi-Fi setup payload is invalid.", null)
+            return
+        }
+        runNetworkAction(result) {
+            localProvisioner.provisionEsp(
+                ssid,
+                wifiPassword,
+                identifierType,
+                identifier,
+                accountPassword,
+            )
+        }
+    }
+
+    private fun encryptNabiCredential(call: MethodCall, result: MethodChannel.Result) {
+        val value = call.argument<String>("value")
+        if (value.isNullOrEmpty() || value.length > MAX_CREDENTIAL_PAYLOAD_LENGTH) {
+            result.error("credential_invalid", "Thông tin đăng nhập Nabi không hợp lệ.", null)
+            return
+        }
+        Thread {
+            try {
+                val encrypted = NabiEspCredentialCrypto.encrypt(value)
+                Handler(Looper.getMainLooper()).post { result.success(encrypted) }
+            } catch (_: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    result.error(
+                        "credential_crypto_failed",
+                        "Không thể bảo vệ thông tin đăng nhập trên điện thoại.",
+                        null,
+                    )
+                }
+            }
+        }.start()
+    }
+
+    private fun decryptNabiCredential(call: MethodCall, result: MethodChannel.Result) {
+        val ciphertext = call.argument<String>("ciphertext")
+        val iv = call.argument<String>("iv")
+        if (ciphertext.isNullOrEmpty() || ciphertext.length > MAX_CREDENTIAL_CIPHERTEXT_LENGTH ||
+            iv.isNullOrEmpty() || iv.length > 64
+        ) {
+            result.error("credential_invalid", "Thông tin đăng nhập Nabi không hợp lệ.", null)
+            return
+        }
+        Thread {
+            try {
+                val value = NabiEspCredentialCrypto.decrypt(ciphertext, iv)
+                Handler(Looper.getMainLooper()).post { result.success(value) }
+            } catch (_: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    result.error(
+                        "credential_crypto_failed",
+                        "Không thể đọc thông tin đăng nhập đã lưu.",
+                        null,
+                    )
+                }
+            }
+        }.start()
     }
 
     private fun startForegroundService(result: MethodChannel.Result) {
@@ -89,12 +186,14 @@ class NabiEspPlatformBridge(
     private fun provisionEsp(call: MethodCall, result: MethodChannel.Result) {
         val ssid = call.argument<String>("ssid")?.takeIf { it.isNotBlank() }
         val password = call.argument<String>("password")?.takeIf { it.length >= 8 }
+        val pairingToken = call.argument<String>("pairingToken")
+            ?.takeIf { it.length in 32..160 }
         val pairingCode = call.argument<String>("pairingCode")
-        if (ssid == null || password == null || ssid.toByteArray().size > 32) {
-            result.error("ble_config_invalid", "Hotspot configuration is invalid.", null)
+        if (ssid == null || password == null || pairingToken == null || ssid.toByteArray().size > 32) {
+            result.error("ble_config_invalid", "Wi-Fi setup payload is invalid.", null)
             return
         }
-        bleProvisioner.provision(ssid, password, pairingCode, result)
+        bleProvisioner.provision(ssid, password, pairingToken, pairingCode, result)
     }
 
     private fun startLocalOnlyHotspot(result: MethodChannel.Result) {
@@ -187,6 +286,8 @@ class NabiEspPlatformBridge(
     private companion object {
         const val TAG = "NabiEspHotspot"
         const val CHANNEL_NAME = "com.nanobioai.app/nabi_esp"
+        const val MAX_CREDENTIAL_PAYLOAD_LENGTH = 1_024
+        const val MAX_CREDENTIAL_CIPHERTEXT_LENGTH = 4_096
     }
 }
 

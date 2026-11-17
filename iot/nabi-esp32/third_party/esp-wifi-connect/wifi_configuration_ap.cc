@@ -75,6 +75,16 @@ void WifiConfigurationAp::SetSsidPrefix(const std::string &ssid_prefix)
     ssid_prefix_ = ssid_prefix;
 }
 
+void WifiConfigurationAp::SetAccessPointPassword(const std::string &password)
+{
+    access_point_password_ = password;
+}
+
+void WifiConfigurationAp::OnWebServerStarted(std::function<void(httpd_handle_t)> callback)
+{
+    on_web_server_started_ = std::move(callback);
+}
+
 void WifiConfigurationAp::Start()
 {
     // Register event handlers
@@ -163,7 +173,16 @@ void WifiConfigurationAp::StartAccessPoint()
     strcpy((char *)wifi_config.ap.ssid, ssid.c_str());
     wifi_config.ap.ssid_len = ssid.length();
     wifi_config.ap.max_connection = 4;
-    wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    if (access_point_password_.empty()) {
+        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    } else {
+        if (access_point_password_.size() < 8 || access_point_password_.size() > 63) {
+            ESP_LOGE(TAG, "Refusing to start config AP with an invalid password length");
+            return;
+        }
+        memcpy(wifi_config.ap.password, access_point_password_.data(), access_point_password_.size());
+        wifi_config.ap.authmode = WIFI_AUTH_WPA2_PSK;
+    }
 
     // Start the WiFi Access Point
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
@@ -783,6 +802,9 @@ void WifiConfigurationAp::StartWebServer()
     };
     ESP_ERROR_CHECK(httpd_register_uri_handler(server_, &advanced_submit));
 
+    if (on_web_server_started_) {
+        on_web_server_started_(server_);
+    }
     ESP_LOGI(TAG, "Web server started");
 }
 

@@ -24,7 +24,7 @@
 - Added a responsive shared-page widget sweep for widths 320/360/412/600/840, text scale 1.0/1.3/1.6 and light/dark themes.
 - Added missing route specs for health check-in, goal/profile review, fitness, notification settings, food scan/history, settings and individual M31 safety surfaces.
 - Corrected the sleep surface inventory/spec from a stale coming-soon classification to the active auth, membership and rollout-gated M31 route.
-- Added V1-X18 Nabi ESP preview route/page to the Feature Hub on Android only. The tile and disabled CTA are a truthful placeholder pending Tech, QA, and Privacy review; no networking, BLE, model/audio, or ESP controls are active.
+- V1-X18 now has an Android debug pilot for ESP AP Wi-Fi setup and owner-side device management. It remains under Feature Hub → “Sắp ra mắt” and release-gated pending Tech, QA, and Privacy review; ESP voice runs directly to the cloud after setup.
 
 ## Validation evidence
 

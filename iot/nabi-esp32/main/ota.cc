@@ -64,7 +64,7 @@ Ota::Ota() {
 Ota::~Ota() {}
 
 std::string Ota::GetCheckVersionUrl() {
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) && !defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     const auto local_url = NabiEspProvisioning::GetInstance().GetLocalOtaUrl();
     if (!local_url.empty()) {
         return local_url;
@@ -100,7 +100,7 @@ std::unique_ptr<Http> Ota::SetupHttp() {
     http->SetHeader("User-Agent", user_agent);
     http->SetHeader("Accept-Language", Lang::CODE);
     http->SetHeader("Content-Type", "application/json");
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) && !defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     const auto device_key = NabiEspProvisioning::GetInstance().GetDeviceKey();
     if (device_key.size() == 64) {
         http->SetHeader(NABI_DEVICE_KEY_HEADER, device_key);

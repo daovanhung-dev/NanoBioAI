@@ -1,38 +1,54 @@
 # Import / File Map — NABI_ESP_ASSISTANT
 
-> Runtime update 2026-10-30: the GGUF text runtime has been removed. Voice
-> recognition remains on-device; generated replies use authenticated backend
-> AI and require Internet.
+Cập nhật 2026-11-17: luồng app chỉ lo provision/quản lý; hội thoại sau setup chạy giữa ESP và NanoBio server.
 
-## App source in NanoBio
+## App source trong NanoBio
 
-| Path | Current role |
+| Path | Vai trò |
 |---|---|
-| `lib/app_versions/v1/features/features_hub/presentation/pages/features_hub_page.dart` | Android-only preview entry under “Sắp ra mắt”; not an active shortcut |
-| `lib/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart` | Control page with readiness, server, pairing, ESP and listening states |
-| `lib/app_versions/v1/router/v1_route_paths.dart` | Preview route constant |
-| `lib/app_versions/v1/router/v1_router.dart` | Preview route registration without the AI Voice paid/auth gate |
-| `lib/app_versions/v1/features/ai_voice/data/datasources/voice_chat_turn_datasource.dart` | Shared sanitized backend text response |
-| `android/app/src/main/AndroidManifest.xml` | Hotspot/Bluetooth permissions and connected-device service declaration |
-| `android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/` | LocalOnlyHotspot, foreground service, Espressif BLE Security 2 and secure pairing store |
-| `iot/nabi_esp_contract.json` and `iot/tools/generate_nabi_esp_contract.py` | Canonical contract source and Dart/Kotlin/ESP generators |
-| `iot/nabi-esp32/main/nabi_esp_provisioning.*` | OSTB BLE Security 2, pairing display/key, Wi-Fi provisioning and DHCP gateway URL |
-| `iot/nabi-esp32/main/ota.cc` and `main/protocols/protocol.*`, `main/application.cc` | OTA device-key auth and listen control/ack handling |
+| lib/app_versions/v1/features/nabi_esp_assistant/presentation/pages/nabi_esp_assistant_page.dart | Hướng dẫn nối AP, nhập Wi‑Fi nhà; liệt kê thiết bị; quản lý consent, tên và hủy liên kết |
+| lib/app_versions/v1/features/nabi_esp_assistant/data/services/nabi_esp_assistant_runtime.dart | Local AP setup with cached account credential, pending server status and app release gate |
+| lib/core/storage/nabi_esp_credential_vault.dart | Encrypted SQLite credential vault using Android Keystore for AES key |
+| lib/app_versions/v1/features/nabi_esp_assistant/data/services/nabi_esp_device_service.dart | API app đã đăng nhập: list, rename, consent, unlock, revoke; pairing-session endpoint còn lại chỉ phục vụ tương thích cũ |
+| lib/app_versions/v1/features/nabi_esp_assistant/data/services/nabi_esp_cloud_contract.g.dart | Hằng số sinh từ cloud contract |
+| lib/app_versions/v1/features/nabi_esp_assistant/data/services/nabi_esp_android_bridge.dart | MethodChannel cho AP detection, local provisioning và credential encryption |
+| android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/NabiEspLocalProvisioner.kt | Gửi provision request qua Wi‑Fi ESP; không cần bind cellular |
+| android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/NabiEspCredentialCrypto.kt | AES/GCM cipher qua Android Keystore |
+| android/app/src/main/res/xml/nabi_network_security_config.xml | Cho phép HTTP cleartext chỉ tới AP local `192.168.4.1` |
+| android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/NabiEspCloudContract.kt | Hằng số AP/cloud sinh từ contract |
+| iot/nabi_esp_cloud_contract.json và iot/tools/generate_nabi_esp_cloud_contract.py | Source of truth/generator riêng cho API/WSS cloud |
 
-## Runtime ownership
+## Backend source
 
-| Planned owner | Responsibility |
+| Path | Vai trò |
 |---|---|
-| `features/nabi_esp_assistant/domain/` | Pairing/session state, bounded message history, listen commands |
-| `features/nabi_esp_assistant/data/` | Whisper adapter, PCM/Opus framing, TTS-to-WAV/resample, HTTP/WebSocket server, secure pairing store |
-| `features/nabi_esp_assistant/providers/` | Riverpod lifecycle/readiness controller, no direct UI-to-native calls |
-| `android/.../nabi_esp/` | LocalOnlyHotspot reservation, Espressif provisioning bridge, connected-device FGS and notification action |
-| `iot/nabi-esp32/main/` | OSTB provisioning Security2, pairing code display, gateway OTA/auth, WebSocket listen control/ack |
+| backend/src/nanobio_backend/modules/iot/router.py | REST endpoints device-login, legacy pairing, credential refresh, device, consent và WebSocket |
+| backend/src/nanobio_backend/modules/iot/view.py | API orchestration, Argon2 credential check, ownership/auth behavior |
+| backend/src/nanobio_backend/modules/iot/query.py | Persistence/query layer cho device, consent và session |
+| backend/src/nanobio_backend/modules/iot/models.py | Pydantic request/response contracts |
+| backend/src/nanobio_backend/modules/iot/voice.py | Voice WebSocket v3 và session lease |
+| backend/src/nanobio_backend/services/iot_speech_worker.py | Local STT/TTS service |
+| backend/systemd/nanobio-iot-speech-worker.service | Loopback systemd service; requires speech extra and installed model files |
+| backend/src/nanobio_backend/db/models.py | SQLAlchemy IoT tables |
+| backend/alembic/versions/0008_iot_devices.py | Deployed IoT schema revision, idempotent on the repo's dynamic initial schema |
+| backend/alembic/versions/0009_merge_iot_web_push.py | Merge local Web Push and deployed IoT migration branches |
+| backend/tests/test_iot_api.py | Pairing, consent, token rotation, revocation và voice contract tests |
+| backend/.env.example | Non-secret IoT URL, loopback worker and model configuration template |
 
-## Dependencies
+## Firmware source
 
-- `flutter_whisper_ggml`, `opus_codec_dart`, and the native Opus loader used by the imported `phone_app`; verify Android ABI/build/license and lifecycle before adoption.
-- Espressif Android provisioning library `com.github.espressif:esp-idf-provisioning-android:lib-2.4.4` for BLE Security 2 and custom endpoint; verify JitPack build and device behavior before release.
-- Existing `flutter_secure_storage`, `crypto`, `flutter_tts`, `path_provider`, `http`, and selected `LocalAiTextClient` can cover some requirements.
+| Path | Vai trò |
+|---|---|
+| iot/nabi-esp32/main/boards/ostb/ostb-nabi-3st/config.cloud-ai.json | Profile cloud riêng, giữ profile config.local-ai.json |
+| iot/nabi-esp32/main/nabi_esp_cloud_contract.h | Hằng số sinh từ cloud contract |
+| iot/nabi-esp32/main/nabi_esp_provisioning.* | AP status/provision routes, HTTPS device-login/refresh, NVS credential/token lifecycle |
+| iot/nabi-esp32/main/protocols/websocket_protocol.cc | Authenticated direct ESP↔server WebSocket |
+| iot/nabi-esp32/main/application.cc | Activation, reconnect và channel lifecycle |
+| iot/nabi-esp32/main/ota.cc | Cấu hình OTA cũ chỉ dùng trong profile local; cloud pilot không chạy flow OTA này |
 
-`iot/nabi-esp32/phone_app/` remains a separate app and is outside this integration. Do not copy its independent LLM/model manager or modify that tree for this feature.
+## Boundaries
+
+- iot/nabi_esp_contract.json, iot/tools/generate_nabi_esp_contract.py, config.local-ai.json và iot/nabi-esp32/phone_app/ không đổi bởi cloud profile.
+- Cấu hình Wi‑Fi và account credential đi qua HTTP trên AP WPA2; ESP lưu account credential trong NVS theo yêu cầu. PostgreSQL chỉ giữ Argon2 hash, app lưu password ciphertext trong SQLite tới khi logout.
+- Foreground service/LocalOnlyHotspot source cũ còn trong native bridge nhưng không được runtime cloud hiện tại gọi.
+- Source có mặt không chứng minh server đã được deploy/build hoặc device đã chạy. Xem acceptance gate trong Overall.

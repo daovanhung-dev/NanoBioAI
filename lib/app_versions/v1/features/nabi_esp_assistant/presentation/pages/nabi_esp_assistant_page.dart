@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
-import 'package:nano_app/services/backend/auth/current_backend_user.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
 
 import '../../data/services/nabi_esp_assistant_runtime.dart';
+import '../../data/services/nabi_esp_device_service.dart';
 
 class NabiEspAssistantPage extends StatefulWidget {
   const NabiEspAssistantPage({super.key});
@@ -17,12 +19,21 @@ class NabiEspAssistantPage extends StatefulWidget {
 
 class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
   final _runtime = NabiEspAssistantRuntime.instance;
-  final _pairingCode = TextEditingController();
-  bool _showHotspotPassword = false;
+  final _ssid = TextEditingController();
+  final _wifiPassword = TextEditingController();
+  bool _obscureWifiPassword = true;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_runtime.loadDevices());
+  }
 
   @override
   void dispose() {
-    _pairingCode.dispose();
+    _ssid.dispose();
+    _wifiPassword.dispose();
     super.dispose();
   }
 
@@ -31,7 +42,16 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     animation: _runtime,
     builder: (context, _) => Scaffold(
       backgroundColor: context.semanticColors.background,
-      appBar: AppBar(title: const Text('Nabi - Siêu trợ lý AI')),
+      appBar: AppBar(
+        title: const Text('Nabi ESP'),
+        actions: [
+          IconButton(
+            tooltip: 'Tải lại thiết bị',
+            onPressed: _runtime.loadDevices,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -47,50 +67,34 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
               _errorCard(context, message),
               const SizedBox(height: AppSpacing.md),
             ],
-            if (_runtime.status == NabiEspAssistantStatus.preparingAi &&
-                _runtime.whisperProgress != null) ...[
-              _downloadProgressCard(context),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (_runtime.status == NabiEspAssistantStatus.selectingHost) ...[
-              _hostSelectionCard(context),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (_runtime.status == NabiEspAssistantStatus.pairingRequired) ...[
-              _pairingCard(context),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (_runtime.hasHotspot) ...[
-              _hotspotCard(context),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            _controls(context),
+            _setupCard(context),
             const SizedBox(height: AppSpacing.md),
-            _setupNotes(context),
+            _deviceListCard(context),
+            const SizedBox(height: AppSpacing.md),
+            _privacyCard(context),
           ],
         ),
       ),
     ),
   );
 
+  bool get _signedIn => BackendApiClient.shared.session != null;
+  bool get _canConfigure =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android && kDebugMode;
+
   Widget _statusCard(BuildContext context) {
     final status = _runtime.status;
     final icon = switch (status) {
-      NabiEspAssistantStatus.connected => Icons.link_rounded,
-      NabiEspAssistantStatus.listening => Icons.hearing_rounded,
-      NabiEspAssistantStatus.processing => Icons.psychology_rounded,
-      NabiEspAssistantStatus.speaking => Icons.volume_up_rounded,
+      NabiEspAssistantStatus.connected => Icons.check_circle_outline_rounded,
+      NabiEspAssistantStatus.provisionAccepted => Icons.cloud_sync_rounded,
+      NabiEspAssistantStatus.scanningEsp => Icons.wifi_find_rounded,
+      NabiEspAssistantStatus.provisioningEsp => Icons.settings_rounded,
       NabiEspAssistantStatus.error => Icons.error_outline_rounded,
       _ => Icons.memory_rounded,
     };
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: context.semanticColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: context.semanticColors.outline),
-      ),
-      child: Column(
+    return _surface(
+      context,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -98,33 +102,24 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
               Icon(icon, size: 30, color: AppColors.primary),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: Text(
-                  'Trạng thái kết nối',
-                  style: AppTextStyles.heading4,
-                ),
+                child: Text('Thiết lập Nabi', style: AppTextStyles.heading4),
               ),
               _StatusPill(label: _statusLabel(status)),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             _statusDescription(status),
             style: AppTextStyles.bodyMedium.copyWith(
               color: context.semanticColors.textSecondary,
             ),
           ),
-          if (_runtime.otaUrl case final url?) ...[
+          if (!_signedIn) ...[
             const SizedBox(height: AppSpacing.md),
-            Text('Địa chỉ cấu hình OTA', style: AppTextStyles.labelLarge),
-            const SizedBox(height: AppSpacing.xs),
-            SelectableText(url, style: AppTextStyles.bodySmall),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _copy(url, 'Đã sao chép địa chỉ OTA.'),
-                icon: const Icon(Icons.copy_rounded, size: 18),
-                label: const Text('Sao chép'),
-              ),
+            FilledButton.icon(
+              onPressed: () => context.push(AuthRoutePaths.login),
+              icon: const Icon(Icons.login_rounded),
+              label: const Text('Đăng nhập để liên kết thiết bị'),
             ),
           ],
         ],
@@ -132,210 +127,253 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     );
   }
 
-  Widget _downloadProgressCard(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    decoration: BoxDecoration(
-      color: context.semanticColors.surface,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-    ),
-    child: Column(
+  Widget _setupCard(BuildContext context) => _surface(
+    context,
+    Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Đang chuẩn bị Whisper tiếng Việt'),
-        const SizedBox(height: AppSpacing.sm),
-        LinearProgressIndicator(value: _runtime.whisperProgress),
+        Text('Kết nối Wi-Fi lần đầu', style: AppTextStyles.heading4),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          '${((_runtime.whisperProgress ?? 0) * 100).round()}%',
-          style: AppTextStyles.bodySmall,
-        ),
-      ],
-    ),
-  );
-
-  Widget _hostSelectionCard(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    decoration: BoxDecoration(
-      color: context.semanticColors.surface,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Chọn địa chỉ của hotspot Nabi', style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppSpacing.sm),
-        for (final candidate in _runtime.hostCandidates)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.wifi_tethering_rounded),
-            title: Text(candidate.address.address),
-            subtitle: Text(candidate.interfaceName),
-            onTap: () => _runtime.selectHost(candidate.address.address),
+          'Đăng nhập ứng dụng trước, rồi kết nối điện thoại với Wi-Fi Nabi đang hiện trên ESP. Không cần dữ liệu di động để cấu hình. Sau khi gửi, ESP sẽ tự kết nối Wi-Fi nhà và đăng nhập dịch vụ AI.',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: context.semanticColors.textSecondary,
           ),
-      ],
-    ),
-  );
-
-  Widget _hotspotCard(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    decoration: BoxDecoration(
-      color: AppColors.pastelBlue,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Mạng cục bộ của Nabi', style: AppTextStyles.heading4),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Mạng này chỉ kết nối điện thoại với ESP, không cấp Internet cho ESP.',
-          style: AppTextStyles.bodySmall,
         ),
         const SizedBox(height: AppSpacing.md),
-        _SecretRow(
-          label: 'Tên Wi-Fi',
-          value: _runtime.hotspotSsid ?? '',
-          onCopy: () =>
-              _copy(_runtime.hotspotSsid ?? '', 'Đã sao chép tên Wi-Fi.'),
+        TextField(
+          key: const Key('nabi-esp-wifi-ssid'),
+          controller: _ssid,
+          textInputAction: TextInputAction.next,
+          maxLength: 32,
+          decoration: const InputDecoration(
+            labelText: 'Tên Wi-Fi (SSID)',
+            counterText: '',
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Mật khẩu Wi-Fi', style: AppTextStyles.labelMedium),
-                  const SizedBox(height: AppSpacing.xs),
-                  SelectableText(
-                    _showHotspotPassword
-                        ? _runtime.hotspotPassword ?? ''
-                        : '••••••••••••',
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              tooltip: _showHotspotPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu',
-              onPressed: () =>
-                  setState(() => _showHotspotPassword = !_showHotspotPassword),
+        TextField(
+          key: const Key('nabi-esp-wifi-password'),
+          controller: _wifiPassword,
+          obscureText: _obscureWifiPassword,
+          textInputAction: TextInputAction.done,
+          maxLength: 63,
+          decoration: InputDecoration(
+            labelText: 'Mật khẩu Wi-Fi',
+            counterText: '',
+            suffixIcon: IconButton(
+              tooltip: _obscureWifiPassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+              onPressed: () => setState(() {
+                _obscureWifiPassword = !_obscureWifiPassword;
+              }),
               icon: Icon(
-                _showHotspotPassword
-                    ? Icons.visibility_off_rounded
-                    : Icons.visibility_rounded,
+                _obscureWifiPassword
+                    ? Icons.visibility_rounded
+                    : Icons.visibility_off_rounded,
               ),
             ),
-            IconButton(
-              tooltip: 'Sao chép mật khẩu',
-              onPressed: () => _copy(
-                _runtime.hotspotPassword ?? '',
-                'Đã sao chép mật khẩu Wi-Fi.',
-              ),
-              icon: const Icon(Icons.copy_rounded),
-            ),
-          ],
+          ),
         ),
-      ],
-    ),
-  );
-
-  Widget _controls(BuildContext context) {
-    final canStart = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-    final connected = _runtime.isDeviceConnected;
-    return Column(
-      children: [
-        if (!_runtime.isRunning)
-          FilledButton.icon(
-            key: const Key('nabi-esp-connect-button'),
-            onPressed: canStart && kDebugMode && !_runtime.isBusy
-                ? _startAssistant
-                : null,
-            icon: _runtime.isBusy
+        const SizedBox(height: AppSpacing.md),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            key: const Key('nabi-esp-setup-button'),
+            onPressed:
+                !_signedIn || !_canConfigure || _runtime.isBusy || _loading
+                ? null
+                : _setup,
+            icon: _runtime.isBusy || _loading
                 ? const SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.link_rounded),
-            label: Text(kDebugMode ? 'Kết nối Nabi' : 'Bản thử nghiệm nội bộ'),
-          )
-        else ...[
-          if (!connected &&
-              _runtime.status != NabiEspAssistantStatus.pairingRequired &&
-              !_runtime.isBusy) ...[
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _runtime.retryEspProvisioning,
-                icon: const Icon(Icons.bluetooth_searching_rounded),
-                label: const Text('Tìm ESP'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: connected
-                      ? () => _sendListenControl(start: true)
-                      : null,
-                  icon: const Icon(Icons.hearing_rounded),
-                  label: const Text('Bắt đầu nghe'),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: connected
-                      ? () => _sendListenControl(start: false)
-                      : null,
-                  icon: const Icon(Icons.hearing_disabled_rounded),
-                  label: const Text('Dừng nghe'),
-                ),
-              ),
-            ],
+                : const Icon(Icons.wifi_rounded),
+            label: const Text('Gửi thông tin Wi-Fi cho Nabi'),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.tonalIcon(
-              onPressed: _runtime.stop,
-              icon: const Icon(Icons.stop_circle_outlined),
-              label: const Text('Dừng server Nabi'),
+        ),
+        if (!_canConfigure) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Thiết lập Nabi ESP hiện chỉ mở trong bản Android thử nghiệm nội bộ.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: context.semanticColors.textSecondary,
             ),
           ),
         ],
       ],
-    );
-  }
-
-  Future<void> _startAssistant() async {
-    if (currentBackendUserIdOrNull() == null) {
-      await context.push(AuthRoutePaths.login);
-      return;
-    }
-    await _runtime.start();
-  }
-
-  Widget _setupNotes(BuildContext context) => Container(
-    padding: const EdgeInsets.all(AppSpacing.md),
-    decoration: BoxDecoration(
-      color: context.semanticColors.surface,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      border: Border.all(color: context.semanticColors.outline),
     ),
-    child: Column(
+  );
+
+  Widget _deviceListCard(BuildContext context) => _surface(
+    context,
+    Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Cần chuẩn bị ESP lần đầu', style: AppTextStyles.labelLarge),
+        Row(
+          children: [
+            Expanded(
+              child: Text('Thiết bị của tôi', style: AppTextStyles.heading4),
+            ),
+            Text(
+              '${_runtime.devices.length}',
+              style: AppTextStyles.labelMedium,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        if (!_signedIn)
+          Text(
+            'Đăng nhập để xem và quản lý thiết bị đã liên kết.',
+            style: AppTextStyles.bodySmall,
+          )
+        else if (_runtime.devices.isEmpty)
+          Text(
+            'Chưa có ESP nào được liên kết với tài khoản này.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: context.semanticColors.textSecondary,
+            ),
+          )
+        else
+          for (final device in _runtime.devices) ...[
+            if (device != _runtime.devices.first)
+              Divider(color: context.semanticColors.outline),
+            _deviceCard(context, device),
+          ],
+      ],
+    ),
+  );
+
+  Widget _deviceCard(BuildContext context, NabiEspDevice device) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(
+            device.connected ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+            color: device.connected
+                ? AppColors.primary
+                : context.semanticColors.textSecondary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(device.name, style: AppTextStyles.labelLarge),
+                Text(
+                  device.connected ? 'Đang kết nối' : 'Đang ngoại tuyến',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: context.semanticColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Đổi tên thiết bị',
+            onPressed: () => _rename(device),
+            icon: const Icon(Icons.edit_rounded),
+          ),
+          IconButton(
+            tooltip: 'Hủy liên kết',
+            onPressed: () => _unbind(device),
+            icon: const Icon(Icons.link_off_rounded),
+          ),
+        ],
+      ),
+      Text(
+        'Mã thiết bị: ${device.id}',
+        style: AppTextStyles.bodySmall.copyWith(
+          color: context.semanticColors.textSecondary,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      _consentSwitch(
+        device,
+        title: 'Tên tài khoản',
+        subtitle: 'Cho phép Nabi gọi tên bạn.',
+        current: device.consent.identity,
+        next: NabiEspDeviceConsent(
+          identity: !device.consent.identity,
+          profileGoals: device.consent.profileGoals,
+          sensitiveHealth: device.consent.sensitiveHealth,
+          recentTracking: device.consent.recentTracking,
+        ),
+      ),
+      _consentSwitch(
+        device,
+        title: 'Hồ sơ và mục tiêu',
+        subtitle: 'Dùng thông tin hồ sơ cơ bản và mục tiêu đã lưu.',
+        current: device.consent.profileGoals,
+        next: NabiEspDeviceConsent(
+          identity: device.consent.identity,
+          profileGoals: !device.consent.profileGoals,
+          sensitiveHealth: device.consent.sensitiveHealth,
+          recentTracking: device.consent.recentTracking,
+        ),
+      ),
+      _consentSwitch(
+        device,
+        title: 'Thông tin sức khỏe nhạy cảm',
+        subtitle: 'Chỉ dùng trong phiên đã mở khóa riêng.',
+        current: device.consent.sensitiveHealth,
+        next: NabiEspDeviceConsent(
+          identity: device.consent.identity,
+          profileGoals: device.consent.profileGoals,
+          sensitiveHealth: !device.consent.sensitiveHealth,
+          recentTracking: device.consent.recentTracking,
+        ),
+      ),
+      _consentSwitch(
+        device,
+        title: 'Dữ liệu theo dõi gần đây',
+        subtitle: 'Chỉ dùng trong phiên đã mở khóa riêng.',
+        current: device.consent.recentTracking,
+        next: NabiEspDeviceConsent(
+          identity: device.consent.identity,
+          profileGoals: device.consent.profileGoals,
+          sensitiveHealth: device.consent.sensitiveHealth,
+          recentTracking: !device.consent.recentTracking,
+        ),
+      ),
+      if (device.connected &&
+          (device.consent.sensitiveHealth || device.consent.recentTracking))
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () => _unlockSensitive(device),
+            icon: const Icon(Icons.lock_open_rounded),
+            label: const Text('Mở dữ liệu trong 5 phút'),
+          ),
+        ),
+    ],
+  );
+
+  Widget _consentSwitch(
+    NabiEspDevice device, {
+    required String title,
+    required String subtitle,
+    required bool current,
+    required NabiEspDeviceConsent next,
+  }) => SwitchListTile.adaptive(
+    contentPadding: EdgeInsets.zero,
+    title: Text(title, style: AppTextStyles.labelMedium),
+    subtitle: Text(subtitle, style: AppTextStyles.bodySmall),
+    value: current,
+    onChanged: _loading ? null : (_) => _updateConsent(device, next),
+  );
+
+  Widget _privacyCard(BuildContext context) => _surface(
+    context,
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Quyền riêng tư', style: AppTextStyles.heading4),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Kết nối Nabi có thể tải Whisper tiếng Việt để nhận dạng lời nói trên điện thoại, rồi mở hotspot và dịch vụ kết nối cho ESP. '
-          'Câu trả lời AI được tạo trên máy chủ NanoBio qua HTTPS nên cần Internet và đăng nhập; lời nói được nhận dạng trên điện thoại. '
-          'Bật ESP để Nabi tìm thiết bị qua Bluetooth. Lần đầu, nhập mã 8 chữ số hiển thị trên màn hình ESP; '
-          'Nabi sẽ lưu khóa ghép an toàn và tự gửi thông tin hotspot mới ở những lần sau.',
+          'Ứng dụng lưu thông tin đăng nhập đã mã hóa bằng Android Keystore đến khi bạn đăng xuất. Khi cấu hình, ứng dụng gửi thông tin này qua Wi-Fi Nabi bảo vệ bằng WPA2; ESP lưu tài khoản và mật khẩu trong bộ nhớ để tự đăng nhập máy chủ. Lời nói được gửi qua kết nối mã hóa tới dịch vụ AI của NanoBio. Chia sẻ hồ sơ mặc định tắt và có thể đổi riêng cho từng ESP.',
           style: AppTextStyles.bodySmall.copyWith(
             color: context.semanticColors.textSecondary,
           ),
@@ -344,58 +382,15 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     ),
   );
 
-  Widget _pairingCard(BuildContext context) => Container(
+  Widget _surface(BuildContext context, Widget child) => Container(
     padding: const EdgeInsets.all(AppSpacing.md),
     decoration: BoxDecoration(
       color: context.semanticColors.surface,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       border: Border.all(color: context.semanticColors.outline),
     ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Ghép ESP lần đầu', style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          'Bật OSTB 3ST, đọc mã dùng một lần trên màn hình rồi nhập tại đây.',
-          style: AppTextStyles.bodySmall,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        TextField(
-          key: const Key('nabi-esp-pairing-code'),
-          controller: _pairingCode,
-          keyboardType: TextInputType.number,
-          maxLength: 8,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Mã ghép đôi',
-            counterText: '',
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: _runtime.isBusy ? null : _submitPairingCode,
-            icon: const Icon(Icons.bluetooth_connected_rounded),
-            label: const Text('Ghép và kết nối Wi-Fi'),
-          ),
-        ),
-      ],
-    ),
+    child: child,
   );
-
-  Future<void> _submitPairingCode() async {
-    final code = _pairingCode.text.trim();
-    if (!RegExp(r'^\d{8}$').hasMatch(code)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nhập đủ 8 chữ số trên màn hình ESP.')),
-      );
-      return;
-    }
-    _pairingCode.clear();
-    await _runtime.retryEspProvisioning(pairingCode: code);
-  }
 
   Widget _errorCard(BuildContext context, String message) => Container(
     padding: const EdgeInsets.all(AppSpacing.md),
@@ -413,72 +408,157 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     ),
   );
 
-  Future<void> _sendListenControl({required bool start}) async {
-    final state = await _runtime.sendListenControl(start: start);
+  Future<void> _setup() async {
+    setState(() => _loading = true);
+    await _runtime.setupDevice(
+      ssid: _ssid.text,
+      wifiPassword: _wifiPassword.text,
+    );
+    if (_runtime.status == NabiEspAssistantStatus.provisionAccepted ||
+        _runtime.status == NabiEspAssistantStatus.connected) {
+      _wifiPassword.clear();
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _updateConsent(
+    NabiEspDevice device,
+    NabiEspDeviceConsent consent,
+  ) async {
+    setState(() => _loading = true);
+    try {
+      await _runtime.updateConsent(device, consent);
+    } catch (error) {
+      _showMessage(
+        'Chưa lưu được lựa chọn quyền riêng tư. ${_safeError(error)}',
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _rename(NabiEspDevice device) async {
+    final controller = TextEditingController(text: device.name);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Đổi tên thiết bị'),
+        content: TextField(
+          controller: controller,
+          maxLength: 80,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Tên thiết bị'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null || name.isEmpty) return;
+    try {
+      await _runtime.renameDevice(device, name);
+    } catch (error) {
+      _showMessage('Chưa đổi được tên thiết bị. ${_safeError(error)}');
+    }
+  }
+
+  Future<void> _unlockSensitive(NabiEspDevice device) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Mở dữ liệu sức khỏe?'),
+        content: const Text(
+          'Nabi sẽ được phép dùng những nhóm dữ liệu sức khỏe bạn đã bật cho thiết bị này trong 5 phút của phiên đang kết nối.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Để sau'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Mở trong 5 phút'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _runtime.unlockSensitiveContext(device);
+      _showMessage('Dữ liệu được mở cho phiên Nabi đang kết nối trong 5 phút.');
+    } catch (error) {
+      _showMessage('Không mở được dữ liệu. ${_safeError(error)}');
+    }
+  }
+
+  Future<void> _unbind(NabiEspDevice device) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hủy liên kết ESP?'),
+        content: Text(
+          'Thao tác này thu hồi token của “${device.name}”. ESP sẽ không dùng được dịch vụ Nabi cho tới khi được ghép lại.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Giữ liên kết'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hủy liên kết'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _runtime.unbindDevice(device);
+    } catch (error) {
+      _showMessage('Chưa hủy liên kết được. ${_safeError(error)}');
+    }
+  }
+
+  void _showMessage(String message) {
     if (!mounted) return;
-    final message = state == null
-        ? 'ESP chưa xác nhận lệnh. Hãy cập nhật firmware Nabi có hỗ trợ Nabi control.'
-        : start
-        ? 'ESP đã bắt đầu nghe.'
-        : 'ESP đã dừng nghe.';
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _copy(String value, String message) async {
-    if (value.isEmpty) return;
-    await Clipboard.setData(ClipboardData(text: value));
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
+  String _safeError(Object error) => error is BackendApiException
+      ? error.message
+      : 'Vui lòng kiểm tra kết nối rồi thử lại.';
 
   String _statusLabel(NabiEspAssistantStatus status) => switch (status) {
-    NabiEspAssistantStatus.idle => 'Chưa kết nối',
-    NabiEspAssistantStatus.preparingAi => 'Đang chuẩn bị AI',
-    NabiEspAssistantStatus.startingHotspot => 'Đang mở Wi-Fi',
-    NabiEspAssistantStatus.selectingHost => 'Chọn mạng',
-    NabiEspAssistantStatus.startingServer => 'Đang mở server',
-    NabiEspAssistantStatus.scanningEsp => 'Đang tìm ESP',
-    NabiEspAssistantStatus.pairingRequired => 'Chờ mã ghép đôi',
-    NabiEspAssistantStatus.provisioningEsp => 'Đang cấu hình ESP',
-    NabiEspAssistantStatus.waitingForEsp => 'Chờ ESP',
-    NabiEspAssistantStatus.connected => 'Đã kết nối',
-    NabiEspAssistantStatus.listening => 'Đang nghe',
-    NabiEspAssistantStatus.processing => 'Đang xử lý',
-    NabiEspAssistantStatus.speaking => 'Đang trả lời',
-    NabiEspAssistantStatus.stopping => 'Đang dừng',
+    NabiEspAssistantStatus.idle => 'Sẵn sàng',
+    NabiEspAssistantStatus.scanningEsp => 'Kiểm tra kết nối',
+    NabiEspAssistantStatus.provisioningEsp => 'Đang cấu hình',
+    NabiEspAssistantStatus.provisionAccepted => 'Đang kết nối',
+    NabiEspAssistantStatus.connected => 'Đã liên kết',
     NabiEspAssistantStatus.error => 'Cần xử lý',
   };
 
   String _statusDescription(NabiEspAssistantStatus status) => switch (status) {
     NabiEspAssistantStatus.idle =>
-      'ESP gửi âm thanh qua mạng nội bộ; câu trả lời AI được tạo trên máy chủ NanoBio.',
-    NabiEspAssistantStatus.preparingAi =>
-      'Đang chuẩn bị nhận dạng tiếng Việt, kết nối máy chủ AI và giọng TTS ngoại tuyến.',
-    NabiEspAssistantStatus.startingHotspot =>
-      'Android đang tạo mạng LAN-only và giữ dịch vụ nền.',
-    NabiEspAssistantStatus.selectingHost =>
-      'Điện thoại có nhiều địa chỉ mạng phù hợp; chọn địa chỉ của hotspot.',
-    NabiEspAssistantStatus.startingServer =>
-      'Đang mở dịch vụ kết nối Nabi theo giao thức WebSocket v3.',
+      'Đăng nhập ứng dụng trước khi bắt đầu. Kết nối điện thoại với Wi-Fi Nabi; việc gửi cấu hình diễn ra tại chỗ và không cần dữ liệu di động.',
     NabiEspAssistantStatus.scanningEsp =>
-      'Kết nối thoại cục bộ sẵn sàng; đang quét thiết bị OSTB 3ST qua Bluetooth. Cần Internet và đăng nhập để nhận câu trả lời AI.',
-    NabiEspAssistantStatus.pairingRequired =>
-      'Nhập mã ghép đôi đang hiển thị trên ESP. Khóa sẽ được lưu để tự ghép lần sau.',
+      'Đang kiểm tra điện thoại đã nối Wi-Fi Nabi chưa.',
     NabiEspAssistantStatus.provisioningEsp =>
-      'Đang gửi thông tin hotspot qua phiên BLE được mã hóa.',
-    NabiEspAssistantStatus.waitingForEsp =>
-      'Kết nối điện thoại sẵn sàng. Bật ESP hoặc chọn tìm lại; cần Internet và đăng nhập để dùng AI.',
-    NabiEspAssistantStatus.connected => 'ESP đã bắt tay với server Nabi.',
-    NabiEspAssistantStatus.listening => 'ESP đang gửi âm thanh để nhận dạng.',
-    NabiEspAssistantStatus.processing =>
-      'Whisper nhận dạng lời nói trên điện thoại; máy chủ NanoBio tạo câu trả lời.',
-    NabiEspAssistantStatus.speaking => 'Nabi đang gửi âm thanh trả lời về ESP.',
-    NabiEspAssistantStatus.stopping => 'Đang đóng socket, server và hotspot.',
-    NabiEspAssistantStatus.error => 'Không thể hoàn tất bước kết nối vừa rồi.',
+      'Đang gửi Wi-Fi nhà bạn tới ESP qua kết nối riêng tại chỗ.',
+    NabiEspAssistantStatus.provisionAccepted =>
+      'ESP đã nhận cấu hình và đang kết nối Wi-Fi nhà để đăng nhập máy chủ. Khi điện thoại có Internet, hãy làm mới danh sách thiết bị.',
+    NabiEspAssistantStatus.connected =>
+      'Thiết bị đã được liên kết. Có thể đóng ứng dụng; ESP tự kết nối khi khởi động.',
+    NabiEspAssistantStatus.error => 'Không hoàn tất được bước vừa rồi.',
   };
 }
 
@@ -488,50 +568,12 @@ class _StatusPill extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
     decoration: BoxDecoration(
-      color: AppColors.pastelMint,
+      color: AppColors.pastelBlue,
       borderRadius: BorderRadius.circular(AppRadius.pill),
     ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      child: Text(label, style: AppTextStyles.labelSmall),
-    ),
-  );
-}
-
-class _SecretRow extends StatelessWidget {
-  const _SecretRow({
-    required this.label,
-    required this.value,
-    required this.onCopy,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback onCopy;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTextStyles.labelMedium),
-            const SizedBox(height: AppSpacing.xs),
-            SelectableText(value, style: AppTextStyles.bodyMedium),
-          ],
-        ),
-      ),
-      IconButton(
-        tooltip: 'Sao chép $label',
-        onPressed: onCopy,
-        icon: const Icon(Icons.copy_rounded),
-      ),
-    ],
+    child: Text(label, style: AppTextStyles.labelSmall),
   );
 }

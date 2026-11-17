@@ -1,462 +1,247 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:nano_app/services/backend/auth/current_backend_user.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:nano_app/core/network/backend_api_client.dart';
+import 'package:nano_app/core/storage/nabi_esp_credential_vault.dart';
 
 import 'nabi_esp_android_bridge.dart';
-import 'nabi_esp_server.dart';
-import 'nabi_esp_voice_pipeline.dart';
+import 'nabi_esp_cloud_contract.g.dart';
+import 'nabi_esp_device_service.dart';
 
 enum NabiEspAssistantStatus {
   idle,
-  preparingAi,
-  startingHotspot,
-  selectingHost,
-  startingServer,
   scanningEsp,
-  pairingRequired,
   provisioningEsp,
-  waitingForEsp,
+  provisionAccepted,
   connected,
-  listening,
-  processing,
-  speaking,
-  stopping,
   error,
 }
 
-class NabiEspHostCandidate {
-  const NabiEspHostCandidate({
-    required this.interfaceName,
-    required this.address,
-  });
-
-  final String interfaceName;
-  final InternetAddress address;
-
-  @override
-  String toString() => '${address.address} · $interfaceName';
-}
-
-/// App-owned Android session for Nabi's local Nabi service.
+/// Local-AP provisioning and owner-side device management for Nabi ESP.
+/// Account sign-in happens in the app before the phone joins the ESP Wi-Fi.
 class NabiEspAssistantRuntime extends ChangeNotifier {
-  NabiEspAssistantRuntime._() {
-    NabiEspAndroidBridge.initialize(
-      onStopRequested: stop,
-      onHotspotStopped: _handleHotspotStopped,
-    );
-  }
+  NabiEspAssistantRuntime._();
 
   static final NabiEspAssistantRuntime instance = NabiEspAssistantRuntime._();
-  static const _networkWait = Duration(milliseconds: 400);
 
-  final NabiEspVoicePipeline _voice = NabiEspVoicePipeline();
-  NabiEspServer? _server;
-  NabiEspHotspotCredentials? _hotspot;
-  List<NabiEspHostCandidate> hostCandidates = const [];
+  final NabiEspDeviceService _devices = NabiEspDeviceService();
   NabiEspAssistantStatus status = NabiEspAssistantStatus.idle;
-  String? hostAddress;
+  List<NabiEspDevice> devices = const [];
   String? errorMessage;
-  double? whisperProgress;
+  String? pairedDeviceId;
+  bool _disposed = false;
 
-  bool get isRunning => _server?.isRunning == true;
-  bool get isDeviceConnected => _server?.isDeviceConnected == true;
-  bool get hasHotspot => _hotspot != null;
-  String? get hotspotSsid => _hotspot?.ssid;
-  String? get hotspotPassword => _hotspot?.password;
-  String? get otaUrl => _server?.otaUrl;
   bool get isBusy => switch (status) {
-    NabiEspAssistantStatus.preparingAi ||
-    NabiEspAssistantStatus.startingHotspot ||
-    NabiEspAssistantStatus.startingServer ||
     NabiEspAssistantStatus.scanningEsp ||
-    NabiEspAssistantStatus.provisioningEsp ||
-    NabiEspAssistantStatus.stopping => true,
+    NabiEspAssistantStatus.provisioningEsp => true,
     _ => false,
   };
 
-  Future<void> start() async {
-    if (isBusy || isRunning || hasHotspot) return;
-    if (currentBackendUserIdOrNull() == null) {
-      throw StateError(
-        'Đăng nhập để dùng câu trả lời AI trên máy chủ NanoBio.',
-      );
+  Future<void> loadDevices() async {
+    if (!kDebugMode) {
+      devices = const [];
+      _notify();
+      return;
     }
-    errorMessage = null;
-    hostCandidates = const [];
-    hostAddress = null;
-    status = NabiEspAssistantStatus.preparingAi;
-    notifyListeners();
+    if (BackendApiClient.shared.session == null) {
+      devices = const [];
+      _notify();
+      return;
+    }
+    // The phone has no Internet route while attached to Nabi's local AP.
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        if (await NabiEspAndroidBridge.isEspApConnected()) return;
+      } on PlatformException {
+        // A platform check failure should not block the normal online request.
+      }
+    }
     try {
-      await _requestPermissions();
-      await _voice.prepare(
-        onWhisperProgress: (value) {
-          whisperProgress = value;
-          notifyListeners();
-        },
-      );
+      devices = await _devices.listDevices();
+      final configured = pairedDeviceId;
+      if (configured != null &&
+          devices.any((device) => device.id == configured)) {
+        final device = devices.firstWhere((item) => item.id == configured);
+        status = device.connected
+            ? NabiEspAssistantStatus.connected
+            : NabiEspAssistantStatus.provisionAccepted;
+      }
+      errorMessage = null;
+      _notify();
+    } on BackendApiException catch (error) {
+      errorMessage = _friendlyBackendError(error);
+      _notify();
+    } catch (_) {
+      errorMessage = 'Chưa tải được danh sách thiết bị Nabi.';
+      _notify();
+    }
+  }
 
-      final before = (await _listPrivateCandidates())
-          .map(_candidateKey)
-          .toSet();
-      status = NabiEspAssistantStatus.startingHotspot;
-      notifyListeners();
-      await NabiEspAndroidBridge.startForegroundService();
-      _hotspot = await NabiEspAndroidBridge.startLocalOnlyHotspot();
-      hostCandidates = await _waitForNewHotspotAddress(before);
-      if (hostCandidates.isEmpty) {
-        throw StateError('Không tìm thấy địa chỉ IPv4 của hotspot Nabi.');
-      }
-      if (hostCandidates.length == 1) {
-        await _startServer(hostCandidates.single.address);
-      } else {
-        final likelyAp = hostCandidates.where(
-          (candidate) => RegExp(
-            r'ap|softap|wlan1|swlan',
-            caseSensitive: false,
-          ).hasMatch(candidate.interfaceName),
-        );
-        if (likelyAp.length == 1) {
-          await _startServer(likelyAp.single.address);
-        } else {
-          status = NabiEspAssistantStatus.selectingHost;
-          await NabiEspAndroidBridge.updateForegroundNotification(
-            title: 'Nabi đang chuẩn bị kết nối ESP',
-            message: 'Chọn địa chỉ hotspot trong ứng dụng Nabi.',
-          );
-          notifyListeners();
-        }
-      }
-    } on PlatformException catch (exception) {
-      await _stopServerAfterFailedStart();
-      await _releaseAndroidResources();
-      _hotspot = null;
-      hostAddress = null;
-      errorMessage = _platformError(exception.code);
+  Future<void> setupDevice({
+    required String ssid,
+    required String wifiPassword,
+  }) async {
+    _requireInternalPilot();
+    if (isBusy) return;
+    final session = BackendApiClient.shared.session;
+    if (session == null) {
+      errorMessage = 'Đăng nhập vào ứng dụng trước khi cấu hình ESP.';
       status = NabiEspAssistantStatus.error;
-      notifyListeners();
+      _notify();
+      return;
+    }
+    final normalizedSsid = ssid.trim();
+    if (normalizedSsid.isEmpty ||
+        normalizedSsid.length > 32 ||
+        wifiPassword.length < 8 ||
+        wifiPassword.length > 63) {
+      errorMessage = 'Nhập đúng Wi-Fi 2.4 GHz và mật khẩu từ 8–63 ký tự.';
+      status = NabiEspAssistantStatus.error;
+      _notify();
+      return;
+    }
+
+    NabiEspAccountCredential? credential;
+    try {
+      credential = await NabiEspCredentialVault.instance.read(session.userId);
+    } on PlatformException {
+      errorMessage =
+          'Không đọc được thông tin đăng nhập đã lưu. Hãy đăng nhập lại.';
+      status = NabiEspAssistantStatus.error;
+      _notify();
+      return;
+    } catch (_) {
+      errorMessage =
+          'Không đọc được thông tin đăng nhập đã lưu. Hãy đăng nhập lại.';
+      status = NabiEspAssistantStatus.error;
+      _notify();
+      return;
+    }
+    if (credential == null) {
+      errorMessage =
+          'Chưa có thông tin đăng nhập được lưu trên điện thoại. Hãy kết nối Internet, đăng xuất rồi đăng nhập lại trước khi cấu hình ESP.';
+      status = NabiEspAssistantStatus.error;
+      _notify();
+      return;
+    }
+
+    errorMessage = null;
+    pairedDeviceId = null;
+    status = NabiEspAssistantStatus.scanningEsp;
+    _notify();
+    try {
+      final localStatus = await NabiEspAndroidBridge.getEspLocalStatus();
+      final deviceId = localStatus['device_id'];
+      if (deviceId is! String ||
+          !RegExp(r'^[a-f0-9]{32}$').hasMatch(deviceId)) {
+        throw PlatformException(code: 'device_id_missing');
+      }
+      if (localStatus['contract_version'] !=
+              NabiEspCloudContract.contractVersion ||
+          localStatus['protocol_version'] !=
+              NabiEspCloudContract.protocolVersion) {
+        throw PlatformException(code: 'esp_contract_mismatch');
+      }
+
+      status = NabiEspAssistantStatus.provisioningEsp;
+      _notify();
+      final result = await NabiEspAndroidBridge.provisionEspLocal(
+        ssid: normalizedSsid,
+        wifiPassword: wifiPassword,
+        identifierType: credential.identifierType,
+        identifier: credential.identifier,
+        accountPassword: credential.password,
+      );
+      if (result['status'] != 'accepted' || result['device_id'] != deviceId) {
+        throw PlatformException(code: 'esp_provision_rejected');
+      }
+      pairedDeviceId = deviceId;
+      status = NabiEspAssistantStatus.provisionAccepted;
+      errorMessage = null;
+      _notify();
+    } on PlatformException catch (exception) {
+      status = NabiEspAssistantStatus.error;
+      errorMessage = _friendlySetupError(exception);
+      _notify();
     } catch (exception) {
-      await _stopServerAfterFailedStart();
-      await _releaseAndroidResources();
-      _hotspot = null;
-      hostAddress = null;
-      hostCandidates = const [];
-      errorMessage = _safeStartError(exception);
       status = NabiEspAssistantStatus.error;
-      notifyListeners();
-    }
-  }
-
-  Future<void> selectHost(String address) async {
-    if (status != NabiEspAssistantStatus.selectingHost) return;
-    final candidate = hostCandidates
-        .where((item) => item.address.address == address)
-        .firstOrNull;
-    if (candidate == null) return;
-    try {
-      await _startServer(candidate.address);
-    } catch (_) {
-      await _stopServerAfterFailedStart();
-      await _releaseAndroidResources();
-      _hotspot = null;
-      hostAddress = null;
-      hostCandidates = const [];
-      errorMessage = 'Không mở được máy chủ trên địa chỉ mạng đã chọn.';
-      status = NabiEspAssistantStatus.error;
-      notifyListeners();
-    }
-  }
-
-  Future<String?> sendListenControl({required bool start}) async {
-    final server = _server;
-    if (server == null || !server.isDeviceConnected) return null;
-    return server.sendListenControl(start ? 'listen.start' : 'listen.stop');
-  }
-
-  Future<void> stop() async {
-    if (!isRunning && !hasHotspot) {
-      await _releaseAndroidResources();
-      status = NabiEspAssistantStatus.idle;
-      notifyListeners();
-      return;
-    }
-    status = NabiEspAssistantStatus.stopping;
-    notifyListeners();
-    await _server?.stop();
-    _server = null;
-    await _voice.clearConversation();
-    await _releaseAndroidResources();
-    hostAddress = null;
-    hostCandidates = const [];
-    _hotspot = null;
-    status = NabiEspAssistantStatus.idle;
-    notifyListeners();
-  }
-
-  Future<void> _startServer(InternetAddress address) async {
-    status = NabiEspAssistantStatus.startingServer;
-    hostAddress = address.address;
-    notifyListeners();
-    final server = NabiEspServer();
-    await server.start(
-      bindAddress: address,
-      processTurn: _voice.process,
-      onStateChanged: _handleServerState,
-    );
-    _server = server;
-    status = NabiEspAssistantStatus.waitingForEsp;
-    await NabiEspAndroidBridge.updateForegroundNotification(
-      title: 'Nabi đang chờ ESP',
-      message:
-          'Đang tìm ESP qua Bluetooth; câu trả lời AI dùng máy chủ NanoBio.',
-    );
-    notifyListeners();
-    unawaited(_attemptBleProvisioning());
-  }
-
-  Future<void> retryEspProvisioning({String? pairingCode}) async {
-    if (_server == null || !hasHotspot || isBusy) return;
-    await _attemptBleProvisioning(pairingCode: pairingCode);
-  }
-
-  Future<void> _attemptBleProvisioning({String? pairingCode}) async {
-    final hotspot = _hotspot;
-    final server = _server;
-    if (hotspot == null || server == null) return;
-    errorMessage = null;
-    status = pairingCode == null
-        ? NabiEspAssistantStatus.scanningEsp
-        : NabiEspAssistantStatus.provisioningEsp;
-    notifyListeners();
-    try {
-      final result = await NabiEspAndroidBridge.provisionEsp(
-        ssid: hotspot.ssid,
-        password: hotspot.password,
-        pairingCode: pairingCode,
-      );
-      if (result['status'] == 'pairing_required') {
-        status = NabiEspAssistantStatus.pairingRequired;
-        notifyListeners();
-        return;
+      if (exception is StateError) {
+        errorMessage = exception.message.toString();
+      } else {
+        errorMessage = 'Không hoàn tất được cấu hình ESP. Hãy thử lại.';
       }
-      final deviceKey = result['deviceKey'];
-      if (deviceKey is! String) {
-        throw PlatformException(code: 'pairing_key_missing');
-      }
-      server.setDeviceKey(deviceKey);
-      status = NabiEspAssistantStatus.waitingForEsp;
-      await NabiEspAndroidBridge.updateForegroundNotification(
-        title: 'Nabi sẵn sàng',
-        message: 'Hotspot đang chờ ESP; cần Internet và đăng nhập để dùng AI.',
-      );
-      notifyListeners();
-    } on PlatformException catch (exception) {
-      switch (exception.code) {
-        case 'esp_not_found':
-          status = NabiEspAssistantStatus.waitingForEsp;
-          errorMessage = 'Chưa tìm thấy ESP. Bật thiết bị rồi chọn “Tìm ESP”.';
-          break;
-        case 'pairing_failed':
-          status = NabiEspAssistantStatus.pairingRequired;
-          errorMessage =
-              'Mã không đúng hoặc đã hết hạn. Khởi động lại ESP để tạo mã mới.';
-          break;
-        case 'bluetooth_disabled':
-          status = NabiEspAssistantStatus.waitingForEsp;
-          errorMessage =
-              'Hãy bật Bluetooth trên điện thoại rồi thử tìm ESP lại.';
-          break;
-        default:
-          status = NabiEspAssistantStatus.waitingForEsp;
-          errorMessage = 'Không cấu hình được ESP qua Bluetooth. Hãy thử lại.';
-          break;
-      }
-      notifyListeners();
-    } catch (_) {
-      status = NabiEspAssistantStatus.waitingForEsp;
-      errorMessage = 'Không cấu hình được ESP qua Bluetooth. Hãy thử lại.';
-      notifyListeners();
+      _notify();
     }
   }
 
-  void _handleServerState(String value) {
-    status = switch (value) {
-      'connected' => NabiEspAssistantStatus.connected,
-      'listening' => NabiEspAssistantStatus.listening,
-      'processing' => NabiEspAssistantStatus.processing,
-      'speaking' => NabiEspAssistantStatus.speaking,
-      'disconnected' => NabiEspAssistantStatus.waitingForEsp,
-      'stopped' => NabiEspAssistantStatus.idle,
-      _ => NabiEspAssistantStatus.error,
-    };
-    if (value == 'error') {
-      errorMessage = 'Kết nối mạng bị gián đoạn. Hãy thử kết nối lại.';
-    }
-    notifyListeners();
-  }
-
-  Future<void> _handleHotspotStopped() async {
-    if (_server == null ||
-        status == NabiEspAssistantStatus.stopping ||
-        status == NabiEspAssistantStatus.idle) {
-      return;
-    }
-    await _stopServerAfterFailedStart();
-    await _voice.clearConversation();
-    await _releaseAndroidResources();
-    _hotspot = null;
-    hostAddress = null;
-    hostCandidates = const [];
-    errorMessage =
-        'Android đã dừng hotspot Nabi. Hãy bấm Kết nối Nabi để thử lại.';
-    status = NabiEspAssistantStatus.error;
-    notifyListeners();
-  }
-
-  Future<void> _stopServerAfterFailedStart() async {
-    final server = _server;
-    _server = null;
-    await server?.stop();
-  }
-
-  Future<void> _requestPermissions() async {
-    final sdk = await NabiEspAndroidBridge.androidSdkInt();
-    if (sdk <= 32) {
-      final location = await Permission.locationWhenInUse.request();
-      if (!location.isGranted) {
-        throw const _NabiEspStartFailure(
-          'Cần quyền vị trí khi dùng app để mở hotspot cục bộ.',
-        );
-      }
-    } else {
-      final nearby = await Permission.nearbyWifiDevices.request();
-      if (!nearby.isGranted) {
-        throw const _NabiEspStartFailure(
-          'Cần quyền thiết bị Wi-Fi lân cận để mở hotspot cục bộ.',
-        );
-      }
-    }
-    if (sdk >= 33) {
-      final notification = await Permission.notification.request();
-      if (!notification.isGranted) {
-        throw const _NabiEspStartFailure(
-          'Cần cho phép thông báo để giữ dịch vụ AI hoạt động.',
-        );
-      }
-    }
-    if (sdk >= 31) {
-      final scan = await Permission.bluetoothScan.request();
-      final connect = await Permission.bluetoothConnect.request();
-      if (!scan.isGranted || !connect.isGranted) {
-        throw const _NabiEspStartFailure(
-          'Cần quyền Bluetooth để tìm và ghép ESP.',
-        );
-      }
-    }
-  }
-
-  Future<List<NabiEspHostCandidate>> _waitForNewHotspotAddress(
-    Set<String> addressesBefore,
+  Future<void> updateConsent(
+    NabiEspDevice device,
+    NabiEspDeviceConsent consent,
   ) async {
-    for (var attempt = 0; attempt < 20; attempt++) {
-      final candidates = await _listPrivateCandidates();
-      final newAddresses = candidates
-          .where(
-            (candidate) => !addressesBefore.contains(_candidateKey(candidate)),
-          )
-          .toList();
-      if (newAddresses.isNotEmpty) return newAddresses;
-      await Future<void>.delayed(_networkWait);
-    }
-    return const [];
+    _requireInternalPilot();
+    await _devices.updateConsent(device.id, consent);
+    await loadDevices();
   }
 
-  String _candidateKey(NabiEspHostCandidate candidate) =>
-      '${candidate.interfaceName}:${candidate.address.address}';
-
-  Future<List<NabiEspHostCandidate>> _listPrivateCandidates() async {
-    final interfaces = await NetworkInterface.list(
-      includeLoopback: false,
-      type: InternetAddressType.IPv4,
-    );
-    final candidates = <NabiEspHostCandidate>[];
-    for (final interface in interfaces) {
-      final name = interface.name.toLowerCase();
-      if (name.contains('p2p') ||
-          name.contains('vpn') ||
-          name.contains('tun') ||
-          name == 'lo') {
-        continue;
-      }
-      for (final address in interface.addresses) {
-        if (_isPrivateIpv4(address.address) && !address.isLoopback) {
-          candidates.add(
-            NabiEspHostCandidate(
-              interfaceName: interface.name,
-              address: address,
-            ),
-          );
-        }
-      }
-    }
-    candidates.sort((left, right) {
-      final byInterface = left.interfaceName.compareTo(right.interfaceName);
-      return byInterface != 0
-          ? byInterface
-          : left.address.address.compareTo(right.address.address);
-    });
-    return candidates;
+  Future<void> renameDevice(NabiEspDevice device, String name) async {
+    _requireInternalPilot();
+    if (name.trim().isEmpty) return;
+    await _devices.rename(device.id, name);
+    await loadDevices();
   }
 
-  bool _isPrivateIpv4(String value) {
-    final parts = value.split('.');
-    if (parts.length != 4) return false;
-    final octets = parts.map(int.tryParse).toList();
-    if (octets.any((part) => part == null || part < 0 || part > 255)) {
-      return false;
-    }
-    final first = octets[0]!;
-    final second = octets[1]!;
-    return first == 10 ||
-        first == 192 && second == 168 ||
-        first == 172 && second >= 16 && second <= 31;
+  Future<void> unlockSensitiveContext(NabiEspDevice device) async {
+    _requireInternalPilot();
+    await _devices.unlockSensitiveContext(device.id);
   }
 
-  Future<void> _releaseAndroidResources() async {
-    try {
-      await NabiEspAndroidBridge.stopLocalOnlyHotspot();
-    } catch (_) {
-      // The platform may already have released its reservation.
+  Future<void> unbindDevice(NabiEspDevice device) async {
+    _requireInternalPilot();
+    await _devices.unbind(device.id);
+    devices = devices.where((item) => item.id != device.id).toList();
+    if (pairedDeviceId == device.id) {
+      pairedDeviceId = null;
+      status = NabiEspAssistantStatus.idle;
     }
-    try {
-      await NabiEspAndroidBridge.stopForegroundService();
-    } catch (_) {
-      // Continue clearing the in-memory session after native cleanup failures.
-    }
+    _notify();
   }
 
-  String _platformError(String code) => switch (code) {
-    'hotspot_unsupported' => 'Điện thoại không hỗ trợ LocalOnlyHotspot.',
-    'hotspot_busy' =>
-      'Hotspot đang được một ứng dụng hoặc hệ thống khác sử dụng.',
-    'hotspot_permission' => 'Android chưa cấp quyền để tạo hotspot cục bộ.',
-    'hotspot_failed' =>
-      'Android không tạo được hotspot. Hãy tắt hotspot hệ thống rồi thử lại.',
-    _ => 'Không thể khởi động kết nối Nabi trên điện thoại.',
+  String _friendlySetupError(PlatformException error) => switch (error.code) {
+    'esp_not_found' =>
+      'Chưa thấy Nabi trên Wi-Fi này. Kết nối điện thoại với Wi-Fi Nabi rồi thử lại.',
+    'device_id_missing' => 'Không đọc được thông tin của ESP. Hãy thử lại.',
+    'esp_contract_mismatch' =>
+      'Firmware ESP cần được cập nhật trước khi cấu hình bằng ứng dụng.',
+    'esp_provision_rejected' =>
+      'ESP chưa nhận được cấu hình. Kết nối lại Wi-Fi Nabi rồi thử lại.',
+    'wifi_config_invalid' => 'Thông tin Wi-Fi chưa hợp lệ.',
+    'nabi_network_error' =>
+      error.message ??
+          'Không kết nối được tới ESP. Kiểm tra Wi-Fi Nabi rồi thử lại.',
+    _ => 'Không cấu hình được ESP. Kiểm tra Wi-Fi Nabi rồi thử lại.',
   };
 
-  String _safeStartError(Object exception) {
-    if (exception is _NabiEspStartFailure) return exception.message;
-    if (exception is StateError) return exception.message.toString();
-    return 'Không thể chuẩn bị nhận dạng giọng nói hoặc khởi tạo kết nối.';
+  String _friendlyBackendError(BackendApiException error) =>
+      switch (error.businessCode) {
+        'AUTHENTICATION_REQUIRED' || 'INVALID_ACCESS_TOKEN' =>
+          'Phiên đăng nhập đã hết hạn. Đăng nhập lại rồi thử tiếp.',
+        _ => error.message,
+      };
+
+  void _requireInternalPilot() {
+    if (!kDebugMode) {
+      throw StateError('Thiết lập Nabi ESP đang chờ duyệt nội bộ.');
+    }
   }
-}
 
-class _NabiEspStartFailure implements Exception {
-  const _NabiEspStartFailure(this.message);
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
 
-  final String message;
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 }

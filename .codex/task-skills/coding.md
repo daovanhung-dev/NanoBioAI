@@ -2,11 +2,11 @@
 
 - Canonical key: coding
 - Workflow: .codex/workflows/coding.md
-- Generated from 53 worklog(s).
+- Generated from 55 worklog(s).
 
 ## When To Read
 
-- Historical task type: coding (37)
+- Historical task type: coding (39)
 - Historical task type: coding/test/docs (9)
 - Historical task type: feature (2)
 - Historical task type: coding/test/docs. (2)

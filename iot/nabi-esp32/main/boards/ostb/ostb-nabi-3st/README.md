@@ -49,3 +49,37 @@ python3 iot/nabi-esp32/scripts/build.py ostb/ostb-nabi-3st --config config.local
 ```
 
 This profile preserves existing NVS while building. Before flashing, read the live partition table and verify OTA slot compatibility; flash only the application partition if the installed bootloader, partition table, assets, and firmware identity are compatible. The running firmware must include the Nabi BLE extension for automatic provisioning.
+
+## NanoBio cloud voice profile
+
+`config.cloud-ai.json` is a separate build profile for the main NanoBio Nabi
+app. The ESP starts a WPA2 `Nabi-xxxx` setup AP and displays its temporary
+8-digit password. The user first signs in to Nabi while the phone has Internet,
+then connects to the ESP AP and submits home Wi-Fi credentials. The app sends
+the cached account identifier/password and Wi-Fi credentials to
+`http://192.168.4.1/nabi/provision` over the WPA2 local network; no mobile data
+or Internet route is needed during this setup step. The app keeps the account
+credential encrypted in SQLite with an Android Keystore key until logout.
+
+The ESP stores Wi-Fi and account credentials in NVS, connects to the home
+network, then logs in to `https://nanobio.s2w.click/api/v1/iot/devices/credentials/login`.
+The backend verifies the existing Argon2 password hash and returns a
+device-scoped access/refresh token pair. PostgreSQL stores only hashes of the
+device tokens. The ESP keeps the refresh token in NVS, the access token in RAM,
+and opens protocol-v3 WSS at `wss://nanobio.s2w.click/api/v1/iot/ws`. The app
+can change per-device health-context consent, open sensitive context for five
+minutes while the device is online, rename the device, or revoke it.
+
+The account password, refresh token, and Wi-Fi password are stored in device
+NVS. The current OSTB snapshot has flash encryption disabled, so physical
+access can expose those values. Audio and transcript handling is owned by the
+server speech worker; this profile does not use the phone-local Whisper/TTS
+host. Build with:
+
+```sh
+python3 iot/nabi-esp32/scripts/build.py ostb/ostb-nabi-3st --config config.cloud-ai.json --language vi-VN
+```
+
+Keep `config.local-ai.json` for the separate phone-local flow. Before a
+hardware write, read the live partition table and confirm the installed
+bootloader/OTA slot and rollback path; do not write the partition table or NVS.

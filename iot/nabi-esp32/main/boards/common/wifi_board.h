@@ -2,7 +2,7 @@
 #define WIFI_BOARD_H
 
 #include "board.h"
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
 #include "display/display.h"
 #endif
 #include <esp_timer.h>
@@ -14,7 +14,7 @@ protected:
     esp_timer_handle_t connect_timer_ = nullptr;
     bool in_config_mode_ = false;
     NetworkEventCallback network_event_callback_ = nullptr;
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     esp_timer_handle_t nabi_setup_timer_ = nullptr;
     bool nabi_setup_screen_active_ = false;
     bool clear_nabi_setup_on_timeout_ = false;

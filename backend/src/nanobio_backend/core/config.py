@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     ollama_num_predict: int = Field(default=1024, ge=1, le=2048)
     ollama_truncation_retry_enabled: bool = False
     ollama_technical_requests_per_minute: int = Field(default=30, ge=1, le=60)
+    iot_websocket_url: str = "wss://nanobio.s2w.click/api/v1/iot/ws"
+    iot_speech_worker_url: str = "http://127.0.0.1:8765"
+    iot_speech_worker_token: SecretStr | None = None
+    iot_snapshot_max_age_days: int = Field(default=90, ge=1, le=365)
 
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
@@ -103,6 +107,43 @@ class Settings(BaseSettings):
         if value != "qwen3-vl:4b":
             raise ValueError("Only qwen3-vl:4b is enabled for Food Scan")
         return value
+
+    @field_validator("iot_websocket_url")
+    @classmethod
+    def secure_iot_websocket_url(cls, value: str) -> str:
+        parsed = urlsplit(value)
+        if (
+            parsed.scheme != "wss"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+            or parsed.path != "/api/v1/iot/ws"
+        ):
+            raise ValueError("IoT WebSocket URL must be a WSS /api/v1/iot/ws endpoint")
+        return value.rstrip("/")
+
+    @field_validator("iot_speech_worker_url")
+    @classmethod
+    def loopback_iot_worker_url(cls, value: str) -> str:
+        try:
+            parsed = urlsplit(value)
+            host = parsed.hostname
+            is_loopback = host == "localhost" or (host is not None and ip_address(host).is_loopback)
+        except ValueError as exc:
+            raise ValueError("IoT speech worker URL must be loopback") from exc
+        if (
+            parsed.scheme != "http"
+            or not is_loopback
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("IoT speech worker URL must use HTTP on loopback")
+        return value.rstrip("/")
 
 
 @lru_cache(maxsize=1)

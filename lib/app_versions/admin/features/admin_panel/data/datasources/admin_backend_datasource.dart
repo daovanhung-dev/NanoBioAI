@@ -2,6 +2,7 @@ import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_account_models.dart';
 import 'package:nano_app/app_versions/admin/features/admin_panel/domain/entities/admin_models.dart';
 import 'package:nano_app/core/network/backend_api_client.dart';
+import 'package:nano_app/core/storage/nabi_esp_credential_vault.dart';
 
 class AdminBackendDatasource {
   final BackendApiClient? clientOverride;
@@ -30,7 +31,17 @@ class AdminBackendDatasource {
     await _client.establishSession(response);
   }
 
-  Future<void> signOut() => _client.signOut();
+  Future<void> signOut() async {
+    try {
+      await _client.signOut();
+    } finally {
+      try {
+        await NabiEspCredentialVault.instance.clear();
+      } catch (_) {
+        // Keep logout available if local credential cleanup fails.
+      }
+    }
+  }
 
   Future<AdminSession> fetchSession() async {
     try {
@@ -132,13 +143,15 @@ class AdminBackendDatasource {
       return AdminMutationResult.fromMap(response);
     }
     if (command.section == AdminPanelSection.payments) {
-      final reversing = const {"refund", "cancel", "chargeback"}.contains(
-        command.action,
-      );
+      final reversing = const {
+        "refund",
+        "cancel",
+        "chargeback",
+      }.contains(command.action);
       final response = await _client.requestMap(
         'POST',
         '/api/v1/admin/payments/${Uri.encodeComponent(command.targetId)}/'
-        '${reversing ? 'reversal' : 'review'}',
+            '${reversing ? 'reversal' : 'review'}',
         body: {
           'decision': command.action,
           'reason': command.reason,

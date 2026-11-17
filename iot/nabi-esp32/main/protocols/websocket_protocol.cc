@@ -1,6 +1,8 @@
 #include "websocket_protocol.h"
 #include "application.h"
 #include "board.h"
+#include "nabi_esp_cloud_contract.h"
+#include "nabi_esp_provisioning.h"
 #include "settings.h"
 #include "system_info.h"
 
@@ -77,6 +79,12 @@ void WebsocketProtocol::CloseAudioChannel(bool send_goodbye) {
 }
 
 bool WebsocketProtocol::OpenAudioChannel() {
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    auto& provisioning = NabiEspProvisioning::GetInstance();
+    std::string url = provisioning.GetCloudWebsocketUrl();
+    std::string token = provisioning.GetCloudAccessToken();
+    version_ = NABI_CLOUD_PROTOCOL_VERSION;
+#else
     Settings settings("websocket", false);
     std::string url = settings.GetString("url");
     std::string token = settings.GetString("token");
@@ -84,6 +92,7 @@ bool WebsocketProtocol::OpenAudioChannel() {
     if (version != 0) {
         version_ = version;
     }
+#endif
 
     error_occurred_ = false;
 
@@ -102,7 +111,12 @@ bool WebsocketProtocol::OpenAudioChannel() {
         websocket_->SetHeader("Authorization", token.c_str());
     }
     websocket_->SetHeader("Protocol-Version", std::to_string(version_).c_str());
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    const auto cloud_device_id = provisioning.GetCloudDeviceId();
+    websocket_->SetHeader("Device-Id", cloud_device_id.c_str());
+#else
     websocket_->SetHeader("Device-Id", SystemInfo::GetMacAddress().c_str());
+#endif
     websocket_->SetHeader("Client-Id", Board::GetInstance().GetUuid().c_str());
 
     websocket_->OnData([this](const char* data, size_t len, bool binary) {

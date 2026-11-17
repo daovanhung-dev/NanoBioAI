@@ -8,9 +8,9 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - Persona UI: Nabi- am ap, nhe nhang, quan tam, khong phan xet.
 - Kien truc: feature-first + Clean Architecture theo code hien co.
 - Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4` for retained non-AI contracts, self-hosted NanoBio AI API, local notifications `19.5.0`.
-- SQLite version: `DatabaseVersion.currentVersion = 36`.
+- SQLite version: `DatabaseVersion.currentVersion = 37`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
-- Embedded project: `iot/nabi-esp32/` is an independent Nabi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
+- Embedded project: `iot/nabi-esp32/` is an imported Nabi ESP-IDF firmware snapshot. Its `phone_app/` stays independent; the cloud profile is explicitly integrated with NanoBioAI's `nabi_esp_assistant` Flutter feature and self-hosted backend.
 - Self-hosted backend: `backend/` is a FastAPI modular monolith using Ubuntu PostgreSQL; backend rules are in `backend/AGENTS.md` and `backend/.agents/`.
 
 Source-of-truth order for current-state claims: code reachable from

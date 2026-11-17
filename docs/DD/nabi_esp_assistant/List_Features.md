@@ -1,49 +1,45 @@
 # Features — NABI_ESP_ASSISTANT
 
-Nguồn: kế hoạch tích hợp do người dùng duyệt trong phiên 2026-10-23. Tất cả feature nghiệp vụ đang Draft; chỉ preview trung thực được phép chạy trước review.
+Nguồn: kế hoạch triển khai Nabi ESP được người dùng duyệt ngày 2026-11-17. DD vẫn Draft; source có thể chạy thử trên Android debug, còn release/device acceptance đang chờ.
 
-## NABI_ESP_ASSISTANT-F01 — Entry và trang preview Android
+## NABI_ESP_ASSISTANT-F01 — Thiết lập ESP từ Nabi
 
-- Actor: mọi người dùng Android có thể mở preview; cần đăng nhập trước khi bắt đầu lượt có câu trả lời AI.
-- Trigger: Feature Hub → “Sắp ra mắt” → “Nabi - Siêu trợ lý AI”.
-- Hiện có: tile Android và trang thông tin; tile ẩn trên iOS; chưa mở thiết bị.
-- Acceptance: hiện trạng thái chờ Tech/QA/Privacy; nêu firmware cần nạp USB; không gọi permission/native API/server.
-- Function/View: FN01, V01.
+- Actor: người dùng Android đã đăng nhập.
+- Trigger: đăng nhập thành công khi online, mở Nabi ESP, kết nối AP và nhập SSID/mật khẩu Wi‑Fi 2.4 GHz.
+- Acceptance: chỉ Android debug mới thao tác; hiển thị tiến trình/lỗi an toàn; không log hoặc lưu mật khẩu Wi‑Fi trong app.
+- Status: source có trang/runtime; focused Flutter analyze/tests và Android debug APK pass; setup trên điện thoại/thiết bị pending.
 
-## NABI_ESP_ASSISTANT-F02 — Chuẩn bị nhận dạng lời nói và voice local
+## NABI_ESP_ASSISTANT-F02 — AP cục bộ ghép và cấp Wi‑Fi
 
-- Kỳ vọng: tải Whisper tiếng Việt theo yêu cầu nếu chưa có; chọn voice TTS offline. Không nạp model văn bản cục bộ.
-- Gate: chỉ cho phép khởi tạo kết nối khi Whisper và voice TTS sẵn sàng; câu trả lời yêu cầu Internet và phiên đăng nhập NanoBio.
-- Acceptance: trạng thái sẵn sàng lấy từ runtime thật; lỗi tải Whisper/voice có cách thử lại; không tải model trong test.
-- Trạng thái: Draft / chưa triển khai cho ESP. Function: FN02.
+- Actor: app Nabi và ESP OSTB 3ST.
+- Trigger: người dùng nối vào AP WPA2 `Nabi-xxxx` và gửi cấu hình trong app; dữ liệu di động không bắt buộc.
+- Acceptance: `GET /nabi/status` và `POST /nabi/provision` chỉ đi qua Wi‑Fi ESP; app gửi Wi‑Fi và account credential đã lưu mã hóa; ESP lưu credential trong NVS và đóng AP sau khi nhận.
+- Status: Dart/Kotlin/firmware source và APK build pass; board không hiện tại serial trong lượt hiện tại nên chưa nạp firmware v4 hoặc chạy phone-to-AP acceptance.
 
-## NABI_ESP_ASSISTANT-F03 — Hotspot riêng và foreground service
+## NABI_ESP_ASSISTANT-F03 — Đăng nhập ESP và cấp credential thiết bị
 
-- Kỳ vọng: Android LocalOnlyHotspot tự sinh SSID/password; service `connectedDevice` giữ hotspot/server và notification có thao tác dừng.
-- Acceptance: xử lý từ chối quyền, hotspot bận/không hỗ trợ, địa chỉ/gateway đổi, khóa màn hình và dừng notification.
-- Trạng thái: Draft / chưa triển khai. Function: FN03.
+- Trigger: ESP kết nối Wi‑Fi sau cấu hình.
+- Acceptance: ESP đăng nhập qua HTTPS device-login bằng account credential, server kiểm tra Argon2 hash và quyền sở hữu; trả device ID/access/refresh tokens, chỉ lưu token hashes. ESP giữ account credential + refresh token trong NVS, access token trong RAM. Refresh xoay token; refresh lỗi không tự đăng nhập lại bằng mật khẩu.
+- Status: API source/tests pass; endpoint triển khai trong backend release `nabi-web-20261117-01`, health/OpenAPI pass; thiết bị login/refresh E2E pending.
 
-## NABI_ESP_ASSISTANT-F04 — BLE ghép đôi và cấp cấu hình
+## NABI_ESP_ASSISTANT-F04 — Hội thoại AI trên server
 
-- Kỳ vọng: Espressif provisioning Security 2, mã dùng một lần 8 số (2 phút), thiết lập khóa thiết bị; gửi Wi-Fi hotspot qua endpoint BLE tùy chỉnh.
-- Acceptance: credential chỉ đi trên BLE được mã hóa; token ghép thiết bị lưu bằng secure storage/NVS; xóa/đổi thiết bị có vòng đời được định nghĩa. Chưa hứa khóa sau 5 lần sai.
-- Trạng thái: Source implementation started; Tech/Privacy và device test pending. Function: FN04.
+- Trigger: ESP mở WebSocket voice v3 và gửi audio.
+- Acceptance: HTTPS/WSS TLS; STT, AI và TTS thực hiện bởi server; không cần điện thoại duy trì kết nối hội thoại; audio, transcript và context không ghi log hoặc lưu ổ đĩa.
+- Status: source backend/worker và firmware có; live voice routes/worker health verified; server round trip và loa ESP chưa được nghiệm thu.
 
-## NABI_ESP_ASSISTANT-F05 — Phiên Nabi HTTP/WebSocket v3
+## NABI_ESP_ASSISTANT-F05 — Quyền chia sẻ dữ liệu
 
-- Kỳ vọng: hợp đồng sinh chung, protocol v3, cổng 8386, `/nabi/ota/`, `/nabi/v1/`; host ESP tính từ DHCP gateway; device key cho OTA và Bearer auth theo phiên; tối đa một ESP.
-- Acceptance: token sai 401, kết nối thứ hai bị từ chối, server dừng thì ESP không được tiếp tục; host không hard-code.
-- Trạng thái: Source implementation started; device exchange pending. Function: FN05.
+- Nhóm: identity, profile_goals, sensitive_health, recent_tracking.
+- Acceptance: tất cả false khi tạo thiết bị; context giới hạn theo quyền hiện hành; sensitive context chỉ gửi khi consent đang bật, thiết bị có session và người dùng vừa xác nhận thời hạn 5 phút.
+- Status: backend/app source có và backend tests pass; privacy review và hardware integration pending.
 
-## NABI_ESP_ASSISTANT-F06 — Nhận dạng lời nói local, trả lời qua backend và điều khiển nghe
+## NABI_ESP_ASSISTANT-F06 — Quản lý thiết bị
 
-- Kỳ vọng: Opus 16 kHz → Whisper vi trên điện thoại → authenticated NanoBio AI API → TTS offline → Opus 24 kHz. History tối đa 6 lượt ở RAM.
-- Điều khiển: `nabi.control` với `listen.start`/`listen.stop` và `nabi.control_ack` có `request_id`.
-- Acceptance: xử lý luân phiên, hủy sạch khi ngắt socket; không log/lưu audio, transcript, prompt, response hoặc token; cần Internet và đăng nhập để tạo câu trả lời.
-- Trạng thái: App/firmware handlers implemented in source; audio/device test and Tech/QA/Privacy review pending. Function: FN06, FN07.
+- Acceptance: người dùng liệt kê, đổi tên, cập nhật consent, mở sensitive context hoặc hủy liên kết thiết bị thuộc tài khoản; revoke đóng WebSocket lease và chặn refresh tiếp theo.
+- Status: UI/API source có; full backend tests và focused app service tests pass; device acceptance pending.
 
-## NABI_ESP_ASSISTANT-F07 — OSTB 3ST firmware và lần nạp ban đầu
+## NABI_ESP_ASSISTANT-F07 — Profile OSTB 3ST riêng
 
-- Kỳ vọng: profile Nabi IDF ≥6.0.1, partition 16 MiB OTA/assets tương thích, mã ghép hiển thị, dynamic gateway, custom provisioning, auth header và control ack.
-- Acceptance: cần nạp full firmware/partition bằng USB một lần trước kết nối; firmware demo hiện có không thể được app nâng cấp thành Nabi.
-- Trạng thái: Firmware implementation in source; build/flash/boot validation pending. Function: FN08.
+- Acceptance: profile cloud tách khỏi config.local-ai.json, dùng contract generator riêng và đúng board/partition đã xác minh; không ghi firmware/partition/NVS/eFuse trước khi có kế hoạch triển khai được review.
+- Status: profile/source generator và ESP-IDF cloud contract v4 build pass; cloud contract v3 image trước đó đã được ghi/boot trên board, nhưng v4 chưa được flash; voice/device acceptance pending.

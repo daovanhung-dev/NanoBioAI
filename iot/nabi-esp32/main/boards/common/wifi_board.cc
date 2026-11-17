@@ -26,8 +26,10 @@ static const char* TAG = "WifiBoard";
 
 // Connection timeout in seconds
 static constexpr int CONNECT_TIMEOUT_SEC = 60;
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) && !defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
 static constexpr int64_t NABI_PAIRING_CODE_TTL_US = 120LL * 1000 * 1000;
+#endif
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
 static constexpr int64_t NABI_CONNECTED_SCREEN_DURATION_US = 2500LL * 1000;
 #endif
 
@@ -39,7 +41,7 @@ WifiBoard::WifiBoard() {
                                           .name = "wifi_connect_timer",
                                           .skip_unhandled_events = true};
     esp_timer_create(&timer_args, &connect_timer_);
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     const esp_timer_create_args_t nabi_timer_args = {
         .callback = OnNabiSetupTimer,
         .arg = this,
@@ -56,7 +58,7 @@ WifiBoard::~WifiBoard() {
         esp_timer_stop(connect_timer_);
         esp_timer_delete(connect_timer_);
     }
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     if (nabi_setup_timer_ != nullptr) {
         esp_timer_stop(nabi_setup_timer_);
         esp_timer_delete(nabi_setup_timer_);
@@ -73,7 +75,7 @@ void WifiBoard::StartNetwork() {
     WifiManagerConfig config;
     config.ssid_prefix = "Nabi";
     config.language = Lang::CODE;
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     config.language = "vi-VN";
 #endif
     config.show_ota_config = true;
@@ -89,8 +91,10 @@ void WifiBoard::StartNetwork() {
         config.station_hostname = hostname;
     }
     wifi_manager.Initialize(config);
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     NabiEspProvisioning::GetInstance().Start();
+#endif
+#if defined(CONFIG_NABI_ESP_ASSISTANT) && !defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     if (!NabiEspProvisioning::GetInstance().GetPairingCode().empty()) {
         UpdateNabiSetup(WifiSetupStage::kPairing);
         ESP_ERROR_CHECK(esp_timer_start_once(nabi_setup_timer_, NABI_PAIRING_CODE_TTL_US));
@@ -126,6 +130,14 @@ void WifiBoard::StartNetwork() {
 }
 
 void WifiBoard::TryWifiConnect() {
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    if (!NabiEspProvisioning::GetInstance().IsPaired()) {
+        ESP_LOGI(TAG, "Nabi cloud device is not paired; opening local setup AP");
+        vTaskDelay(pdMS_TO_TICKS(1500));
+        StartWifiConfigMode();
+        return;
+    }
+#endif
     auto& ssid_manager = SsidManager::GetInstance();
     bool have_ssid = !ssid_manager.GetSsidList().empty();
 
@@ -153,7 +165,7 @@ void WifiBoard::OnNetworkEvent(NetworkEvent event, const std::string& data) {
 #endif
             in_config_mode_ = false;
             ESP_LOGI(TAG, "Connected to WiFi: %s", data.c_str());
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
             UpdateNabiSetup(WifiSetupStage::kConnected, data);
             esp_timer_stop(nabi_setup_timer_);
             clear_nabi_setup_on_timeout_ = true;
@@ -166,13 +178,13 @@ void WifiBoard::OnNetworkEvent(NetworkEvent event, const std::string& data) {
             break;
         case NetworkEvent::Connecting:
             ESP_LOGI(TAG, "WiFi connecting to %s", data.c_str());
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
             UpdateNabiSetup(WifiSetupStage::kConnecting, data);
 #endif
             break;
         case NetworkEvent::Disconnected:
             ESP_LOGW(TAG, "WiFi disconnected");
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
             UpdateNabiSetup(in_config_mode_ ? WifiSetupStage::kWaiting : WifiSetupStage::kFailed,
                             "", in_config_mode_);
 #endif
@@ -180,14 +192,14 @@ void WifiBoard::OnNetworkEvent(NetworkEvent event, const std::string& data) {
         case NetworkEvent::WifiConfigModeEnter:
             ESP_LOGI(TAG, "WiFi config mode entered");
             in_config_mode_ = true;
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
             UpdateNabiSetup(WifiSetupStage::kWaiting, "", true);
 #endif
             break;
         case NetworkEvent::WifiConfigModeExit:
             ESP_LOGI(TAG, "WiFi config mode exited");
             in_config_mode_ = false;
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
             UpdateNabiSetup(WifiSetupStage::kConnecting);
 #endif
             // Try to connect with the new credentials
@@ -203,7 +215,7 @@ void WifiBoard::OnNetworkEvent(NetworkEvent event, const std::string& data) {
     }
 }
 
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
 void WifiBoard::UpdateNabiSetup(WifiSetupStage stage, const std::string& network_name,
                                 bool include_access_point) {
     auto* display = GetDisplay();
@@ -215,6 +227,11 @@ void WifiBoard::UpdateNabiSetup(WifiSetupStage stage, const std::string& network
     view.stage = stage;
     view.network_name = network_name;
     auto& provisioning = NabiEspProvisioning::GetInstance();
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    if (include_access_point) {
+        view.pairing_code = provisioning.GetConfigAccessCode();
+    }
+#else
     if (!provisioning.IsPaired() &&
         (stage == WifiSetupStage::kPairing || stage == WifiSetupStage::kWaiting)) {
         view.pairing_code = provisioning.GetPairingCode();
@@ -222,6 +239,7 @@ void WifiBoard::UpdateNabiSetup(WifiSetupStage stage, const std::string& network
             view.stage = WifiSetupStage::kPairingExpired;
         }
     }
+#endif
     if (include_access_point) {
         auto& wifi_manager = WifiManager::GetInstance();
         view.access_point_name = wifi_manager.GetApSsid();
@@ -273,10 +291,25 @@ void WifiBoard::StartWifiConfigMode() {
     Application::GetInstance().SetDeviceState(kDeviceStateWifiConfiguring);
 #ifdef CONFIG_USE_HOTSPOT_WIFI_PROVISIONING
     auto& wifi_manager = WifiManager::GetInstance();
-
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    auto& provisioning = NabiEspProvisioning::GetInstance();
+    const auto access_code = provisioning.BeginConfigSession();
+    wifi_manager.StartConfigAp(access_code, [&provisioning](httpd_handle_t server) {
+        provisioning.RegisterLocalApiHandlers(server);
+    });
+#else
     wifi_manager.StartConfigAp();
+#endif
 
     // Show config prompt after a short delay
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    Application::GetInstance().Schedule([&wifi_manager]() {
+        std::string hint = "Kết nối Wi-Fi " + wifi_manager.GetApSsid();
+        hint += ", nhập mã trên màn hình, rồi mở ứng dụng Nabi.";
+        Application::GetInstance().Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "gear",
+                                         Lang::Sounds::OGG_WIFICONFIG);
+    });
+#else
     Application::GetInstance().Schedule([&wifi_manager]() {
         std::string hint = Lang::Strings::CONNECT_TO_HOTSPOT;
         hint += wifi_manager.GetApSsid();
@@ -286,6 +319,7 @@ void WifiBoard::StartWifiConfigMode() {
         Application::GetInstance().Alert(Lang::Strings::WIFI_CONFIG_MODE, hint.c_str(), "gear",
                                          Lang::Sounds::OGG_WIFICONFIG);
     });
+#endif
 #elif CONFIG_USE_ESP_BLUFI_WIFI_PROVISIONING
     auto& blufi = Blufi::GetInstance();
     // initialize esp-blufi protocol

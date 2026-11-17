@@ -76,7 +76,7 @@ UI catalog cards and the shared development placeholder are approved shell work 
 
 | DD | Module | DD decision / implementation | Output path | Created | Source / blocker |
 |---|---|---|---|---|---|
-| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft / Placeholder | `docs/DD/nabi_esp_assistant/` | 2026-10-23 | User-approved product plan; Tech, QA and Privacy reviews plus Android/ESP device acceptance are pending. |
+| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft / In Progress | `docs/DD/nabi_esp_assistant/` | 2026-10-23 | Android debug AP/cloud pilot is implemented in source; Tech, QA and Privacy reviews plus OSTB 3ST acceptance are pending. |
 
 M20-M21 and M23-M29 remain without module DD. M22 has an approved DD only for
 the local Guest reminder slice. M32 is a separate Draft module with pilot

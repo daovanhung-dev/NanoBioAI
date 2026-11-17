@@ -79,7 +79,7 @@ M32 implementation is proceeding under an explicit PO direction; do not mark it 
 
 | DD | Module | DD decision | Implementation | Verification | Output path | Current boundary |
 |---|---|---|---|---|---|---|
-| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft; PO intent recorded, Tech/QA/Privacy pending | Placeholder | Static source; Android/device-unverified | `docs/DD/nabi_esp_assistant/` | Android-only preview route/tile; no hotspot, BLE, audio, or server behavior. |
+| DD-NABI-ESP-ASSISTANT-001 | `NABI_ESP_ASSISTANT` | Draft; PO intent recorded, Tech/QA/Privacy pending | Android debug pilot | Static source; AP/claim/voice device acceptance pending | `docs/DD/nabi_esp_assistant/` | Android debug route configures ESP through WPA2 AP + cellular-backed app API; release remains gated. |
 
 This feature is outside M01-M32 numbering and does not change those module
 progress totals. The runtime remains closed until review and device acceptance.

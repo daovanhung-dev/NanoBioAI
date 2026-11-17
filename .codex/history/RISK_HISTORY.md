@@ -1477,3 +1477,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: - Firmware/app tests/build: SKIPPED — chỉ thay đổi tài liệu/context.
 - docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: ## Lỗi/Rủi ro
 - docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: - Cần kiểm tra tiếp: nghiệm thu thiết bị theo checklist trong `NABI_PROJECT_FULL_CONTEXT.md` trước khi mô tả hệ thống là hoàn chỉnh hoặc production-ready.
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: - backend .venv/bin/pytest -q: PASS; 2 tests skipped by suite.
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: - Production server changes: SKIPPED; no writes performed.
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: - .codex/tools/validate_codex_integrity.ps1: SKIPPED because neither pwsh nor powershell is installed.
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: - Chưa fix: production deployment of any migration/source/config was intentionally not performed; both local and deployed Alembic paths were smoke-tested only against disposable SQLite.
+- docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md :: - Can kiem tra tiep: Tech/QA/Privacy review; Android BLE Security 2 + OSTB Wi‑Fi claim; WSS voice round trip, token refresh/revocation, consent, network recovery and speaker audio.
+- docs/worklog/2026-11-17/002-worklog-nabi-esp-ap-provisioning.md :: - `flutter analyze --no-pub` toàn repo: FAIL do lỗi ngoài feature này: thiếu `package:nano_app/core/ai_local/local_ai_runtime_service.dart`, `LocalAiRuntimeService` chưa định nghĩa trong integration test và một async-gap info có sẵn.
+- docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md :: - Backend response device-login ban đầu chứa datetime nội bộ làm JSON serialize fail; response đã loại `_at` metadata trước khi trả về, API tests pass.
+- docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md :: - Device-login từ cùng owner kết thúc session lease đang mở; rebind sau unbind xóa consent cũ. Account password login chỉ chạy khi vừa provision; refresh failure không tự đổi owner.

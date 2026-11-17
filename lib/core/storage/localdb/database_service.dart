@@ -61,6 +61,7 @@ import 'migrations/migration_v33.dart';
 import 'migrations/migration_v34.dart';
 import 'migrations/migration_v35.dart';
 import 'migrations/migration_v36.dart';
+import 'migrations/migration_v37.dart';
 import 'seeders/ai_catalog_seeder.dart';
 import 'seeders/meal_catalog_seeder.dart';
 
@@ -200,6 +201,7 @@ class DatabaseService {
             if (oldVersion < 34 && newVersion >= 34) await MigrationV34.run(db);
             if (oldVersion < 35 && newVersion >= 35) await MigrationV35.run(db);
             if (oldVersion < 36 && newVersion >= 36) await MigrationV36.run(db);
+            if (oldVersion < 37 && newVersion >= 37) await MigrationV37.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -249,6 +251,7 @@ class DatabaseService {
             if (version >= 32) await MigrationV32.ensureSchema(db);
             if (version >= 33) await MigrationV33.ensureSchema(db);
             if (version >= 34) await MigrationV34.ensureSchema(db);
+            if (version >= 37) await MigrationV37.run(db);
             phase.stop();
             AppLogger.event(
               level: AppLogLevel.info,
@@ -303,6 +306,7 @@ class DatabaseService {
 
   static Future<void> _createTables(Database db) async {
     await db.execute(UsersTable.createTable);
+    await MigrationV37.run(db);
     await db.execute(HealthProfilesTable.createTable);
     await db.execute(HealthGoalsTable.createTable);
     await db.execute(HealthConditionsTable.createTable);

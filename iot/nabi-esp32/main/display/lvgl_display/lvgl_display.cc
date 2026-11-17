@@ -5,7 +5,7 @@
 #include <cstring>
 #include <string>
 
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
 extern "C" {
 extern const uint8_t nabi_setup_rgb565_start[] asm("_binary_nabi_setup_rgb565_start");
 extern const uint8_t nabi_setup_rgb565_end[] asm("_binary_nabi_setup_rgb565_end");
@@ -204,7 +204,7 @@ void LvglDisplay::ShowNotification(const char* notification, int duration_ms) {
 }
 
 bool LvglDisplay::ShowWifiSetup(const WifiSetupView& view) {
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     if (!setup_ui_called_ || display_ == nullptr) {
         return false;
     }
@@ -340,12 +340,20 @@ bool LvglDisplay::ShowWifiSetup(const WifiSetupView& view) {
             break;
         case WifiSetupStage::kWaiting:
             title = "Nabi sẵn sàng kết nối";
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+            body = view.pairing_code.empty()
+                       ? "Kết nối điện thoại vào Wi-Fi hiển thị bên dưới."
+                       : "Nhập mã này khi kết nối Wi-Fi Nabi trên điện thoại.";
+            code_caption = "MÃ WI-FI DÙNG MỘT LẦN";
+            details = "Mở ứng dụng Nabi để gửi Wi-Fi nhà bạn.";
+#else
             body = "Kết nối điện thoại vào điểm phát Wi-Fi hiển thị bên dưới.";
             code_caption = "MÃ GHÉP ĐÔI NABI";
             details = "Mở trang cấu hình mạng trên điện thoại.";
             if (show_code) {
                 body = "Mở ứng dụng Nabi để ghép đôi và kết nối Wi-Fi bên dưới.";
             }
+#endif
             break;
         case WifiSetupStage::kConnecting:
             title = "Đang kết nối Wi-Fi";
@@ -378,9 +386,13 @@ bool LvglDisplay::ShowWifiSetup(const WifiSetupView& view) {
     std::string details_text = details;
     if (!view.access_point_name.empty()) {
         details_text = "1. Wi-Fi: " + view.access_point_name;
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+        details_text += "\n2. Nhập mã trên màn hình\n3. Mở ứng dụng Nabi";
+#else
         if (!view.portal_url.empty()) {
             details_text += "\n2. Mở: " + view.portal_url;
         }
+#endif
     }
 
     lv_obj_set_style_bg_color(lv_obj_get_child(wifi_setup_screen_, 0), lv_color_hex(accent_color),
@@ -416,7 +428,7 @@ bool LvglDisplay::ShowWifiSetup(const WifiSetupView& view) {
 }
 
 void LvglDisplay::ClearWifiSetup() {
-#ifdef CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_ASSISTANT) || defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
     if (wifi_setup_screen_ == nullptr) {
         return;
     }

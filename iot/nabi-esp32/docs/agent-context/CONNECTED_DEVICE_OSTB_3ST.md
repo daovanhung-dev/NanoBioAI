@@ -1,8 +1,8 @@
-# Hồ sơ ESP đang kết nối: OSTB 3ST
+# Hồ sơ thiết bị ESP: OSTB 3ST
 
 ## Mục đích và phạm vi
 
-Ảnh chụp thiết bị được cập nhật ngày **2026-11-14**, sau khi build và nạp app Nabi. Mọi task IoT/ESP32 phải đọc hồ sơ này trước khi chọn source hoặc chạy lệnh trên thiết bị. Chỉ áp dụng chân và giới hạn board khi target là OSTB 3ST; board khác phải dùng cấu hình riêng.
+Lần đọc trực tiếp gần nhất được ghi ngày **2026-11-17**, sau khi build/nạp cloud app Nabi và kiểm tra boot/AP setup. Trong lượt đối chiếu nguồn hiện tại, ESP không xuất hiện trên USB; firmware cloud contract v4 mới chỉ được build và chưa được nạp. Mọi task IoT/ESP32 phải đọc hồ sơ này trước khi chọn source hoặc chạy lệnh trên thiết bị. Chỉ áp dụng chân và giới hạn board khi target là OSTB 3ST; board khác phải dùng cấu hình riêng.
 
 Hồ sơ tách dữ liệu thành ba mức bằng chứng:
 
@@ -10,7 +10,7 @@ Hồ sơ tách dữ liệu thành ba mức bằng chứng:
 - **Theo source/build:** lấy từ cấu hình board, hợp đồng dùng chung và artifact vừa build; không tự chứng minh hành vi kết nối với điện thoại.
 - **Chưa xác minh:** cần thử nghiệm hoặc bằng chứng vật lý chưa có.
 
-Trong lần kiểm tra này, chỉ đọc partition table và OTA metadata, không dump NVS, Wi-Fi credentials, token, khóa ghép đôi hay dữ liệu người dùng. Thao tác ghi chỉ nhắm app OTA0 tại `0x20000`; không ghi bootloader, partition table, OTA metadata, NVS, assets hay `nvs_user`. ACL serial được cấp tạm rồi gỡ sau khi xác minh boot.
+Trong lần ghi cuối ngày 2026-11-17, chỉ đọc partition table và OTA metadata, không dump NVS, Wi-Fi credentials, token, khóa ghép đôi hay dữ liệu người dùng. Thao tác ghi chỉ nhắm app OTA0 tại `0x20000`; không ghi bootloader, partition table, OTA metadata, NVS, assets hay `nvs_user`. ACL serial tạm đã được gỡ sau khi hoàn tất thao tác thiết bị.
 
 ## Đọc trực tiếp từ thiết bị
 
@@ -21,19 +21,19 @@ Trong lần kiểm tra này, chỉ đọc partition table và OTA metadata, khô
 | Tinh thể | 40 MHz | `esptool chip-id` |
 | PSRAM | 8 MB embedded PSRAM, cấu hình AP_3v3 | `esptool chip-id` và boot log |
 | Giao tiếp USB | USB-Serial/JTAG | esptool và USB descriptor; cổng có thể đổi |
-| Cổng tại lần kiểm tra | `/dev/ttyACM0`; ACL tạm đã gỡ, quyền trở lại `root:uucp` | Host ngày 2026-11-14 |
+| Cổng tại lần kiểm tra | `/dev/ttyACM0`; ACL tạm `u:daovh:rw` đã gỡ sau khi nạp | Host ngày 2026-11-17 |
 | Flash | 16 MB; manufacturer ID `0x68`, device ID `0x4018`; quad/4 data lines; 3.3 V | `esptool flash-id` |
 | Secure Boot | Tắt | `esptool get-security-info`, đọc trước khi ghi ngày 2026-10-23; không thay đổi eFuse trong task này |
 | Flash Encryption | Tắt; `SPI_BOOT_CRYPT_CNT=0` | `esptool get-security-info`, đọc trước khi ghi ngày 2026-10-23 |
 | Firmware project | Nabi; preserved OTA compatibility SKU `ostb-xiaozhi-3st` | Serial boot sau khi ghi app |
-| Firmware version/build | Nabi `2.5.3`, ESP-IDF `v6.1`, cấu hình lời chào `vi-VN` | Artifact cuối build ngày 2026-11-14 |
-| App image vừa nạp | 3.178.000 byte (`0x307e10`), SHA-256 `476d9864b0575dc6c0bd84b4462a7c82ee2b6962daab19236cd0dc8f07efc554` | esptool ghi OTA0 và xác minh hash thành công |
-| App slot đang chạy | `ota_0`, offset `0x20000` | OTA metadata trước khi nạp: sequence `1`, state `VALID`, CRC hợp lệ; hard reset và monitor nhận marker khởi tạo ứng dụng |
+| Firmware version/build cuối đọc từ board | Nabi `2.5.3`, ESP-IDF `v6.1`, locale `vi-VN`, cloud contract v3 | Artifact build ngày 2026-11-17 20:02:03 |
+| App image đã nạp ở lần kiểm tra trước | 2.757.936 byte (`0x2a1530`), SHA-256 `dab50a16aca99c5424386a9766eb12b1ccb2f94d5ca9bbc8382610ab01d7bc13` | esptool ghi OTA0 và xác minh hash thành công |
+| App slot được chọn khi nạp | `ota_0`, offset `0x20000` | OTA metadata trước lần nạp cuối: sequence `1`, CRC hợp lệ; metadata không bị ghi. Hard reset sau khi ghi. |
 | NVS | Không dump hoặc ghi trực tiếp qua flash trong lần kiểm tra này | Chỉ ghi app OTA0; không có lệnh ghi/erase NVS |
 
 ### Partition table đang nạp
 
-Đã đọc trực tiếp 4 KB tại `0x8000` ngày 2026-11-14. Bảng live khác partition CSV trong source/build. App Nabi vừa nạp vừa OTA0 live; firmware tìm assets theo label. Không ghi partition table để làm chúng khớp nhau.
+Đã đọc trực tiếp 4 KB tại `0x8000` ngày 2026-11-17. Bảng live khác partition CSV trong source/build. Cloud app Nabi được ghi riêng vào OTA0 live; firmware tìm assets theo label. Không ghi partition table để làm chúng khớp nhau.
 
 | Tên | Loại/subtype | Offset | Kích thước |
 | --- | --- | ---: | ---: |
@@ -46,12 +46,12 @@ Trong lần kiểm tra này, chỉ đọc partition table và OTA metadata, khô
 
 ### Boot và kết nối đã kiểm tra
 
-- Firmware Nabi `2.5.3` boot từ OTA0 sau khi esptool xác minh hash và hard reset. IDF monitor ghi nhận `Project name: nabi`, `After board/audio init`, rồi bắt đầu quét Wi-Fi; không thấy marker crash trong khoảng 21 giây quan sát. Đây là bằng chứng app khởi tạo board/audio, không xác nhận trực quan LCD hoặc toàn bộ luồng mạng.
-- Trong lượt quan sát này station không tìm thấy AP đã lưu và tiếp tục quét; chưa xác minh HTTP/captive portal bằng trình duyệt tại `192.168.4.1`.
-- Lần đọc OTA metadata trước khi ghi cho thấy sequence `1`, CRC hợp lệ, chọn OTA0. Không ghi hoặc đổi OTA metadata khi triển khai.
+- Cloud image contract v3 boot qua `After board/audio init`. Khi firmware phát hiện chưa ghép tài khoản dù NVS có Wi-Fi cũ, `WifiBoard` mở config AP, `WifiManager` vào config mode và app alert hướng dẫn nối Wi-Fi Nabi/nhập mã trên màn hình.
+- Chưa dùng điện thoại để nối AP, gọi `/nabi/status`/`/nabi/provision`, đăng nhập thiết bị, xác nhận Wi-Fi nhà hoặc chạy voice round trip. Log boot/AP không chứng minh các bước đó. Contract v4 là source/build mới và chưa được nạp lên thiết bị.
+- Đã đọc OTA metadata trước cả hai lần ghi app ngày 2026-11-17: sequence `1`, CRC hợp lệ, chọn OTA0. Chỉ app image tại `0x20000` được ghi; NVS và OTA metadata không bị đọc/ghi ngoài lượt đọc metadata nêu trên.
 - Lịch sử E2E ngày 2026-10-23: Nabi mở Android LocalOnlyHotspot và foreground service; BLE Security 2 provisioning, DHCP, HTTP OTA config và WebSocket v3/control ACK đã được thử với firmware trước đó. Không lặp lại các bước E2E này sau lần build ngày 2026-11-14.
 - Lịch sử xử lý thoại ngày 2026-10-23: lượt Whisper/LLM trên điện thoại thử nghiệm vượt thời gian chờ; phản hồi TTS/âm thanh đầu-cuối chưa được nghiệm thu.
-- ACL của user `daovh` trên `/dev/ttyACM0` đã được gỡ; host trở về quyền `root:uucp`. Không ghi token, key, mã ghép đôi, SSID hoặc mật khẩu vào hồ sơ.
+- ACL `u:daovh:rw` đã gỡ sau khi thao tác hoàn tất. Không ghi token, key, mã ghép đôi, SSID hoặc mật khẩu vào hồ sơ.
 - Chưa có ảnh/video để xác nhận nội dung hiển thị LCD; boot/khởi tạo driver không phải bằng chứng hiển thị vật lý.
 
 ## Cấu hình OSTB 3ST trong source/build
@@ -69,14 +69,16 @@ Giá trị dưới đây mô tả source/build, không phải phép đọc từn
 | Touch | CST816-series, I2C address `0x15`; I2C port 1, SDA/SCL GPIO 12/11 |
 | Audio | ES7210 microphone ADC và ES8311 speaker codec; 24 kHz input/output; I2S MCLK/BCLK/WS GPIO 5/15/16, mic DIN GPIO 7, speaker DOUT GPIO 6, amplifier enable GPIO 4 active-high |
 | Nút | Boot GPIO 0; volume down/up GPIO 39/40 |
-| Nabi transport contract | Protocol v3; TCP port `8386`; OTA path `/nabi/ota/`; WebSocket path `/nabi/v1/`; gateway lấy từ DHCP; BLE provisioning Security 2 |
-| Pairing protection | Mã 8 chữ số hết hạn sau 2 phút; sau 5 lỗi xác thực Security 2, pairing bị khóa đến lần khởi động kế tiếp |
-| Hotspot credentials | Android LocalOnlyHotspot cấp SSID/mật khẩu theo phiên; không cố định `NabiAI`/`12345678` |
+| Cloud assistant transport | Cloud contract v4; voice protocol v3; device-login qua `https://nanobio.s2w.click/api/v1/iot/devices/credentials/login`; WSS `/api/v1/iot/ws`; cấu hình tại WPA2 AP `192.168.4.1`, không cần mobile data |
+| Cloud AP protection | AP WPA2 `Nabi-xxxx`; mật khẩu tạm 8 chữ số trên màn hình; mỗi phiên nhận một lần provision rồi chuyển sang station |
+| Cloud contract v4 artifact | `iot/nabi-esp32/build/nabi.bin`, 2.759.072 byte, SHA-256 `d9f083822b8f3d90a70a484fecefbac894ea760c90683e970053eea93a844e7a` | ESP-IDF 6.1 build pass; chưa nạp do ESP không xuất hiện trên USB |
+| Local phone-AI profile | Contract v3; TCP port `8386`; OTA `/nabi/ota/`; WebSocket `/nabi/v1/`; provisioning BLE Security 2 |
+| Phone-local hotspot | Android LocalOnlyHotspot cấp SSID/mật khẩu theo phiên; không cố định `NabiAI`/`12345678` |
 | OTA source fallback | `CONFIG_OTA_URL=http://0.0.0.0:8386/nabi/ota/`, `CONFIG_OTA_URL_IGNORE_NVS=y`; lúc đã có gateway DHCP, firmware tạo URL `http://<gateway>:8386/nabi/ota/` |
 
 ## Giới hạn kết luận và việc còn lại
 
-- Firmware Nabi cuối được build với ESP-IDF 6.1, ghi riêng vào OTA0 live và boot tới board/audio initialization. BLE pairing, hotspot, DHCP, HTTP OTA và WebSocket v3/control ACK là kết quả E2E của firmware trước đó, chưa chạy lại sau lần cập nhật cuối.
+- Firmware cloud contract v3 trên board đã được ghi riêng vào OTA0 live, xác minh hash và boot tới board/audio initialization. Boot log xác nhận unpaired device vào AP config mode dù đã lưu Wi-Fi cũ. Firmware contract v4 mới đã build, chưa được nạp hoặc boot trên board.
 - Chưa nghiệm thu luồng trả lời giọng nói hoàn chỉnh, hồi phục sau nhiều chu kỳ tắt/bật hotspot, chế độ màn hình khóa/Doze hoặc hội thoại sau khi ngắt Internet. Hiệu năng local AI trên điện thoại thử chưa đạt phản hồi trong thời gian quan sát.
 - Feature Hub vẫn giữ cổng Tech/QA/Privacy trước phát hành. Chưa có ảnh/video LCD. Không suy ra hình LCD từ log khởi tạo.
-- Nếu board/firmware/partition hoặc host thay đổi, đọc lại thiết bị trước thao tác; giữ ranh giới giữa dữ liệu đo trực tiếp, source/build và chưa xác minh. Không ghi mật khẩu, token, khóa ghép đôi, transcript, audio, MAC đầy đủ hoặc serial vào agent context.
+- Cloud app contract v3 đã được ghi và esptool xác minh byte/hash thành công; board/audio init và AP config-mode đã thấy trong boot log. Cloud contract v4 chưa được flash. Chưa nghiệm thu v4 AP provisioning, device-login/refresh/revoke, WSS voice, consent hoặc TTS. Nếu board/firmware/partition hoặc host thay đổi, đọc lại thiết bị trước thao tác; giữ ranh giới giữa dữ liệu đo trực tiếp, source/build và chưa xác minh. Không ghi mật khẩu, token, khóa ghép đôi, transcript, audio, MAC đầy đủ hoặc serial vào agent context.

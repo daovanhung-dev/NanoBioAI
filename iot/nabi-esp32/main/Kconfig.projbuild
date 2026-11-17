@@ -1051,10 +1051,13 @@ menu "WiFi Configuration Method"
             The provisioning client must support ffdhe3072, SHA-256, and AES-CTR.
 endmenu
 
-config NABI_ESP_ASSISTANT
-    bool "Enable Nabi local AI provisioning for OSTB 3ST"
-    default n
+choice NABI_ESP_ASSISTANT_MODE
+    prompt "Nabi ESP assistant mode for OSTB 3ST"
+    optional
     depends on BOARD_TYPE_OSTB_XIAOZHI_3ST
+
+config NABI_ESP_ASSISTANT
+    bool "Enable Nabi local AI provisioning"
     select BT_ENABLED
     select BT_BLE_42_FEATURES_SUPPORTED
     select ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_2
@@ -1062,6 +1065,20 @@ config NABI_ESP_ASSISTANT
         Enable BLE Security 2 provisioning for the Nabi Android app. The phone
         supplies its current LocalOnlyHotspot credentials; the existing Wi-Fi
         configuration AP remains available as a manual recovery path.
+
+config NABI_ESP_CLOUD_ASSISTANT
+    bool "Enable Nabi cloud voice assistant"
+    select BT_ENABLED
+    select BT_BLE_42_FEATURES_SUPPORTED
+    select ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_2
+    help
+        Enable the NanoBio cloud voice assistant for the Nabi Android app. The
+        app provisions home Wi-Fi and the signed-in account credential over
+        the ESP's WPA2 setup AP. The ESP stores these values in NVS, logs in
+        to NanoBio over HTTPS, and uses voice protocol v3 over the fixed WSS
+        endpoint. Mobile data is not needed while the phone is on the ESP AP.
+
+endchoice
 
 config AUDIO_DEBUG_UDP_SERVER
     string "Audio Debug UDP Server Address"

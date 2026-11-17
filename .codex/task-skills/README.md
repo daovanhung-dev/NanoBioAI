@@ -4,7 +4,7 @@ Generated from canonical task keys. Read the file matching the selected workflow
 
 | Task key | Title | Workflow | Worklogs | File |
 | --- | --- | --- | ---: | --- |
-| coding | Coding | .codex/workflows/coding.md | 53 | [coding.md](coding.md) |
+| coding | Coding | .codex/workflows/coding.md | 55 | [coding.md](coding.md) |
 | bugfix | Direct bugfix | .codex/workflows/bugfix.md | 46 | [bugfix.md](bugfix.md) |
 | fix-issues | Fix documented issue | .codex/workflows/fix-issues.md | 3 | [fix-issues.md](fix-issues.md) |
 | test | Test and verification | .codex/workflows/test.md | 32 | [test.md](test.md) |
@@ -14,6 +14,6 @@ Generated from canonical task keys. Read the file matching the selected workflow
 | docs-dd | Design docs | .codex/workflows/docs-dd.md | 6 | [docs-dd.md](docs-dd.md) |
 | docs-context | Context and docs update | .codex/workflows/docs-context.md | 104 | [docs-context.md](docs-context.md) |
 | refactor-scaffold | Scaffold refactor | .codex/workflows/refactor-scaffold.md | 2 | [refactor-scaffold.md](refactor-scaffold.md) |
-| supabase-schema | Supabase schema and RLS | .codex/workflows/supabase-schema.md | 44 | [supabase-schema.md](supabase-schema.md) |
+| supabase-schema | Supabase schema and RLS | .codex/workflows/supabase-schema.md | 45 | [supabase-schema.md](supabase-schema.md) |
 
 Legacy task keys are mapped in [LEGACY_TASK_KEY_MAP.md](LEGACY_TASK_KEY_MAP.md). Do not create new task-skill files outside the canonical key set.

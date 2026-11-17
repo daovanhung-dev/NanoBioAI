@@ -304,7 +304,14 @@ void Application::HandleNetworkConnectedEvent() {
     auto state = GetDeviceState();
 
     bool should_activate = state == kDeviceStateStarting || state == kDeviceStateWifiConfiguring;
-#if CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
+    if (state == kDeviceStateIdle && NabiEspProvisioning::GetInstance().IsPaired()) {
+        should_activate = true;
+        if (protocol_ != nullptr) {
+            protocol_->CloseAudioChannel();
+        }
+    }
+#elif CONFIG_NABI_ESP_ASSISTANT
     // A phone hotspot may stop between sessions. Once the paired ESP rejoins
     // the current hotspot, fetch a fresh WebSocket token from the phone.
     if (state == kDeviceStateIdle && NabiEspProvisioning::GetInstance().IsPaired()) {
@@ -346,7 +353,7 @@ void Application::HandleNetworkDisconnectedEvent() {
     }
     bool close_audio_channel = state == kDeviceStateConnecting || state == kDeviceStateListening ||
                                state == kDeviceStateSpeaking;
-#if CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT) || CONFIG_NABI_ESP_ASSISTANT
     close_audio_channel =
         close_audio_channel || (protocol_ != nullptr && protocol_->IsAudioChannelOpened());
 #endif
@@ -366,7 +373,24 @@ void Application::HandleActivationDoneEvent() {
     SystemInfo::PrintHeapStats();
     SetDeviceState(kDeviceStateIdle);
 
-#if CONFIG_NABI_ESP_ASSISTANT
+#if defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
+    if (NabiEspProvisioning::GetInstance().HasCloudCredentials()) {
+        // The device keeps only its rotating refresh token in NVS. A fresh
+        // access token is held in RAM and used for each authenticated WSS
+        // handshake.
+        Schedule([this]() {
+            if (protocol_ == nullptr || GetDeviceState() != kDeviceStateIdle ||
+                protocol_->IsAudioChannelOpened()) {
+                return;
+            }
+            if (protocol_->OpenAudioChannel()) {
+                ESP_LOGI(TAG, "Nabi cloud WebSocket channel is ready");
+            } else {
+                ESP_LOGW(TAG, "Could not open Nabi cloud WebSocket channel");
+            }
+        });
+    }
+#elif CONFIG_NABI_ESP_ASSISTANT
     if (NabiEspProvisioning::GetInstance().IsPaired() && ota_ != nullptr &&
         ota_->HasWebsocketConfig()) {
         // Keep the authenticated channel open while idle so Nabi's app can
@@ -397,8 +421,12 @@ void Application::HandleActivationDoneEvent() {
     }
     if (!has_error) {
         auto display = Board::GetInstance().GetDisplay();
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+        display->ShowNotification("Nabi đã sẵn sàng");
+#else
         std::string message = std::string(Lang::Strings::VERSION) + ota_->GetCurrentVersion();
         display->ShowNotification(message.c_str());
+#endif
         display->SetChatMessage("system", "");
     }
 
@@ -416,6 +444,15 @@ void Application::HandleActivationDoneEvent() {
 }
 
 void Application::ActivationTask() {
+#if defined(CONFIG_NABI_ESP_CLOUD_ASSISTANT)
+    ota_ = std::make_unique<Ota>();
+    if (!NabiEspProvisioning::GetInstance().AuthenticateCloud()) {
+        last_error_message_ = "Không thể kết nối tài khoản Nabi với máy chủ. Hãy thử lại sau.";
+        xEventGroupSetBits(event_group_, MAIN_EVENT_ERROR);
+    }
+    InitializeProtocol();
+    xEventGroupSetBits(event_group_, MAIN_EVENT_ACTIVATION_DONE);
+#else
     // Create OTA object for activation process
     ota_ = std::make_unique<Ota>();
 
@@ -430,6 +467,7 @@ void Application::ActivationTask() {
 
     // Signal completion to main loop
     xEventGroupSetBits(event_group_, MAIN_EVENT_ACTIVATION_DONE);
+#endif
 }
 
 void Application::CheckAssetsVersion() {
@@ -588,6 +626,9 @@ void Application::InitializeProtocol() {
 
     display->SetStatus(Lang::Strings::LOADING_PROTOCOL);
 
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+    protocol_ = std::make_unique<WebsocketProtocol>();
+#else
     if (ota_->HasMqttConfig()) {
         protocol_ = std::make_unique<MqttProtocol>();
     } else if (ota_->HasWebsocketConfig()) {
@@ -596,6 +637,7 @@ void Application::InitializeProtocol() {
         ESP_LOGW(TAG, "No protocol specified in the OTA config, using MQTT");
         protocol_ = std::make_unique<MqttProtocol>();
     }
+#endif
 
     protocol_->OnConnected([this]() { DismissAlert(); });
 
@@ -922,6 +964,14 @@ void Application::ContinueOpenAudioChannel(ListeningMode mode) {
     board.SetPowerSaveLevel(PowerSaveLevel::PERFORMANCE);
 
     if (!protocol_->IsAudioChannelOpened()) {
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+        // A WebSocket can expire or fail while Wi-Fi remains connected. Rotate
+        // the device credential before opening a new cloud session.
+        if (!NabiEspProvisioning::GetInstance().AuthenticateCloud()) {
+            SetDeviceState(kDeviceStateIdle);
+            return;
+        }
+#endif
         if (!protocol_->OpenAudioChannel()) {
             // Return to idle so the device is not stuck in the connecting
             // state (not every failure path reports a network error)
@@ -1058,6 +1108,14 @@ void Application::ContinueWakeWordInvoke(const std::string& wake_word) {
     board.SetPowerSaveLevel(PowerSaveLevel::PERFORMANCE);
 
     if (!protocol_->IsAudioChannelOpened()) {
+#ifdef CONFIG_NABI_ESP_CLOUD_ASSISTANT
+        // Reauthenticate before reconnecting after an expired or closed
+        // WebSocket, even when the Wi-Fi link itself never dropped.
+        if (!NabiEspProvisioning::GetInstance().AuthenticateCloud()) {
+            SetDeviceState(kDeviceStateIdle);
+            return;
+        }
+#endif
         if (!protocol_->OpenAudioChannel()) {
             // Return to idle so the device is not stuck in the connecting
             // state (not every failure path reports a network error), and

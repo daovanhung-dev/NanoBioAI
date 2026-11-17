@@ -7,7 +7,7 @@ class NabiEspHotspotCredentials {
   final String password;
 }
 
-/// Narrow Android-only bridge for the app-owned local hotspot and notification.
+/// Android bridge for local ESP setup, credential protection and notifications.
 class NabiEspAndroidBridge {
   NabiEspAndroidBridge._();
 
@@ -52,6 +52,67 @@ class NabiEspAndroidBridge {
   static Future<int> androidSdkInt() async =>
       await _channel.invokeMethod<int>('androidSdkInt') ?? 30;
 
+  static Future<bool> isEspApConnected() async =>
+      await _channel.invokeMethod<bool>('isEspApConnected') ?? false;
+
+  static Future<Map<String, Object?>> getEspLocalStatus() async {
+    final result = await _channel.invokeMapMethod<String, Object?>(
+      'getEspLocalStatus',
+    );
+    if (result == null) {
+      throw PlatformException(code: 'esp_not_found');
+    }
+    return result;
+  }
+
+  static Future<Map<String, Object?>> provisionEspLocal({
+    required String ssid,
+    required String wifiPassword,
+    required String identifierType,
+    required String identifier,
+    required String accountPassword,
+  }) async {
+    final result = await _channel
+        .invokeMapMethod<String, Object?>('provisionEspLocal', {
+          'ssid': ssid,
+          'wifiPassword': wifiPassword,
+          'identifierType': identifierType,
+          'identifier': identifier,
+          'accountPassword': accountPassword,
+        });
+    if (result == null) {
+      throw PlatformException(code: 'esp_provision_failed');
+    }
+    return result;
+  }
+
+  static Future<Map<String, String>> encryptNabiCredential(String value) async {
+    final result = await _channel.invokeMapMethod<String, String>(
+      'encryptNabiCredential',
+      {'value': value},
+    );
+    if (result == null ||
+        result['ciphertext'] == null ||
+        result['iv'] == null) {
+      throw PlatformException(code: 'credential_crypto_failed');
+    }
+    return result;
+  }
+
+  static Future<String> decryptNabiCredential({
+    required String ciphertext,
+    required String iv,
+  }) async {
+    final result = await _channel.invokeMethod<String>(
+      'decryptNabiCredential',
+      {'ciphertext': ciphertext, 'iv': iv},
+    );
+    if (result == null || result.isEmpty) {
+      throw PlatformException(code: 'credential_crypto_failed');
+    }
+    return result;
+  }
+
   static Future<NabiEspHotspotCredentials> startLocalOnlyHotspot() async {
     final result = await _channel.invokeMapMethod<String, String>(
       'startLocalOnlyHotspot',
@@ -73,12 +134,14 @@ class NabiEspAndroidBridge {
   static Future<Map<String, Object?>> provisionEsp({
     required String ssid,
     required String password,
+    required String pairingToken,
     String? pairingCode,
   }) async {
     final result = await _channel
         .invokeMapMethod<String, Object?>('provisionEsp', {
           'ssid': ssid,
           'password': password,
+          'pairingToken': pairingToken,
           if (pairingCode != null) 'pairingCode': pairingCode,
         });
     if (result == null) {

@@ -1,23 +1,23 @@
 # V1-X18 — Nabi - Siêu trợ lý AI kết nối ESP
 
-> Classification: **release-gated placeholder** · Group: `03_dashboard_health` · Platform: Android entry only.
+> Classification: **Android debug pilot, release-gated** · Group: `08_features_care` · Platform: Android.
 
 ## Purpose
 
-Show the proposed local-AI-to-OSTB experience and explain its prerequisites. This preview remains intentionally inactive until technical, QA, and privacy reviews are recorded.
+Configure an OSTB 3ST on the user's home Wi-Fi, then manage the linked device and its data-sharing consent. The route remains visible through Feature Hub → “Sắp ra mắt”; setup actions run only in Android debug until technical, QA, and privacy reviews are recorded.
 
 ## Entry and access
 
 - Entry: Feature Hub → collapsed “Sắp ra mắt” → “Nabi - Siêu trợ lý AI”.
 - The tile is shown on Android only; iOS does not show an active entry.
-- Guest, Free, Plus, and FamilyPlus may open the preview. No sign-in or quota applies to the proposed ESP feature; this does not change AI Voice access.
+- The page can be opened while signed out; linking or managing a device requires a signed-in account. No chat quota applies because the ESP sends voice directly to the server.
 - Route: `/nabi-esp-assistant`.
 
 ## Current state
 
-- Clearly states that review is pending and hotspot, Bluetooth, and audio are not active.
-- Shows planned local AI, private LAN connection, and one-time USB firmware preparation.
-- The “Kết nối Nabi” button is visibly disabled; permissions, device scan, server, model load, microphone, audio, or secret is not activated.
+- Requires a successful app login while the phone has Internet before the user joins the ESP's WPA2 `Nabi-xxxx` AP. Home Wi-Fi setup then uses the local AP only and does not require mobile data.
+- The app stores the login credential encrypted in SQLite with its key in Android Keystore until logout. It sends home Wi-Fi and account credentials over HTTP on the WPA2 AP. ESP stores the account credential in NVS and authenticates to the backend over HTTPS; PostgreSQL keeps the existing Argon2 hash only.
+- Android debug pilot enables setup; release builds keep setup and device-management actions locked. Voice/audio remains an ESP↔server flow after setup.
 - Back navigation returns to the previous Feature Hub state.
 
 ## Visual and accessibility contract
@@ -29,5 +29,4 @@ Show the proposed local-AI-to-OSTB experience and explain its prerequisites. Thi
 
 ## Future acceptance
 
-- After reviews, the tile may move from planned preview to the approved runtime-backed section only after the actual connection route is implemented and Android/ESP evidence exists.
-- Until then, preserve the exactly 19 active runtime-backed Feature Hub shortcuts.
+- Before release, complete device firmware installation and acceptance, phone-to-AP setup, voice round trip, consent/revocation checks, and Tech/QA/Privacy sign-off.

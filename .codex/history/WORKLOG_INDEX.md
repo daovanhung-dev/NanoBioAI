@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 302
+- Total worklogs: 305
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -311,3 +311,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-14 | Feature / coding và xác minh firmware IoT | docs-context | iot/nabi-esp32 — cấu hình Wi-Fi cho OSTB Nabi 3ST | [Worklog - Nabi hóa giao diện cấu hình mạng ESP](../../docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md) |
 | 2026-11-14 | Feature / coding, test, build và xác minh firmware IoT | test | unknown | [Worklog - Nabi hóa portal Wi-Fi trên ESP](../../docs/worklog/2026-11-14/003-worklog-nabi-wifi-portal-refresh.md) |
 | 2026-11-14 | docs-context / tổng hợp thông tin dự án | docs-context | iot/nabi-esp32, feature Nabi ESP trong ứng dụng NanoBioAI | [Worklog - Tổng hợp context Nabi ESP32 cho CV và phát triển tiếp](../../docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md) |
+| 2026-11-17 | coding | coding | NABI_ESP_ASSISTANT; backend IoT API/voice. | [Worklog - Nabi ESP cloud assistant](../../docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md) |
+| 2026-11-17 | coding | coding | NABI_ESP_ASSISTANT; Android provisioning bridge, OSTB 3ST firmware và server integration. | [Worklog - Nabi ESP AP provisioning và nạp firmware](../../docs/worklog/2026-11-17/002-worklog-nabi-esp-ap-provisioning.md) |
+| 2026-11-17 | coding, test, build, backend deployment và device readiness check. | supabase-schema | NABI_ESP_ASSISTANT; app auth/SQLite vault, Android AP bridge, ESP cloud contract, backend IoT device auth. | [Worklog - Nabi ESP account credential setup without mobile data](../../docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md) |

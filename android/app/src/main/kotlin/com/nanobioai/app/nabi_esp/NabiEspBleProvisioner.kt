@@ -43,6 +43,7 @@ internal class NabiEspBleProvisioner(context: Context) {
     fun provision(
         ssid: String,
         password: String,
+        pairingToken: String,
         pairingCode: String?,
         result: io.flutter.plugin.common.MethodChannel.Result,
     ) {
@@ -73,7 +74,7 @@ internal class NabiEspBleProvisioner(context: Context) {
                     ESPConstants.TransportType.TRANSPORT_BLE,
                     ESPConstants.SecurityType.SECURITY_2,
                 )
-                device.setUserName(NabiEspGeneratedContract.bleSecurityUsername)
+                device.setUserName(NabiEspCloudContract.bleSecurityUsername)
                 device.setProofOfPossession(secret)
 
                 val events = NabiEspConnectionEvents()
@@ -87,13 +88,12 @@ internal class NabiEspBleProvisioner(context: Context) {
                         throw NabiEspBleFailure("pairing_failed")
                     }
                     val config = JSONObject()
-                        .put("contract_version", NabiEspGeneratedContract.contractVersion)
-                        .put("protocol_version", NabiEspGeneratedContract.protocolVersion)
-                        .put("port", NabiEspGeneratedContract.port)
-                        .put("ota_path", NabiEspGeneratedContract.otaPath)
-                        .put("websocket_path", NabiEspGeneratedContract.websocketPath)
+                        .put("contract_version", NabiEspCloudContract.contractVersion)
+                        .put("protocol_version", NabiEspCloudContract.protocolVersion)
+                        .put("mode", "cloud")
                         .put("ssid", ssid)
                         .put("password", password)
+                        .put("pairing_token", pairingToken)
                     val response = sendConfig(device, config.toString().toByteArray(StandardCharsets.UTF_8))
                     val body = JSONObject(String(response, StandardCharsets.UTF_8))
                     if (body.optBoolean("ok") != true) {
@@ -109,10 +109,14 @@ internal class NabiEspBleProvisioner(context: Context) {
                     if (!deviceKey.matches(Regex("^[0-9a-fA-F]{64}$"))) {
                         throw NabiEspBleFailure("pairing_key_missing")
                     }
+                    val deviceId = body.optString("device_id")
+                    if (!deviceId.matches(Regex("^[0-9a-f]{32}$"))) {
+                        throw NabiEspBleFailure("device_id_missing")
+                    }
                     if (storedKey == null) pairingStore.put(found.device.address, deviceKey)
                     postSuccess(
                         result,
-                        mapOf("status" to "provisioned", "deviceKey" to deviceKey),
+                        mapOf("status" to "provisioned", "deviceId" to deviceId),
                     )
                 } finally {
                     EventBus.getDefault().unregister(events)
@@ -172,7 +176,7 @@ internal class NabiEspBleProvisioner(context: Context) {
         Handler(Looper.getMainLooper()).post {
             try {
                 manager.searchBleEspDevices(
-                    NabiEspGeneratedContract.bleNamePrefix,
+                    NabiEspCloudContract.bleNamePrefix,
                     object : BleScanListener {
                         override fun scanStartFailed() {
                             Log.w(TAG, "BLE scan could not start because Bluetooth is disabled")
@@ -187,7 +191,7 @@ internal class NabiEspBleProvisioner(context: Context) {
                             val serviceUuid = scanResult.scanRecord?.serviceUuids
                                 ?.firstOrNull {
                                     it.uuid.toString().equals(
-                                        NabiEspGeneratedContract.bleServiceUuid,
+                                    NabiEspCloudContract.bleServiceUuid,
                                         true,
                                     )
                                 }
@@ -234,7 +238,7 @@ internal class NabiEspBleProvisioner(context: Context) {
         val failure = AtomicReference<Exception?>()
         val complete = CountDownLatch(1)
         device.sendDataToCustomEndPoint(
-            NabiEspGeneratedContract.bleConfigEndpoint,
+            NabiEspCloudContract.bleConfigEndpoint,
             payload,
             object : ResponseListener {
                 override fun onSuccess(returnData: ByteArray) {

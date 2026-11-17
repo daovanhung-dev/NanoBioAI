@@ -1,23 +1,7 @@
 # Diagrams — NABI_ESP_ASSISTANT
 
-The proposed BLE/AI/WebSocket sequence is in [Overall.md](../Overall.md#3-luồng-đề-xuất). The following state diagram is the release target, not current runtime behavior.
+Luồng hiện hành là thiết lập qua Nabi rồi ESP giao tiếp voice trực tiếp với NanoBio server. Sequence chi tiết được mô tả trong [Overall](../Overall.md#3-luồng-đề-xuất).
 
-```mermaid
-stateDiagram-v2
-    [*] --> ReviewPending
-    ReviewPending --> CheckingLocalAI: approvals complete + release flag
-    CheckingLocalAI --> NeedsSetup: GGUF / Whisper / voice missing
-    NeedsSetup --> CheckingLocalAI: setup complete
-    CheckingLocalAI --> StartingHotspot: all local components ready
-    StartingHotspot --> Pairing: hotspot + foreground service ready
-    Pairing --> Connected: BLE config + OTA + WebSocket v3
-    Connected --> Listening: listen.start acknowledged
-    Listening --> Connected: listen.stop acknowledged
-    Connected --> Reconnecting: socket/hotspot lost
-    Reconnecting --> Connected: reconnect succeeds
-    Connected --> Stopping: user or notification stops
-    Pairing --> Stopping
-    Stopping --> [*]
-```
+Luồng: app đăng nhập online và mã hóa credential trong SQLite → ESP phát AP WPA2 → điện thoại nối AP, không cần mobile data → Android gửi Wi‑Fi/account credential qua API local → ESP lưu NVS rồi device-login/refresh bằng HTTPS → ESP mở WSS voice v3 → backend/worker xử lý STT, AI và TTS → app quản lý consent hoặc thu hồi thiết bị.
 
-Current source stops at `ReviewPending`; no transition into network or AI session is implemented.
+Các trạng thái lỗi chính: chưa đăng nhập/cached credential, chưa nối AP ESP, Wi‑Fi nhà sai, firmware contract không khớp, device credential bị thu hồi, server voice không khả dụng. Provision chờ server khi điện thoại chưa có Internet; sau khi unbind, cần provision lại từ app, không tự đăng nhập lại bằng account password.

@@ -1,4 +1,5 @@
 import 'package:nano_app/core/network/backend_api_client.dart';
+import 'package:nano_app/core/storage/nabi_esp_credential_vault.dart';
 
 /// SettingsRemoteDatasource handles remote sign out for settings.
 class SettingsRemoteDatasource {
@@ -11,6 +12,14 @@ class SettingsRemoteDatasource {
   /// Local data clearing should be handled by the repository layer.
   ///
   Future<void> signOut() async {
-    await (client ?? BackendApiClient.shared).signOut();
+    try {
+      await (client ?? BackendApiClient.shared).signOut();
+    } finally {
+      try {
+        await NabiEspCredentialVault.instance.clear();
+      } catch (_) {
+        // Do not prevent logout if local credential cleanup fails.
+      }
+    }
   }
 }

@@ -567,3 +567,30 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [ ] Configure VAPID, apply backend migration `0008_web_push`, install the systemd worker/timer, then verify real-browser push delivery and click-through.
 - [ ] Run Chrome Android, desktop Chrome and iOS Safari/PWA acceptance, including SQLite reopen, local voice permissions/model fallback, foreground stop, checkout status refresh, and installed-PWA notifications.
 - Worklog: `docs/worklog/2026-11-14/001-worklog-flutter-web-parity.md`.
+
+
+### Nabi ESP cloud pilot — 2026-11-17
+
+> Historical initial flow. The 4G/pairing-token path below was superseded by the account-credential AP setup in the following section.
+
+- [x] Thay BLE provisioning bằng AP WPA2 có mã 8 chữ số trên màn hình ESP; app Nabi dùng 4G tạo phiên ghép và gửi Wi‑Fi/token một lần qua API local; chỉ mở trong Android debug.
+- [x] Thêm per-device claim/refresh/revoke, consent mặc định tắt, sensitive unlock có xác nhận và TTL 5 phút.
+- [x] Nối backend IoT API/voice worker, Flutter mobile/local network bridge, shared cloud contract và profile OSTB cloud riêng; giữ phone-local contract/config.
+- [x] Contract generator, Flutter focused analyze/tests, Android debug APK build và ESP-IDF cloud build pass.
+- [x] Live server đã có IoT routes, schema tables và speech worker health `200`; không cần ghi migration/source server trong lượt này.
+- [x] Nạp app image `2,757,840` bytes vào OTA0 `0x20000`; esptool xác minh hash, boot/audio init pass, unpaired firmware vào AP setup dù có SSID cũ.
+- [ ] Phone-to-AP provision/claim, voice round trip, consent/revoke và hardware acceptance OSTB 3ST còn chờ.
+- [ ] Tech, QA, Privacy review còn chờ; release gate vẫn đóng.
+- Worklog: docs/worklog/2026-11-17/002-worklog-nabi-esp-ap-provisioning.md
+
+### Nabi ESP account credential provisioning — 2026-11-17
+
+- [x] Login app before AP setup; retain account credential as Android Keystore-encrypted SQLite ciphertext until logout; refresh cached password after successful password change.
+- [x] Remove mobile-data binding and cloud pairing-session dependency from AP setup. AP configuration only sends local status/provision requests.
+- [x] Provision Wi‑Fi/account credential over the WPA2 AP; ESP stores the account credential in NVS and authenticates to the device-login endpoint over HTTPS. PostgreSQL remains Argon2-hash only.
+- [x] Cloud contract v4 / voice protocol v3. Backend API tests (9), Ruff and mypy pass; targeted Flutter analyzer and Android debug APK pass; ESP-IDF image build pass.
+- [x] Deploy endpoint in isolated release `nabi-web-20261117-01`; `nanobio-backend` active, `/health/ready` 200, public OpenAPI route present.
+- [ ] Install firmware v4 on OSTB 3ST after reconnecting USB; device was absent from serial/USB discovery during this turn.
+- [ ] Install the current debug APK on the connected Android test phone and validate no-mobile-data AP setup, then verify ESP server login/voice/consent/revocation E2E.
+- [ ] Keep release gate closed pending Tech/QA/Privacy review and device acceptance.
+- Worklog: docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md

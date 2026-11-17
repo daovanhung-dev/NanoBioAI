@@ -1,5 +1,6 @@
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
+import 'package:nano_app/core/storage/nabi_esp_credential_vault.dart';
 import 'package:nano_app/app_versions/v1/services/notifications/notification_bootstrap.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
 import 'package:nano_app/core/network/backend_api_client.dart';
@@ -17,8 +18,16 @@ class AccountSecurityService {
   }
 
   Future<void> signOut() async {
-    await _client.signOut();
-    await AppPrefs.setOnboardingCompleted(false);
+    try {
+      await _client.signOut();
+    } finally {
+      try {
+        await NabiEspCredentialVault.instance.clear();
+      } catch (_) {
+        // Keep logout available if local credential cleanup fails.
+      }
+      await AppPrefs.setOnboardingCompleted(false);
+    }
   }
 
   Future<void> requestAccountDeletion() async {

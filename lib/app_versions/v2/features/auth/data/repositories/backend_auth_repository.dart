@@ -9,9 +9,11 @@ import 'package:nano_app/app_versions/v2/features/auth/domain/repositories/auth_
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_route_state_resolver.dart';
 import 'package:nano_app/app_versions/v2/features/auth/domain/services/auth_validators.dart';
 import 'package:nano_app/core/network/backend_api_client.dart';
+import 'package:nano_app/core/storage/nabi_esp_credential_vault.dart';
 import 'package:nano_app/core/storage/localdb/app_prefs.dart';
 import 'package:nano_app/core/storage/localdb/database_service.dart';
 import 'package:nano_app/core/utils/logger/app_logger.dart';
+import 'package:nano_app/app_versions/v2/features/auth/domain/services/vietnam_phone_number.dart';
 
 class BackendAuthRepository implements AuthRepository {
   static const _tag = 'AUTH_REPO';
@@ -64,6 +66,11 @@ class BackendAuthRepository implements AuthRepository {
     _validateRegister(command);
     try {
       await datasource.signUp(command);
+      await _saveNabiCredential(
+        userId: datasource.client.session?.userId,
+        phone: command.phone,
+        password: command.password,
+      );
       return RegistrationResult.sessionReady;
     } on BackendApiException catch (error) {
       throw _mapBackendException(
@@ -90,6 +97,13 @@ class BackendAuthRepository implements AuthRepository {
               'Tài khoản bị khóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.',
         );
       }
+      if (profile != null) {
+        await _saveNabiCredential(
+          userId: datasource.client.session?.userId,
+          phone: command.phone,
+          password: command.password,
+        );
+      }
     } on AuthFailure {
       rethrow;
     } on BackendApiException catch (error) {
@@ -113,6 +127,22 @@ class BackendAuthRepository implements AuthRepository {
     }
     try {
       await datasource.updatePassword(command);
+      final userId = datasource.client.session?.userId;
+      if (userId != null) {
+        try {
+          final existing = await NabiEspCredentialVault.instance.read(userId);
+          if (existing != null) {
+            await NabiEspCredentialVault.instance.save(
+              userId: userId,
+              identifierType: existing.identifierType,
+              identifier: existing.identifier,
+              password: command.newPassword,
+            );
+          }
+        } catch (_) {
+          // Password changes remain successful if the optional ESP vault is unavailable.
+        }
+      }
     } on BackendApiException catch (error) {
       throw _mapBackendException(error);
     } catch (_) {
@@ -150,6 +180,7 @@ class BackendAuthRepository implements AuthRepository {
     try {
       await datasource.signOut();
     } finally {
+      await _clearNabiCredential();
       await AppPrefs.setOnboardingCompleted(false);
     }
   }
@@ -328,6 +359,35 @@ class BackendAuthRepository implements AuthRepository {
         error,
         stackTrace,
       );
+    } finally {
+      await _clearNabiCredential();
+    }
+  }
+
+  Future<void> _saveNabiCredential({
+    required String? userId,
+    required String phone,
+    required String password,
+  }) async {
+    final normalizedPhone = VietnamPhoneNumber.normalize(phone);
+    if (userId == null || normalizedPhone == null) return;
+    try {
+      await NabiEspCredentialVault.instance.save(
+        userId: userId,
+        identifierType: 'phone',
+        identifier: normalizedPhone,
+        password: password,
+      );
+    } catch (_) {
+      // Keep authentication successful; Nabi setup explains when no credential is cached.
+    }
+  }
+
+  Future<void> _clearNabiCredential() async {
+    try {
+      await NabiEspCredentialVault.instance.clear();
+    } catch (_) {
+      // Local credential cleanup must not prevent the user from signing out.
     }
   }
 

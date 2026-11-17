@@ -404,3 +404,29 @@ This addendum is outside M01-M32 progress totals.
   is not a claim that every browser selects the WASM renderer. Browser,
   iOS Safari, Android Chrome, payment, push delivery and microphone smoke were
   not run.
+
+
+## Non-numbered IoT Feature Addendum — 2026-11-17
+
+NABI_ESP_ASSISTANT vẫn Draft và ngoài M01-M32 progress totals.
+
+- [x] Nabi Android debug thiết lập Wi‑Fi gia đình qua AP WPA2; app dùng 4G cho phiên tài khoản, chỉ gửi Wi‑Fi và pairing token một lần qua local API, không gửi mật khẩu tài khoản.
+- [x] Backend IoT API, migration/model, token rotation/revocation, consent mặc định tắt, sensitive unlock 5 phút và WSS voice source được thêm/căn chỉnh với contract live.
+- [x] ESP cloud profile riêng thực hiện claim/refresh và kết nối voice trực tiếp qua server; config.local-ai.json/local contract được giữ.
+- [x] Contract generation và JSON profile validation pass.
+- [x] Backend Ruff/format/mypy/full pytest pass theo worklog 001; lượt này Flutter focused analyze/tests, Android debug APK và ESP-IDF cloud build pass.
+- [x] Live server routes/schema/worker verified; app image được ghi riêng vào OTA0 và esptool hash verification pass; NVS/partition/OTA metadata không bị ghi.
+- [ ] Phone-to-AP claim, voice round trip, consent/revoke và TTS acceptance trên OSTB 3ST còn thiếu.
+- [ ] Tech/QA/Privacy chưa ký duyệt; release gate vẫn đóng.
+- Worklog: docs/worklog/2026-11-17/002-worklog-nabi-esp-ap-provisioning.md
+
+### NABI_ESP_ASSISTANT flow follow-up — 2026-11-17
+
+- [x] Đăng nhập app online trước setup; lưu account credential mã hóa trong SQLite bằng Android Keystore và xóa khi logout.
+- [x] Xóa route mobile-data binding; trong lúc điện thoại nối AP, app gọi local ESP API và không gọi cloud.
+- [x] Gửi Wi‑Fi/account credential qua AP WPA2; ESP lưu credential trong NVS, login server qua HTTPS device-login; PostgreSQL vẫn chỉ lưu Argon2 hash.
+- [x] Tăng cloud contract lên v4, giữ voice protocol v3; backend focused API tests, Ruff/mypy, Flutter analyzer/APK và ESP-IDF build pass.
+- [x] Deploy endpoint trong isolated server release; service active, `/health/ready=200`, public OpenAPI có route device-login; không cần schema migration.
+- [ ] Board không xuất hiện ở `/dev/ttyACM*`, `/dev/ttyUSB*` hay `lsusb` trong lượt này; firmware v4 chưa được nạp.
+- [ ] Chạy phone-to-AP provision, server device-login/refresh, voice round trip, consent/revoke và QA/Privacy review trên OSTB 3ST.
+- Worklog: docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md

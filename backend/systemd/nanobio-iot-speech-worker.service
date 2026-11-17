@@ -1,0 +1,28 @@
+[Unit]
+Description=NanoBio Nabi ESP speech worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nanobio-backend
+Group=nanobio-backend
+WorkingDirectory=/opt/nanobio/backend
+EnvironmentFile=/etc/nanobio-backend/backend.env
+ExecStart=/opt/nanobio/backend/.venv/bin/uvicorn nanobio_backend.services.iot_speech_worker:app --host 127.0.0.1 --port 8765 --workers 1
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+StateDirectory=nanobio-iot
+StateDirectoryMode=0750
+RestrictSUIDSGID=true
+LockPersonality=true
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

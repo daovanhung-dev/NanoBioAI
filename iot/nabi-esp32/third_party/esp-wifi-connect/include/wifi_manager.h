@@ -27,6 +27,8 @@
 #include <functional>
 #include <mutex>
 
+#include <esp_http_server.h>
+
 #include "wifi_station.h"
 
 class WifiStation;
@@ -91,7 +93,9 @@ public:
 
     // ==================== Config AP Mode ====================
     
-    void StartConfigAp();  // Non-blocking, auto-stops station if active
+    void StartConfigAp(const std::string& access_point_password = "",
+                       std::function<void(httpd_handle_t)> on_web_server_started = {});
+    // Non-blocking, auto-stops station if active
     void StopConfigAp();   // Non-blocking
     
     bool IsConfigMode() const;

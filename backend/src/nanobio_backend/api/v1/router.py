@@ -7,6 +7,7 @@ from nanobio_backend.modules.business.router import router as business_router
 from nanobio_backend.modules.cloud_sync.router import router as cloud_sync_router
 from nanobio_backend.modules.edge_api.router import router as edge_router
 from nanobio_backend.modules.family_plus.router import router as family_plus_router
+from nanobio_backend.modules.iot.router import router as iot_router
 from nanobio_backend.modules.membership.router import router as membership_router
 from nanobio_backend.modules.payments.router import router as payments_router
 from nanobio_backend.modules.profile.router import router as profile_router
@@ -23,6 +24,7 @@ router.include_router(admin_router, prefix="/admin", tags=["admin"])
 router.include_router(edge_router, tags=["integrations"])
 router.include_router(storage_router, prefix="/files", tags=["files"])
 router.include_router(sleep_safety_router, tags=["sleep-safety"])
+router.include_router(iot_router, prefix="/iot", tags=["iot"])
 router.include_router(profile_router, prefix="/profile", tags=["profile"])
 router.include_router(membership_router, prefix="/membership", tags=["membership"])
 router.include_router(cloud_sync_router, prefix="/cloud-sync", tags=["cloud-sync"])
