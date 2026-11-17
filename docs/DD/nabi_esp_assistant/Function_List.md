@@ -9,7 +9,7 @@
 | NABI_ESP_ASSISTANT-FN05 | HTTP OTA/WebSocket session | `NabiEspServer` + `main/ota.cc` | OTA config/auth/socket → device state | Shared contract v3, port 8386 and `/nabi/*`; device-key OTA auth; random session bearer; reject invalid auth and second active socket | Implemented in source; focused contract test passes; device exchange pending |
 | NABI_ESP_ASSISTANT-FN06 | STT → backend LLM → TTS | `NabiEspVoicePipeline` + backend AI turn datasource | Opus → transcript → backend answer → Opus | 6-turn RAM history, 60-second PCM bound, temporary TTS WAV deleted after read | Implemented in source; live backend/audio proof pending |
 | NABI_ESP_ASSISTANT-FN07 | Send listen controls | page → `NabiEspServer` → `Application` | start/stop + request id → ack/state | Event-loop handoff; malformed ids/actions ignored; timeout handled | App and firmware handlers implemented; physical behavior pending |
-| NABI_ESP_ASSISTANT-FN08 | Firmware provisioning/OTA/control | `iot/xiaozhi-esp32/main/` | BLE config, gateway, protocol messages | NVS pairing key, board display, audio/network tasks | Implemented in source; firmware build and device boot pending |
+| NABI_ESP_ASSISTANT-FN08 | Firmware provisioning/OTA/control | `iot/nabi-esp32/main/` | BLE config, gateway, protocol messages | NVS pairing key, board display, audio/network tasks | Implemented in source; firmware build and device boot pending |
 
 ## Existing reusable source
 

@@ -322,7 +322,7 @@ kiểm chứng RLS/role behavior hay giao dịch người dùng trên production
 
 `NABI_ESP_ASSISTANT` has a Draft DD at `docs/DD/nabi_esp_assistant/`.
 The main app now has a debug-only Android prototype for LocalOnlyHotspot,
-connected-device foreground service, XiaoZhi HTTP/WebSocket v3, Whisper, the
+connected-device foreground service, Nabi HTTP/WebSocket v3, Whisper, the
 existing local LLM datasource, offline TTS→Opus, and listen-control messages.
 Source analyzer, focused tests and Android debug build pass; the APK is
 installed. The app remains on its account-resolution loading screen on device,

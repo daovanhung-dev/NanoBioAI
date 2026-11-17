@@ -12,11 +12,12 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "iot/nabi_esp_contract.json"
 DART = ROOT / "lib/app_versions/v1/features/nabi_esp_assistant/data/services/nabi_esp_contract.g.dart"
+PHONE_DART = ROOT / "iot/nabi-esp32/phone_app/lib/nabi_esp_contract.g.dart"
 KOTLIN = ROOT / "android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/NabiEspGeneratedContract.kt"
-HEADER = ROOT / "iot/xiaozhi-esp32/main/nabi_esp_contract.h"
+HEADER = ROOT / "iot/nabi-esp32/main/nabi_esp_contract.h"
 
 
-def render() -> tuple[str, str, str]:
+def render() -> tuple[str, str, str, str]:
     contract = json.loads(SOURCE.read_text(encoding="utf-8"))
     # ESP-IDF's BLE advertising/GATT APIs consume the 128-bit UUID as its
     # little-endian wire representation. Android parses that byte sequence
@@ -72,15 +73,20 @@ internal object NabiEspGeneratedContract {
 #define NABI_BLE_SECURITY_USERNAME "%(bleSecurityUsername)s"
 #define NABI_BLE_CONFIG_ENDPOINT "%(bleConfigEndpoint)s"
 """ % {**contract, "uuidBytes": ", ".join(f"0x{value:02x}" for value in uuid_bytes)}
-    return dart, kotlin, header
+    return dart, dart, kotlin, header
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    dart, kotlin, header = render()
-    targets = ((DART, dart), (KOTLIN, kotlin), (HEADER, header))
+    dart, phone_dart, kotlin, header = render()
+    targets = (
+        (DART, dart),
+        (PHONE_DART, phone_dart),
+        (KOTLIN, kotlin),
+        (HEADER, header),
+    )
     stale = []
     for path, content in targets:
         if args.check:

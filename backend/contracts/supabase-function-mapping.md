@@ -24,4 +24,4 @@ The former project inventory is archived under `docs/archive/legacy-supabase/pro
 | `nabi-ai-generate` | `POST /api/v1/ai/generate` and `/api/v1/ai/generate/stream` (requires authenticated session and enabled Ollama service) |
 | `food-scan-analyze` | `POST /api/v1/food/scan/analyze` (requires authenticated eligible membership and enabled Ollama vision service) |
 
-The historical tree has 25 function directories including `_shared`; 19 were configured. Empty or unconfigured functions have no active client caller and are not part of the server API. Local XiaoZhi voice remains a separate device contract.
+The historical tree has 25 function directories including `_shared`; 19 were configured. Empty or unconfigured functions have no active client caller and are not part of the server API. Local Nabi voice remains a separate device contract.

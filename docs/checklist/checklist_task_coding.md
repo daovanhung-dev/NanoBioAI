@@ -517,7 +517,7 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 
 - Preview route/tile is Android-only, under the collapsed planned group, with a disabled connection button. No model, Wi-Fi, BLE, audio, or server behavior is connected.
 - Draft design: `docs/DD/nabi_esp_assistant/`. Do not enable runtime work until Tech, QA, and Privacy reviews are recorded; PO intent is in the approved user plan.
-- OSTB 3ST still requires a first USB firmware/partition deployment; current connected-device profile is in `iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`.
+- OSTB 3ST still requires a first USB firmware/partition deployment; current connected-device profile is in `iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md`.
 - Next: collect Tech/QA/Privacy review evidence; refine firmware key lifecycle and Android service ownership; then implement and validate on Android + ESP hardware.
 
 ### M01 Nabi onboarding UX — 2026-11-13

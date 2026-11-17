@@ -35,4 +35,4 @@
 
 ## Cổng phát hành
 
-Không chuyển DD sang Approved hoặc bật luồng kết nối trước khi có Tech, QA, Privacy và hoàn tất thử nghiệm Android/OSTB. Thiết bị hiện đã nạp firmware XiaoZhi tích hợp với partition OTA tương thích; lần nạp tiếp theo cần kiểm tra lại bảng phân vùng và chỉ ghi đúng OTA app slot.
+Không chuyển DD sang Approved hoặc bật luồng kết nối trước khi có Tech, QA, Privacy và hoàn tất thử nghiệm Android/OSTB. Thiết bị hiện đã nạp firmware Nabi tích hợp với partition OTA tương thích; lần nạp tiếp theo cần kiểm tra lại bảng phân vùng và chỉ ghi đúng OTA app slot.

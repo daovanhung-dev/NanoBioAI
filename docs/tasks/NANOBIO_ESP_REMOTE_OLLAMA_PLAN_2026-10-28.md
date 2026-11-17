@@ -4,7 +4,7 @@
 - **Repository:** https://github.com/daovanhung-dev/NanoBioAI
 - **Branch đọc:** `main` (GitHub connector; **không thực hiện thay đổi repository**)
 - **Trạng thái:** Technical plan / chưa coding, chưa build, chưa flash
-- **Phạm vi:** firmware `iot/xiaozhi-esp32/`, đặc biệt OSTB 3ST; có thể bổ sung server speech services riêng biệt trên Ubuntu. Không tích hợp qua `backend/` FastAPI.
+- **Phạm vi:** firmware `iot/nabi-esp32/`, đặc biệt OSTB 3ST; có thể bổ sung server speech services riêng biệt trên Ubuntu. Không tích hợp qua `backend/` FastAPI.
 - **Server hiện có (theo kết quả người dùng):** Public HTTPS `https://42.118.174.147/api/chat` (người dùng báo đã kết nối thành công), Nginx có Basic Auth user `esp32`, Ollama nội bộ `127.0.0.1:11434`, model `qwen3.5:2b-q4_K_M`.
 
 > PHÂN BIỆT: Trạng thái server public do người dùng báo đã thành công; trong phiên này không đăng nhập vào server hoặc kiểm chứng chứng chỉ/IP trực tiếp. STT và TTS chưa có bằng chứng đã được triển khai. Không được đánh đồng Ollama Chat API với nhận dạng/phát tiếng nói.
@@ -28,19 +28,19 @@
 ## B. Context thực tế đã đọc từ repo
 
 ### B1. Code/Docs chuẩn phải đọc (đã đối chiếu)
-- `AGENTS.md`, `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/domains/xiaozhi-esp32.md`, `.codex/workflows/coding.md`.
-- `iot/xiaozhi-esp32/AGENTS.md`, `docs/agent-context/README.md`, `CONNECTED_DEVICE_OSTB_3ST.md`, `ARCHITECTURE.md`, `TASK_ROUTING.md`, `BOARDS_AND_BUILD.md`.
-- `iot/xiaozhi-esp32/main/boards/common/wifi_board.cc`: `TryWifiConnect()` dùng `SsidManager`; khi chưa có SSID, đi vào `StartWifiConfigMode()`; khi build có `CONFIG_USE_HOTSPOT_WIFI_PROVISIONING` sẽ gọi `WifiManager::StartConfigAp()` và hiển thị URL `GetApWebUrl()`.
-- `iot/xiaozhi-esp32/main/boards/ostb/ostb-xiaozhi-3st/ostb_xiaozhi_3st.cc`: driver màn hình/cảm ứng, các nút, audio codec; long-press boot vào Wi-Fi config.
-- `iot/xiaozhi-esp32/main/audio/README.md`: audio input 16 kHz mono từ AudioEngine; Opus/audio queues hiện có; audio hardware/profile 24 kHz; cần đối chiếu resample và DMA.
-- `iot/xiaozhi-esp32/main/nabi_esp_provisioning.cc`: BLE Security 2, pairing 8 số, local hotspot credentials, lưu NVS.
+- `AGENTS.md`, `.codex/AGENTS.md`, `.codex/PROJECT_MAP.md`, `.codex/domains/nabi-esp32.md`, `.codex/workflows/coding.md`.
+- `iot/nabi-esp32/AGENTS.md`, `docs/agent-context/README.md`, `CONNECTED_DEVICE_OSTB_3ST.md`, `ARCHITECTURE.md`, `TASK_ROUTING.md`, `BOARDS_AND_BUILD.md`.
+- `iot/nabi-esp32/main/boards/common/wifi_board.cc`: `TryWifiConnect()` dùng `SsidManager`; khi chưa có SSID, đi vào `StartWifiConfigMode()`; khi build có `CONFIG_USE_HOTSPOT_WIFI_PROVISIONING` sẽ gọi `WifiManager::StartConfigAp()` và hiển thị URL `GetApWebUrl()`.
+- `iot/nabi-esp32/main/boards/ostb/ostb-nabi-3st/ostb_nabi_3st.cc`: driver màn hình/cảm ứng, các nút, audio codec; long-press boot vào Wi-Fi config.
+- `iot/nabi-esp32/main/audio/README.md`: audio input 16 kHz mono từ AudioEngine; Opus/audio queues hiện có; audio hardware/profile 24 kHz; cần đối chiếu resample và DMA.
+- `iot/nabi-esp32/main/nabi_esp_provisioning.cc`: BLE Security 2, pairing 8 số, local hotspot credentials, lưu NVS.
 - `iot/nabi_esp_contract.json`: **chỉ** dành cho mode phone-local, contract v1, protocol v3, TCP 8386, `/nabi/ota/`, `/nabi/v1/`, BLE prefix `NABI_`.
-- `iot/xiaozhi-esp32/main/ota.cc`: với mode phone-local lấy OTA host từ DHCP gateway và cấu hình WebSocket; code mới không được vô tình sử dụng cơ chế này khi chạy remote Ollama.
-- `iot/xiaozhi-esp32/main/protocols/websocket_protocol.cc`, `docs/websocket.md`: XiaoZhi WS v1/v2/v3 khác hẳn giao thức Ollama REST `/api/chat`; **không thể** chỉ đổi WebSocket URL thành URL Ollama.
+- `iot/nabi-esp32/main/ota.cc`: với mode phone-local lấy OTA host từ DHCP gateway và cấu hình WebSocket; code mới không được vô tình sử dụng cơ chế này khi chạy remote Ollama.
+- `iot/nabi-esp32/main/protocols/websocket_protocol.cc`, `docs/websocket.md`: Nabi WS v1/v2/v3 khác hẳn giao thức Ollama REST `/api/chat`; **không thể** chỉ đổi WebSocket URL thành URL Ollama.
 - `docs/DD/nabi_esp_assistant/README.md` bản v1.0-draft: hiện gắn với Android phone-local, voice round trip chưa nghiệm thu.
 
 ### B2. Hồ sơ thiết bị thực tế (2026-10-23)
-- ESP32-S3 rev 0.2; Flash 16 MB; PSRAM 8 MB; firmware XiaoZhi 2.5.3, ESP-IDF 6.1; OTA0 `0x20000`.
+- ESP32-S3 rev 0.2; Flash 16 MB; PSRAM 8 MB; firmware Nabi 2.5.3, ESP-IDF 6.1; OTA0 `0x20000`.
 - Partition đọc từ thiết bị: NVS `0x9000/0x4000`, otadata `0xD000/0x2000`, phy `0xF000/0x1000`, OTA0 `0x20000/0x460000`, OTA1 `0x480000/0x460000`, assets `0x8E0000/0x5A0000`, data `0xE80000/0x178000`, NVS-user `0xFF8000/0x8000`.
 - ESP từng pair BLE thật với Android, nhận SSID/password và gateway, WebSocket control ACK; chưa xác minh TTS thoại E2E. `phone_app/` là dự án khác, **không thuộc Nabi integration**.
 - Secure Boot/Flash Encryption đang tắt; NVS có khả năng bị trích xuất khi có quyền truy cập vật lý. Không claim secrets trên flash được bảo vệ tuyệt đối.
@@ -88,7 +88,7 @@ OSTB 3ST (STA Wi-Fi)
 - Phase đầu dùng push-to-talk, không cố làm thoại realtime full duplex; wake word/AEC/barge-in sau khi round trip đã ổn định.
 
 ### C3. Hai chế độ không phá tương thích
-- `PHONE_LOCAL`: giữ contract `iot/nabi_esp_contract.json` (BLE Security2 → LocalOnlyHotspot → DHCP gateway 8386 → XiaoZhi WebSocket v3).
+- `PHONE_LOCAL`: giữ contract `iot/nabi_esp_contract.json` (BLE Security2 → LocalOnlyHotspot → DHCP gateway 8386 → Nabi WebSocket v3).
 - `REMOTE_OLLAMA`: SoftAP/local webpage → Wi-Fi gia đình → public HTTPS → Chat REST; speech endpoints riêng ở phase tiếp.
 - Chọn **build variant riêng** `config.remote-ai.json`, không sửa/đè `config.local-ai.json`, không xóa BLE provisioning hay logic OTA cũ. Nếu mã hiện có gắn `CONFIG_NABI_ESP_ASSISTANT` với mode phone-local, thiết kế Kconfig mới tách mode tường minh để không chạy cả 2 bootstrap song song.
 - Tuyệt đối không để remote mode cố gọi `http://<DHCP gateway>:8386/nabi/ota/`; URL đó là logic cho điện thoại, không dùng để tìm Ollama public.
@@ -162,14 +162,14 @@ OSTB 3ST (STA Wi-Fi)
 ### P1 — SoftAP + portal onboarding (ưu tiên reuse)
 **Owner:** `main/boards/common/wifi_board.cc`, WiFiManager/SsidManager component, board UI, `main/settings.*` nếu cần.
 - Xem current Kconfig `CONFIG_USE_HOTSPOT_WIFI_PROVISIONING`; build profile mới phải bật đúng đường StartConfigAp, không chỉ BLE BLUFI.
-- Đổi branding cấu hình AP sang NanoBio trong **profile remote / board scope**; tránh đổi mọi board XiaoZhi.
+- Đổi branding cấu hình AP sang NanoBio trong **profile remote / board scope**; tránh đổi mọi board Nabi.
 - Xác minh captive portal đang có; nếu chưa: thực hiện DNS captive portal + HTTP landing; cân nhắc DHCP Option 114, không redirect HTTPS.
 - Portal chọn Wi-Fi, submit và poll trạng thái, validate đầu vào, lưu NVS qua manager. Không dừng AP trước khi phản hồi cho mobile; khi STA success, đóng AP sau khoảng grace ngắn.
 - Force reconfigure: long-press boot (board đã hỗ trợ) + nút UI phù hợp; không factory-reset NVS nếu chỉ đổi SSID.
 **DoD:** trên điện thoại kết nối AP, thấy portal, lưu Wi-Fi, ESP nhận IP, reboot tự reconnect, sai password → recover.
 
 ### P2 — Remote-AI variant và kết nối HTTPS /api/chat
-**Owner:** `main/boards/ostb/ostb-xiaozhi-3st/config.remote-ai.json` (NEW), `main/Kconfig.projbuild`, `main/CMakeLists.txt`, `main/application.*`, new `main/nabi_remote_ai/`.
+**Owner:** `main/boards/ostb/ostb-nabi-3st/config.remote-ai.json` (NEW), `main/Kconfig.projbuild`, `main/CMakeLists.txt`, `main/application.*`, new `main/nabi_remote_ai/`.
 - Tạo Kconfig lựa chọn transport `PHONE_LOCAL` / `REMOTE_OLLAMA` riêng, build profile/OTA identity rõ ràng, không thay `config.local-ai.json`.
 - Không gọi `Ota::GetLocalOtaUrl()` kiểu gateway trong remote mode; xử lý startup không phụ thuộc server trả `/nabi/ota/`.
 - Client `RemoteAiClient` (esp_http_client hoặc existing HTTP abstraction) TLS + Basic, dynamic JSON cJSON, byte caps, bounded `messages`, system prompt, timeouts.
@@ -222,8 +222,8 @@ OSTB 3ST (STA Wi-Fi)
 | File | Hành động | Lý do |
 | --- | --- | --- |
 | `main/boards/common/wifi_board.cc` | reuse/điều chỉnh tối thiểu | SoftAP/state/recovery đã có |
-| `main/boards/ostb/ostb-xiaozhi-3st/config.remote-ai.json` | NEW | build mode riêng, ESP-IDF6.1, 16MB |
-| `main/boards/ostb/ostb-xiaozhi-3st/ostb_xiaozhi_3st.cc` | targeted | nút/touch/LCD chỉ nếu cần |
+| `main/boards/ostb/ostb-nabi-3st/config.remote-ai.json` | NEW | build mode riêng, ESP-IDF6.1, 16MB |
+| `main/boards/ostb/ostb-nabi-3st/ostb_nabi_3st.cc` | targeted | nút/touch/LCD chỉ nếu cần |
 | `main/Kconfig.projbuild`, `main/CMakeLists.txt` | targeted | mode + sources |
 | `main/nabi_remote_ai/remote_ai_client.{h,cc}` | NEW | Ollama HTTPS Basic/JSON |
 | `main/nabi_remote_ai/remote_ai_settings.{h,cc}` | NEW | URL/secret/limits NVS, không hardcode |
@@ -234,7 +234,7 @@ OSTB 3ST (STA Wi-Fi)
 | `main/settings.*` | targeted | NVS key migration nếu cần |
 | `iot/nabi_esp_contract.json` | KEEP | bảo toàn phone-local existing |
 | `lib/app_versions/v1/features/nabi_esp_assistant/` | OPTIONAL P7 | optional Flutter setup/status; portal browser ở P1 không yêu cầu Flutter |
-| `iot/xiaozhi-esp32/phone_app/` | DO NOT TOUCH | độc lập với NanoBio Flutter app |
+| `iot/nabi-esp32/phone_app/` | DO NOT TOUCH | độc lập với NanoBio Flutter app |
 | `docs/DD/nabi_esp_assistant/*` | UPDATE after product review | phân biệt phone local và public Ollama |
 
 ## H. Test matrix (test ID → điều kiện)
@@ -282,7 +282,7 @@ OSTB 3ST (STA Wi-Fi)
 cd /path/to/NanoBioAI
 git status --short
 cat iot/nabi_esp_contract.json
-cd iot/xiaozhi-esp32
+cd iot/nabi-esp32
 source /path/to/esp-idf-v6.1/export.sh
 idf.py --version
 python3 scripts/build.py --list-boards
@@ -308,7 +308,7 @@ curl -u esp32 --max-time 120 \
 ```text
 Task: Triển khai P0 + P1 + P2 của PLAN NanoBio Remote Ollama cho OSTB 3ST.
 Repo: daovanhung-dev/NanoBioAI.
-Đầu tiên đọc root AGENTS.md -> .codex/AGENTS.md -> PROJECT_MAP -> coding workflow -> xiaozhi domain -> iot/xiaozhi-esp32/AGENTS.md -> CONNECTED_DEVICE_OSTB_3ST.md -> kiến trúc/tuyến nhiệm vụ -> source ownership.
+Đầu tiên đọc root AGENTS.md -> .codex/AGENTS.md -> PROJECT_MAP -> coding workflow -> nabi domain -> iot/nabi-esp32/AGENTS.md -> CONNECTED_DEVICE_OSTB_3ST.md -> kiến trúc/tuyến nhiệm vụ -> source ownership.
 Không viết lại Wi-Fi manager/audio codec; tận dụng SoftAP StartConfigAp có sẵn.
 Giữ phone-local mode, existing NVS và partition 16MB; thêm mode remote Ollama với variant riêng.
 Không dùng FastAPI NanoBio; gọi HTTPS POST /api/chat qua public IP 42.118.174.147 và Nginx Basic Auth, validate cert; không hardcode secret.
@@ -318,8 +318,8 @@ Kiểm tra git diff, build/test host, tạo báo cáo QA và hướng dẫn flas
 
 ## L. Nguồn đối chiếu kỹ thuật
 - GitHub repository: https://github.com/daovanhung-dev/NanoBioAI
-- Board context: https://github.com/daovanhung-dev/NanoBioAI/blob/main/iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md
-- Wi-Fi board source: https://github.com/daovanhung-dev/NanoBioAI/blob/main/iot/xiaozhi-esp32/main/boards/common/wifi_board.cc
+- Board context: https://github.com/daovanhung-dev/NanoBioAI/blob/main/iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md
+- Wi-Fi board source: https://github.com/daovanhung-dev/NanoBioAI/blob/main/iot/nabi-esp32/main/boards/common/wifi_board.cc
 - Espressif Captive Portal: https://github.com/espressif/esp-idf/blob/master/examples/protocols/http_server/captive_portal/README.md
 - ESP HTTP client TLS/Auth: https://github.com/espressif/esp-idf/blob/master/docs/en/api-reference/protocols/esp_http_client.rst
 - Ollama API: https://github.com/ollama/ollama/blob/main/docs/api.md

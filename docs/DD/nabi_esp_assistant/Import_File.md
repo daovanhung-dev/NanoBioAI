@@ -16,8 +16,8 @@
 | `android/app/src/main/AndroidManifest.xml` | Hotspot/Bluetooth permissions and connected-device service declaration |
 | `android/app/src/main/kotlin/com/nanobioai/app/nabi_esp/` | LocalOnlyHotspot, foreground service, Espressif BLE Security 2 and secure pairing store |
 | `iot/nabi_esp_contract.json` and `iot/tools/generate_nabi_esp_contract.py` | Canonical contract source and Dart/Kotlin/ESP generators |
-| `iot/xiaozhi-esp32/main/nabi_esp_provisioning.*` | OSTB BLE Security 2, pairing display/key, Wi-Fi provisioning and DHCP gateway URL |
-| `iot/xiaozhi-esp32/main/ota.cc` and `main/protocols/protocol.*`, `main/application.cc` | OTA device-key auth and listen control/ack handling |
+| `iot/nabi-esp32/main/nabi_esp_provisioning.*` | OSTB BLE Security 2, pairing display/key, Wi-Fi provisioning and DHCP gateway URL |
+| `iot/nabi-esp32/main/ota.cc` and `main/protocols/protocol.*`, `main/application.cc` | OTA device-key auth and listen control/ack handling |
 
 ## Runtime ownership
 
@@ -27,7 +27,7 @@
 | `features/nabi_esp_assistant/data/` | Whisper adapter, PCM/Opus framing, TTS-to-WAV/resample, HTTP/WebSocket server, secure pairing store |
 | `features/nabi_esp_assistant/providers/` | Riverpod lifecycle/readiness controller, no direct UI-to-native calls |
 | `android/.../nabi_esp/` | LocalOnlyHotspot reservation, Espressif provisioning bridge, connected-device FGS and notification action |
-| `iot/xiaozhi-esp32/main/` | OSTB provisioning Security2, pairing code display, gateway OTA/auth, WebSocket listen control/ack |
+| `iot/nabi-esp32/main/` | OSTB provisioning Security2, pairing code display, gateway OTA/auth, WebSocket listen control/ack |
 
 ## Dependencies
 
@@ -35,4 +35,4 @@
 - Espressif Android provisioning library `com.github.espressif:esp-idf-provisioning-android:lib-2.4.4` for BLE Security 2 and custom endpoint; verify JitPack build and device behavior before release.
 - Existing `flutter_secure_storage`, `crypto`, `flutter_tts`, `path_provider`, `http`, and selected `LocalAiTextClient` can cover some requirements.
 
-`iot/xiaozhi-esp32/phone_app/` remains a separate app and is outside this integration. Do not copy its independent LLM/model manager or modify that tree for this feature.
+`iot/nabi-esp32/phone_app/` remains a separate app and is outside this integration. Do not copy its independent LLM/model manager or modify that tree for this feature.

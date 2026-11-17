@@ -17,7 +17,7 @@ Người dùng bấm “Kết nối Nabi” để app chuẩn bị Whisper tiế
 - Android BLE provisioning dùng Espressif Provisioning Android Security 2; khóa ghép được mã hóa bằng Android Keystore. Ghép đôi lần đầu và cấp cấu hình Wi-Fi đã chạy trên điện thoại/ESP thật.
 - Firmware profile OSTB 3ST có BLE Security 2, mã ghép đầu tiên hết hạn sau 2 phút, khóa pairing sau 5 mã sai tới lần khởi động kế tiếp, lưu khóa trong NVS, gửi Wi-Fi qua custom endpoint và tạo OTA URL bằng gateway DHCP. Manual config AP còn làm đường phục hồi.
 - Firmware tích hợp được build/nạp vào OTA0; BLE provisioning, DHCP, `/nabi/ota/`, WebSocket v3 và ACK cho lệnh nghe/dừng đã được xác nhận. Firmware image đã đọc lại và khớp hash.
-- Hội thoại giọng nói chưa nghiệm thu: chưa xác nhận round trip backend qua HTTPS hoặc TTS ra loa ESP. Cũng chưa thử phục hồi nhiều lần sau hotspot restart, màn hình khóa/Doze hoặc hội thoại khi ngắt Internet. Chi tiết ở [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md), [DD module](../../DD/nabi_esp_assistant/README.md) và [hồ sơ ESP](../../../iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md).
+- Hội thoại giọng nói chưa nghiệm thu: chưa xác nhận round trip backend qua HTTPS hoặc TTS ra loa ESP. Cũng chưa thử phục hồi nhiều lần sau hotspot restart, màn hình khóa/Doze hoặc hội thoại khi ngắt Internet. Chi tiết ở [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md), [DD module](../../DD/nabi_esp_assistant/README.md) và [hồ sơ ESP](../../../iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md).
 
 ## Mở khóa triển khai
 

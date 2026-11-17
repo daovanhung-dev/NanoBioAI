@@ -10,7 +10,7 @@ Entrypoint canonical cho Codex trong repo nay. Root `AGENTS.md` chi la bridge au
 - Stack: Dart SDK constraint `^3.9.2`, Riverpod `3.3.1`, GoRouter `17.2.3`, sqflite `2.4.2`, Supabase `2.12.4` for retained non-AI contracts, self-hosted NanoBio AI API, local notifications `19.5.0`.
 - SQLite version: `DatabaseVersion.currentVersion = 36`.
 - Source version: `v1` guest/basic, `v2` authenticated capabilities, `v3` paid-gated partial flows + planned markers, `admin` app surface, `sale_referral` independent.
-- Embedded project: `iot/xiaozhi-esp32/` is an independent XiaoZhi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
+- Embedded project: `iot/nabi-esp32/` is an independent Nabi ESP-IDF firmware snapshot with an Android phone-local AI app; it is not wired into the NanoBioAI Flutter runtime.
 - Self-hosted backend: `backend/` is a FastAPI modular monolith using Ubuntu PostgreSQL; backend rules are in `backend/AGENTS.md` and `backend/.agents/`.
 
 Source-of-truth order for current-state claims: code reachable from
@@ -75,15 +75,15 @@ For implementation under `backend/`, read `backend/AGENTS.md` and
 `backend/.agents/context-map.md` before touching source. Backend worklogs remain
 in the NanoBio `docs/worklog/` tree.
 
-For work inside `iot/xiaozhi-esp32/`, also read
-`.codex/domains/xiaozhi-esp32.md`, `iot/xiaozhi-esp32/AGENTS.md`, and
-`iot/xiaozhi-esp32/docs/agent-context/README.md` before selecting task-specific
+For work inside `iot/nabi-esp32/`, also read
+`.codex/domains/nabi-esp32.md`, `iot/nabi-esp32/AGENTS.md`, and
+`iot/nabi-esp32/docs/agent-context/README.md` before selecting task-specific
 source. Preserve the imported snapshot and any existing changes.
 
 For every IoT/ESP32 task in this repository, read
-`iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md` before
+`iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md` before
 selecting source, making hardware claims, or running device commands, even when
-the task is outside `iot/xiaozhi-esp32/`. This is a device-specific snapshot;
+the task is outside `iot/nabi-esp32/`. This is a device-specific snapshot;
 apply its pins and limits only when the task targets this OSTB 3ST. If another
 board is involved, keep the profile as reference and verify that board's own
 configuration.
@@ -111,7 +111,7 @@ Use `.codex/domains/README.md` and read one domain file by default:
 - UI/theme/Nabicopy
 - Daily health tracking
 - Lifestyle schedule/timeline
-- XiaoZhi ESP32 firmware and phone-local AI
+- Nabi ESP32 firmware and phone-local AI
 - Self-hosted FastAPI/PostgreSQL backend
 
 Add a second domain only after `rg` proves cross-domain impact.

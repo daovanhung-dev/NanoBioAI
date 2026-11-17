@@ -417,7 +417,7 @@ class _NabiEspAssistantPageState extends State<NabiEspAssistantPage> {
     final state = await _runtime.sendListenControl(start: start);
     if (!mounted) return;
     final message = state == null
-        ? 'ESP chưa xác nhận lệnh. Hãy cập nhật firmware XiaoZhi có hỗ trợ Nabi control.'
+        ? 'ESP chưa xác nhận lệnh. Hãy cập nhật firmware Nabi có hỗ trợ Nabi control.'
         : start
         ? 'ESP đã bắt đầu nghe.'
         : 'ESP đã dừng nghe.';

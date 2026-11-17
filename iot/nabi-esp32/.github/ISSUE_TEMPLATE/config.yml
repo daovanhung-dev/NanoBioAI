@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Nabi firmware and app support
+    url: https://github.com/daovanhung-dev/NanoBioAI/issues
+    about: Report reproducible Nabi firmware or companion app issues; redact credentials and private identifiers.

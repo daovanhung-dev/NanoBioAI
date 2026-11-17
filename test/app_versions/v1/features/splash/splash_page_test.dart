@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nano_app/app_versions/v1/features/ai_voice/domain/gateways/voice_gateways.dart';
+import 'package:nano_app/app_versions/v1/features/splash/domain/services/startup_greeting_service.dart';
 import 'package:nano_app/app_versions/v1/features/splash/presentation/pages/splash_page.dart';
+import 'package:nano_app/app_versions/v1/features/splash/providers/splash_provider.dart';
 import 'package:nano_app/app_versions/v1/router/v1_route_paths.dart';
 import 'package:nano_app/core/constants/routes/auth_route_paths.dart';
 import 'package:nano_app/core/theme/theme.dart';
@@ -12,14 +15,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({
-      'onboarding_completed': false,
-    });
+    SharedPreferences.setMockInitialValues({'onboarding_completed': false});
   });
 
-  testWidgets('renders Nabi as the primary splash hierarchy', (
-    tester,
-  ) async {
+  testWidgets('renders Nabi as the primary splash hierarchy', (tester) async {
     await _pumpSplash(tester);
 
     expect(find.text('Nabi'), findsOneWidget);
@@ -47,7 +46,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('dark mode keeps the splash hierarchy renderable', (tester) async {
+  testWidgets('dark mode keeps the splash hierarchy renderable', (
+    tester,
+  ) async {
     await _pumpSplash(tester, themeMode: ThemeMode.dark);
 
     expect(find.text('Nabi'), findsOneWidget);
@@ -104,6 +105,11 @@ Future<void> _pumpSplash(
 
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        startupGreetingServiceProvider.overrideWith(
+          (ref) => StartupGreetingService(_ImmediateTextToSpeechGateway()),
+        ),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
@@ -124,6 +130,17 @@ Future<void> _pumpSplash(
   );
 
   await tester.pump();
+}
+
+class _ImmediateTextToSpeechGateway implements TextToSpeechGateway {
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> speak(String text) async {}
+
+  @override
+  Future<void> stop() async {}
 }
 
 class _TargetPage extends StatelessWidget {

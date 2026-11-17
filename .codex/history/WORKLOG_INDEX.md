@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 299
+- Total worklogs: 302
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -308,3 +308,6 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-13 | coding/test/docs | coding | M01 ONBOARDING_PROFILE — bước lịch sinh hoạt | [Worklog - Onboarding Step 7 hỏi đủ thông tin lịch sinh hoạt](../../docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md) |
 | 2026-11-13 | coding/docs | docs-context | M01 ONBOARDING_PROFILE | [Worklog - Onboarding bằng giọng nói trên thiết bị](../../docs/worklog/2026-11-13/006-worklog-onboarding-voice-mode.md) |
 | 2026-11-14 | unknown | docs-context | unknown | [Worklog — Flutter web parity foundation](../../docs/worklog/2026-11-14/001-worklog-flutter-web-parity.md) |
+| 2026-11-14 | Feature / coding và xác minh firmware IoT | docs-context | iot/nabi-esp32 — cấu hình Wi-Fi cho OSTB Nabi 3ST | [Worklog - Nabi hóa giao diện cấu hình mạng ESP](../../docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md) |
+| 2026-11-14 | Feature / coding, test, build và xác minh firmware IoT | test | unknown | [Worklog - Nabi hóa portal Wi-Fi trên ESP](../../docs/worklog/2026-11-14/003-worklog-nabi-wifi-portal-refresh.md) |
+| 2026-11-14 | docs-context / tổng hợp thông tin dự án | docs-context | iot/nabi-esp32, feature Nabi ESP trong ứng dụng NanoBioAI | [Worklog - Tổng hợp context Nabi ESP32 cho CV và phát triển tiếp](../../docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md) |

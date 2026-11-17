@@ -19,7 +19,7 @@
 
 ## 1. Mục tiêu và giới hạn
 
-Nabi tạo mạng LAN-only trên Android, phục vụ giao thức XiaoZhi từ điện thoại, dùng Whisper tiếng Việt local, câu trả lời từ NanoBio backend, và Android TTS offline. ESP OSTB 3ST ghi/đọc Opus và hiển thị; điện thoại xử lý STT → backend response → TTS.
+Nabi tạo mạng LAN-only trên Android, phục vụ giao thức Nabi từ điện thoại, dùng Whisper tiếng Việt local, câu trả lời từ NanoBio backend, và Android TTS offline. ESP OSTB 3ST ghi/đọc Opus và hiển thị; điện thoại xử lý STT → backend response → TTS.
 
 Mục tiêu MVP là một ESP trên Android. Mỗi lượt thoại yêu cầu session đăng nhập và Internet vì transcript/lịch sử hội thoại được gửi tới backend AI. iOS không có tile hoạt động trong MVP. Không lưu audio/transcript/hội thoại xuống ổ đĩa.
 
@@ -90,7 +90,7 @@ sequenceDiagram
 - Local STT/TTS/audio: Flutter Whisper, Android voice capability, resample PCM and Opus.
 - Native Android: LocalOnlyHotspot, BLE permissions/provisioning, foreground service `connectedDevice`, notification action.
 - Firmware: Protocomm BLE + Security 2 + custom endpoint; dynamic OTA host from DHCP gateway; auth header; incoming control message/ack; display mã ghép; persistent paired key.
-- Thiết bị: OSTB 3ST chạy XiaoZhi 2.5.3 / ESP-IDF 6.1, partition OTA 16 MiB. BLE Security 2 pairing, hotspot provisioning, DHCP, OTA config `/nabi/ota/`, WebSocket v3 và ACK listen controls đã qua thử thật; firmware app readback khớp. Backend voice round trip and TTS speaker output still need live acceptance. Xem [hồ sơ OSTB 3ST](../../../iot/xiaozhi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md) và [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md).
+- Thiết bị: OSTB 3ST chạy Nabi 2.5.3 / ESP-IDF 6.1, partition OTA 16 MiB. BLE Security 2 pairing, hotspot provisioning, DHCP, OTA config `/nabi/ota/`, WebSocket v3 và ACK listen controls đã qua thử thật; firmware app readback khớp. Backend voice round trip and TTS speaker output still need live acceptance. Xem [hồ sơ OSTB 3ST](../../../iot/nabi-esp32/docs/agent-context/CONNECTED_DEVICE_OSTB_3ST.md) và [worklog tích hợp](../../worklog/2026-10-23/006-worklog-nabi-esp-ostb-auto-connect.md).
 
 ## 6. Review / acceptance gate
 

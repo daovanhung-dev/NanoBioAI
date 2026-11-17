@@ -9,7 +9,7 @@ Chuyển Flutter Mobile và Admin Web khỏi các thao tác Supabase trực ti�
 - Thêm `NANOBIO_API_BASE_URL` và HTTP client có session/refresh, yêu cầu HTTPS ngoài môi trường test.
 - Chuyển đăng nhập, đổi mật khẩu, xóa tài khoản và một số thao tác hồ sơ sang API backend; thêm trạng thái bắt buộc đổi mật khẩu cho tài khoản được provision tạm.
 - Chuyển cloud snapshot sync, membership/quota, payment requests, Google Play verification, FamilyPlus và một số settings/food evidence/AI report sang route self-hosted.
-- AI có tài khoản sử dụng backend cho generate/stream/Food Scan; khách vẫn chạy local. Voice/XiaoZhi không đổi.
+- AI có tài khoản sử dụng backend cho generate/stream/Food Scan; khách vẫn chạy local. Voice/Nabi không đổi.
 - Admin Web bỏ Supabase client/dependency và gọi BackendClient; workflow không còn yêu cầu Supabase credential.
 - Backend thêm migrations quota/admin-phone và các route/code cho auth, sync, payment, entitlement và AI text/stream/vision.
 - Ollama server đã có `qwen3-vl:4b` local; chưa deploy route vision mới hoặc bật serving cho client.

@@ -5,7 +5,7 @@ import 'package:nano_app/app_versions/v1/features/nabi_esp_assistant/data/servic
 
 void main() {
   group('NabiEspAudioFrames', () {
-    test('encodes and decodes a XiaoZhi v3 Opus packet', () {
+    test('encodes and decodes a Nabi v3 Opus packet', () {
       final packet = Uint8List.fromList([1, 2, 3, 4, 5]);
 
       final frame = NabiEspAudioFrames.encode(packet);

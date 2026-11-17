@@ -1468,3 +1468,12 @@ Raw risk/failure/skip history extracted from worklogs. This file is not part of 
 - docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Chưa fix: không có lỗi trong targeted analyzer/widget tests.
 - docs/worklog/2026-11-13/004-worklog-onboarding-text-scale-illustration.md :: - Cần kiểm tra tiếp: Android visual/device smoke chưa chạy.
 - docs/worklog/2026-11-13/005-worklog-onboarding-step7-all-fields.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED — host Linux không có `powershell`/`pwsh`.
+- docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md :: - `python3 -m unittest discover -s scripts/tests -v`: PASS — 132 test, 1 skipped.
+- docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md :: - `.codex/tools/validate_codex_integrity.ps1`: SKIPPED — môi trường Linux không có `pwsh`/PowerShell; đã kiểm tra thủ công đường dẫn và chỉ mục.
+- docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-14/002-worklog-iot-nabi-esp-network-config.md :: - Cần kiểm tra tiếp: kiểm tra trực quan UX LCD và portal trên thiết bị; nếu vẫn cần log boot, dùng UART console chính của board hoặc debugger phần cứng.
+- docs/worklog/2026-11-14/003-worklog-nabi-wifi-portal-refresh.md :: ## Lỗi, giới hạn và rủi ro
+- docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: - `pwsh -File .codex/tools/validate_codex_integrity.ps1`: SKIPPED — `pwsh` không có trên host; thực hiện kiểm tra link/whitespace/inventory có mục tiêu.
+- docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: - Firmware/app tests/build: SKIPPED — chỉ thay đổi tài liệu/context.
+- docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: ## Lỗi/Rủi ro
+- docs/worklog/2026-11-14/004-worklog-nabi-project-full-context.md :: - Cần kiểm tra tiếp: nghiệm thu thiết bị theo checklist trong `NABI_PROJECT_FULL_CONTEXT.md` trước khi mô tả hệ thống là hoàn chỉnh hoặc production-ready.

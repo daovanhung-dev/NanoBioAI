@@ -29,7 +29,7 @@ Nguồn: kế hoạch tích hợp do người dùng duyệt trong phiên 2026-10
 - Acceptance: credential chỉ đi trên BLE được mã hóa; token ghép thiết bị lưu bằng secure storage/NVS; xóa/đổi thiết bị có vòng đời được định nghĩa. Chưa hứa khóa sau 5 lần sai.
 - Trạng thái: Source implementation started; Tech/Privacy và device test pending. Function: FN04.
 
-## NABI_ESP_ASSISTANT-F05 — Phiên XiaoZhi HTTP/WebSocket v3
+## NABI_ESP_ASSISTANT-F05 — Phiên Nabi HTTP/WebSocket v3
 
 - Kỳ vọng: hợp đồng sinh chung, protocol v3, cổng 8386, `/nabi/ota/`, `/nabi/v1/`; host ESP tính từ DHCP gateway; device key cho OTA và Bearer auth theo phiên; tối đa một ESP.
 - Acceptance: token sai 401, kết nối thứ hai bị từ chối, server dừng thì ESP không được tiếp tục; host không hard-code.
@@ -44,6 +44,6 @@ Nguồn: kế hoạch tích hợp do người dùng duyệt trong phiên 2026-10
 
 ## NABI_ESP_ASSISTANT-F07 — OSTB 3ST firmware và lần nạp ban đầu
 
-- Kỳ vọng: profile XiaoZhi IDF ≥6.0.1, partition 16 MiB OTA/assets tương thích, mã ghép hiển thị, dynamic gateway, custom provisioning, auth header và control ack.
-- Acceptance: cần nạp full firmware/partition bằng USB một lần trước kết nối; firmware demo hiện có không thể được app nâng cấp thành XiaoZhi.
+- Kỳ vọng: profile Nabi IDF ≥6.0.1, partition 16 MiB OTA/assets tương thích, mã ghép hiển thị, dynamic gateway, custom provisioning, auth header và control ack.
+- Acceptance: cần nạp full firmware/partition bằng USB một lần trước kết nối; firmware demo hiện có không thể được app nâng cấp thành Nabi.
 - Trạng thái: Firmware implementation in source; build/flash/boot validation pending. Function: FN08.

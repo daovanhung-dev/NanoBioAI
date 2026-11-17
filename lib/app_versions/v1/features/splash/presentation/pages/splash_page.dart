@@ -95,6 +95,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       onboardingCompleted: onboardingCompleted,
     );
 
+    await ref.read(startupGreetingServiceProvider).speakOnce();
+
     _navigate(target);
   }
 

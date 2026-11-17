@@ -41,7 +41,7 @@ class NabiEspHostCandidate {
   String toString() => '${address.address} · $interfaceName';
 }
 
-/// App-owned Android session for Nabi's local XiaoZhi service.
+/// App-owned Android session for Nabi's local Nabi service.
 class NabiEspAssistantRuntime extends ChangeNotifier {
   NabiEspAssistantRuntime._() {
     NabiEspAndroidBridge.initialize(

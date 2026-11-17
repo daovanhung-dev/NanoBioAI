@@ -41,7 +41,7 @@ Commit đề xuất: fix(ai): tạo lịch bằng AI local trên Xiaomi
 - 36 test request store, resume, service auth và meal normalizer: PASS.
 - `dart analyze` các file AI/runtime/test liên quan: PASS; `git diff --check`: PASS.
 - Debug APK build và QA trên Xiaomi: PASS.
-- Full `flutter analyze --no-pub` chưa xanh: phần `iot/xiaozhi-esp32/phone_app` thiếu các package riêng và có một info `use_build_context_synchronously` ở dashboard ngoài phạm vi.
+- Full `flutter analyze --no-pub` chưa xanh: phần `iot/nabi-esp32/phone_app` thiếu các package riêng và có một info `use_build_context_synchronously` ở dashboard ngoài phạm vi.
 
 ## Giới hạn release QA
 

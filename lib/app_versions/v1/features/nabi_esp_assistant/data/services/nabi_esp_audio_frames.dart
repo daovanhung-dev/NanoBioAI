@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-/// Framing helpers for the XiaoZhi WebSocket v3 binary audio payload.
+/// Framing helpers for the Nabi WebSocket v3 binary audio payload.
 ///
 /// Byte 0 identifies audio (0), byte 1 is reserved, bytes 2-3 contain the
 /// Opus packet length in network byte order, followed by the packet.
@@ -10,13 +10,13 @@ abstract final class NabiEspAudioFrames {
 
   static Uint8List decode(Uint8List frame) {
     if (frame.length < headerLength || frame[0] != 0) {
-      throw const FormatException('Invalid XiaoZhi audio frame.');
+      throw const FormatException('Invalid Nabi audio frame.');
     }
     final packetLength = ByteData.sublistView(frame).getUint16(2, Endian.big);
     if (packetLength == 0 ||
         packetLength > maximumOpusPacketLength ||
         packetLength != frame.length - headerLength) {
-      throw const FormatException('Invalid XiaoZhi Opus packet length.');
+      throw const FormatException('Invalid Nabi Opus packet length.');
     }
     return Uint8List.sublistView(frame, headerLength);
   }

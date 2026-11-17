@@ -15,7 +15,7 @@ import 'nabi_esp_voice_pipeline.dart';
 typedef NabiEspTurnProcessor =
     Future<NabiEspAssistantReply?> Function(Int16List pcm16);
 
-/// HTTP and WebSocket v3 host for a single XiaoZhi device.
+/// HTTP and WebSocket v3 host for a single Nabi device.
 class NabiEspServer {
   NabiEspServer({
     this.port = NabiEspContract.port,

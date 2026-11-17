@@ -1,0 +1,21 @@
+{
+    "manufacturer": "ostb",
+    "type": "ostb-xiaozhi-3st",
+    "target": "esp32s3",
+    "language": "vi-VN",
+    "builds": [
+        {
+            "name": "ostb-xiaozhi-3st",
+            "sdkconfig_append": [
+                "CONFIG_ESPTOOLPY_FLASHMODE_DIO=y",
+                "CONFIG_ESPTOOLPY_FLASHFREQ_80M=y",
+                "CONFIG_PARTITION_TABLE_CUSTOM_FILENAME=\"partitions/ostb-nabi-3st-16m.csv\"",
+                "CONFIG_OTA_URL=\"http://0.0.0.0:8386/nabi/ota/\"",
+                "CONFIG_OTA_URL_IGNORE_NVS=y",
+                "CONFIG_BT_BLE_50_FEATURES_SUPPORTED=n",
+                "CONFIG_BT_BLE_42_FEATURES_SUPPORTED=y",
+                "CONFIG_NABI_ESP_ASSISTANT=y"
+            ]
+        }
+    ]
+}

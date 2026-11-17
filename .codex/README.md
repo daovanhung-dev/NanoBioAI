@@ -25,7 +25,7 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
 - `design/`: source thiết kế UI/motion/sound/haptic canonical; chỉ đọc khi task chạm UI/theme/Nabi.
 - `task-skills/`: skill sinh tu dong theo loai task tu lich su worklog.
 - `skills/nanobio-project-agent/`: skill project-local canonical cho AI agent.
-- `iot/xiaozhi-esp32/`: snapshot firmware XiaoZhi ESP-IDF va app Android AI local; doc domain `.codex/domains/xiaozhi-esp32.md` va `iot/xiaozhi-esp32/AGENTS.md` truoc task tai day.
+- `iot/nabi-esp32/`: snapshot firmware Nabi ESP-IDF va app Android AI local; doc domain `.codex/domains/nabi-esp32.md` va `iot/nabi-esp32/AGENTS.md` truoc task tai day.
 - root `AGENTS.md` va `.agents/skills/nanobio-project-agent/`: bridge nho cho Codex auto-discovery, tro ve context canonical trong `.codex`.
 - `tools/update_worklog_learning.ps1`: refresh `history/` sau khi co worklog moi.
 - `tool/`: script check runtime hien co.
@@ -49,7 +49,7 @@ Doc `.codex/history/OPEN_RISKS.md` chi khi task cham release readiness, auth, Su
   partial paid-gated flows plus source-only planned markers, `sale_referral`
   independent.
 
-The XiaoZhi snapshot under `iot/xiaozhi-esp32/` is not connected to NanoBioAI app runtime.
+The Nabi snapshot under `iot/nabi-esp32/` is not connected to NanoBioAI app runtime.
 
 Current-state source order is: reachable runtime from `lib/main.dart`,
 executable SQLite/Supabase source, package/platform config, executable tests,

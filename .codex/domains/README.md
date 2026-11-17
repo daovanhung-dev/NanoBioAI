@@ -13,4 +13,4 @@ Read one domain file after choosing a workflow. Add another domain only when `rg
 | UI/theme/Nabicopy               | `ui-nami.md`                    |
 | Daily health tracking           | `health-tracking.md`            |
 | Lifestyle schedule/timeline     | `lifestyle-schedule.md`         |
-| XiaoZhi ESP32 / phone-local AI  | `xiaozhi-esp32.md`              |
+| Nabi ESP32 / phone-local AI  | `nabi-esp32.md`              |
