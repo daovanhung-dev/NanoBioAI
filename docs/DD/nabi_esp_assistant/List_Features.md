@@ -14,7 +14,7 @@ Nguồn: kế hoạch triển khai Nabi ESP được người dùng duyệt ngà
 - Actor: app Nabi và ESP OSTB 3ST.
 - Trigger: người dùng nối vào AP WPA2 `Nabi-xxxx` và gửi cấu hình trong app; dữ liệu di động không bắt buộc.
 - Acceptance: `GET /nabi/status` và `POST /nabi/provision` chỉ đi qua Wi‑Fi ESP; app gửi Wi‑Fi và account credential đã lưu mã hóa; ESP lưu credential trong NVS và đóng AP sau khi nhận.
-- Status: Dart/Kotlin/firmware source và APK build pass; board không hiện tại serial trong lượt hiện tại nên chưa nạp firmware v4 hoặc chạy phone-to-AP acceptance.
+- Status: Dart/Kotlin/firmware source và APK build pass; firmware v4 đã flash/hash verify và boot vào AP setup; app chưa chạy nên phone-to-AP acceptance pending.
 
 ## NABI_ESP_ASSISTANT-F03 — Đăng nhập ESP và cấp credential thiết bị
 
@@ -42,4 +42,4 @@ Nguồn: kế hoạch triển khai Nabi ESP được người dùng duyệt ngà
 ## NABI_ESP_ASSISTANT-F07 — Profile OSTB 3ST riêng
 
 - Acceptance: profile cloud tách khỏi config.local-ai.json, dùng contract generator riêng và đúng board/partition đã xác minh; không ghi firmware/partition/NVS/eFuse trước khi có kế hoạch triển khai được review.
-- Status: profile/source generator và ESP-IDF cloud contract v4 build pass; cloud contract v3 image trước đó đã được ghi/boot trên board, nhưng v4 chưa được flash; voice/device acceptance pending.
+- Status: profile/source generator, ESP-IDF cloud contract v4 build, OTA0 flash/hash verification và boot/AP setup pass; voice/device acceptance pending.

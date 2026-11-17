@@ -2,7 +2,7 @@
 
 Generated from all `docs/worklog/**/*.md` files.
 
-- Total worklogs: 305
+- Total worklogs: 306
 - Refresh commands: `python3 .codex/tools/update_worklog_learning.py --write` or `powershell -ExecutionPolicy Bypass -File .codex/tools/update_worklog_learning.ps1`
 
 ## Entries
@@ -314,3 +314,4 @@ Generated from all `docs/worklog/**/*.md` files.
 | 2026-11-17 | coding | coding | NABI_ESP_ASSISTANT; backend IoT API/voice. | [Worklog - Nabi ESP cloud assistant](../../docs/worklog/2026-11-17/001-worklog-nabi-esp-cloud-assistant.md) |
 | 2026-11-17 | coding | coding | NABI_ESP_ASSISTANT; Android provisioning bridge, OSTB 3ST firmware và server integration. | [Worklog - Nabi ESP AP provisioning và nạp firmware](../../docs/worklog/2026-11-17/002-worklog-nabi-esp-ap-provisioning.md) |
 | 2026-11-17 | coding, test, build, backend deployment và device readiness check. | supabase-schema | NABI_ESP_ASSISTANT; app auth/SQLite vault, Android AP bridge, ESP cloud contract, backend IoT device auth. | [Worklog - Nabi ESP account credential setup without mobile data](../../docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md) |
+| 2026-11-18 | Build firmware, kiểm tra server, nạp và xác minh boot trên thiết bị thật; cập nhật hồ sơ triển khai. | test | NABI_ESP_ASSISTANT, OSTB Nabi 3ST, backend IoT production. | [Worklog - Build và nạp Nabi cloud v4 lên OSTB 3ST](../../docs/worklog/2026-11-18/001-worklog-nabi-esp-cloud-v4-flash.md) |

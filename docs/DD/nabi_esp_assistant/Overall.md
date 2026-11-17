@@ -1,6 +1,6 @@
 # Overall — NABI_ESP_ASSISTANT / Nabi - Siêu trợ lý AI kết nối ESP
 
-> Cập nhật 2026-11-17: người dùng đăng nhập Nabi khi điện thoại còn Internet, sau đó nối vào AP WPA2 của ESP và cấu hình tại chỗ; lúc gửi cấu hình không cần dữ liệu di động. App lưu credential đã mã hóa trong SQLite tới khi đăng xuất. ESP nhận Wi‑Fi cùng credential tài khoản qua HTTP trên AP WPA2, lưu trong NVS và tự đăng nhập NanoBio server qua HTTPS. Contract cloud là v4; voice WebSocket vẫn protocol v3.
+> Cập nhật 2026-11-18: người dùng đăng nhập Nabi khi điện thoại còn Internet, sau đó nối vào AP WPA2 của ESP và cấu hình tại chỗ; lúc gửi cấu hình không cần dữ liệu di động. App lưu credential đã mã hóa trong SQLite tới khi đăng xuất. ESP nhận Wi‑Fi cùng credential tài khoản qua HTTP trên AP WPA2, lưu trong NVS và tự đăng nhập NanoBio server qua HTTPS. Contract cloud là v4; voice WebSocket vẫn protocol v3.
 
 ## 0. Trạng thái tài liệu
 
@@ -9,7 +9,7 @@
 | Mã module | `NABI_ESP_ASSISTANT` |
 | DD decision | `Draft` — Tech, QA, Privacy review đang chờ |
 | Implementation | `In Progress` — Android debug flow, backend device-login endpoint và firmware cloud profile có source |
-| Verification | Flutter analyze, backend focused tests/Ruff/mypy, Android debug APK, ESP-IDF build và server health/OpenAPI pass; phone provisioning/voice E2E và app-only flash bản mới đang chờ |
+| Verification | Flutter analyze, backend focused tests/Ruff/mypy, Android debug APK, ESP-IDF build và server health/OpenAPI pass; cloud v4 đã flash/hash-verify OTA0 và boot tới AP setup; app provisioning/voice E2E đang chờ |
 | Nguồn yêu cầu | Kế hoạch triển khai do người dùng duyệt trong phiên 2026-11-17; chưa có BD riêng |
 | Owner | PO NanoBio; Tech/QA/Privacy chưa ghi nhận |
 
@@ -82,6 +82,6 @@ Luồng rút gọn: app đăng nhập online và mã hóa credential trong SQLit
 | Tech | Chờ | Review API/auth, migration, token rotation/revocation, TLS, NVS và firmware source/build |
 | QA | Chờ | Xem kết quả backend tests, Android build và boot AP; nghiệm thu AP/Wi‑Fi, device-login/refresh/revoke, voice, consent, reconnect, mất Internet |
 | Privacy | Chờ | Data flow, consent, voice retention/logging, NVS/physical access, user-facing copy |
-| Device | Một phần — cloud contract v3 boot/AP mode pass | Nạp contract v4 sau khi đọc partition/OTA metadata trực tiếp, rồi nghiệm thu AP provisioning, device-login, Wi‑Fi reconnect, WSS voice, token refresh/revoke và sensitive unlock |
+| Device | Một phần — cloud contract v4 OTA0 flash/hash/boot/AP setup pass | Nghiệm thu AP provisioning qua APK, device-login, Wi‑Fi reconnect, WSS voice, token refresh/revoke và sensitive unlock |
 
 Không lấy kiểm tra source hoặc contract làm bằng chứng thiết bị đã chạy. Release gate không thay đổi khi chỉ hoàn tất build/test cục bộ.

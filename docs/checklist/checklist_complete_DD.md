@@ -430,3 +430,12 @@ NABI_ESP_ASSISTANT vẫn Draft và ngoài M01-M32 progress totals.
 - [ ] Board không xuất hiện ở `/dev/ttyACM*`, `/dev/ttyUSB*` hay `lsusb` trong lượt này; firmware v4 chưa được nạp.
 - [ ] Chạy phone-to-AP provision, server device-login/refresh, voice round trip, consent/revoke và QA/Privacy review trên OSTB 3ST.
 - Worklog: docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md
+
+### NABI_ESP_ASSISTANT device follow-up — 2026-11-18
+
+- [x] Cloud contract v4 build thành công bằng ESP-IDF 6.1; live partition table và OTA metadata được đọc trước thao tác ghi.
+- [x] Chỉ app image tại OTA0 `0x20000` được ghi; esptool xác minh hash, firmware boot tới board/audio init và AP setup.
+- [x] Server readiness trả 200; release backend hiện hành và IoT speech worker đang hoạt động; không cần cập nhật/deploy lại server trong lượt này.
+- [ ] APK chưa chạy theo yêu cầu; AP provisioning, device-login/refresh/revoke, WSS voice và consent E2E vẫn chờ.
+- [ ] Tech/QA/Privacy review và release gate vẫn chờ.
+- Worklog: docs/worklog/2026-11-18/001-worklog-nabi-esp-cloud-v4-flash.md

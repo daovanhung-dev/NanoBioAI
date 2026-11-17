@@ -2,7 +2,7 @@
 
 - Canonical key: test
 - Workflow: .codex/workflows/test.md
-- Generated from 32 worklog(s).
+- Generated from 33 worklog(s).
 
 ## When To Read
 
@@ -36,6 +36,7 @@
 - Historical task type: test (1)
 - Historical task type: bugfix/coding/test/docs (1)
 - Historical task type: Feature / coding, test, build và xác minh firmware IoT (1)
+- Historical task type: Build firmware, kiểm tra server, nạp và xác minh boot trên thiết bị thật; cập nhật hồ sơ triển khai. (1)
 
 ## Common Modules
 

@@ -594,3 +594,13 @@ UI shell acceptance source: `AHF-BR-001..006` va `AHF-AC-001..005`. Shell phai k
 - [ ] Install the current debug APK on the connected Android test phone and validate no-mobile-data AP setup, then verify ESP server login/voice/consent/revocation E2E.
 - [ ] Keep release gate closed pending Tech/QA/Privacy review and device acceptance.
 - Worklog: docs/worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md
+
+### Nabi ESP cloud v4 flash — 2026-11-18
+
+- [x] Kiểm tra server IoT hiện hành: readiness trả 200; backend và speech worker đã hoạt động, source đang chạy khớp source dự án nên không cần deploy lại.
+- [x] Build cloud contract v4 bằng ESP-IDF 6.1; đọc partition table và OTA metadata trực tiếp, xác nhận OTA0 là slot phù hợp.
+- [x] Ghi riêng app image vào OTA0 tại `0x20000`; esptool xác minh hash thành công. Không backup hoặc ghi NVS, OTA metadata, partition table, bootloader hay assets.
+- [x] Boot log xác nhận board/audio init và firmware vào chế độ cấu hình AP; ACL cổng serial tạm đã gỡ.
+- [ ] Chưa cài/chạy APK theo yêu cầu người dùng; AP provisioning qua app, device-login, voice, consent/revoke và reconnect E2E còn chờ.
+- [ ] Tech, QA, Privacy review còn chờ; release gate vẫn đóng.
+- Worklog: docs/worklog/2026-11-18/001-worklog-nabi-esp-cloud-v4-flash.md

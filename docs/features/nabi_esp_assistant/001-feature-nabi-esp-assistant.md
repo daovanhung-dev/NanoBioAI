@@ -24,7 +24,7 @@ Sau khi ghép, app hiển thị thiết bị thuộc tài khoản, cho đổi t�
 
 - Flutter page/runtime, Android local/crypto bridge, backend device-login source/test và OSTB cloud firmware profile có source.
 - Flutter analyze, backend focused tests/Ruff/mypy, Android debug build và ESP-IDF build pass. Device-login endpoint đã deploy trong release riêng; service active, health/OpenAPI pass.
-- Board không xuất hiện trong cổng serial ở lượt này nên firmware v4 chưa được nạp; NVS, OTA metadata, partition table, bootloader, assets và eFuse chưa bị ghi trong lượt này.
+- Firmware cloud v4 đã được ghi app-only vào OTA0, xác minh hash và boot vào chế độ AP; NVS, OTA metadata, partition table, bootloader, assets và eFuse không bị ghi. APK chưa chạy trên điện thoại nên provisioning/login/voice E2E còn chờ.
 - Chưa nghiệm thu qua điện thoại: AP/Wi‑Fi/account exchange, device-login/refresh/revocation, WSS voice round trip, consent, reconnect, mất Internet và TTS ra loa ESP.
 - Release gate chỉ mở sau Tech, QA, Privacy sign-off và acceptance trên OSTB 3ST thật.
 
@@ -32,4 +32,5 @@ Sau khi ghép, app hiển thị thiết bị thuộc tài khoản, cho đổi t�
 
 - [DD Overall](../../DD/nabi_esp_assistant/Overall.md)
 - [DD Features](../../DD/nabi_esp_assistant/List_Features.md)
-- [Worklog implementation](../../worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md)
+- [Worklog triển khai credential](../../worklog/2026-11-17/003-worklog-nabi-account-credential-setup.md)
+- [Worklog build và nạp cloud v4](../../worklog/2026-11-18/001-worklog-nabi-esp-cloud-v4-flash.md)
